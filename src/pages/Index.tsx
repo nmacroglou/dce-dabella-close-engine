@@ -1,16 +1,91 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useCloseEngine } from "@/hooks/useCloseEngine";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CalculatorTab from "@/components/engine/CalculatorTab";
+import PresentationTab from "@/components/engine/PresentationTab";
+import ObjectionsTab from "@/components/engine/ObjectionsTab";
+import ClosingStackTab from "@/components/engine/ClosingStackTab";
+import CoachModeTab from "@/components/engine/CoachModeTab";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, DollarSign, TrendingUp, Zap, BarChart3 } from "lucide-react";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+
+export default function Index() {
+  const { state, update, computed, coachingTip } = useCloseEngine();
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-foreground">Inspection → Close Assistant</h1>
+              <p className="text-xs text-muted-foreground">DaBella Close Engine</p>
+            </div>
+            <div className="flex gap-3">
+              <MetricChip icon={DollarSign} label="Option A" value={fmt(state.priceA)} />
+              <MetricChip icon={TrendingUp} label="Efficiency" value={fmt(computed.efficiencyPrice)} />
+              <MetricChip icon={BarChart3} label="ROI Value" value={fmt(computed.roiValue)} />
+              <MetricChip icon={Zap} label="10yr Savings" value={fmt(computed.savings75)} />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <main className="max-w-7xl mx-auto px-4 py-5">
+        <Tabs
+          value={state.activeTab}
+          onValueChange={(v) => update("activeTab", v)}
+          className="w-full"
+        >
+          <TabsList className="w-full h-14 p-1.5 bg-muted rounded-2xl mb-6 grid grid-cols-5">
+            <TabsTrigger value="calculator" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
+              <Calculator className="h-4 w-4" /> Calculator
+            </TabsTrigger>
+            <TabsTrigger value="presentation" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
+              <Presentation className="h-4 w-4" /> Presentation
+            </TabsTrigger>
+            <TabsTrigger value="objections" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
+              <ShieldAlert className="h-4 w-4" /> Objections
+            </TabsTrigger>
+            <TabsTrigger value="closing" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
+              <Layers className="h-4 w-4" /> Closing Stack
+            </TabsTrigger>
+            <TabsTrigger value="coach" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
+              <Brain className="h-4 w-4" /> Coach Mode
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="calculator">
+            <CalculatorTab state={state} computed={computed} update={update} />
+          </TabsContent>
+          <TabsContent value="presentation">
+            <PresentationTab state={state} computed={computed} update={update} />
+          </TabsContent>
+          <TabsContent value="objections">
+            <ObjectionsTab state={state} computed={computed} update={update} />
+          </TabsContent>
+          <TabsContent value="closing">
+            <ClosingStackTab state={state} computed={computed} update={update} />
+          </TabsContent>
+          <TabsContent value="coach">
+            <CoachModeTab state={state} coachingTip={coachingTip} />
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
-};
+}
 
-const Index = PlaceholderIndex;
-
-export default Index;
+function MetricChip({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <div className="metric-card flex items-center gap-2 min-w-0">
+      <Icon className="h-4 w-4 text-primary flex-shrink-0" />
+      <div className="min-w-0">
+        <p className="text-[10px] font-medium text-muted-foreground truncate">{label}</p>
+        <p className="text-sm font-bold text-foreground truncate">{value}</p>
+      </div>
+    </div>
+  );
+}
