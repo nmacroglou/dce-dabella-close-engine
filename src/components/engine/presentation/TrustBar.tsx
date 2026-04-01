@@ -1,25 +1,28 @@
 import { Shield, Award, Star, Home } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-const TRUST_ITEMS: { icon: LucideIcon; text: string }[] = [
-  { icon: Shield, text: "Lifetime Warranty Protection" },
-  { icon: Award, text: "GAF Master Elite Certified" },
-  { icon: Star, text: "Top-Rated Installation Crews" },
-  { icon: Home, text: "Locally Owned & Operated" },
+const TRUST_ITEMS: { icon: LucideIcon; label: string }[] = [
+  { icon: Shield, label: "Lifetime Warranty Protection" },
+  { icon: Award, label: "GAF Master Elite Certified" },
+  { icon: Star, label: "Top-Rated Installation Crews" },
+  { icon: Home, label: "Locally Owned & Operated" },
 ];
 
 export default function TrustBar() {
   return (
-    <div className="max-w-4xl mx-auto px-6 pb-10">
-      <div className="rounded-2xl bg-muted/50 border border-border p-6 text-center">
-        <div className="flex items-center justify-center gap-8 flex-wrap">
-          {TRUST_ITEMS.map(({ icon: Icon, text }) => (
-            <div key={text} className="flex items-center gap-2">
+    <div className="max-w-5xl mx-auto">
+      <div className="grid grid-cols-4 gap-3">
+        {TRUST_ITEMS.map(({ icon: Icon, label }) => (
+          <div
+            key={label}
+            className="flex items-center gap-3 rounded-2xl bg-card border border-border px-5 py-4"
+          >
+            <div className="rounded-xl bg-primary/10 p-2.5">
               <Icon className="h-5 w-5 text-primary" />
-              <span className="text-sm font-semibold text-foreground">{text}</span>
             </div>
-          ))}
-        </div>
+            <span className="text-sm font-semibold text-foreground leading-tight">{label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,15 +1,18 @@
 interface InputFieldProps {
   label: string;
   value: string | number;
-  onChange: (v: any) => void;
-  type?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onChange: (value: any) => void;
+  type?: "text" | "number";
   placeholder?: string;
 }
 
-export default function InputField({ label, value, onChange, type = "text", placeholder = "" }: InputFieldProps) {
+export default function InputField({ label, value, onChange, type = "text", placeholder }: InputFieldProps) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</label>
+      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+        {label}
+      </label>
       <input
         type={type}
         value={value}
