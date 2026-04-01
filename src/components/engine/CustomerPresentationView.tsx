@@ -136,18 +136,28 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
               ))}
             </div>
 
-            {selectedOption && (
-              <div className="mt-8 animate-fade-in">
-                <FinancialImpact
-                  state={{ ...state, selectedOption }}
-                  computed={{
-                    ...computed,
-                    selectedPrice: computed.options[selectedOption].price,
-                    roiValue: computed.options[selectedOption].roiValue,
-                  }}
-                />
-              </div>
-            )}
+            {selectedOption && (() => {
+              const opt = computed.options[selectedOption];
+              const roiValue = opt.roiValue;
+              const moveForwardImpact = roiValue + computed.energySavings;
+              const doNothingImpact = -computed.energySavings;
+              const netDifference = moveForwardImpact - doNothingImpact;
+              return (
+                <div className="mt-8 animate-fade-in">
+                  <FinancialImpact
+                    state={{ ...state, selectedOption }}
+                    computed={{
+                      ...computed,
+                      selectedPrice: opt.price,
+                      roiValue,
+                      moveForwardImpact,
+                      doNothingImpact,
+                      netDifference,
+                    }}
+                  />
+                </div>
+              );
+            })()}
 
             <div className="mt-8">
               <TrustBar />
