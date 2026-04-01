@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import type { ComputedValues, EngineState } from "@/types/engine";
 import { Scale, ToggleLeft, ToggleRight, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
@@ -14,6 +14,10 @@ interface Props {
 export default memo(function TCloseBoard({ state, computed }: Props) {
   const [mode, setMode] = useState<"single" | "compare">("single");
   const [selectedKey, setSelectedKey] = useState<"A" | "B" | "C">(state.selectedOption || "A");
+
+  useEffect(() => {
+    if (state.selectedOption) setSelectedKey(state.selectedOption);
+  }, [state.selectedOption]);
 
   const sel = getOptionMetrics(selectedKey, computed);
   const selLabel = getOptionLabel(selectedKey, state);
