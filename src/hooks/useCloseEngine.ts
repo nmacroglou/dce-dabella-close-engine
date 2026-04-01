@@ -107,6 +107,7 @@ export function useCloseEngine() {
       options,
       annualCost, tenYearCost, energySavings,
       moveForwardImpact, doNothingImpact, netDifference, selectedPrice,
+      inflationPenalty, lockedInSavings,
       efficiencyPrice: options.C.efficiencyPrice,
       standbyPrice: options.C.standbyPrice,
       deferred6Price: options.C.deferred6Price,

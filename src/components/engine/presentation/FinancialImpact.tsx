@@ -41,16 +41,21 @@ export default memo(function FinancialImpact({ state, computed }: FinancialImpac
               <th className="text-center py-2 font-semibold text-destructive text-xs">Do Nothing</th>
             </tr>
           </thead>
-          <tbody>
+           <tbody>
             <tr className="border-b border-border/50">
               <td className="py-2 font-medium text-foreground">ROI</td>
               <td className="py-2 text-center font-semibold text-accent">+{fmt(computed.roiValue)}</td>
               <td className="py-2 text-center text-muted-foreground">$0</td>
             </tr>
             <tr className="border-b border-border/50">
-              <td className="py-2 font-medium text-foreground">Energy</td>
+              <td className="py-2 font-medium text-foreground">Energy savings</td>
               <td className="py-2 text-center font-semibold text-accent">+{fmt(computed.energySavings)}</td>
-              <td className="py-2 text-center font-semibold text-destructive">-{fmt(computed.tenYearCost)}</td>
+              <td className="py-2 text-center font-semibold text-destructive">-{fmt(computed.energySavings)}</td>
+            </tr>
+            <tr className="border-b border-border/50">
+              <td className="py-2 font-medium text-foreground">Material inflation (8%/yr)</td>
+              <td className="py-2 text-center font-semibold text-accent">+{fmt(computed.lockedInSavings)}</td>
+              <td className="py-2 text-center font-semibold text-destructive">-{fmt(computed.inflationPenalty)}</td>
             </tr>
             <tr>
               <td className="py-2 font-bold text-foreground">Total</td>

@@ -153,6 +153,8 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
                       ...computed,
                       selectedPrice: opt.price,
                       roiValue,
+                      inflationPenalty,
+                      lockedInSavings,
                       moveForwardImpact,
                       doNothingImpact,
                       netDifference,

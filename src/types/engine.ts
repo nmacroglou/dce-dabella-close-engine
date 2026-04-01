@@ -50,6 +50,8 @@ export interface ComputedValues {
   moveForwardImpact: number;
   doNothingImpact: number;
   netDifference: number;
+  inflationPenalty: number;
+  lockedInSavings: number;
   selectedPrice: number;
   // Legacy compat
   efficiencyPrice: number;
