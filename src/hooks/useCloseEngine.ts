@@ -137,5 +137,5 @@ export function useCloseEngine() {
     return "Build value before showing price.";
   }, [state.priceShown, state.currentStage, state.objectionType]);
 
-  return { state, update, computed, coachingTip };
+  return { state, update, computed, coachingTip, reset };
 }
