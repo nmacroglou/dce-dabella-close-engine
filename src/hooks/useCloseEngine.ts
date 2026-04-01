@@ -28,7 +28,31 @@ export interface EngineState {
   activeTab: string;
 }
 
+export interface OptionComputed {
+  price: number;
+  monthly: number;
+  efficiencyPrice: number;
+  standbyPrice: number;
+  deferred6Price: number;
+  deferred12Price: number;
+  monthlyEfficiency: number;
+  monthlyStandby: number;
+  monthlyDeferred6: number;
+  monthlyDeferred12: number;
+  roiValue: number;
+  netCost: number;
+}
+
 export interface ComputedValues {
+  options: Record<"A" | "B" | "C", OptionComputed>;
+  annualCost: number;
+  tenYearCost: number;
+  energySavings: number;
+  moveForwardImpact: number;
+  doNothingImpact: number;
+  netDifference: number;
+  selectedPrice: number;
+  // Legacy compat
   efficiencyPrice: number;
   standbyPrice: number;
   deferred6Price: number;
@@ -41,14 +65,7 @@ export interface ComputedValues {
   monthlyDeferred6: number;
   monthlyDeferred12: number;
   roiValue: number;
-  annualCost: number;
-  tenYearCost: number;
-  energySavings: number;
-  moveForwardImpact: number;
-  doNothingImpact: number;
-  netDifference: number;
   yesNetCost: number;
-  selectedPrice: number;
 }
 
 export type EngineUpdater = <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
