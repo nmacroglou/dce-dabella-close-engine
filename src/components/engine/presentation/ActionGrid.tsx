@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { EngineState, EngineUpdater } from "@/hooks/useCloseEngine";
+import type { EngineState, EngineUpdater } from "@/types/engine";
 import { Monitor, Eye, VolumeX, Filter } from "lucide-react";
 
 interface ActionGridProps {

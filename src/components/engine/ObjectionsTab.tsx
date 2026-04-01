@@ -1,4 +1,4 @@
-import { EngineTabProps } from "@/hooks/useCloseEngine";
+import type { EngineTabProps } from "@/types/engine";
 import { OBJECTIONS, OBJECTION_ROUTES } from "@/data/objections";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 

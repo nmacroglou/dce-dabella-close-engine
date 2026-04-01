@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { EngineTabProps } from "@/hooks/useCloseEngine";
+import type { EngineTabProps } from "@/types/engine";
 import { MessageSquare } from "lucide-react";
 import { fmt } from "@/lib/format";
 import ScriptCard from "./shared/ScriptCard";

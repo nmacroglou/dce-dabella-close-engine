@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EngineTabProps } from "@/hooks/useCloseEngine";
+import type { EngineTabProps } from "@/types/engine";
 import { CLOSING_STEPS } from "@/data/closingSteps";
 import { Sparkles } from "lucide-react";
 import ScriptCard from "./shared/ScriptCard";

@@ -1,98 +1,24 @@
-import { EngineTabProps } from "@/hooks/useCloseEngine";
+import type { EngineTabProps, EngineState } from "@/types/engine";
 import { PRODUCT_OPTIONS } from "@/data/products";
-import { DollarSign, Zap, TrendingUp, BarChart3, Sparkles } from "lucide-react";
 import { fmt } from "@/lib/format";
 import InputField from "./shared/InputField";
-import type { OptionComputed } from "@/hooks/useCloseEngine";
+import OptionOutputCard from "./shared/OptionOutputCard";
 
-function OptionOutputCard({
-  label,
-  name,
-  opt,
-  energySavings,
-  accent,
-}: {
-  label: string;
-  name: string;
-  opt: OptionComputed;
-  energySavings: number;
-  accent: string;
-}) {
-  return (
-    <div className="card-elevated-lg p-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <h4 className={`text-sm font-extrabold uppercase tracking-wider ${accent}`}>{label}</h4>
-        <span className="text-2xl font-extrabold text-foreground">{fmt(opt.price)}</span>
-      </div>
-      <p className="text-sm text-muted-foreground truncate">{name}</p>
+const OPTION_ACCENTS = { A: "text-primary", B: "text-accent", C: "text-warning" } as const;
 
-      {/* Monthly */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
-        <span className="text-sm font-semibold text-muted-foreground">Monthly Payment</span>
-        <span className="text-base font-bold text-foreground">{fmt(opt.monthly)}/mo</span>
-      </div>
+type OptionKey = "A" | "B" | "C";
 
-      {/* Promo lanes */}
-      <div className="space-y-2">
-        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-          <DollarSign className="h-4 w-4 text-primary" /> Promotional Financing Options
-        </p>
-        <PromoLine label="Efficiency Discount" price={opt.efficiencyPrice} monthly={opt.monthlyEfficiency} />
-        <PromoLine label="Standby Discount" price={opt.standbyPrice} monthly={opt.monthlyStandby} />
-        <PromoLine label="6 Month Deferred" price={opt.deferred6Price} monthly={opt.monthlyDeferred6} />
-        <PromoLine label="12 Month Deferred" price={opt.deferred12Price} monthly={opt.monthlyDeferred12} />
-      </div>
+const OPTION_CONFIG: { key: OptionKey; nameKey: keyof EngineState; priceKey: keyof EngineState; desc: string }[] = [
+  { key: "A", nameKey: "optionAName", priceKey: "priceA", desc: "Your best-in-class option — maximum warranties, top-tier materials, and highest home value return" },
+  { key: "B", nameKey: "optionBName", priceKey: "priceB", desc: "Our most popular choice — great balance of quality, protection, and long-term value" },
+  { key: "C", nameKey: "optionCName", priceKey: "priceC", desc: "The smart-budget option — solid quality that still protects your investment" },
+];
 
-      {/* Value stack */}
-      <div className="space-y-2">
-        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-          <TrendingUp className="h-4 w-4 text-accent" /> Value Stack Breakdown
-        </p>
-        <ValueLine icon={BarChart3} label="Home Value Increase (ROI)" value={`+${fmt(opt.roiValue)}`} color="text-primary" />
-        <ValueLine icon={Zap} label="10-Year Energy Savings" value={`+${fmt(energySavings)}`} color="text-accent" />
-        <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between">
-          <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-primary" /> Net Effective Cost
-          </span>
-          <span className="text-base font-extrabold text-primary">{fmt(opt.netCost)}</span>
-        </div>
-      </div>
-    </div>
-  );
+function parseNum(v: string): number {
+  return parseFloat(v) || 0;
 }
-
-function PromoLine({ label, price, monthly }: { label: string; price: number; monthly: number }) {
-  return (
-    <div className="flex items-center justify-between py-2 px-4 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <div className="text-right">
-        <span className="text-sm font-bold text-foreground">{fmt(price)}</span>
-        <span className="text-xs text-muted-foreground ml-2">{fmt(monthly)}/mo</span>
-      </div>
-    </div>
-  );
-}
-
-function ValueLine({ icon: Icon, label, value, color }: { icon: typeof BarChart3; label: string; value: string; color: string }) {
-  return (
-    <div className="flex items-center justify-between py-2 px-4 rounded-lg bg-muted/40">
-      <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-        <Icon className={`h-4 w-4 ${color}`} /> {label}
-      </span>
-      <span className={`text-sm font-bold ${color}`}>{value}</span>
-    </div>
-  );
-}
-
-const OPTION_ACCENTS = { A: "text-primary", B: "text-accent", C: "text-orange-500" } as const;
 
 export default function CalculatorTab({ state, computed, update }: EngineTabProps) {
-  const optionEntries: { key: "A" | "B" | "C"; name: string; nameKey: keyof typeof state; priceKey: keyof typeof state }[] = [
-    { key: "A", name: state.optionAName, nameKey: "optionAName", priceKey: "priceA" },
-    { key: "B", name: state.optionBName, nameKey: "optionBName", priceKey: "priceB" },
-    { key: "C", name: state.optionCName, nameKey: "optionCName", priceKey: "priceC" },
-  ];
-
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Inputs */}
@@ -115,13 +41,13 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
               label="Homeowner 1"
               description="The primary person on the home — this is who the proposal is addressed to"
               value={state.homeowner1}
-              onChange={(v) => update("homeowner1", v as string)}
+              onChange={(v) => update("homeowner1", v)}
             />
             <InputField
               label="Homeowner 2"
               description="If there's a spouse or co-owner who'll be part of the decision, we include them here"
               value={state.homeowner2}
-              onChange={(v) => update("homeowner2", v as string)}
+              onChange={(v) => update("homeowner2", v)}
             />
           </div>
         </div>
@@ -152,13 +78,13 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
               label="Solar kW"
               description="How much solar power your roof can support — more kW means more energy offset and savings"
               value={state.solarKw}
-              onChange={(v) => update("solarKw", v as string)}
+              onChange={(v) => update("solarKw", v)}
             />
             <InputField
               label="Gutter Feet"
               description="Total linear feet of gutter guard protection — prevents clogs and extends roof life"
               value={state.gutterFeet}
-              onChange={(v) => update("gutterFeet", v as string)}
+              onChange={(v) => update("gutterFeet", v)}
             />
           </div>
         </div>
@@ -172,27 +98,21 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
             "We put together three options so you can choose what fits best. Option A is our top-of-the-line, B is our most popular, and C is our value package. Let me show you the difference."
           </p>
           <div className="space-y-4">
-            {optionEntries.map((opt) => (
-              <div key={opt.key} className="grid grid-cols-3 gap-5 items-end">
+            {OPTION_CONFIG.map(({ key, nameKey, priceKey, desc }) => (
+              <div key={key} className="grid grid-cols-3 gap-5 items-end">
                 <div className="col-span-2">
                   <InputField
-                    label={`Option ${opt.key} — System Name`}
-                    description={
-                      opt.key === "A"
-                        ? "Your best-in-class option — maximum warranties, top-tier materials, and highest home value return"
-                        : opt.key === "B"
-                        ? "Our most popular choice — great balance of quality, protection, and long-term value"
-                        : "The smart-budget option — solid quality that still protects your investment"
-                    }
-                    value={opt.name}
-                    onChange={(v) => update(opt.nameKey as any, v as string)}
+                    label={`Option ${key} — System Name`}
+                    description={desc}
+                    value={state[nameKey] as string}
+                    onChange={(v) => update(nameKey as "optionAName", v)}
                   />
                 </div>
                 <InputField
-                  label={`Total Price ${opt.key}`}
+                  label={`Total Price ${key}`}
                   description="The full installed price including labor, materials, and warranties — before any promotions"
-                  value={state[opt.priceKey] as number}
-                  onChange={(v) => update(opt.priceKey as any, v as number)}
+                  value={state[priceKey] as number}
+                  onChange={(v) => update(priceKey as "priceA", parseNum(v))}
                   type="number"
                 />
               </div>
@@ -213,14 +133,14 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
               label="Factor 1"
               description="The lender's rate that converts your total into a monthly payment — a lower factor means a lower monthly cost"
               value={state.financingFactor1}
-              onChange={(v) => update("financingFactor1", v as number)}
+              onChange={(v) => update("financingFactor1", parseNum(v))}
               type="number"
             />
             <InputField
               label="Factor 2"
               description="An alternate financing rate — we'll show you which one gives you the best monthly payment"
               value={state.financingFactor2}
-              onChange={(v) => update("financingFactor2", v as number)}
+              onChange={(v) => update("financingFactor2", parseNum(v))}
               type="number"
             />
           </div>
@@ -239,14 +159,14 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
               label="Efficiency Discount ($)"
               description="A dollar-off incentive for choosing energy-efficient upgrades — this comes right off the top of your price"
               value={state.efficiencyDiscount}
-              onChange={(v) => update("efficiencyDiscount", v as number)}
+              onChange={(v) => update("efficiencyDiscount", parseNum(v))}
               type="number"
             />
             <InputField
               label="Standby Discount ($)"
               description="A loyalty discount for being ready to move forward — we pass manufacturer savings directly to you"
               value={state.standbyDiscount}
-              onChange={(v) => update("standbyDiscount", v as number)}
+              onChange={(v) => update("standbyDiscount", parseNum(v))}
               type="number"
             />
           </div>
@@ -255,14 +175,14 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
               label="6 Month Deferred (%)"
               description="No payments for 6 months — the price adjusts slightly, but you get breathing room before your first payment"
               value={state.deferred6Pct}
-              onChange={(v) => update("deferred6Pct", v as number)}
+              onChange={(v) => update("deferred6Pct", parseNum(v))}
               type="number"
             />
             <InputField
               label="12 Month Deferred (%)"
               description="No payments for a full year — enjoy your new system now and start paying later with a small price adjustment"
               value={state.deferred12Pct}
-              onChange={(v) => update("deferred12Pct", v as number)}
+              onChange={(v) => update("deferred12Pct", parseNum(v))}
               type="number"
             />
           </div>
@@ -281,28 +201,28 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
               label="ROI %"
               description="Studies show home improvements like this increase your home's resale value by this percentage of the project cost"
               value={state.roiPercent}
-              onChange={(v) => update("roiPercent", v as number)}
+              onChange={(v) => update("roiPercent", parseNum(v))}
               type="number"
             />
             <InputField
               label="Monthly Energy Bill"
               description="What you're currently paying each month for electricity — this is the baseline we'll use to calculate your savings"
               value={state.monthlyBill}
-              onChange={(v) => update("monthlyBill", v as number)}
+              onChange={(v) => update("monthlyBill", parseNum(v))}
               type="number"
             />
             <InputField
               label="Energy Savings %"
               description="The estimated percentage your energy bill drops after installation — most homeowners see 50–80% reduction"
               value={state.energySavingsPct}
-              onChange={(v) => update("energySavingsPct", v as number)}
+              onChange={(v) => update("energySavingsPct", parseNum(v))}
               type="number"
             />
             <InputField
               label="Down Payment ($)"
               description="Any amount you'd like to put down upfront — this reduces the financed balance and lowers your monthly payment"
               value={state.downPayment}
-              onChange={(v) => update("downPayment", v as number)}
+              onChange={(v) => update("downPayment", parseNum(v))}
               type="number"
             />
           </div>

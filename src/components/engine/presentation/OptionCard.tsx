@@ -1,7 +1,7 @@
 import { CheckCircle2, TrendingUp, Zap, Sparkles } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { OPTION_THEMES, FEATURES_BY_OPTION } from "./constants";
-import type { ComputedValues } from "@/hooks/useCloseEngine";
+import type { ComputedValues } from "@/types/engine";
 
 interface OptionCardProps {
   optionKey: "A" | "B" | "C";
