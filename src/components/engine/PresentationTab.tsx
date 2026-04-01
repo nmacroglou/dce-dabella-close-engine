@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { EngineState } from "@/hooks/useCloseEngine";
-import { Scale, TrendingUp, Eye, EyeOff, ArrowRight, MessageSquare } from "lucide-react";
+import { Scale, TrendingUp, Eye, EyeOff, ArrowRight, MessageSquare, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CustomerPresentationView from "./CustomerPresentationView";
 
 interface Props {
   state: EngineState;
@@ -13,6 +14,11 @@ const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", c
 
 export default function PresentationTab({ state, computed, update }: Props) {
   const [showNarrow, setShowNarrow] = useState(false);
+  const [showCustomerView, setShowCustomerView] = useState(false);
+
+  if (showCustomerView) {
+    return <CustomerPresentationView state={state} computed={computed} onClose={() => setShowCustomerView(false)} />;
+  }
 
   const options = [
     { key: "A" as const, name: state.optionAName, price: state.priceA, monthly: computed.monthlyA },
