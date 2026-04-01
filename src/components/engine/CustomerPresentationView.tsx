@@ -25,6 +25,8 @@ const STAGE_LABELS: Record<Stage, string> = {
 
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
   const [stage, setStage] = useState<Stage>("options");
+  const [exporting, setExporting] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
   const stageIndex = STAGES.indexOf(stage);
 
   const options = [
@@ -36,8 +38,19 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1]);
   const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1]);
 
+  const handleExportPdf = async () => {
+    if (!contentRef.current || exporting) return;
+    setExporting(true);
+    try {
+      const name = state.homeowner1 || "Customer";
+      await exportCustomerPdf(contentRef.current, `DaBella-Proposal-${name}.pdf`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in" ref={contentRef}>
       {/* Close */}
       <button
         onClick={onClose}
