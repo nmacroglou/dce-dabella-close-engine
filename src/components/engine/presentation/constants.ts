@@ -41,26 +41,17 @@ export const OPTION_THEMES: Record<"A" | "B" | "C", OptionTheme> = {
   },
 };
 
+const SHARED_FEATURES: { icon: LucideIcon; text: string }[] = [
+  { icon: Shield, text: "Golden Pledge® Lifetime Warranty" },
+  { icon: Award, text: "Factory-Trained Certified Installers" },
+  { icon: Zap, text: "SolarMAX Warranty Protection" },
+  { icon: Star, text: "GAF Master Elite® Installation" },
+  { icon: Home, text: "Full system replacement" },
+  { icon: TrendingUp, text: "Best long-term ROI" },
+];
+
 export const FEATURES_BY_OPTION: Record<string, { icon: LucideIcon; text: string }[]> = {
-  A: [
-    { icon: Shield, text: "Lifetime manufacturer warranty" },
-    { icon: Zap, text: "Maximum energy efficiency" },
-    { icon: Home, text: "Full system replacement" },
-    { icon: Star, text: "Premium materials & installation" },
-    { icon: Award, text: "Highest home value increase" },
-    { icon: TrendingUp, text: "Best long-term ROI" },
-  ],
-  B: [
-    { icon: Shield, text: "Manufacturer warranty included" },
-    { icon: Home, text: "Complete system upgrade" },
-    { icon: Star, text: "High-quality materials" },
-    { icon: Award, text: "Strong home value increase" },
-    { icon: TrendingUp, text: "Excellent ROI potential" },
-  ],
-  C: [
-    { icon: Shield, text: "Standard manufacturer warranty" },
-    { icon: Home, text: "Essential system coverage" },
-    { icon: Star, text: "Quality materials" },
-    { icon: TrendingUp, text: "Solid ROI potential" },
-  ],
+  A: SHARED_FEATURES,
+  B: SHARED_FEATURES,
+  C: SHARED_FEATURES,
 };
