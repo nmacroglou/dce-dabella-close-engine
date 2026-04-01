@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { EngineState, ComputedValues } from "@/hooks/useCloseEngine";
-import { X, ChevronRight, ChevronLeft } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
+import { exportCustomerPdf } from "@/lib/exportPdf";
 import dabellaLogo from "@/assets/dabella-logo.png";
 import OptionCard from "./presentation/OptionCard";
 import TrustBar from "./presentation/TrustBar";
@@ -24,6 +25,8 @@ const STAGE_LABELS: Record<Stage, string> = {
 
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
   const [stage, setStage] = useState<Stage>("options");
+  const [exporting, setExporting] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
   const stageIndex = STAGES.indexOf(stage);
 
   const options = [
@@ -35,16 +38,42 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1]);
   const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1]);
 
+  const handleExportPdf = async () => {
+    if (!contentRef.current || exporting) return;
+    setExporting(true);
+    try {
+      const name = state.homeowner1 || "Customer";
+      await exportCustomerPdf(contentRef.current, `DaBella-Proposal-${name}.pdf`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in">
-      {/* Close */}
-      <button
-        onClick={onClose}
-        className="fixed top-4 right-4 z-50 rounded-full bg-card border border-border shadow-md p-2 hover:bg-muted transition-colors"
-        aria-label="Close presentation"
-      >
-        <X className="h-5 w-5 text-muted-foreground" />
-      </button>
+    <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in" ref={contentRef}>
+      {/* Top-right actions */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <button
+          onClick={handleExportPdf}
+          disabled={exporting}
+          className="flex items-center gap-2 rounded-full bg-card border border-border shadow-md px-4 py-2 hover:bg-muted transition-colors text-sm font-semibold text-foreground disabled:opacity-60"
+          aria-label="Export PDF"
+        >
+          {exporting ? (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          ) : (
+            <Download className="h-4 w-4 text-muted-foreground" />
+          )}
+          {exporting ? "Exporting…" : "Export PDF"}
+        </button>
+        <button
+          onClick={onClose}
+          className="rounded-full bg-card border border-border shadow-md p-2 hover:bg-muted transition-colors"
+          aria-label="Close presentation"
+        >
+          <X className="h-5 w-5 text-muted-foreground" />
+        </button>
+      </div>
 
       {/* Header */}
       <header className="text-center pt-8 pb-4 px-6">
