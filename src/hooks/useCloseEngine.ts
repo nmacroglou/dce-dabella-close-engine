@@ -28,7 +28,31 @@ export interface EngineState {
   activeTab: string;
 }
 
+export interface OptionComputed {
+  price: number;
+  monthly: number;
+  efficiencyPrice: number;
+  standbyPrice: number;
+  deferred6Price: number;
+  deferred12Price: number;
+  monthlyEfficiency: number;
+  monthlyStandby: number;
+  monthlyDeferred6: number;
+  monthlyDeferred12: number;
+  roiValue: number;
+  netCost: number;
+}
+
 export interface ComputedValues {
+  options: Record<"A" | "B" | "C", OptionComputed>;
+  annualCost: number;
+  tenYearCost: number;
+  energySavings: number;
+  moveForwardImpact: number;
+  doNothingImpact: number;
+  netDifference: number;
+  selectedPrice: number;
+  // Legacy compat
   efficiencyPrice: number;
   standbyPrice: number;
   deferred6Price: number;
@@ -41,14 +65,7 @@ export interface ComputedValues {
   monthlyDeferred6: number;
   monthlyDeferred12: number;
   roiValue: number;
-  annualCost: number;
-  tenYearCost: number;
-  energySavings: number;
-  moveForwardImpact: number;
-  doNothingImpact: number;
-  netDifference: number;
   yesNetCost: number;
-  selectedPrice: number;
 }
 
 export type EngineUpdater = <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
@@ -103,25 +120,42 @@ export function useCloseEngine() {
       deferred6Pct, deferred12Pct, energySavingsPct,
     } = state;
 
-    const efficiencyPrice = priceC - efficiencyDiscount;
-    const standbyPrice = priceC - standbyDiscount;
-    const deferred6Price = priceC * (1 - deferred6Pct / 100);
-    const deferred12Price = priceC * (1 - deferred12Pct / 100);
-
-    const monthlyA = Math.round(priceA * financingFactor2);
-    const monthlyB = Math.round(priceB * financingFactor2);
-    const monthlyC = Math.round(priceC * financingFactor2);
-    const monthlyEfficiency = Math.round(efficiencyPrice * financingFactor2);
-    const monthlyStandby = Math.round(standbyPrice * financingFactor2);
-    const monthlyDeferred6 = Math.round(deferred6Price * financingFactor2);
-    const monthlyDeferred12 = Math.round(deferred12Price * financingFactor2);
-
-    const roiValue = Math.round(priceA * (roiPercent / 100));
+    const prices = { A: priceA, B: priceB, C: priceC } as const;
 
     const annualCost = monthlyBill * 12;
     const tenYearCost = annualCost * 10;
     const energySavings = Math.round(tenYearCost * (energySavingsPct / 100));
 
+    const buildOption = (price: number): OptionComputed => {
+      const effP = price - efficiencyDiscount;
+      const stbP = price - standbyDiscount;
+      const d6P = price * (1 - deferred6Pct / 100);
+      const d12P = price * (1 - deferred12Pct / 100);
+      const roi = Math.round(price * (roiPercent / 100));
+      return {
+        price,
+        monthly: Math.round(price * financingFactor2),
+        efficiencyPrice: effP,
+        standbyPrice: stbP,
+        deferred6Price: d6P,
+        deferred12Price: d12P,
+        monthlyEfficiency: Math.round(effP * financingFactor2),
+        monthlyStandby: Math.round(stbP * financingFactor2),
+        monthlyDeferred6: Math.round(d6P * financingFactor2),
+        monthlyDeferred12: Math.round(d12P * financingFactor2),
+        roiValue: roi,
+        netCost: price - roi - energySavings,
+      };
+    };
+
+    const options = {
+      A: buildOption(priceA),
+      B: buildOption(priceB),
+      C: buildOption(priceC),
+    };
+
+    const optA = options.A;
+    const roiValue = optA.roiValue;
     const moveForwardImpact = roiValue + energySavings;
     const doNothingImpact = -energySavings;
     const netDifference = moveForwardImpact - doNothingImpact;
@@ -133,12 +167,23 @@ export function useCloseEngine() {
       state.selectedOption === "C" ? priceC : 0;
 
     return {
-      efficiencyPrice, standbyPrice, deferred6Price, deferred12Price,
-      monthlyA, monthlyB, monthlyC,
-      monthlyEfficiency, monthlyStandby, monthlyDeferred6, monthlyDeferred12,
-      roiValue, annualCost, tenYearCost, energySavings,
-      moveForwardImpact, doNothingImpact, netDifference, yesNetCost,
-      selectedPrice,
+      options,
+      annualCost, tenYearCost, energySavings,
+      moveForwardImpact, doNothingImpact, netDifference, selectedPrice,
+      // Legacy compat
+      efficiencyPrice: options.C.efficiencyPrice,
+      standbyPrice: options.C.standbyPrice,
+      deferred6Price: options.C.deferred6Price,
+      deferred12Price: options.C.deferred12Price,
+      monthlyA: options.A.monthly,
+      monthlyB: options.B.monthly,
+      monthlyC: options.C.monthly,
+      monthlyEfficiency: options.C.monthlyEfficiency,
+      monthlyStandby: options.C.monthlyStandby,
+      monthlyDeferred6: options.C.monthlyDeferred6,
+      monthlyDeferred12: options.C.monthlyDeferred12,
+      roiValue,
+      yesNetCost,
     };
   }, [state]);
 
