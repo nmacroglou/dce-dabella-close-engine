@@ -5,63 +5,56 @@ import PresentationTab from "@/components/engine/PresentationTab";
 import ObjectionsTab from "@/components/engine/ObjectionsTab";
 import ClosingStackTab from "@/components/engine/ClosingStackTab";
 import CoachModeTab from "@/components/engine/CoachModeTab";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain, DollarSign, TrendingUp, Zap, BarChart3 } from "lucide-react";
-import { fmt } from "@/lib/format";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain } from "lucide-react";
 import dabellaLogo from "@/assets/dabella-logo.png";
+
+const TABS = [
+  { value: "calculator", label: "Calculator", icon: Calculator },
+  { value: "presentation", label: "Presentation", icon: Presentation },
+  { value: "objections", label: "Objections", icon: ShieldAlert },
+  { value: "closing", label: "Closing Stack", icon: Layers },
+  { value: "coach", label: "Coach Mode", icon: Brain },
+] as const;
 
 export default function Index() {
   const { state, update, computed, coachingTip } = useCloseEngine();
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-start justify-between gap-6">
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <img src={dabellaLogo} alt="DaBella" className="h-10 w-auto" />
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  DaBella Close Engine
-                </span>
-                <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-                  iPad Field App
-                </span>
-              </div>
-              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
-                Inspection → Close Assistant
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <img src={dabellaLogo} alt="DaBella" className="h-9 w-auto" />
+            <div className="h-6 w-px bg-border" />
+            <div>
+              <h1 className="text-lg font-display font-extrabold text-foreground tracking-tight leading-none">
+                Close Engine
               </h1>
-              <p className="text-sm text-muted-foreground max-w-xl leading-relaxed">
-                Live in-home sales tool for running Option A/B/C, payment lanes, objection routing, efficiency, standby, T-close, ROI, energy savings, and final assumptive close.
+              <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                Inspection → Close Assistant
               </p>
             </div>
-            <div className="flex gap-3 flex-shrink-0">
-              <MetricChip icon={DollarSign} label="Option A" value={fmt(state.priceA)} />
-              <MetricChip icon={TrendingUp} label="Eff. C" value={fmt(computed.efficiencyPrice)} />
-              <MetricChip icon={BarChart3} label="ROI Value" value={fmt(computed.roiValue)} />
-              <MetricChip icon={Zap} label="10Y Savings" value={fmt(computed.energySavings)} />
-            </div>
           </div>
+          <span className="hidden sm:inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            iPad Field App
+          </span>
         </div>
       </header>
 
+      {/* Main */}
       <main className="max-w-7xl mx-auto px-6 py-5">
         <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
-          <TabsList className="w-full h-14 p-1.5 bg-muted rounded-2xl mb-6 grid grid-cols-5">
-            <TabsTrigger value="calculator" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
-              <Calculator className="h-4 w-4" /> Calculator
-            </TabsTrigger>
-            <TabsTrigger value="presentation" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
-              <Presentation className="h-4 w-4" /> Presentation
-            </TabsTrigger>
-            <TabsTrigger value="objections" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
-              <ShieldAlert className="h-4 w-4" /> Objections
-            </TabsTrigger>
-            <TabsTrigger value="closing" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
-              <Layers className="h-4 w-4" /> Closing Stack
-            </TabsTrigger>
-            <TabsTrigger value="coach" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
-              <Brain className="h-4 w-4" /> Coach Mode
-            </TabsTrigger>
+          <TabsList className="w-full h-14 p-1.5 bg-card border border-border rounded-2xl mb-6 grid grid-cols-5">
+            {TABS.map(({ value, label, icon: Icon }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className="rounded-xl text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm gap-2 transition-all"
+              >
+                <Icon className="h-4 w-4" /> {label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} /></TabsContent>
@@ -71,20 +64,6 @@ export default function Index() {
           <TabsContent value="coach"><CoachModeTab state={state} coachingTip={coachingTip} update={update} /></TabsContent>
         </Tabs>
       </main>
-    </div>
-  );
-}
-
-function MetricChip({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
-  return (
-    <div className="metric-card flex items-center gap-2.5 min-w-0">
-      <div className="rounded-lg bg-primary/10 p-2">
-        <Icon className="h-4 w-4 text-primary flex-shrink-0" />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[10px] font-medium text-muted-foreground truncate uppercase tracking-wider">{label}</p>
-        <p className="text-sm font-bold text-foreground truncate">{value}</p>
-      </div>
     </div>
   );
 }

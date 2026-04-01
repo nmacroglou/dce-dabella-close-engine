@@ -1,19 +1,30 @@
 interface InputFieldProps {
   label: string;
   value: string | number;
-  onChange: (v: any) => void;
-  type?: string;
+  onChange: (value: string | number) => void;
+  type?: "text" | "number";
   placeholder?: string;
 }
 
-export default function InputField({ label, value, onChange, type = "text", placeholder = "" }: InputFieldProps) {
+export default function InputField({ label, value, onChange, type = "text", placeholder }: InputFieldProps) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (type === "number") {
+      const parsed = parseFloat(e.target.value);
+      onChange(isNaN(parsed) ? 0 : parsed);
+    } else {
+      onChange(e.target.value);
+    }
+  };
+
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</label>
+      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+        {label}
+      </label>
       <input
         type={type}
         value={value}
-        onChange={(e) => onChange(type === "number" ? parseFloat(e.target.value) || 0 : e.target.value)}
+        onChange={handleChange}
         placeholder={placeholder}
         className="w-full touch-target rounded-xl border border-input bg-card px-4 py-3 text-base outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
       />

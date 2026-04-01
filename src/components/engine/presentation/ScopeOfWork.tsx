@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { CheckCircle2, ClipboardCheck } from "lucide-react";
+import { useState } from "react";
+import { Check, ClipboardCheck } from "lucide-react";
 
 const SCOPE_ITEMS = [
   "Supply Dumpster",
@@ -22,16 +22,13 @@ export default function ScopeOfWork() {
   const [checked, setChecked] = useState<boolean[]>(new Array(SCOPE_ITEMS.length).fill(false));
   const [animating, setAnimating] = useState(false);
   const allChecked = checked.every(Boolean);
+  const checkedCount = checked.filter(Boolean).length;
+  const progress = (checkedCount / SCOPE_ITEMS.length) * 100;
 
-  const toggleItem = (index: number) => {
-    setChecked((prev) => {
-      const next = [...prev];
-      next[index] = !next[index];
-      return next;
-    });
-  };
+  const toggle = (i: number) =>
+    setChecked((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
 
-  const checkAll = () => {
+  const reviewAll = () => {
     if (allChecked) {
       setChecked(new Array(SCOPE_ITEMS.length).fill(false));
       return;
@@ -39,103 +36,92 @@ export default function ScopeOfWork() {
     setAnimating(true);
     SCOPE_ITEMS.forEach((_, i) => {
       setTimeout(() => {
-        setChecked((prev) => {
-          const next = [...prev];
-          next[i] = true;
-          return next;
-        });
+        setChecked((prev) => prev.map((v, idx) => (idx <= i ? true : v)));
         if (i === SCOPE_ITEMS.length - 1) setAnimating(false);
-      }, i * 120);
+      }, i * 100);
     });
   };
 
-  const checkedCount = checked.filter(Boolean).length;
-
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="relative rounded-3xl border-2 border-primary/20 bg-card overflow-hidden shadow-lg">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="rounded-3xl border-2 border-primary/20 bg-card overflow-hidden shadow-lg">
         {/* Header */}
-        <div className="bg-gradient-to-r from-primary to-primary/80 px-8 py-6 text-center">
-          <div className="flex items-center justify-center gap-3 mb-2">
+        <div className="bg-gradient-to-r from-primary to-primary/70 px-8 py-7 text-center">
+          <div className="flex items-center justify-center gap-3 mb-1">
             <ClipboardCheck className="h-7 w-7 text-primary-foreground" />
-            <h2 className="text-2xl font-extrabold text-primary-foreground tracking-tight">
+            <h2 className="text-2xl font-display font-extrabold text-primary-foreground tracking-tight">
               What to Expect
             </h2>
           </div>
-          <p className="text-primary-foreground/80 text-sm font-medium">
+          <p className="text-primary-foreground/70 text-sm font-medium">
             Your complete scope of work — everything included in your project
           </p>
         </div>
 
-        {/* Progress bar */}
-        <div className="px-8 pt-5">
+        {/* Progress */}
+        <div className="px-8 pt-6 pb-2">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
               Scope reviewed
             </span>
-            <span className="text-xs font-bold text-primary">
+            <span className="text-xs font-bold text-primary tabular-nums">
               {checkedCount} / {SCOPE_ITEMS.length}
             </span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${(checkedCount / SCOPE_ITEMS.length) * 100}%` }}
+              style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         {/* Checklist */}
-        <div className="px-8 py-6 space-y-1">
-          {SCOPE_ITEMS.map((item, i) => (
-            <button
-              key={i}
-              onClick={() => toggleItem(i)}
-              className={`w-full flex items-start gap-4 px-4 py-3 rounded-xl text-left transition-all duration-300 ${
-                checked[i]
-                  ? "bg-accent/10"
-                  : "hover:bg-muted/60"
-              }`}
-            >
-              <div
-                className={`flex-shrink-0 mt-0.5 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-                  checked[i]
-                    ? "bg-accent border-accent scale-110"
-                    : "border-border"
+        <div className="px-6 py-4 space-y-0.5">
+          {SCOPE_ITEMS.map((item, i) => {
+            const done = checked[i];
+            return (
+              <button
+                key={i}
+                onClick={() => toggle(i)}
+                className={`w-full flex items-start gap-4 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                  done ? "bg-accent/8" : "hover:bg-muted/50"
                 }`}
               >
-                {checked[i] && (
-                  <CheckCircle2 className="h-5 w-5 text-accent-foreground animate-fade-in" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium leading-snug transition-all duration-300 ${
-                  checked[i] ? "text-foreground" : "text-muted-foreground"
-                }`}
-              >
-                {item}
-              </span>
-            </button>
-          ))}
+                <div
+                  className={`flex-shrink-0 mt-0.5 h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
+                    done ? "bg-accent border-accent" : "border-border"
+                  } ${done ? "animate-check-pop" : ""}`}
+                >
+                  {done && <Check className="h-3.5 w-3.5 text-accent-foreground" strokeWidth={3} />}
+                </div>
+                <span
+                  className={`text-sm font-medium leading-snug transition-colors duration-200 ${
+                    done ? "text-foreground" : "text-muted-foreground"
+                  }`}
+                >
+                  {item}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Bottom action */}
-        <div className="px-8 pb-8">
+        {/* Action */}
+        <div className="px-8 pb-8 pt-2">
           <button
-            onClick={checkAll}
+            onClick={reviewAll}
             disabled={animating}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold text-base tracking-wide hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-70"
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold text-base tracking-wide hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-60"
           >
             {allChecked ? "Reset Checklist" : "✓  Review All Items"}
           </button>
         </div>
       </div>
 
-      {/* Coaching script below */}
-      <div className="mt-6 text-center">
-        <p className="script-block text-base max-w-2xl mx-auto">
-          "Does that sound like everything we have spoken about today?"
-        </p>
+      {/* Script prompt */}
+      <div className="script-block text-center max-w-2xl mx-auto text-base">
+        "Does that sound like everything we have spoken about today?"
       </div>
     </div>
   );
