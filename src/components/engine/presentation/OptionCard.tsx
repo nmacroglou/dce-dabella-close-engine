@@ -7,9 +7,11 @@ interface OptionCardProps {
   optionKey: "A" | "B" | "C";
   name: string;
   computed: ComputedValues;
+  selected?: boolean;
+  onClick?: () => void;
 }
 
-export default function OptionCard({ optionKey, name, computed }: OptionCardProps) {
+export default function OptionCard({ optionKey, name, computed, selected, onClick }: OptionCardProps) {
   const theme = OPTION_THEMES[optionKey];
   const features = FEATURES_BY_OPTION[optionKey];
   const isHighlighted = optionKey === "A";
@@ -17,10 +19,13 @@ export default function OptionCard({ optionKey, name, computed }: OptionCardProp
 
   return (
     <div
-      className={`relative rounded-3xl border-2 bg-card overflow-hidden transition-all ${
-        isHighlighted
-          ? `${theme.borderAccent} shadow-xl scale-[1.02]`
-          : "border-border shadow-sm hover:shadow-md"
+      onClick={onClick}
+      className={`relative rounded-3xl border-2 bg-card overflow-hidden transition-all ${onClick ? "cursor-pointer" : ""} ${
+        selected
+          ? `ring-4 ring-primary/50 ${theme.borderAccent} shadow-2xl scale-[1.03]`
+          : isHighlighted
+            ? `${theme.borderAccent} shadow-xl scale-[1.02]`
+            : "border-border shadow-sm hover:shadow-md"
       }`}
     >
       {/* Badge */}

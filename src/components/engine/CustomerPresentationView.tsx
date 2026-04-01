@@ -7,6 +7,7 @@ import OptionCard from "./presentation/OptionCard";
 import TrustBar from "./presentation/TrustBar";
 import ScopeOfWork from "./presentation/ScopeOfWork";
 import WelcomeClose from "./presentation/WelcomeClose";
+import FinancialImpact from "./presentation/FinancialImpact";
 
 interface Props {
   state: EngineState;
@@ -26,6 +27,7 @@ const STAGE_LABELS: Record<Stage, string> = {
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
   const [stage, setStage] = useState<Stage>("options");
   const [exporting, setExporting] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
   const stageIndex = STAGES.indexOf(stage);
 
   const options = [
@@ -128,9 +130,25 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
                   optionKey={opt.key}
                   name={opt.name}
                   computed={computed}
+                  selected={selectedOption === opt.key}
+                  onClick={() => setSelectedOption(selectedOption === opt.key ? null : opt.key)}
                 />
               ))}
             </div>
+
+            {selectedOption && (
+              <div className="mt-8 animate-fade-in">
+                <FinancialImpact
+                  state={{ ...state, selectedOption }}
+                  computed={{
+                    ...computed,
+                    selectedPrice: computed.options[selectedOption].price,
+                    roiValue: computed.options[selectedOption].roiValue,
+                  }}
+                />
+              </div>
+            )}
+
             <div className="mt-8">
               <TrustBar />
             </div>
