@@ -6,18 +6,14 @@ import type { ComputedValues } from "@/hooks/useCloseEngine";
 interface OptionCardProps {
   optionKey: "A" | "B" | "C";
   name: string;
-  price: number;
-  monthly: number;
-  roiPercent: number;
   computed: ComputedValues;
 }
 
-export default function OptionCard({ optionKey, name, price, monthly, roiPercent, computed }: OptionCardProps) {
+export default function OptionCard({ optionKey, name, computed }: OptionCardProps) {
   const theme = OPTION_THEMES[optionKey];
   const features = FEATURES_BY_OPTION[optionKey];
   const isHighlighted = optionKey === "A";
-  const roi = Math.round(price * (roiPercent / 100));
-  const netCost = price - roi - computed.energySavings;
+  const opt = computed.options[optionKey];
 
   return (
     <div
@@ -49,9 +45,9 @@ export default function OptionCard({ optionKey, name, price, monthly, roiPercent
 
         {/* Price */}
         <div className={`rounded-2xl p-5 mb-6 ${theme.bgAccent} border ${theme.borderAccent}`}>
-          <p className={`text-4xl font-extrabold ${theme.accent} mb-1 tracking-tight`}>{fmt(price)}</p>
+          <p className={`text-4xl font-extrabold ${theme.accent} mb-1 tracking-tight`}>{fmt(opt.price)}</p>
           <p className="text-sm text-muted-foreground">
-            as low as <span className="font-bold text-foreground">{fmt(monthly)}/mo</span> with financing
+            as low as <span className="font-bold text-foreground">{fmt(opt.monthly)}/mo</span> with financing
           </p>
         </div>
 
@@ -73,14 +69,14 @@ export default function OptionCard({ optionKey, name, price, monthly, roiPercent
           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
             Value snapshot
           </p>
-          <ValueLine icon={TrendingUp} label="Home value increase" value={`+${fmt(roi)}`} />
+          <ValueLine icon={TrendingUp} label="Home value increase" value={`+${fmt(opt.roiValue)}`} />
           <ValueLine icon={Zap} label="10-yr energy savings" value={`+${fmt(computed.energySavings)}`} />
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-foreground flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" /> Net effective cost
             </span>
-            <span className="text-base font-extrabold text-primary">{fmt(netCost)}</span>
+            <span className="text-base font-extrabold text-primary">{fmt(opt.netCost)}</span>
           </div>
         </div>
       </div>
