@@ -42,41 +42,8 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
     setExporting(true);
     try {
       const name = state.homeowner1 || "Customer";
-
-      // Build an offscreen container with all 3 sections
-      const wrapper = document.createElement("div");
-      wrapper.style.cssText = "position:absolute;left:-9999px;top:0;width:1200px;background:#fff;";
-      document.body.appendChild(wrapper);
-
-      // Render all sections into the wrapper
-      const { createRoot } = await import("react-dom/client");
-      const { default: AllSections } = await import("./presentation/PdfAllSections");
-
-      const root = createRoot(wrapper);
-      const sectionRefs: HTMLDivElement[] = [];
-
-      await new Promise<void>((resolve) => {
-        root.render(
-          <AllSections
-            state={state}
-            computed={computed}
-            options={options}
-            onReady={(refs) => {
-              sectionRefs.push(...refs);
-              resolve();
-            }}
-          />
-        );
-      });
-
-      // Small delay for images to load
-      await new Promise((r) => setTimeout(r, 500));
-
       const { exportCustomerPdf } = await import("@/lib/exportPdf");
-      await exportCustomerPdf(sectionRefs, `DaBella-Proposal-${name}.pdf`);
-
-      root.unmount();
-      document.body.removeChild(wrapper);
+      await exportCustomerPdf(state, computed, options, `DaBella-Proposal-${name}.pdf`);
     } finally {
       setExporting(false);
     }
