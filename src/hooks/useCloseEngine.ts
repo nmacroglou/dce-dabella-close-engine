@@ -9,6 +9,7 @@ export interface EngineState {
   optionBName: string;
   optionCName: string;
   gutterFeet: string;
+  downPayment: number;
   priceA: number;
   priceB: number;
   priceC: number;
@@ -86,6 +87,7 @@ const initialState: EngineState = {
   optionBName: "Grand Sequoia Charcoal",
   optionCName: "Timberline American Harvest",
   gutterFeet: "100",
+  downPayment: 0,
   priceA: 158832,
   priceB: 68678,
   priceC: 43399,
@@ -115,7 +117,7 @@ export function useCloseEngine() {
   const computed = useMemo((): ComputedValues => {
     const {
       priceA, priceB, priceC, roiPercent, monthlyBill,
-      financingFactor1, financingFactor2,
+      financingFactor1, financingFactor2, downPayment,
       efficiencyDiscount, standbyDiscount,
       deferred6Pct, deferred12Pct, energySavingsPct,
     } = state;
@@ -127,6 +129,7 @@ export function useCloseEngine() {
     const energySavings = Math.round(tenYearCost * (energySavingsPct / 100));
 
     const buildOption = (price: number): OptionComputed => {
+      const financed = price - downPayment;
       const effP = price - efficiencyDiscount;
       const stbP = price - standbyDiscount;
       const d6P = price * (1 - deferred6Pct / 100);
@@ -134,15 +137,15 @@ export function useCloseEngine() {
       const roi = Math.round(price * (roiPercent / 100));
       return {
         price,
-        monthly: Math.round(price * financingFactor2),
+        monthly: Math.round(financed * financingFactor2),
         efficiencyPrice: effP,
         standbyPrice: stbP,
         deferred6Price: d6P,
         deferred12Price: d12P,
-        monthlyEfficiency: Math.round(effP * financingFactor2),
-        monthlyStandby: Math.round(stbP * financingFactor2),
-        monthlyDeferred6: Math.round(d6P * financingFactor2),
-        monthlyDeferred12: Math.round(d12P * financingFactor2),
+        monthlyEfficiency: Math.round((effP - downPayment) * financingFactor2),
+        monthlyStandby: Math.round((stbP - downPayment) * financingFactor2),
+        monthlyDeferred6: Math.round((d6P - downPayment) * financingFactor2),
+        monthlyDeferred12: Math.round((d12P - downPayment) * financingFactor2),
         roiValue: roi,
         netCost: price - roi - energySavings,
       };
