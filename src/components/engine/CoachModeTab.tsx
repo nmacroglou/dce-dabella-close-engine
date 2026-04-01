@@ -1,11 +1,11 @@
-import { EngineState } from "@/hooks/useCloseEngine";
-import { Brain, Shield, AlertTriangle, Target, Volume2, Eye, TrendingUp, Clock, RotateCcw } from "lucide-react";
+import { EngineState, EngineUpdater } from "@/hooks/useCloseEngine";
+import { Brain, Shield, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
   state: EngineState;
   coachingTip: string;
-  update: <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
+  update: EngineUpdater;
 }
 
 interface CoachCard {
@@ -57,7 +57,6 @@ export default function CoachModeTab({ state, coachingTip, update }: Props) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
-      {/* LEFT — Next Move Engine */}
       <div className="lg:col-span-3 space-y-6">
         <div className="card-elevated-lg p-6 border-primary/20 bg-primary/[0.02]">
           <div className="flex items-center gap-3 mb-5">
@@ -77,7 +76,7 @@ export default function CoachModeTab({ state, coachingTip, update }: Props) {
 
           <div className="flex gap-3 mt-5">
             <Button
-              onClick={() => { update("priceShown", true); }}
+              onClick={() => update("priceShown", true)}
               className="flex-1 touch-target rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
               size="lg"
             >
@@ -95,7 +94,6 @@ export default function CoachModeTab({ state, coachingTip, update }: Props) {
         </div>
       </div>
 
-      {/* RIGHT — Rule Set */}
       <div className="lg:col-span-2">
         <div className="card-elevated-lg p-6">
           <h3 className="text-lg font-bold text-foreground mb-5 flex items-center gap-2">

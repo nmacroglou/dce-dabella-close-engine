@@ -6,16 +6,14 @@ import ObjectionsTab from "@/components/engine/ObjectionsTab";
 import ClosingStackTab from "@/components/engine/ClosingStackTab";
 import CoachModeTab from "@/components/engine/CoachModeTab";
 import { Calculator, Presentation, ShieldAlert, Layers, Brain, DollarSign, TrendingUp, Zap, BarChart3 } from "lucide-react";
+import { fmt } from "@/lib/format";
 import dabellaLogo from "@/assets/dabella-logo.png";
-
-const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
 export default function Index() {
   const { state, update, computed, coachingTip } = useCloseEngine();
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Header */}
       <header className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-start justify-between gap-6">
@@ -46,13 +44,8 @@ export default function Index() {
         </div>
       </header>
 
-      {/* Content */}
       <main className="max-w-7xl mx-auto px-6 py-5">
-        <Tabs
-          value={state.activeTab}
-          onValueChange={(v) => update("activeTab", v)}
-          className="w-full"
-        >
+        <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
           <TabsList className="w-full h-14 p-1.5 bg-muted rounded-2xl mb-6 grid grid-cols-5">
             <TabsTrigger value="calculator" className="rounded-xl text-sm font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-2">
               <Calculator className="h-4 w-4" /> Calculator
@@ -71,21 +64,11 @@ export default function Index() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="calculator">
-            <CalculatorTab state={state} computed={computed} update={update} />
-          </TabsContent>
-          <TabsContent value="presentation">
-            <PresentationTab state={state} computed={computed} update={update} />
-          </TabsContent>
-          <TabsContent value="objections">
-            <ObjectionsTab state={state} computed={computed} update={update} />
-          </TabsContent>
-          <TabsContent value="closing">
-            <ClosingStackTab state={state} computed={computed} update={update} />
-          </TabsContent>
-          <TabsContent value="coach">
-            <CoachModeTab state={state} coachingTip={coachingTip} update={update} />
-          </TabsContent>
+          <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} /></TabsContent>
+          <TabsContent value="presentation"><PresentationTab state={state} computed={computed} update={update} /></TabsContent>
+          <TabsContent value="objections"><ObjectionsTab state={state} computed={computed} update={update} /></TabsContent>
+          <TabsContent value="closing"><ClosingStackTab state={state} computed={computed} update={update} /></TabsContent>
+          <TabsContent value="coach"><CoachModeTab state={state} coachingTip={coachingTip} update={update} /></TabsContent>
         </Tabs>
       </main>
     </div>
