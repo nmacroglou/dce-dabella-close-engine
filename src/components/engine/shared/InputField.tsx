@@ -1,7 +1,7 @@
 interface InputFieldProps {
   label: string;
   value: string | number;
-  onChange: (value: string | number) => void;
+  onChange: (value: never) => void;
   type?: "text" | "number";
   placeholder?: string;
 }
