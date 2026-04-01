@@ -437,10 +437,11 @@ export async function exportCustomerPdf(
   options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
   filename = "DaBella-Proposal.pdf",
 ) {
+  const logoData = await loadImageAsBase64(dabellaLogoUrl);
   const pdf = new jsPDF("p", "mm", "a4");
 
   // Page 1: Cover
-  drawCover(pdf, state);
+  drawCover(pdf, state, logoData);
 
   // Page 2: Options
   pdf.addPage();
