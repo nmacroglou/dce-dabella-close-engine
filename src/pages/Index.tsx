@@ -27,7 +27,7 @@ function TabLoader() {
 }
 
 export default function Index() {
-  const { state, update, computed, coachingTip } = useCloseEngine();
+  const { state, update, computed, coachingTip, reset } = useCloseEngine();
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   useEffect(() => {
