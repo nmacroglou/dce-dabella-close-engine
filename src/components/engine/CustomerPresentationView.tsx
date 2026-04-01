@@ -7,6 +7,7 @@ import OptionCard from "./presentation/OptionCard";
 import TrustBar from "./presentation/TrustBar";
 import ScopeOfWork from "./presentation/ScopeOfWork";
 import WelcomeClose from "./presentation/WelcomeClose";
+import FinancialImpact from "./presentation/FinancialImpact";
 
 interface Props {
   state: EngineState;
