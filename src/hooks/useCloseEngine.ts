@@ -117,7 +117,7 @@ export function useCloseEngine() {
   const computed = useMemo((): ComputedValues => {
     const {
       priceA, priceB, priceC, roiPercent, monthlyBill,
-      financingFactor1, financingFactor2,
+      financingFactor1, financingFactor2, downPayment,
       efficiencyDiscount, standbyDiscount,
       deferred6Pct, deferred12Pct, energySavingsPct,
     } = state;
