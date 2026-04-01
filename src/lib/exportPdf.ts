@@ -1,14 +1,13 @@
 import jsPDF from "jspdf";
 import type { EngineState, ComputedValues } from "@/hooks/useCloseEngine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+import { SCOPE_ITEMS } from "@/data/scopeItems";
+import { fmt } from "@/lib/format";
 
 // Brand colors
-const BLUE = [37, 99, 235] as const;     // primary
-const DARK = [15, 23, 42] as const;      // headings
-const GRAY = [100, 116, 139] as const;   // body text
+const BLUE = [37, 99, 235] as const;
+const DARK = [15, 23, 42] as const;
+const GRAY = [100, 116, 139] as const;
 const LIGHT_BG = [248, 250, 252] as const;
 const WHITE = [255, 255, 255] as const;
 const GREEN = [16, 185, 129] as const;
@@ -17,17 +16,10 @@ const BORDER = [226, 232, 240] as const;
 
 type RGB = readonly [number, number, number];
 
-function setColor(pdf: jsPDF, c: RGB) {
-  pdf.setTextColor(c[0], c[1], c[2]);
-}
-
-function setFill(pdf: jsPDF, c: RGB) {
-  pdf.setFillColor(c[0], c[1], c[2]);
-}
-
-function setDraw(pdf: jsPDF, c: RGB) {
-  pdf.setDrawColor(c[0], c[1], c[2]);
-}
+// ─── Helpers ──────────────────────────────────────────────────
+function setColor(pdf: jsPDF, c: RGB) { pdf.setTextColor(c[0], c[1], c[2]); }
+function setFill(pdf: jsPDF, c: RGB) { pdf.setFillColor(c[0], c[1], c[2]); }
+function setDraw(pdf: jsPDF, c: RGB) { pdf.setDrawColor(c[0], c[1], c[2]); }
 
 function roundedRect(pdf: jsPDF, x: number, y: number, w: number, h: number, r: number, fill: RGB, stroke?: RGB) {
   setFill(pdf, fill);
@@ -45,23 +37,24 @@ function drawLine(pdf: jsPDF, x1: number, y1: number, x2: number, y2: number, c:
   pdf.line(x1, y1, x2, y2);
 }
 
+function getNames(state: EngineState) {
+  return state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
+}
+
 // ─── PAGE 1: COVER ────────────────────────────────────────────
 function drawCover(pdf: jsPDF, state: EngineState) {
   const pw = 210, ph = 297;
-  const names = state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
+  const names = getNames(state);
 
-  // Full-page blue gradient bar at top
   setFill(pdf, BLUE);
   pdf.rect(0, 0, pw, 100, "F");
 
-  // Subtle lighter overlay
   pdf.setGState(pdf.GState({ opacity: 0.08 }));
   setFill(pdf, WHITE);
   pdf.circle(160, 20, 60, "F");
   pdf.circle(30, 80, 40, "F");
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
-  // Logo area placeholder text
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(32);
   setColor(pdf, WHITE);
@@ -72,7 +65,6 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   setColor(pdf, [200, 220, 255]);
   pdf.text("HOME IMPROVEMENT EXPERTS", pw / 2, 52, { align: "center" });
 
-  // Main content area
   const cy = 140;
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(12);
@@ -84,7 +76,6 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   setColor(pdf, DARK);
   pdf.text(names, pw / 2, cy + 18, { align: "center" });
 
-  // Divider
   drawLine(pdf, 70, cy + 30, 140, cy + 30, BORDER);
 
   pdf.setFont("helvetica", "bold");
@@ -92,14 +83,12 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   setColor(pdf, DARK);
   pdf.text(`${state.product} Proposal`, pw / 2, cy + 48, { align: "center" });
 
-  // Date
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(11);
   setColor(pdf, GRAY);
   pdf.text(today, pw / 2, cy + 62, { align: "center" });
 
-  // Bottom trust badges
   const badgeY = ph - 50;
   const badges = ["Lifetime Warranty", "GAF Master Elite", "Top-Rated Crews", "Locally Owned"];
   const badgeWidth = 40;
@@ -129,9 +118,9 @@ function drawOptions(
 ) {
   const pw = 210;
   const margin = 15;
-  const colW = (pw - margin * 2 - 12) / 3; // 3 cols with 6px gaps
+  const colW = (pw - margin * 2 - 12) / 3;
+  const names = getNames(state);
 
-  // Header
   let y = 18;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
@@ -142,38 +131,24 @@ function drawOptions(
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
   setColor(pdf, GRAY);
-  const names = state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
   pdf.text(`${names} — a side-by-side comparison tailored for your home`, pw / 2, y, { align: "center" });
 
   y += 10;
 
-  const OPTION_COLORS: Record<string, RGB> = {
-    A: BLUE,
-    B: GREEN,
-    C: AMBER,
-  };
-
-  const OPTION_BADGES: Record<string, string> = {
-    A: "BEST VALUE",
-    B: "MOST POPULAR",
-    C: "SMART START",
-  };
+  const OPTION_COLORS: Record<string, RGB> = { A: BLUE, B: GREEN, C: AMBER };
+  const OPTION_BADGES: Record<string, string> = { A: "BEST VALUE", B: "MOST POPULAR", C: "SMART START" };
 
   options.forEach((opt, i) => {
     const x = margin + i * (colW + 6);
     const cardTop = y;
     const color = OPTION_COLORS[opt.key];
 
-    // Card background
     roundedRect(pdf, x, cardTop, colW, 175, 4, WHITE, BORDER);
 
-    // Top color bar
     setFill(pdf, color);
     pdf.roundedRect(x, cardTop, colW, 6, 4, 4, "F");
-    // Cover bottom corners of the bar
     pdf.rect(x, cardTop + 3, colW, 3, "F");
 
-    // Badge
     const badgeW = 28;
     setFill(pdf, color);
     pdf.roundedRect(x + (colW - badgeW) / 2, cardTop + 1, badgeW, 8, 2, 2, "F");
@@ -182,7 +157,6 @@ function drawOptions(
     setColor(pdf, WHITE);
     pdf.text(OPTION_BADGES[opt.key], x + colW / 2, cardTop + 6, { align: "center" });
 
-    // Option label
     let cy = cardTop + 18;
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(7);
@@ -194,12 +168,9 @@ function drawOptions(
     pdf.setFontSize(10);
     setColor(pdf, DARK);
     const nameLines = pdf.splitTextToSize(opt.name, colW - 16);
-    nameLines.forEach((line: string, li: number) => {
-      pdf.text(line, x + 8, cy + li * 5);
-    });
+    nameLines.forEach((line: string, li: number) => { pdf.text(line, x + 8, cy + li * 5); });
     cy += nameLines.length * 5 + 4;
 
-    // Price box
     roundedRect(pdf, x + 6, cy, colW - 12, 24, 3, LIGHT_BG);
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(16);
@@ -212,7 +183,6 @@ function drawOptions(
     pdf.text(`as low as ${fmt(opt.monthly)}/mo with financing`, x + colW / 2, cy + 18, { align: "center" });
     cy += 30;
 
-    // Features
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(6);
     setColor(pdf, GRAY);
@@ -227,13 +197,10 @@ function drawOptions(
       pdf.setFontSize(7);
       setColor(pdf, DARK);
       const fLines = pdf.splitTextToSize(f.text, colW - 22);
-      fLines.forEach((line: string, li: number) => {
-        pdf.text(line, x + 14, cy + li * 3.5);
-      });
+      fLines.forEach((line: string, li: number) => { pdf.text(line, x + 14, cy + li * 3.5); });
       cy += fLines.length * 3.5 + 2;
     });
 
-    // Value snapshot
     cy = cardTop + 142;
     roundedRect(pdf, x + 6, cy, colW - 12, 28, 3, LIGHT_BG);
     pdf.setFont("helvetica", "bold");
@@ -249,7 +216,6 @@ function drawOptions(
     setColor(pdf, DARK);
     pdf.text("Home value increase", x + 10, cy + 11);
     pdf.text(`+${fmt(roi)}`, x + colW - 10, cy + 11, { align: "right" });
-
     pdf.text("10-yr energy savings", x + 10, cy + 16);
     pdf.text(`+${fmt(computed.energySavings)}`, x + colW - 10, cy + 16, { align: "right" });
 
@@ -264,23 +230,6 @@ function drawOptions(
 }
 
 // ─── PAGE 3: SCOPE OF WORK ───────────────────────────────────
-const SCOPE_ITEMS = [
-  "Supply Dumpster",
-  "Tear-off of existing roofing to wood deck",
-  "Replace damaged wood decking as needed",
-  "Replace/install flashing",
-  "Install drip and rake edge metal",
-  "Install new pipe jacks and boots",
-  "Install WEATHER WATCH Mineral Surfaced Leak Barrier on valleys, around skylights, chimney & all penetrations",
-  "Underlayment over roof deck: TIGER PAW Roof Deck Protection or DECK ARMOR",
-  "Install PRO START/WEATHER BLOCKER starter strips on all eaves and rakes",
-  "Replace attic ventilation with COBRA SNOW COUNTRY exhaust Ridge Vent System and bring to code",
-  "Install GAF Timberline shingles with StainGuard Algae Discoloration Protection",
-  "Cap ridges and hips with RIDGLASS Premium Ridge Cap Shingles",
-  "Installed by GAF Factory Certified Installers",
-  "Haul away job debris, magnetically sweep yard, driveway, etc.",
-];
-
 function drawScope(pdf: jsPDF) {
   const pw = 210;
   const margin = 20;
@@ -299,7 +248,6 @@ function drawScope(pdf: jsPDF) {
 
   y += 12;
 
-  // Scope card
   roundedRect(pdf, margin, y, pw - margin * 2, SCOPE_ITEMS.length * 13 + 16, 5, WHITE, BORDER);
 
   let sy = y + 10;
@@ -307,32 +255,25 @@ function drawScope(pdf: jsPDF) {
     const rowX = margin + 8;
     const rowW = pw - margin * 2 - 16;
 
-    // Alternating background
     if (i % 2 === 0) {
       roundedRect(pdf, margin + 4, sy - 3.5, pw - margin * 2 - 8, 12, 2, LIGHT_BG);
     }
 
-    // Checkbox
     setFill(pdf, BLUE);
     pdf.roundedRect(rowX, sy - 2.5, 5, 5, 1, 1, "F");
-    // Checkmark
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(6);
     setColor(pdf, WHITE);
     pdf.text("✓", rowX + 2.5, sy + 1, { align: "center" });
 
-    // Text
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
     setColor(pdf, DARK);
     const lines = pdf.splitTextToSize(item, rowW - 12);
-    lines.forEach((line: string, li: number) => {
-      pdf.text(line, rowX + 9, sy + li * 4);
-    });
+    lines.forEach((line: string, li: number) => { pdf.text(line, rowX + 9, sy + li * 4); });
     sy += Math.max(lines.length * 4, 12) + 1;
   });
 
-  // Confirmation prompt
   sy += 8;
   roundedRect(pdf, 40, sy, pw - 80, 14, 3, LIGHT_BG);
   pdf.setFont("helvetica", "italic");
@@ -344,20 +285,17 @@ function drawScope(pdf: jsPDF) {
 // ─── PAGE 4: WELCOME ─────────────────────────────────────────
 function drawWelcome(pdf: jsPDF, state: EngineState) {
   const pw = 210, ph = 297;
-  const names = state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
+  const names = getNames(state);
 
-  // Full blue background
   setFill(pdf, BLUE);
   pdf.rect(0, 0, pw, ph, "F");
 
-  // Decorative circles
   pdf.setGState(pdf.GState({ opacity: 0.06 }));
   setFill(pdf, WHITE);
   pdf.circle(40, 60, 50, "F");
   pdf.circle(170, 240, 60, "F");
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
-  // Logo area
   let y = 80;
   roundedRect(pdf, (pw - 50) / 2, y, 50, 20, 5, [30, 80, 210]);
   pdf.setFont("helvetica", "bold");
@@ -375,12 +313,10 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(12);
   setColor(pdf, [200, 220, 255]);
-  const msg = `${names}, congratulations on investing in your home's future.`;
-  pdf.text(msg, pw / 2, y, { align: "center" });
+  pdf.text(`${names}, congratulations on investing in your home's future.`, pw / 2, y, { align: "center" });
   y += 6;
   pdf.text("We're honored to earn your trust.", pw / 2, y, { align: "center" });
 
-  // Perk cards
   y += 20;
   const perks = [
     { top: "Lifetime", bottom: "Warranty" },
@@ -411,14 +347,12 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
     cx += cardW + gap;
   });
 
-  // Quote
   y += 50;
   pdf.setFont("helvetica", "italic");
   pdf.setFontSize(10);
   setColor(pdf, [180, 200, 255]);
   pdf.text('"We don\'t just build homes — we build relationships."', pw / 2, y, { align: "center" });
 
-  // Footer
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8);
   setColor(pdf, [150, 180, 255]);
@@ -434,18 +368,14 @@ export async function exportCustomerPdf(
 ) {
   const pdf = new jsPDF("p", "mm", "a4");
 
-  // Page 1: Cover
   drawCover(pdf, state);
 
-  // Page 2: Options
   pdf.addPage();
   drawOptions(pdf, state, computed, options);
 
-  // Page 3: Scope of Work
   pdf.addPage();
   drawScope(pdf);
 
-  // Page 4: Welcome
   pdf.addPage();
   drawWelcome(pdf, state);
 
