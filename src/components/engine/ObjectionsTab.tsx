@@ -1,55 +1,10 @@
 import { EngineTabProps } from "@/hooks/useCloseEngine";
-import { DollarSign, Clock, Users, HelpCircle, AlertTriangle, ChevronRight } from "lucide-react";
-
-const objections = [
-  { id: "price", label: "Too Expensive", icon: DollarSign },
-  { id: "timing", label: "Need to Think", icon: Clock },
-  { id: "trust", label: "Talk to Spouse / Trust Gap", icon: Users },
-  { id: "value", label: "Not Sure Value", icon: HelpCircle },
-] as const;
-
-const routes: Record<string, { title: string; script: string; steps: string[] }> = {
-  price: {
-    title: "Price objection route",
-    script: "\"Other than the investment, is there anything else that would stop you from using DaBella if we can make the numbers work?\"",
-    steps: [
-      "Isolate the objection before defending the number.",
-      "Move to Efficiency Close if they are close to a decision.",
-      "Use T-close if they keep collapsing everything into price.",
-    ],
-  },
-  value: {
-    title: "Value objection route",
-    script: "\"Let's step back and look at what this does for the home long term, not just what it costs today.\"",
-    steps: [
-      "Rebuild value using warranty, installation quality, and system protection.",
-      "Move into ROI close.",
-      "Stack energy savings if this is an energy roof.",
-    ],
-  },
-  timing: {
-    title: "Timing objection route",
-    script: "\"Before I leave, do you mind if I ask how far out you think you are before making a decision?\"",
-    steps: [
-      "Find out how far out they think they are from making a decision.",
-      "If they are within 1–12 months, run Efficiency Close.",
-      "If needed, pivot into deferral or standby positioning.",
-    ],
-  },
-  trust: {
-    title: "Trust objection route",
-    script: "\"Would it help if I quickly replayed exactly what we found, what we're doing, and how it's protected?\"",
-    steps: [
-      "Slow down and replay inspection results.",
-      "Reinforce GAF / workmanship / installers / warranty.",
-      "Ask for the real objection once trust is rebuilt.",
-    ],
-  },
-};
+import { OBJECTIONS, OBJECTION_ROUTES } from "@/data/objections";
+import { AlertTriangle, ChevronRight } from "lucide-react";
 
 export default function ObjectionsTab({ state, update }: EngineTabProps) {
   const active = state.objectionType;
-  const route = active ? routes[active] : null;
+  const route = active ? OBJECTION_ROUTES[active] : null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
@@ -57,7 +12,7 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
         <div className="card-elevated-lg p-6">
           <h3 className="text-lg font-bold text-foreground mb-5">Objection router</h3>
           <div className="space-y-3">
-            {objections.map(({ id, label, icon: Icon }) => (
+            {OBJECTIONS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => update("objectionType", id)}

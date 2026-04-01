@@ -1,4 +1,5 @@
 import { EngineState, EngineUpdater } from "@/hooks/useCloseEngine";
+import { getCoachCard, COACHING_RULES } from "@/data/coachingCards";
 import { Brain, Shield, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -7,50 +8,6 @@ interface Props {
   coachingTip: string;
   update: EngineUpdater;
 }
-
-interface CoachCard {
-  title: string;
-  detail: string;
-  script: string;
-}
-
-function getCoachCard(state: EngineState): CoachCard {
-  if (state.priceShown) return {
-    title: "Be silent after price",
-    detail: "Do not defend the number too early. Let the homeowner react first.",
-    script: "\"For all of this, your project comes down to only ...\"",
-  };
-  if (state.objectionType === "price") return {
-    title: "Narrow and isolate",
-    detail: "Confirm price is the only issue, then route into Efficiency Close or T-close.",
-    script: "\"Other than the investment, is there anything else stopping you from moving forward if the numbers work?\"",
-  };
-  if (state.objectionType === "value") return {
-    title: "Rebuild value",
-    detail: "Use ROI and energy to make the long-term cost visible.",
-    script: "\"Let's look at what this does for the home and what doing nothing costs you over time.\"",
-  };
-  if (state.objectionType === "timing") return {
-    title: "Test timing truthfully",
-    detail: "If they are within 12 months, they are a live efficiency/deferral candidate.",
-    script: "\"Before I leave, do you mind if I ask how far out you think you are before making a decision?\"",
-  };
-  return {
-    title: "Open control",
-    detail: "Build value before price and ask for the sale at every natural opening.",
-    script: "\"Great, give me a second to finalize the numbers and we'll get right to it.\"",
-  };
-}
-
-const rules = [
-  "Build value before price.",
-  "After the price drop, be silent.",
-  "Don't defend the number too early.",
-  "Isolate the real objection before pivoting.",
-  "Keep narrowing, not expanding.",
-  "Ask for the sale at every natural opening.",
-  "Use ROI and energy only after trust is built.",
-];
 
 export default function CoachModeTab({ state, coachingTip, update }: Props) {
   const card = getCoachCard(state);
@@ -100,7 +57,7 @@ export default function CoachModeTab({ state, coachingTip, update }: Props) {
             <Shield className="h-5 w-5 text-primary" /> Rule set
           </h3>
           <div className="space-y-3">
-            {rules.map((rule, i) => (
+            {COACHING_RULES.map((rule, i) => (
               <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-muted/50">
                 <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{i + 1}</span>
                 <p className="text-sm font-medium text-foreground leading-relaxed">{rule}</p>

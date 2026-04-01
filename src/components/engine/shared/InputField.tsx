@@ -1,8 +1,7 @@
 interface InputFieldProps {
   label: string;
   value: string | number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onChange: (value: any) => void;
+  onChange: (value: string | number) => void;
   type?: "text" | "number";
   placeholder?: string;
 }
