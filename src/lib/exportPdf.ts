@@ -57,7 +57,7 @@ function drawLine(pdf: jsPDF, x1: number, y1: number, x2: number, y2: number, c:
 }
 
 // ─── PAGE 1: COVER ────────────────────────────────────────────
-function drawCover(pdf: jsPDF, state: EngineState) {
+function drawCover(pdf: jsPDF, state: EngineState, logoData: string) {
   const pw = 210, ph = 297;
   const names = state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
 
@@ -72,16 +72,10 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.circle(30, 80, 40, "F");
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
-  // Logo area placeholder text
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(32);
-  setColor(pdf, WHITE);
-  pdf.text("DaBella", pw / 2, 40, { align: "center" });
-
-  pdf.setFontSize(13);
-  pdf.setFont("helvetica", "normal");
-  setColor(pdf, [200, 220, 255]);
-  pdf.text("HOME IMPROVEMENT EXPERTS", pw / 2, 52, { align: "center" });
+  // Logo image
+  const logoW = 70;
+  const logoH = logoW * (512 / 1024);
+  pdf.addImage(logoData, "PNG", (pw - logoW) / 2, 18, logoW, logoH);
 
   // Main content area
   const cy = 140;
