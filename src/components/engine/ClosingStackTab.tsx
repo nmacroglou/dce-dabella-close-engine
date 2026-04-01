@@ -1,59 +1,24 @@
 import { useState } from "react";
-import { EngineState } from "@/hooks/useCloseEngine";
-import { Button } from "@/components/ui/button";
-import { CheckCircle2, Sparkles, MessageSquare } from "lucide-react";
-
-interface Props {
-  state: EngineState;
-  computed: any;
-  update: <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
-}
+import { EngineTabProps } from "@/hooks/useCloseEngine";
+import { Sparkles } from "lucide-react";
+import ScriptCard from "./shared/ScriptCard";
 
 const steps = [
-  {
-    id: "option",
-    label: "Option close",
-    script: `"Out of these 3 options, which one would you eliminate?"`,
-  },
-  {
-    id: "efficiency",
-    label: "Efficiency close",
-    script: `"The homeowners who move forward when everything makes sense are the ones we can reward with our efficiency pricing."`,
-  },
-  {
-    id: "standby",
-    label: "Standby close",
-    script: `"We may have limited room in a standby program if you can be flexible on install timing. Would it be okay if I check?"`,
-  },
-  {
-    id: "tclose",
-    label: "T-close",
-    script: `"Most people at this point aren't deciding if they're doing the project — they're deciding whether the money feels right."`,
-  },
-  {
-    id: "roi",
-    label: "ROI close",
-    script: `"Roofing has a cost-to-value relationship just like Kelley Blue Book does for cars. What percentage do you think this puts back into your home?"`,
-  },
-  {
-    id: "energy",
-    label: "Energy close",
-    script: `"If your average bill is around this amount, here's what 10 years of waste costs versus what this system saves."`,
-  },
-  {
-    id: "final",
-    label: "Final assumptive close",
-    script: `"Based on everything we've gone through, would you like to handle the initial deposit with a check or card?"`,
-  },
+  { id: "option", label: "Option close", script: `"Out of these 3 options, which one would you eliminate?"` },
+  { id: "efficiency", label: "Efficiency close", script: `"The homeowners who move forward when everything makes sense are the ones we can reward with our efficiency pricing."` },
+  { id: "standby", label: "Standby close", script: `"We may have limited room in a standby program if you can be flexible on install timing. Would it be okay if I check?"` },
+  { id: "tclose", label: "T-close", script: `"Most people at this point aren't deciding if they're doing the project — they're deciding whether the money feels right."` },
+  { id: "roi", label: "ROI close", script: `"Roofing has a cost-to-value relationship just like Kelley Blue Book does for cars. What percentage do you think this puts back into your home?"` },
+  { id: "energy", label: "Energy close", script: `"If your average bill is around this amount, here's what 10 years of waste costs versus what this system saves."` },
+  { id: "final", label: "Final assumptive close", script: `"Based on everything we've gone through, would you like to handle the initial deposit with a check or card?"` },
 ];
 
-export default function ClosingStackTab({ state, computed, update }: Props) {
+export default function ClosingStackTab({ state, computed, update }: EngineTabProps) {
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
-      {/* LEFT — Closing Stack */}
       <div className="lg:col-span-3">
         <div className="card-elevated-lg p-6">
           <h3 className="text-lg font-bold text-foreground mb-5">Closing stack</h3>
@@ -88,7 +53,6 @@ export default function ClosingStackTab({ state, computed, update }: Props) {
         </div>
       </div>
 
-      {/* RIGHT — Ready to close */}
       <div className="lg:col-span-2 space-y-6">
         <div className="card-elevated-lg p-6 bg-foreground text-background">
           <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -100,10 +64,10 @@ export default function ClosingStackTab({ state, computed, update }: Props) {
         </div>
 
         <div className="card-elevated-lg p-6">
-          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">If they hesitate</h4>
-          <div className="script-block text-base">
-            "I completely understand. Other than the true objection we just discussed, is there anything else stopping you from moving forward today?"
-          </div>
+          <ScriptCard
+            title="If they hesitate"
+            text={`"I completely understand. Other than the true objection we just discussed, is there anything else stopping you from moving forward today?"`}
+          />
         </div>
 
         <div className="card-elevated-lg p-6">

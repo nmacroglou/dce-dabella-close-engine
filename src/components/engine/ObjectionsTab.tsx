@@ -1,11 +1,5 @@
-import { EngineState } from "@/hooks/useCloseEngine";
+import { EngineTabProps } from "@/hooks/useCloseEngine";
 import { DollarSign, Clock, Users, HelpCircle, AlertTriangle, ChevronRight } from "lucide-react";
-
-interface Props {
-  state: EngineState;
-  computed: any;
-  update: <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
-}
 
 const objections = [
   { id: "price", label: "Too Expensive", icon: DollarSign },
@@ -53,13 +47,12 @@ const routes: Record<string, { title: string; script: string; steps: string[] }>
   },
 };
 
-export default function ObjectionsTab({ state, computed, update }: Props) {
+export default function ObjectionsTab({ state, update }: EngineTabProps) {
   const active = state.objectionType;
   const route = active ? routes[active] : null;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
-      {/* LEFT */}
       <div className="lg:col-span-2">
         <div className="card-elevated-lg p-6">
           <h3 className="text-lg font-bold text-foreground mb-5">Objection router</h3>
@@ -83,7 +76,6 @@ export default function ObjectionsTab({ state, computed, update }: Props) {
         </div>
       </div>
 
-      {/* RIGHT */}
       <div className="lg:col-span-3">
         {route ? (
           <div className="card-elevated-lg p-6 animate-fade-in">

@@ -1,18 +1,12 @@
 import { useState } from "react";
-import { EngineState } from "@/hooks/useCloseEngine";
+import { EngineTabProps } from "@/hooks/useCloseEngine";
 import { Scale, TrendingUp, Eye, EyeOff, ArrowRight, MessageSquare, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { fmt } from "@/lib/format";
+import ScriptCard from "./shared/ScriptCard";
 import CustomerPresentationView from "./CustomerPresentationView";
 
-interface Props {
-  state: EngineState;
-  computed: any;
-  update: <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
-}
-
-const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
-
-export default function PresentationTab({ state, computed, update }: Props) {
+export default function PresentationTab({ state, computed, update }: EngineTabProps) {
   const [showNarrow, setShowNarrow] = useState(false);
   const [showCustomerView, setShowCustomerView] = useState(false);
 
@@ -30,7 +24,6 @@ export default function PresentationTab({ state, computed, update }: Props) {
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
       {/* LEFT — 3 cols */}
       <div className="lg:col-span-3 space-y-6">
-        {/* Quick comparison */}
         <div className="card-elevated-lg p-6">
           <h3 className="text-lg font-bold text-foreground mb-5">Quick comparison board</h3>
           <div className="grid grid-cols-3 gap-4">
@@ -93,9 +86,8 @@ export default function PresentationTab({ state, computed, update }: Props) {
           )}
         </div>
 
-        {/* T-Close + 10-Year Impact side by side */}
+        {/* T-Close + 10-Year Impact */}
         <div className="grid grid-cols-2 gap-6">
-          {/* T-Close */}
           <div className="card-elevated-lg p-6">
             <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
               <Scale className="h-5 w-5 text-primary" /> T-close board
@@ -114,7 +106,6 @@ export default function PresentationTab({ state, computed, update }: Props) {
             </div>
           </div>
 
-          {/* 10-Year Impact */}
           <div className="card-elevated-lg p-6">
             <h3 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-accent" /> 10-year financial impact
@@ -153,7 +144,7 @@ export default function PresentationTab({ state, computed, update }: Props) {
         </div>
       </div>
 
-      {/* RIGHT — Scripts — 2 cols */}
+      {/* RIGHT — Scripts */}
       <div className="lg:col-span-2">
         <div className="card-elevated-lg p-6">
           <h3 className="text-lg font-bold text-foreground mb-5 flex items-center gap-2">
@@ -168,15 +159,6 @@ export default function PresentationTab({ state, computed, update }: Props) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ScriptCard({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="space-y-1.5">
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</h4>
-      <div className="script-block text-base">{text}</div>
     </div>
   );
 }
