@@ -30,6 +30,10 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
   const [mode, setMode] = useState<"single" | "compare">("single");
   const [selectedKey, setSelectedKey] = useState<"A" | "B" | "C">(state.selectedOption || "A");
 
+  useEffect(() => {
+    if (state.selectedOption) setSelectedKey(state.selectedOption);
+  }, [state.selectedOption]);
+
   const sel = getOptionMetrics(selectedKey, computed);
 
   return (
