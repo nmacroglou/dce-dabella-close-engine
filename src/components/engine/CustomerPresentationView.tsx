@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { EngineState, ComputedValues } from "@/hooks/useCloseEngine";
-import { X, ChevronRight, ChevronLeft } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
+import { exportCustomerPdf } from "@/lib/exportPdf";
 import dabellaLogo from "@/assets/dabella-logo.png";
 import OptionCard from "./presentation/OptionCard";
 import TrustBar from "./presentation/TrustBar";
