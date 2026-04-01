@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import type { ComputedValues, EngineState } from "@/types/engine";
 import { TrendingUp, ToggleLeft, ToggleRight, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
@@ -29,6 +29,10 @@ function ImpactRow({ label, hint, formula, moveForward, doNothing, moveClass, no
 export default memo(function FinancialImpactPanel({ state, computed }: Props) {
   const [mode, setMode] = useState<"single" | "compare">("single");
   const [selectedKey, setSelectedKey] = useState<"A" | "B" | "C">(state.selectedOption || "A");
+
+  useEffect(() => {
+    if (state.selectedOption) setSelectedKey(state.selectedOption);
+  }, [state.selectedOption]);
 
   const sel = getOptionMetrics(selectedKey, computed);
 
