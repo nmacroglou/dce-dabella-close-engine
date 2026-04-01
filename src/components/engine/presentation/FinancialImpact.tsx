@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { ComputedValues, EngineState } from "@/hooks/useCloseEngine";
+import type { ComputedValues, EngineState } from "@/types/engine";
 import { Scale, TrendingUp } from "lucide-react";
 import { fmt } from "@/lib/format";
 

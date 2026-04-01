@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EngineState, ComputedValues } from "@/hooks/useCloseEngine";
+import type { EngineState, ComputedValues } from "@/types/engine";
 import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
 import { exportCustomerPdf } from "@/lib/exportPdf";
 import dabellaLogo from "@/assets/dabella-logo.png";

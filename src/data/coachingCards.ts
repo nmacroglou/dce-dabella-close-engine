@@ -1,4 +1,4 @@
-import type { EngineState } from "@/hooks/useCloseEngine";
+import type { EngineState } from "@/types/engine";
 
 export interface CoachCard {
   title: string;
