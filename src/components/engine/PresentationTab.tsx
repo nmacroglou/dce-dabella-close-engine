@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import type { EngineTabProps } from "@/types/engine";
 import { MessageSquare } from "lucide-react";
 import { fmt } from "@/lib/format";
+import { buildOptionsArray } from "@/lib/engineHelpers";
 import ScriptCard from "./shared/ScriptCard";
 import CustomerPresentationView from "./CustomerPresentationView";
 import ActionGrid from "./presentation/ActionGrid";
@@ -11,11 +12,11 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
   const [showNarrow, setShowNarrow] = useState(false);
   const [showCustomerView, setShowCustomerView] = useState(false);
 
-  const options = useMemo(() => [
-    { key: "A" as const, name: state.optionAName, price: state.priceA, monthly: computed.monthlyA },
-    { key: "B" as const, name: state.optionBName, price: state.priceB, monthly: computed.monthlyB },
-    { key: "C" as const, name: state.optionCName, price: state.priceC, monthly: computed.monthlyC },
-  ], [state.optionAName, state.optionBName, state.optionCName, state.priceA, state.priceB, state.priceC, computed.monthlyA, computed.monthlyB, computed.monthlyC]);
+  const options = useMemo(() => buildOptionsArray(state, computed), [
+    state.optionAName, state.optionBName, state.optionCName,
+    state.priceA, state.priceB, state.priceC,
+    computed.monthlyA, computed.monthlyB, computed.monthlyC,
+  ]);
 
   if (showCustomerView) {
     return <CustomerPresentationView state={state} computed={computed} onClose={() => setShowCustomerView(false)} />;

@@ -1,6 +1,7 @@
 import type { EngineTabProps, EngineState } from "@/types/engine";
 import { PRODUCT_OPTIONS } from "@/data/products";
 import { fmt } from "@/lib/format";
+import { parseNum } from "@/lib/engineHelpers";
 import InputField from "./shared/InputField";
 import OptionOutputCard from "./shared/OptionOutputCard";
 
@@ -13,10 +14,6 @@ const OPTION_CONFIG: { key: OptionKey; nameKey: keyof EngineState; priceKey: key
   { key: "B", nameKey: "optionBName", priceKey: "priceB", desc: "Our most popular choice — great balance of quality, protection, and long-term value" },
   { key: "C", nameKey: "optionCName", priceKey: "priceC", desc: "The smart-budget option — solid quality that still protects your investment" },
 ];
-
-function parseNum(v: string): number {
-  return parseFloat(v) || 0;
-}
 
 export default function CalculatorTab({ state, computed, update }: EngineTabProps) {
   return (

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
 import { exportCustomerPdf } from "@/lib/exportPdf";
+import { buildOptionsArray, getOptionMetrics } from "@/lib/engineHelpers";
 import dabellaLogo from "@/assets/dabella-logo.png";
 import OptionCard from "./presentation/OptionCard";
 import TrustBar from "./presentation/TrustBar";
@@ -30,11 +31,11 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
   const stageIndex = STAGES.indexOf(stage);
 
-  const options = [
-    { key: "A" as const, name: state.optionAName, price: state.priceA, monthly: computed.monthlyA },
-    { key: "B" as const, name: state.optionBName, price: state.priceB, monthly: computed.monthlyB },
-    { key: "C" as const, name: state.optionCName, price: state.priceC, monthly: computed.monthlyC },
-  ];
+  const options = useMemo(() => buildOptionsArray(state, computed), [
+    state.optionAName, state.optionBName, state.optionCName,
+    state.priceA, state.priceB, state.priceC,
+    computed.monthlyA, computed.monthlyB, computed.monthlyC,
+  ]);
 
   const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1]);
   const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1]);
@@ -50,6 +51,22 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
       setExporting(false);
     }
   };
+
+  // Build computed overrides for the selected option's financial impact
+  const selectedComputed = useMemo(() => {
+    if (!selectedOption) return null;
+    const m = getOptionMetrics(selectedOption, computed);
+    return {
+      ...computed,
+      selectedPrice: m.price,
+      roiValue: m.roi,
+      inflationPenalty: m.inflationPenalty,
+      lockedInSavings: m.lockedInSavings,
+      moveForwardImpact: m.moveForward,
+      doNothingImpact: m.doNothing,
+      netDifference: m.netDiff,
+    };
+  }, [selectedOption, computed]);
 
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in">
@@ -136,33 +153,14 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
               ))}
             </div>
 
-            {selectedOption && (() => {
-              const opt = computed.options[selectedOption];
-              const roiValue = opt.roiValue;
-              const inflationMultiplier = Math.pow(1.08, 10);
-              const inflationPenalty = Math.round(opt.price * (inflationMultiplier - 1));
-              const lockedInSavings = inflationPenalty;
-              const moveForwardImpact = roiValue + computed.energySavings + lockedInSavings;
-              const doNothingImpact = -(computed.energySavings + inflationPenalty);
-              const netDifference = moveForwardImpact - doNothingImpact;
-              return (
-                <div className="mt-8 animate-fade-in">
-                  <FinancialImpact
-                    state={{ ...state, selectedOption }}
-                    computed={{
-                      ...computed,
-                      selectedPrice: opt.price,
-                      roiValue,
-                      inflationPenalty,
-                      lockedInSavings,
-                      moveForwardImpact,
-                      doNothingImpact,
-                      netDifference,
-                    }}
-                  />
-                </div>
-              );
-            })()}
+            {selectedOption && selectedComputed && (
+              <div className="mt-8 animate-fade-in">
+                <FinancialImpact
+                  state={{ ...state, selectedOption }}
+                  computed={selectedComputed}
+                />
+              </div>
+            )}
 
             <div className="mt-8">
               <TrustBar />

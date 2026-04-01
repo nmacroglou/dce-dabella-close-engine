@@ -3,6 +3,7 @@ import type { EngineState, ComputedValues } from "@/types/engine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
 import { fmt } from "@/lib/format";
+import { getNames } from "@/lib/engineHelpers";
 
 // Brand colors
 const BLUE = [37, 99, 235] as const;
@@ -37,13 +38,9 @@ function drawLine(pdf: jsPDF, x1: number, y1: number, x2: number, y2: number, c:
   pdf.line(x1, y1, x2, y2);
 }
 
-function getNames(state: EngineState) {
-  return state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
-}
-
 // ─── PAGE 1: COVER ────────────────────────────────────────────
 function drawCover(pdf: jsPDF, state: EngineState) {
-  const pw = 210, ph = 297;
+  const pw = 210;
   const names = getNames(state);
 
   setFill(pdf, BLUE);
@@ -89,6 +86,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   setColor(pdf, GRAY);
   pdf.text(today, pw / 2, cy + 62, { align: "center" });
 
+  const ph = 297;
   const badgeY = ph - 50;
   const badges = ["Lifetime Warranty", "GAF Master Elite", "Top-Rated Crews", "Locally Owned"];
   const badgeWidth = 40;
