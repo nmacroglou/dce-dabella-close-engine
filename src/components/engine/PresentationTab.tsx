@@ -52,6 +52,13 @@ export default function PresentationTab({ state, computed, update }: Props) {
 
           <div className="flex gap-3 mt-5">
             <Button
+              onClick={() => setShowCustomerView(true)}
+              className="flex-1 touch-target rounded-xl bg-foreground text-background hover:bg-foreground/90"
+              size="lg"
+            >
+              <Monitor className="h-4 w-4 mr-2" /> Customer View
+            </Button>
+            <Button
               onClick={() => { update("priceShown", true); update("currentStage", "presentation"); }}
               className="flex-1 touch-target rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
               size="lg"
