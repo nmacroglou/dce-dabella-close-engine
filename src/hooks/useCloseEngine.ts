@@ -9,6 +9,7 @@ export interface EngineState {
   optionBName: string;
   optionCName: string;
   gutterFeet: string;
+  downPayment: number;
   priceA: number;
   priceB: number;
   priceC: number;
