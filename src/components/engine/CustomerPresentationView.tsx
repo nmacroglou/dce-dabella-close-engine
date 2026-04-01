@@ -139,8 +139,11 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
             {selectedOption && (() => {
               const opt = computed.options[selectedOption];
               const roiValue = opt.roiValue;
-              const moveForwardImpact = roiValue + computed.energySavings;
-              const doNothingImpact = -computed.energySavings;
+              const inflationMultiplier = Math.pow(1.08, 10);
+              const inflationPenalty = Math.round(opt.price * (inflationMultiplier - 1));
+              const lockedInSavings = inflationPenalty;
+              const moveForwardImpact = roiValue + computed.energySavings + lockedInSavings;
+              const doNothingImpact = -(computed.energySavings + inflationPenalty);
               const netDifference = moveForwardImpact - doNothingImpact;
               return (
                 <div className="mt-8 animate-fade-in">
