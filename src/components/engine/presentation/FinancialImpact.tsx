@@ -207,8 +207,8 @@ export default memo(function FinancialImpact({ state, computed }: FinancialImpac
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 text-xs font-medium text-foreground">Energy savings</td>
-                  {OPTION_KEYS.map(() => (
-                    <td key={Math.random()} className="py-2 text-center text-sm font-semibold text-accent">+{fmt(computed.energySavings)}</td>
+                  {OPTION_KEYS.map(k => (
+                    <td key={k} className="py-2 text-center text-sm font-semibold text-accent">+{fmt(computed.energySavings)}</td>
                   ))}
                 </tr>
                 <tr className="border-b border-border/50">
