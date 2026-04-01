@@ -1,17 +1,6 @@
 import jsPDF from "jspdf";
 import type { EngineState, ComputedValues } from "@/hooks/useCloseEngine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
-import dabellaLogoUrl from "@/assets/dabella-logo.png";
-
-async function loadImageAsBase64(url: string): Promise<string> {
-  const res = await fetch(url);
-  const blob = await res.blob();
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.readAsDataURL(blob);
-  });
-}
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
@@ -57,7 +46,7 @@ function drawLine(pdf: jsPDF, x1: number, y1: number, x2: number, y2: number, c:
 }
 
 // ─── PAGE 1: COVER ────────────────────────────────────────────
-function drawCover(pdf: jsPDF, state: EngineState, logoData: string) {
+function drawCover(pdf: jsPDF, state: EngineState) {
   const pw = 210, ph = 297;
   const names = state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
 
@@ -72,10 +61,16 @@ function drawCover(pdf: jsPDF, state: EngineState, logoData: string) {
   pdf.circle(30, 80, 40, "F");
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
-  // Logo image
-  const logoW = 70;
-  const logoH = logoW * (512 / 1024);
-  pdf.addImage(logoData, "PNG", (pw - logoW) / 2, 18, logoW, logoH);
+  // Logo area placeholder text
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(32);
+  setColor(pdf, WHITE);
+  pdf.text("DaBella", pw / 2, 40, { align: "center" });
+
+  pdf.setFontSize(13);
+  pdf.setFont("helvetica", "normal");
+  setColor(pdf, [200, 220, 255]);
+  pdf.text("HOME IMPROVEMENT EXPERTS", pw / 2, 52, { align: "center" });
 
   // Main content area
   const cy = 140;
@@ -347,7 +342,7 @@ function drawScope(pdf: jsPDF) {
 }
 
 // ─── PAGE 4: WELCOME ─────────────────────────────────────────
-function drawWelcome(pdf: jsPDF, state: EngineState, logoData: string) {
+function drawWelcome(pdf: jsPDF, state: EngineState) {
   const pw = 210, ph = 297;
   const names = state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
 
@@ -362,11 +357,13 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoData: string) {
   pdf.circle(170, 240, 60, "F");
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
-  // Logo image
-  let y = 75;
-  const logoW = 60;
-  const logoH = logoW * (512 / 1024);
-  pdf.addImage(logoData, "PNG", (pw - logoW) / 2, y, logoW, logoH);
+  // Logo area
+  let y = 80;
+  roundedRect(pdf, (pw - 50) / 2, y, 50, 20, 5, [30, 80, 210]);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  setColor(pdf, WHITE);
+  pdf.text("DaBella", pw / 2, y + 13, { align: "center" });
 
   y += 40;
   pdf.setFont("helvetica", "bold");
@@ -435,11 +432,10 @@ export async function exportCustomerPdf(
   options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
   filename = "DaBella-Proposal.pdf",
 ) {
-  const logoData = await loadImageAsBase64(dabellaLogoUrl);
   const pdf = new jsPDF("p", "mm", "a4");
 
   // Page 1: Cover
-  drawCover(pdf, state, logoData);
+  drawCover(pdf, state);
 
   // Page 2: Options
   pdf.addPage();
@@ -451,7 +447,7 @@ export async function exportCustomerPdf(
 
   // Page 4: Welcome
   pdf.addPage();
-  drawWelcome(pdf, state, logoData);
+  drawWelcome(pdf, state);
 
   // Footer on pages 2 & 3
   [2, 3].forEach((p) => {
