@@ -26,7 +26,6 @@ const STAGE_LABELS: Record<Stage, string> = {
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
   const [stage, setStage] = useState<Stage>("options");
   const [exporting, setExporting] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
   const stageIndex = STAGES.indexOf(stage);
 
   const options = [
@@ -39,18 +38,52 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1]);
 
   const handleExportPdf = async () => {
-    if (!contentRef.current || exporting) return;
+    if (exporting) return;
     setExporting(true);
     try {
       const name = state.homeowner1 || "Customer";
-      await exportCustomerPdf(contentRef.current, `DaBella-Proposal-${name}.pdf`);
+
+      // Build an offscreen container with all 3 sections
+      const wrapper = document.createElement("div");
+      wrapper.style.cssText = "position:absolute;left:-9999px;top:0;width:1200px;background:#fff;";
+      document.body.appendChild(wrapper);
+
+      // Render all sections into the wrapper
+      const { createRoot } = await import("react-dom/client");
+      const { default: AllSections } = await import("./presentation/PdfAllSections");
+
+      const root = createRoot(wrapper);
+      const sectionRefs: HTMLDivElement[] = [];
+
+      await new Promise<void>((resolve) => {
+        root.render(
+          <AllSections
+            state={state}
+            computed={computed}
+            options={options}
+            onReady={(refs) => {
+              sectionRefs.push(...refs);
+              resolve();
+            }}
+          />
+        );
+      });
+
+      // Small delay for images to load
+      await new Promise((r) => setTimeout(r, 500));
+
+      const { exportCustomerPdf } = await import("@/lib/exportPdf");
+      await exportCustomerPdf(sectionRefs, `DaBella-Proposal-${name}.pdf`);
+
+      root.unmount();
+      document.body.removeChild(wrapper);
     } finally {
       setExporting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in" ref={contentRef}>
+    <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in">
       {/* Top-right actions */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         <button
