@@ -127,9 +127,6 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
                   key={opt.key}
                   optionKey={opt.key}
                   name={opt.name}
-                  price={opt.price}
-                  monthly={opt.monthly}
-                  roiPercent={state.roiPercent}
                   computed={computed}
                 />
               ))}
