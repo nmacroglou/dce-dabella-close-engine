@@ -87,6 +87,7 @@ const initialState: EngineState = {
   optionBName: "Grand Sequoia Charcoal",
   optionCName: "Timberline American Harvest",
   gutterFeet: "100",
+  downPayment: 0,
   priceA: 158832,
   priceB: 68678,
   priceC: 43399,
