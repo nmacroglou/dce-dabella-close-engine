@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { EngineState } from "@/hooks/useCloseEngine";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, ChevronRight, Sparkles } from "lucide-react";
+import { CheckCircle2, Sparkles, MessageSquare } from "lucide-react";
 
 interface Props {
   state: EngineState;
@@ -9,104 +9,113 @@ interface Props {
   update: <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
 }
 
-const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
-
 const steps = [
-  { id: "option", label: "Option Close", desc: "Narrow down to one option" },
-  { id: "efficiency", label: "Efficiency Close", desc: "Present efficiency pricing" },
-  { id: "standby", label: "Standby Close", desc: "Offer standby as backup" },
-  { id: "tclose", label: "T-Close", desc: "Yes vs No comparison" },
-  { id: "roi", label: "ROI Close", desc: "Show return on investment" },
-  { id: "energy", label: "Energy Close", desc: "Highlight energy savings" },
-  { id: "final", label: "Final Close", desc: "Ask for the sale" },
+  {
+    id: "option",
+    label: "Option close",
+    script: `"Out of these 3 options, which one would you eliminate?"`,
+  },
+  {
+    id: "efficiency",
+    label: "Efficiency close",
+    script: `"The homeowners who move forward when everything makes sense are the ones we can reward with our efficiency pricing."`,
+  },
+  {
+    id: "standby",
+    label: "Standby close",
+    script: `"We may have limited room in a standby program if you can be flexible on install timing. Would it be okay if I check?"`,
+  },
+  {
+    id: "tclose",
+    label: "T-close",
+    script: `"Most people at this point aren't deciding if they're doing the project — they're deciding whether the money feels right."`,
+  },
+  {
+    id: "roi",
+    label: "ROI close",
+    script: `"Roofing has a cost-to-value relationship just like Kelley Blue Book does for cars. What percentage do you think this puts back into your home?"`,
+  },
+  {
+    id: "energy",
+    label: "Energy close",
+    script: `"If your average bill is around this amount, here's what 10 years of waste costs versus what this system saves."`,
+  },
+  {
+    id: "final",
+    label: "Final assumptive close",
+    script: `"Based on everything we've gone through, would you like to handle the initial deposit with a check or card?"`,
+  },
 ];
 
 export default function ClosingStackTab({ state, computed, update }: Props) {
-  const [completedSteps, setCompleted] = useState<Set<string>>(new Set());
   const [activeStep, setActiveStep] = useState<string | null>(null);
-  const [showFinal, setShowFinal] = useState(false);
-
-  const toggleStep = (id: string) => {
-    setActiveStep(activeStep === id ? null : id);
-  };
-
-  const markDone = (id: string) => {
-    setCompleted((prev) => new Set([...prev, id]));
-    setActiveStep(null);
-  };
+  const [notes, setNotes] = useState("");
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="card-elevated-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-5">Closing Stack</h3>
-        <div className="space-y-3">
-          {steps.map((step, i) => (
-            <button
-              key={step.id}
-              onClick={() => toggleStep(step.id)}
-              className={`w-full card-elevated p-4 flex items-center gap-4 transition-all active:scale-[0.99] touch-target ${
-                activeStep === step.id ? "ring-2 ring-primary border-primary" : ""
-              }`}
-            >
-              {completedSteps.has(step.id) ? (
-                <CheckCircle2 className="h-6 w-6 text-success flex-shrink-0" />
-              ) : (
-                <Circle className="h-6 w-6 text-muted-foreground flex-shrink-0" />
-              )}
-              <div className="flex-1 text-left">
-                <p className="font-semibold text-foreground">{step.label}</p>
-                <p className="text-sm text-muted-foreground">{step.desc}</p>
-              </div>
-              <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${activeStep === step.id ? "rotate-90" : ""}`} />
-            </button>
-          ))}
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
+      {/* LEFT — Closing Stack */}
+      <div className="lg:col-span-3">
+        <div className="card-elevated-lg p-6">
+          <h3 className="text-lg font-bold text-foreground mb-5">Closing stack</h3>
+          <div className="space-y-3">
+            {steps.map((step, i) => (
+              <button
+                key={step.id}
+                onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
+                className={`w-full text-left card-elevated p-5 transition-all active:scale-[0.99] touch-target ${
+                  activeStep === step.id ? "ring-2 ring-primary border-primary" : ""
+                }`}
+              >
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold text-foreground">{step.label}</p>
+                      <span className="inline-flex items-center rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent uppercase">
+                        Natural ask
+                      </span>
+                    </div>
+                    {activeStep === step.id && (
+                      <div className="script-block mt-3 text-base animate-fade-in">{step.script}</div>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {activeStep && (
-        <div className="card-elevated-lg p-6 animate-fade-in">
-          <StepContent step={activeStep} state={state} computed={computed} />
-          <Button
-            onClick={() => markDone(activeStep)}
-            className="mt-4 w-full touch-target text-base rounded-xl bg-success text-success-foreground hover:bg-success/90"
-            size="lg"
-          >
-            <CheckCircle2 className="h-5 w-5 mr-2" /> Mark Complete
-          </Button>
+      {/* RIGHT — Ready to close */}
+      <div className="lg:col-span-2 space-y-6">
+        <div className="card-elevated-lg p-6 bg-foreground text-background">
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <Sparkles className="h-5 w-5" /> Ready to close
+          </h3>
+          <p className="text-base leading-relaxed opacity-90 italic">
+            "Based on everything we've gone through, this gives you peace of mind, eliminates future unexpected costs, and is the most cost-effective option. So the only thing left is — <strong className="not-italic opacity-100">would you like to use a check or card?</strong>"
+          </p>
         </div>
-      )}
 
-      <Button
-        onClick={() => { setShowFinal(true); update("currentStage", "closing"); }}
-        className="w-full touch-target text-lg rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 h-16"
-        size="lg"
-      >
-        <Sparkles className="h-6 w-6 mr-2" /> READY TO CLOSE
-      </Button>
-
-      {showFinal && (
-        <div className="card-elevated-lg p-8 text-center animate-fade-in">
-          <Sparkles className="h-10 w-10 text-primary mx-auto mb-4" />
-          <div className="script-block text-xl leading-relaxed border-l-0 text-center">
-            "Based on everything we've gone through… this gives you peace of mind…<br/><br/>
-            So the only thing left is—<br/><br/>
-            <strong className="text-foreground not-italic">would you like to use a check or card?</strong>"
+        <div className="card-elevated-lg p-6">
+          <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">If they hesitate</h4>
+          <div className="script-block text-base">
+            "I completely understand. Other than the true objection we just discussed, is there anything else stopping you from moving forward today?"
           </div>
         </div>
-      )}
+
+        <div className="card-elevated-lg p-6">
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">Deal notes</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Capture homeowner reactions, objections, and next move..."
+            className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[120px] resize-none"
+          />
+        </div>
+      </div>
     </div>
   );
-}
-
-function StepContent({ step, state, computed }: { step: string; state: EngineState; computed: any }) {
-  const scripts: Record<string, string> = {
-    option: `"Out of these three options — ${state.optionAName}, ${state.optionBName}, and ${state.optionCName} — which one would you eliminate first?"`,
-    efficiency: `"Our Efficiency option comes in at ${fmt(computed.efficiencyPrice)} — same great product, streamlined process. How does that feel?"`,
-    standby: `"We also have our Standby option at ${fmt(computed.standbyPrice)} — if you're flexible on timing, we can lock you in at a lower rate."`,
-    tclose: `"Most people sitting here aren't deciding IF they need this… they already know. It's just whether the money makes sense right now… fair?"`,
-    roi: `"Your investment gives you a ${state.roiPercent}% return — that's ${fmt(computed.roiValue)} in added value. Where else are you getting that kind of return?"`,
-    energy: `"You're spending ${fmt(computed.annualCost)} per year on energy — that's ${fmt(computed.tenYearCost)} over 10 years. We cut that by 75%, saving you ${fmt(computed.savings75)}."`,
-    final: `"Based on everything we've gone through — the value, the savings, the protection — this is the right move. Would you like to use a check or card?"`,
-  };
-  return <div className="script-block">{scripts[step]}</div>;
 }

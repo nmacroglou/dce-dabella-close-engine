@@ -14,7 +14,7 @@ function InputField({ label, value, onChange, type = "text", placeholder = "" }:
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-medium text-muted-foreground">{label}</label>
+      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</label>
       <input
         type={type}
         value={value}
@@ -26,23 +26,13 @@ function InputField({ label, value, onChange, type = "text", placeholder = "" }:
   );
 }
 
-function OutputCard({ icon: Icon, label, value, color = "primary" }: {
-  icon: any; label: string; value: string; color?: string;
-}) {
-  const colorMap: Record<string, string> = {
-    primary: "bg-primary/10 text-primary",
-    success: "bg-success/10 text-success",
-    warning: "bg-warning/10 text-warning",
-    info: "bg-info/10 text-info",
-  };
+function PromoRow({ label, price, monthly }: { label: string; price: number; monthly: number }) {
   return (
-    <div className="metric-card flex items-center gap-3">
-      <div className={`rounded-lg p-2.5 ${colorMap[color]}`}>
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-muted-foreground truncate">{label}</p>
-        <p className="text-lg font-bold text-foreground">{value}</p>
+    <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+      <span className="text-sm font-semibold text-foreground">{label}</span>
+      <div className="text-right">
+        <p className="text-base font-bold text-foreground">{fmt(price)}</p>
+        <p className="text-xs text-muted-foreground">{fmt(monthly)}/mo</p>
       </div>
     </div>
   );
@@ -50,97 +40,119 @@ function OutputCard({ icon: Icon, label, value, color = "primary" }: {
 
 export default function CalculatorTab({ state, computed, update }: Props) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-      {/* LEFT: Inputs */}
-      <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
+      {/* LEFT: Inputs — 3 cols */}
+      <div className="lg:col-span-3 space-y-6">
         <div className="card-elevated-lg p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Customer Info</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <InputField label="Homeowner 1" value={state.homeowner1} onChange={(v) => update("homeowner1", v)} placeholder="First name" />
-            <InputField label="Homeowner 2" value={state.homeowner2} onChange={(v) => update("homeowner2", v)} placeholder="First name" />
+          <h3 className="text-lg font-bold text-foreground mb-5">Live deal calculator</h3>
+
+          {/* Customer info */}
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            <InputField label="Homeowner 1" value={state.homeowner1} onChange={(v) => update("homeowner1", v)} />
+            <InputField label="Homeowner 2" value={state.homeowner2} onChange={(v) => update("homeowner2", v)} />
           </div>
-          <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-3 gap-4 mb-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-muted-foreground">Product</label>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</label>
               <select
                 value={state.product}
                 onChange={(e) => update("product", e.target.value)}
                 className="w-full touch-target rounded-xl border border-input bg-card px-4 py-3 text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
+                <option>Roofing System</option>
                 <option>Windows</option>
                 <option>Siding</option>
-                <option>Roofing</option>
                 <option>Solar</option>
                 <option>Gutters</option>
                 <option>Bath</option>
               </select>
             </div>
-            <InputField label="Solar kW (optional)" value={state.solarKw} onChange={(v) => update("solarKw", v)} placeholder="e.g. 8.5" />
+            <InputField label="Solar kW" value={state.solarKw} onChange={(v) => update("solarKw", v)} />
+            <InputField label="Gutter Feet" value={state.gutterFeet} onChange={(v) => update("gutterFeet", v)} />
           </div>
-        </div>
 
-        <div className="card-elevated-lg p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Options & Pricing</h3>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <InputField label="Option A Name" value={state.optionAName} onChange={(v) => update("optionAName", v)} />
-              <InputField label="Price A" value={state.priceA} onChange={(v) => update("priceA", v)} type="number" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <InputField label="Option B Name" value={state.optionBName} onChange={(v) => update("optionBName", v)} />
-              <InputField label="Price B" value={state.priceB} onChange={(v) => update("priceB", v)} type="number" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <InputField label="Option C Name" value={state.optionCName} onChange={(v) => update("optionCName", v)} />
-              <InputField label="Price C" value={state.priceC} onChange={(v) => update("priceC", v)} type="number" />
-            </div>
-            <InputField label="Gutter Feet" value={state.gutterFeet} onChange={(v) => update("gutterFeet", v)} type="number" placeholder="Linear feet" />
-            <div className="grid grid-cols-2 gap-4">
-              <InputField label="Financing Factor 1" value={state.financingFactor1} onChange={(v) => update("financingFactor1", v)} type="number" />
-              <InputField label="Financing Factor 2" value={state.financingFactor2} onChange={(v) => update("financingFactor2", v)} type="number" />
-            </div>
+          {/* Options */}
+          <div className="space-y-3 mb-5">
+            {[
+              { lbl: "Option A", name: state.optionAName, nameKey: "optionAName" as const, price: state.priceA, priceKey: "priceA" as const },
+              { lbl: "Option B", name: state.optionBName, nameKey: "optionBName" as const, price: state.priceB, priceKey: "priceB" as const },
+              { lbl: "Option C", name: state.optionCName, nameKey: "optionCName" as const, price: state.priceC, priceKey: "priceC" as const },
+            ].map((opt) => (
+              <div key={opt.lbl} className="grid grid-cols-3 gap-4 items-end">
+                <div className="col-span-2">
+                  <InputField label={`${opt.lbl} System`} value={opt.name} onChange={(v) => update(opt.nameKey, v)} />
+                </div>
+                <InputField label={`Price ${opt.lbl.slice(-1)}`} value={opt.price} onChange={(v) => update(opt.priceKey, v)} type="number" />
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
 
-      {/* RIGHT: Outputs */}
-      <div className="space-y-6">
-        <div className="card-elevated-lg p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-primary" /> Promo Lanes
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <OutputCard icon={DollarSign} label="Efficiency Price" value={fmt(computed.efficiencyPrice)} color="success" />
-            <OutputCard icon={DollarSign} label="Standby Price" value={fmt(computed.standbyPrice)} color="warning" />
-            <OutputCard icon={DollarSign} label="6-Month Deferred" value={fmt(computed.deferred6)} color="info" />
-            <OutputCard icon={DollarSign} label="12-Month Deferred" value={fmt(computed.deferred12)} color="primary" />
+          {/* Factors & discounts */}
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            <InputField label="Factor 1" value={state.financingFactor1} onChange={(v) => update("financingFactor1", v)} type="number" />
+            <InputField label="Factor 2" value={state.financingFactor2} onChange={(v) => update("financingFactor2", v)} type="number" />
           </div>
-        </div>
-
-        <div className="card-elevated-lg p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-success" /> ROI Calculation
-          </h3>
-          <div className="flex items-center gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            <InputField label="Efficiency Discount" value={state.efficiencyDiscount} onChange={(v) => update("efficiencyDiscount", v)} type="number" />
+            <InputField label="Standby Discount" value={state.standbyDiscount} onChange={(v) => update("standbyDiscount", v)} type="number" />
+          </div>
+          <div className="grid grid-cols-2 gap-4 mb-5">
+            <InputField label="6 Mo Deferred %" value={state.deferred6Pct} onChange={(v) => update("deferred6Pct", v)} type="number" />
+            <InputField label="12 Mo Deferred %" value={state.deferred12Pct} onChange={(v) => update("deferred12Pct", v)} type="number" />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
             <InputField label="ROI %" value={state.roiPercent} onChange={(v) => update("roiPercent", v)} type="number" />
-          </div>
-          <OutputCard icon={TrendingUp} label="ROI Return Value" value={fmt(computed.roiValue)} color="success" />
-        </div>
-
-        <div className="card-elevated-lg p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Zap className="h-5 w-5 text-warning" /> Energy Savings
-          </h3>
-          <div className="mb-4">
             <InputField label="Monthly Energy Bill" value={state.monthlyBill} onChange={(v) => update("monthlyBill", v)} type="number" />
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            <OutputCard icon={BarChart3} label="Annual Energy Cost" value={fmt(computed.annualCost)} color="info" />
-            <OutputCard icon={BarChart3} label="10-Year Energy Cost" value={fmt(computed.tenYearCost)} color="warning" />
-            <OutputCard icon={Zap} label="75% Savings (10 yr)" value={fmt(computed.savings75)} color="success" />
+            <InputField label="Energy Savings %" value={state.energySavingsPct} onChange={(v) => update("energySavingsPct", v)} type="number" />
           </div>
         </div>
       </div>
+
+      {/* RIGHT: Outputs — 2 cols */}
+      <div className="lg:col-span-2 space-y-6">
+        {/* Promo Lanes */}
+        <div className="card-elevated-lg p-6">
+          <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-primary" /> Promo lanes
+          </h3>
+          <div className="space-y-3">
+            <PromoRow label="Efficiency C" price={computed.efficiencyPrice} monthly={computed.monthlyEfficiency} />
+            <PromoRow label="Standby C" price={computed.standbyPrice} monthly={computed.monthlyStandby} />
+            <PromoRow label="6 Mo Deferred" price={computed.deferred6Price} monthly={computed.monthlyDeferred6} />
+            <PromoRow label="12 Mo Deferred" price={computed.deferred12Price} monthly={computed.monthlyDeferred12} />
+          </div>
+        </div>
+
+        {/* Value Stack */}
+        <div className="card-elevated-lg p-6">
+          <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-accent" /> Value stack
+          </h3>
+          <div className="space-y-3">
+            <ValueRow icon={BarChart3} label="ROI Return" value={fmt(computed.roiValue)} color="text-primary" />
+            <ValueRow icon={Zap} label="10-Year Energy Spend" value={fmt(computed.tenYearCost)} color="text-destructive" />
+            <ValueRow icon={Zap} label="Projected Energy Savings" value={fmt(computed.energySavings)} color="text-accent" />
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-foreground">Net Cost After ROI + Savings</span>
+                <span className="text-lg font-extrabold text-primary">{fmt(computed.yesNetCost)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ValueRow({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: string }) {
+  return (
+    <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+      <div className="flex items-center gap-3">
+        <Icon className={`h-4 w-4 ${color}`} />
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      </div>
+      <span className={`text-base font-bold ${color}`}>{value}</span>
     </div>
   );
 }

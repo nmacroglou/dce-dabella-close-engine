@@ -14,8 +14,13 @@ export interface EngineState {
   priceC: number;
   financingFactor1: number;
   financingFactor2: number;
+  efficiencyDiscount: number;
+  standbyDiscount: number;
+  deferred6Pct: number;
+  deferred12Pct: number;
   roiPercent: number;
   monthlyBill: number;
+  energySavingsPct: number;
   currentStage: string;
   selectedOption: "A" | "B" | "C" | null;
   objectionType: string | null;
@@ -24,21 +29,26 @@ export interface EngineState {
 }
 
 const initialState: EngineState = {
-  homeowner1: "",
-  homeowner2: "",
-  product: "Windows",
-  solarKw: "",
-  optionAName: "Premium Package",
-  optionBName: "Standard Package",
-  optionCName: "Efficiency Package",
-  gutterFeet: "",
-  priceA: 25000,
-  priceB: 20000,
-  priceC: 18000,
-  financingFactor1: 1.15,
-  financingFactor2: 1.25,
-  roiPercent: 57,
-  monthlyBill: 200,
+  homeowner1: "John",
+  homeowner2: "Mary",
+  product: "Roofing System",
+  solarKw: "8",
+  optionAName: "Timberline Energy Charcoal",
+  optionBName: "Grand Sequoia Charcoal",
+  optionCName: "Timberline American Harvest",
+  gutterFeet: "100",
+  priceA: 158832,
+  priceB: 68678,
+  priceC: 43399,
+  financingFactor1: 0.01074,
+  financingFactor2: 0.015,
+  efficiencyDiscount: 2170,
+  standbyDiscount: 2170,
+  deferred6Pct: 5,
+  deferred12Pct: 10,
+  roiPercent: 67,
+  monthlyBill: 300,
+  energySavingsPct: 75,
   currentStage: "calculator",
   selectedOption: null,
   objectionType: null,
@@ -54,44 +64,68 @@ export function useCloseEngine() {
   }, []);
 
   const computed = useMemo(() => {
-    const { priceA, priceB, priceC, roiPercent, monthlyBill, financingFactor1, financingFactor2 } = state;
+    const {
+      priceA, priceB, priceC, roiPercent, monthlyBill,
+      financingFactor1, financingFactor2,
+      efficiencyDiscount, standbyDiscount,
+      deferred6Pct, deferred12Pct, energySavingsPct,
+    } = state;
 
-    const efficiencyPrice = priceC * 0.9;
-    const standbyPrice = priceC * 0.85;
-    const deferred6 = priceC * financingFactor1;
-    const deferred12 = priceC * financingFactor2;
+    // Promo lanes
+    const efficiencyPrice = priceC - efficiencyDiscount;
+    const standbyPrice = priceC - standbyDiscount;
+    const deferred6Price = priceC * (1 - deferred6Pct / 100);
+    const deferred12Price = priceC * (1 - deferred12Pct / 100);
 
-    const roiValue = (priceA * roiPercent) / 100;
+    // Monthly payments using factor2
+    const monthlyA = Math.round(priceA * financingFactor2);
+    const monthlyB = Math.round(priceB * financingFactor2);
+    const monthlyC = Math.round(priceC * financingFactor2);
+    const monthlyEfficiency = Math.round(efficiencyPrice * financingFactor2);
+    const monthlyStandby = Math.round(standbyPrice * financingFactor2);
+    const monthlyDeferred6 = Math.round(deferred6Price * financingFactor2);
+    const monthlyDeferred12 = Math.round(deferred12Price * financingFactor2);
 
+    // ROI
+    const roiValue = Math.round(priceA * (roiPercent / 100));
+
+    // Energy
     const annualCost = monthlyBill * 12;
     const tenYearCost = annualCost * 10;
-    const savings75 = tenYearCost * 0.75;
+    const energySavings = Math.round(tenYearCost * (energySavingsPct / 100));
 
-    const monthlyA = priceA * financingFactor1 / 120;
-    const monthlyB = priceB * financingFactor1 / 120;
-    const monthlyC = priceC * financingFactor1 / 120;
+    // Impact
+    const moveForwardImpact = roiValue + energySavings;
+    const doNothingImpact = -energySavings;
+    const netDifference = moveForwardImpact - doNothingImpact;
+    const yesNetCost = priceA - roiValue - energySavings;
 
     const selectedPrice =
       state.selectedOption === "A" ? priceA :
       state.selectedOption === "B" ? priceB :
       state.selectedOption === "C" ? priceC : 0;
 
-    const netDifference = roiValue + savings75;
-
     return {
       efficiencyPrice,
       standbyPrice,
-      deferred6,
-      deferred12,
-      roiValue,
-      annualCost,
-      tenYearCost,
-      savings75,
+      deferred6Price,
+      deferred12Price,
       monthlyA,
       monthlyB,
       monthlyC,
-      selectedPrice,
+      monthlyEfficiency,
+      monthlyStandby,
+      monthlyDeferred6,
+      monthlyDeferred12,
+      roiValue,
+      annualCost,
+      tenYearCost,
+      energySavings,
+      moveForwardImpact,
+      doNothingImpact,
       netDifference,
+      yesNetCost,
+      selectedPrice,
     };
   }, [state]);
 
@@ -100,8 +134,8 @@ export function useCloseEngine() {
     if (state.currentStage === "presentation") return "Ask them to eliminate one option.";
     if (state.objectionType === "price") return "Route to Efficiency → T-Close.";
     if (state.objectionType === "value") return "Route to ROI → Energy Close.";
-    if (state.objectionType === "think") return "Create urgency. Use the timeline.";
-    if (state.objectionType === "spouse") return "Involve both decision-makers. Use permission close.";
+    if (state.objectionType === "timing") return "Test timing truthfully. Efficiency or deferral.";
+    if (state.objectionType === "trust") return "Slow down. Replay inspection. Rebuild trust.";
     if (state.currentStage === "closing") return "Always ask for the sale.";
     return "Build value before showing price.";
   }, [state.priceShown, state.currentStage, state.objectionType]);
