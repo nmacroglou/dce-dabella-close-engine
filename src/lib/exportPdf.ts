@@ -451,7 +451,7 @@ export async function exportCustomerPdf(
 
   // Page 4: Welcome
   pdf.addPage();
-  drawWelcome(pdf, state);
+  drawWelcome(pdf, state, logoData);
 
   // Footer on pages 2 & 3
   [2, 3].forEach((p) => {
