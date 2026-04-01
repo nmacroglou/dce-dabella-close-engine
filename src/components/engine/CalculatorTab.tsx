@@ -143,10 +143,11 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
           <InputField label="6 Mo Deferred %" value={state.deferred6Pct} onChange={(v) => update("deferred6Pct", v as number)} type="number" />
           <InputField label="12 Mo Deferred %" value={state.deferred12Pct} onChange={(v) => update("deferred12Pct", v as number)} type="number" />
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          <InputField label="ROI %" value={state.roiPercent} onChange={(v) => update("roiPercent", v as number)} type="number" />
-          <InputField label="Monthly Energy Bill" value={state.monthlyBill} onChange={(v) => update("monthlyBill", v as number)} type="number" />
-          <InputField label="Energy Savings %" value={state.energySavingsPct} onChange={(v) => update("energySavingsPct", v as number)} type="number" />
+        <div className="grid grid-cols-4 gap-4">
+          <InputField label="ROI %" value={state.roiPercent} onChange={(v) => update("roiPercent", v)} type="number" />
+          <InputField label="Monthly Energy Bill" value={state.monthlyBill} onChange={(v) => update("monthlyBill", v)} type="number" />
+          <InputField label="Energy Savings %" value={state.energySavingsPct} onChange={(v) => update("energySavingsPct", v)} type="number" />
+          <InputField label="Down Payment" value={state.downPayment} onChange={(v) => update("downPayment", v)} type="number" />
         </div>
       </div>
 
