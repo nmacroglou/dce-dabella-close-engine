@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import type { ComputedValues, EngineState } from "@/types/engine";
 import { TrendingUp, ToggleLeft, ToggleRight, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
