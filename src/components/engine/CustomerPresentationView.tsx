@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { EngineState, ComputedValues } from "@/hooks/useCloseEngine";
 import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
 import { exportCustomerPdf } from "@/lib/exportPdf";
