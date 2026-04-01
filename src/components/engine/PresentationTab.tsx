@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { EngineState } from "@/hooks/useCloseEngine";
-import { Scale, TrendingUp, Eye, EyeOff, ArrowRight, MessageSquare } from "lucide-react";
+import { Scale, TrendingUp, Eye, EyeOff, ArrowRight, MessageSquare, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CustomerPresentationView from "./CustomerPresentationView";
 
 interface Props {
   state: EngineState;
@@ -13,6 +14,11 @@ const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", c
 
 export default function PresentationTab({ state, computed, update }: Props) {
   const [showNarrow, setShowNarrow] = useState(false);
+  const [showCustomerView, setShowCustomerView] = useState(false);
+
+  if (showCustomerView) {
+    return <CustomerPresentationView state={state} computed={computed} onClose={() => setShowCustomerView(false)} />;
+  }
 
   const options = [
     { key: "A" as const, name: state.optionAName, price: state.priceA, monthly: computed.monthlyA },
@@ -45,6 +51,13 @@ export default function PresentationTab({ state, computed, update }: Props) {
           </div>
 
           <div className="flex gap-3 mt-5">
+            <Button
+              onClick={() => setShowCustomerView(true)}
+              className="flex-1 touch-target rounded-xl bg-foreground text-background hover:bg-foreground/90"
+              size="lg"
+            >
+              <Monitor className="h-4 w-4 mr-2" /> Customer View
+            </Button>
             <Button
               onClick={() => { update("priceShown", true); update("currentStage", "presentation"); }}
               className="flex-1 touch-target rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
