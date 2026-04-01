@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CalculatorTab from "@/components/engine/CalculatorTab";
@@ -5,7 +6,7 @@ import PresentationTab from "@/components/engine/PresentationTab";
 import ObjectionsTab from "@/components/engine/ObjectionsTab";
 import ClosingStackTab from "@/components/engine/ClosingStackTab";
 import CoachModeTab from "@/components/engine/CoachModeTab";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain } from "lucide-react";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, Moon, Sun } from "lucide-react";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
 const TABS = [
@@ -18,6 +19,11 @@ const TABS = [
 
 export default function Index() {
   const { state, update, computed, coachingTip } = useCloseEngine();
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,9 +42,18 @@ export default function Index() {
               </p>
             </div>
           </div>
-          <span className="hidden sm:inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-            iPad Field App
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDark(!dark)}
+              className="rounded-xl bg-muted border border-border p-2.5 hover:bg-muted/80 transition-colors"
+              aria-label="Toggle dark mode"
+            >
+              {dark ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
+            </button>
+            <span className="hidden sm:inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              iPad Field App
+            </span>
+          </div>
         </div>
       </header>
 
