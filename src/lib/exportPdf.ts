@@ -347,7 +347,7 @@ function drawScope(pdf: jsPDF) {
 }
 
 // ─── PAGE 4: WELCOME ─────────────────────────────────────────
-function drawWelcome(pdf: jsPDF, state: EngineState) {
+function drawWelcome(pdf: jsPDF, state: EngineState, logoData: string) {
   const pw = 210, ph = 297;
   const names = state.homeowner2 ? `${state.homeowner1} & ${state.homeowner2}` : state.homeowner1;
 
@@ -362,13 +362,11 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
   pdf.circle(170, 240, 60, "F");
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
-  // Logo area
-  let y = 80;
-  roundedRect(pdf, (pw - 50) / 2, y, 50, 20, 5, [30, 80, 210]);
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  setColor(pdf, WHITE);
-  pdf.text("DaBella", pw / 2, y + 13, { align: "center" });
+  // Logo image
+  let y = 75;
+  const logoW = 60;
+  const logoH = logoW * (512 / 1024);
+  pdf.addImage(logoData, "PNG", (pw - logoW) / 2, y, logoW, logoH);
 
   y += 40;
   pdf.setFont("helvetica", "bold");
