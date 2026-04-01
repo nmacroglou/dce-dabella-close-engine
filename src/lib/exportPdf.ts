@@ -1,6 +1,17 @@
 import jsPDF from "jspdf";
 import type { EngineState, ComputedValues } from "@/hooks/useCloseEngine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
+import dabellaLogoUrl from "@/assets/dabella-logo.png";
+
+async function loadImageAsBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
+}
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
