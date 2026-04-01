@@ -46,6 +46,8 @@ export function useCloseEngine() {
     setState((prev) => ({ ...prev, [key]: value }));
   }, []);
 
+  const reset = useCallback(() => setState(initialState), []);
+
   const computed = useMemo((): ComputedValues => {
     const {
       priceA, priceB, priceC, roiPercent, monthlyBill,
