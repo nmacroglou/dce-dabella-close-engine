@@ -6,6 +6,7 @@ import ObjectionsTab from "@/components/engine/ObjectionsTab";
 import ClosingStackTab from "@/components/engine/ClosingStackTab";
 import CoachModeTab from "@/components/engine/CoachModeTab";
 import { Calculator, Presentation, ShieldAlert, Layers, Brain, DollarSign, TrendingUp, Zap, BarChart3 } from "lucide-react";
+import dabellaLogo from "@/assets/dabella-logo.png";
 
 const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
