@@ -27,7 +27,7 @@ function TabLoader() {
 }
 
 export default function Index() {
-  const { state, update, computed, coachingTip } = useCloseEngine();
+  const { state, update, computed, coachingTip, reset } = useCloseEngine();
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function Index() {
           </TabsList>
 
           <Suspense fallback={<TabLoader />}>
-            <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} /></TabsContent>
+            <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} reset={reset} /></TabsContent>
             <TabsContent value="presentation"><PresentationTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="objections"><ObjectionsTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="closing"><ClosingStackTab state={state} computed={computed} update={update} /></TabsContent>

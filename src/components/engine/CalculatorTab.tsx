@@ -1,4 +1,5 @@
 import type { EngineTabProps, EngineState } from "@/types/engine";
+import { RotateCcw } from "lucide-react";
 import { PRODUCT_OPTIONS } from "@/data/products";
 import { fmt } from "@/lib/format";
 import { parseNum } from "@/lib/engineHelpers";
@@ -15,12 +16,22 @@ const OPTION_CONFIG: { key: OptionKey; nameKey: keyof EngineState; priceKey: key
   { key: "C", nameKey: "optionCName", priceKey: "priceC", desc: "The smart-budget option — solid quality that still protects your investment" },
 ];
 
-export default function CalculatorTab({ state, computed, update }: EngineTabProps) {
+export default function CalculatorTab({ state, computed, update, reset }: EngineTabProps) {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Inputs */}
       <div className="card-elevated-lg p-8">
-        <h3 className="text-xl font-bold text-foreground mb-2">Live Deal Calculator</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xl font-bold text-foreground">Live Deal Calculator</h3>
+          {reset && (
+            <button
+              onClick={reset}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive border border-border transition-colors text-sm font-semibold"
+            >
+              <RotateCcw className="h-4 w-4" /> Clear All
+            </button>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground mb-8">
           Walk through each section with your homeowner. As you enter their details together, the financing options, savings, and true cost of ownership update instantly — making the value crystal clear.
         </p>

@@ -46,6 +46,8 @@ export function useCloseEngine() {
     setState((prev) => ({ ...prev, [key]: value }));
   }, []);
 
+  const reset = useCallback(() => setState(initialState), []);
+
   const computed = useMemo((): ComputedValues => {
     const {
       priceA, priceB, priceC, roiPercent, monthlyBill,
@@ -135,5 +137,5 @@ export function useCloseEngine() {
     return "Build value before showing price.";
   }, [state.priceShown, state.currentStage, state.objectionType]);
 
-  return { state, update, computed, coachingTip };
+  return { state, update, computed, coachingTip, reset };
 }
