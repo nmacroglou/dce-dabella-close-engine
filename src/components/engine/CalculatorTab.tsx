@@ -1,4 +1,5 @@
 import { EngineTabProps } from "@/hooks/useCloseEngine";
+import { PRODUCT_OPTIONS } from "@/data/products";
 import { DollarSign, Zap, TrendingUp, BarChart3 } from "lucide-react";
 import { fmt } from "@/lib/format";
 import InputField from "./shared/InputField";
@@ -14,27 +15,24 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
           <h3 className="text-lg font-bold text-foreground mb-5">Live deal calculator</h3>
 
           <div className="grid grid-cols-2 gap-4 mb-5">
-            <InputField label="Homeowner 1" value={state.homeowner1} onChange={(v) => update("homeowner1", v)} />
-            <InputField label="Homeowner 2" value={state.homeowner2} onChange={(v) => update("homeowner2", v)} />
+            <InputField label="Homeowner 1" value={state.homeowner1} onChange={(v) => update("homeowner1", v as string)} />
+            <InputField label="Homeowner 2" value={state.homeowner2} onChange={(v) => update("homeowner2", v as string)} />
           </div>
           <div className="grid grid-cols-3 gap-4 mb-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</label>
+              <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Product</label>
               <select
                 value={state.product}
                 onChange={(e) => update("product", e.target.value)}
                 className="w-full touch-target rounded-xl border border-input bg-card px-4 py-3 text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
-                <option>Roofing System</option>
-                <option>Windows</option>
-                <option>Siding</option>
-                <option>Solar</option>
-                <option>Gutters</option>
-                <option>Bath</option>
+                {PRODUCT_OPTIONS.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
               </select>
             </div>
-            <InputField label="Solar kW" value={state.solarKw} onChange={(v) => update("solarKw", v)} />
-            <InputField label="Gutter Feet" value={state.gutterFeet} onChange={(v) => update("gutterFeet", v)} />
+            <InputField label="Solar kW" value={state.solarKw} onChange={(v) => update("solarKw", v as string)} />
+            <InputField label="Gutter Feet" value={state.gutterFeet} onChange={(v) => update("gutterFeet", v as string)} />
           </div>
 
           <div className="space-y-3 mb-5">
@@ -45,29 +43,29 @@ export default function CalculatorTab({ state, computed, update }: EngineTabProp
             ]).map((opt) => (
               <div key={opt.lbl} className="grid grid-cols-3 gap-4 items-end">
                 <div className="col-span-2">
-                  <InputField label={`${opt.lbl} System`} value={opt.name} onChange={(v) => update(opt.nameKey, v)} />
+                  <InputField label={`${opt.lbl} System`} value={opt.name} onChange={(v) => update(opt.nameKey, v as string)} />
                 </div>
-                <InputField label={`Price ${opt.lbl.slice(-1)}`} value={opt.price} onChange={(v) => update(opt.priceKey, v)} type="number" />
+                <InputField label={`Price ${opt.lbl.slice(-1)}`} value={opt.price} onChange={(v) => update(opt.priceKey, v as number)} type="number" />
               </div>
             ))}
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-5">
-            <InputField label="Factor 1" value={state.financingFactor1} onChange={(v) => update("financingFactor1", v)} type="number" />
-            <InputField label="Factor 2" value={state.financingFactor2} onChange={(v) => update("financingFactor2", v)} type="number" />
+            <InputField label="Factor 1" value={state.financingFactor1} onChange={(v) => update("financingFactor1", v as number)} type="number" />
+            <InputField label="Factor 2" value={state.financingFactor2} onChange={(v) => update("financingFactor2", v as number)} type="number" />
           </div>
           <div className="grid grid-cols-2 gap-4 mb-5">
-            <InputField label="Efficiency Discount" value={state.efficiencyDiscount} onChange={(v) => update("efficiencyDiscount", v)} type="number" />
-            <InputField label="Standby Discount" value={state.standbyDiscount} onChange={(v) => update("standbyDiscount", v)} type="number" />
+            <InputField label="Efficiency Discount" value={state.efficiencyDiscount} onChange={(v) => update("efficiencyDiscount", v as number)} type="number" />
+            <InputField label="Standby Discount" value={state.standbyDiscount} onChange={(v) => update("standbyDiscount", v as number)} type="number" />
           </div>
           <div className="grid grid-cols-2 gap-4 mb-5">
-            <InputField label="6 Mo Deferred %" value={state.deferred6Pct} onChange={(v) => update("deferred6Pct", v)} type="number" />
-            <InputField label="12 Mo Deferred %" value={state.deferred12Pct} onChange={(v) => update("deferred12Pct", v)} type="number" />
+            <InputField label="6 Mo Deferred %" value={state.deferred6Pct} onChange={(v) => update("deferred6Pct", v as number)} type="number" />
+            <InputField label="12 Mo Deferred %" value={state.deferred12Pct} onChange={(v) => update("deferred12Pct", v as number)} type="number" />
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <InputField label="ROI %" value={state.roiPercent} onChange={(v) => update("roiPercent", v)} type="number" />
-            <InputField label="Monthly Energy Bill" value={state.monthlyBill} onChange={(v) => update("monthlyBill", v)} type="number" />
-            <InputField label="Energy Savings %" value={state.energySavingsPct} onChange={(v) => update("energySavingsPct", v)} type="number" />
+            <InputField label="ROI %" value={state.roiPercent} onChange={(v) => update("roiPercent", v as number)} type="number" />
+            <InputField label="Monthly Energy Bill" value={state.monthlyBill} onChange={(v) => update("monthlyBill", v as number)} type="number" />
+            <InputField label="Energy Savings %" value={state.energySavingsPct} onChange={(v) => update("energySavingsPct", v as number)} type="number" />
           </div>
         </div>
       </div>
