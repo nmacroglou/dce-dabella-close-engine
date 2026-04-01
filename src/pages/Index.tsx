@@ -20,7 +20,8 @@ export default function Index() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-start justify-between gap-6">
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <img src={dabellaLogo} alt="DaBella" className="h-10 w-auto" />
                 <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                   DaBella Close Engine
                 </span>
