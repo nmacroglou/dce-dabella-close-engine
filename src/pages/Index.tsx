@@ -6,6 +6,7 @@ import ObjectionsTab from "@/components/engine/ObjectionsTab";
 import ClosingStackTab from "@/components/engine/ClosingStackTab";
 import CoachModeTab from "@/components/engine/CoachModeTab";
 import { Calculator, Presentation, ShieldAlert, Layers, Brain, DollarSign, TrendingUp, Zap, BarChart3 } from "lucide-react";
+import dabellaLogo from "@/assets/dabella-logo.png";
 
 const fmt = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
@@ -19,7 +20,8 @@ export default function Index() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-start justify-between gap-6">
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <img src={dabellaLogo} alt="DaBella" className="h-10 w-auto" />
                 <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                   DaBella Close Engine
                 </span>
