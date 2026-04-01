@@ -1,85 +1,116 @@
 import { EngineState } from "@/hooks/useCloseEngine";
-import { Brain, Lightbulb, Shield, Target, Volume2, AlertTriangle } from "lucide-react";
+import { Brain, Shield, AlertTriangle, Target, Volume2, Eye, TrendingUp, Clock, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   state: EngineState;
   coachingTip: string;
+  update: <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
+}
+
+interface CoachCard {
+  title: string;
+  detail: string;
+  script: string;
+}
+
+function getCoachCard(state: EngineState): CoachCard {
+  if (state.priceShown) return {
+    title: "Be silent after price",
+    detail: "Do not defend the number too early. Let the homeowner react first.",
+    script: "\"For all of this, your project comes down to only ...\"",
+  };
+  if (state.objectionType === "price") return {
+    title: "Narrow and isolate",
+    detail: "Confirm price is the only issue, then route into Efficiency Close or T-close.",
+    script: "\"Other than the investment, is there anything else stopping you from moving forward if the numbers work?\"",
+  };
+  if (state.objectionType === "value") return {
+    title: "Rebuild value",
+    detail: "Use ROI and energy to make the long-term cost visible.",
+    script: "\"Let's look at what this does for the home and what doing nothing costs you over time.\"",
+  };
+  if (state.objectionType === "timing") return {
+    title: "Test timing truthfully",
+    detail: "If they are within 12 months, they are a live efficiency/deferral candidate.",
+    script: "\"Before I leave, do you mind if I ask how far out you think you are before making a decision?\"",
+  };
+  return {
+    title: "Open control",
+    detail: "Build value before price and ask for the sale at every natural opening.",
+    script: "\"Great, give me a second to finalize the numbers and we'll get right to it.\"",
+  };
 }
 
 const rules = [
-  { icon: Shield, text: "Build value before price" },
-  { icon: AlertTriangle, text: "Don't defend too early" },
-  { icon: Target, text: "Narrow, don't expand" },
-  { icon: Volume2, text: "Always ask for the sale" },
+  "Build value before price.",
+  "After the price drop, be silent.",
+  "Don't defend the number too early.",
+  "Isolate the real objection before pivoting.",
+  "Keep narrowing, not expanding.",
+  "Ask for the sale at every natural opening.",
+  "Use ROI and energy only after trust is built.",
 ];
 
-export default function CoachModeTab({ state, coachingTip }: Props) {
-  const stageLabel =
-    state.currentStage === "calculator" ? "Setup" :
-    state.currentStage === "presentation" ? "Presenting" :
-    state.currentStage === "closing" ? "Closing" : state.currentStage;
+export default function CoachModeTab({ state, coachingTip, update }: Props) {
+  const card = getCoachCard(state);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Next Move Engine */}
-      <div className="card-elevated-lg p-6 border-primary/20 bg-primary/[0.03]">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="rounded-xl bg-primary/10 p-3">
-            <Brain className="h-7 w-7 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-foreground">Next Move Engine</h3>
-            <p className="text-sm text-muted-foreground">Stage: {stageLabel}</p>
-          </div>
-        </div>
-        <div className="rounded-xl bg-primary/10 p-5">
-          <p className="text-xl font-semibold text-primary text-center">{coachingTip}</p>
-        </div>
-      </div>
-
-      {/* Context */}
-      <div className="card-elevated-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Lightbulb className="h-5 w-5 text-warning" /> Current Context
-        </h3>
-        <div className="space-y-3">
-          <ContextRow label="Price Shown" value={state.priceShown ? "Yes" : "No"} active={state.priceShown} />
-          <ContextRow label="Selected Option" value={state.selectedOption || "None"} active={!!state.selectedOption} />
-          <ContextRow label="Objection" value={state.objectionType || "None"} active={!!state.objectionType} />
-          <ContextRow label="Homeowner" value={state.homeowner1 || "Not set"} active={!!state.homeowner1} />
-        </div>
-      </div>
-
-      {/* Rules */}
-      <div className="card-elevated-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Sales Rules</h3>
-        <div className="space-y-3">
-          {rules.map(({ icon: Icon, text }, i) => (
-            <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-muted/50">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <Icon className="h-5 w-5 text-primary" />
-              </div>
-              <p className="font-medium text-foreground">{text}</p>
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
+      {/* LEFT — Next Move Engine */}
+      <div className="lg:col-span-3 space-y-6">
+        <div className="card-elevated-lg p-6 border-primary/20 bg-primary/[0.02]">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="rounded-xl bg-primary/10 p-3">
+              <Brain className="h-7 w-7 text-primary" />
             </div>
-          ))}
+            <h3 className="text-lg font-bold text-foreground">Next move engine</h3>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-5 rounded-xl bg-primary/5 border border-primary/10">
+              <h4 className="text-base font-bold text-foreground mb-1">{card.title}</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">{card.detail}</p>
+            </div>
+            <div className="script-block text-base">{card.script}</div>
+          </div>
+
+          <div className="flex gap-3 mt-5">
+            <Button
+              onClick={() => { update("priceShown", true); }}
+              className="flex-1 touch-target rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+              size="lg"
+            >
+              <Eye className="h-4 w-4 mr-2" /> Trigger Silence Coaching
+            </Button>
+            <Button
+              onClick={() => { update("priceShown", false); update("objectionType", null); }}
+              variant="outline"
+              className="flex-1 touch-target rounded-xl"
+              size="lg"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" /> Return to Route Mode
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Future AI placeholder */}
-      <div className="card-elevated p-5 border-dashed border-2 border-muted-foreground/20 text-center">
-        <Brain className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground font-medium">AI Voice Coaching — Coming Soon</p>
-        <p className="text-xs text-muted-foreground mt-1">Real-time objection detection & script personalization</p>
+      {/* RIGHT — Rule Set */}
+      <div className="lg:col-span-2">
+        <div className="card-elevated-lg p-6">
+          <h3 className="text-lg font-bold text-foreground mb-5 flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" /> Rule set
+          </h3>
+          <div className="space-y-3">
+            {rules.map((rule, i) => (
+              <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-muted/50">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{i + 1}</span>
+                <p className="text-sm font-medium text-foreground leading-relaxed">{rule}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
-  );
-}
-
-function ContextRow({ label, value, active }: { label: string; value: string; active: boolean }) {
-  return (
-    <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <span className={`text-sm font-semibold ${active ? "text-primary" : "text-muted-foreground"}`}>{value}</span>
     </div>
   );
 }
