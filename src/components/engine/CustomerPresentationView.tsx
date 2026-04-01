@@ -27,6 +27,7 @@ const STAGE_LABELS: Record<Stage, string> = {
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
   const [stage, setStage] = useState<Stage>("options");
   const [exporting, setExporting] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
   const stageIndex = STAGES.indexOf(stage);
 
   const options = [
