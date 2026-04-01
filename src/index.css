@@ -115,6 +115,10 @@
   }
 }
 
+#lovable-badge {
+  display: none !important;
+}
+
 @layer utilities {
   .card-elevated {
     @apply bg-card rounded-2xl border border-border;
