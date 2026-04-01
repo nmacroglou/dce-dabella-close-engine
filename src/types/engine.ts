@@ -76,4 +76,5 @@ export interface EngineTabProps {
   state: EngineState;
   computed: ComputedValues;
   update: EngineUpdater;
+  reset?: () => void;
 }
