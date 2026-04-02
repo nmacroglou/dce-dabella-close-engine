@@ -56,7 +56,9 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
 
   const handleAccept = (key: "A" | "B" | "C") => {
     setSelectedOption(key);
-    goNext();
+    // Go to impact stage
+    const impactIdx = STAGES.indexOf("impact");
+    if (impactIdx >= 0) setStage("impact");
   };
 
   const handleShowNext = () => {
