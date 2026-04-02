@@ -305,18 +305,46 @@ export const SELLING_STEPS: SellingStep[] = [
     title: "Efficiency",
     subtitle: "1-year deferral & manager on-demand call",
     icon: Zap,
-    script: `"I want to check one more thing for you. We sometimes have efficiency pricing available for homeowners who are ready to move forward when everything makes sense. Let me make a quick call to my manager."`,
+    script: `"I want to check one more thing for you. The homeowners who move forward when everything makes sense are the ones we can reward with our efficiency pricing. Let me make a quick call to my manager to see what we can do."`,
+    detailedScripts: [
+      {
+        label: "Efficiency pricing intro",
+        text: `"Here's the thing — when a homeowner like you says 'this makes sense, I want to move forward,' we can save on a second trip, re-measuring, re-presenting… all of that costs money. So we pass that savings on to you. That's what efficiency pricing is — you're not getting a discount, you're earning a better price by being efficient."`,
+      },
+      {
+        label: "1-Year deferral offer",
+        text: `"One more option I want to make sure you know about — we have a 1-year deferral program. That means you can get this project done now, lock in today's pricing, and not make your first payment for 12 months. That gives you time to budget, plan, and enjoy the new system without any financial pressure right away."`,
+      },
+      {
+        label: "Manager on-demand call",
+        text: `"Let me call my manager real quick. I want to see if there's any additional room we can work with based on your situation. This isn't something I can do on my own — but if they approve it, this would be the absolute best pricing available."\n\n[MAKE THE CALL]\n\n"Great news — my manager approved (efficiency pricing / standby program / additional discount). This is only available because you're moving forward today. Here's what that looks like…"`,
+      },
+      {
+        label: "Standby program",
+        text: `"We may have limited room in a standby program if you can be flexible on install timing. Instead of us scheduling you in a premium slot, you'd go on standby — meaning we fit you in when there's an opening. In exchange, you save even more. Would it be okay if I check on that for you?"`,
+      },
+      {
+        label: "Final close after efficiency",
+        text: `"So with the efficiency pricing, your payment comes down to [amount], your deposit is [amount], and you get the full warranty, full system, full installation. Based on everything we've gone through — would you like to handle the deposit with a check or card?"`,
+      },
+    ],
     checklist: [
-      "Offer efficiency / standby pricing if applicable",
+      "Explain efficiency pricing — earned, not discounted",
       "Present 1-year deferral option",
       "Make the manager on-demand call",
       "Get manager approval for final pricing",
-      "Present the final, best offer",
+      "Present standby program if applicable",
+      "Present the final, best offer with new numbers",
+      "Ask for the business with updated payment",
     ],
     tips: [
       "This is your ace — don't play it too early",
       "The manager call adds authority and urgency",
       "Frame savings as earned, not discounted",
+      "Efficiency = saving on second trip, re-measuring, re-presenting",
+      "The 1-year deferral removes the 'not right now' objection",
+      "Standby only works if they can be flexible on timing",
+      "Always present the new monthly payment — not just the discount amount",
     ],
   },
   {
