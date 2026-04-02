@@ -35,11 +35,97 @@ export const SELLING_STEPS: SellingStep[] = [
       "Compliment something specific about the home",
       "Find common ground (family, pets, neighborhood)",
       "Introduce yourself and your role clearly",
+      "Ask the 10 Power Questions during rapport",
     ],
     tips: [
       "Mirror the homeowner's energy level",
       "Get both decision-makers engaged from the start",
       "Avoid jumping into business too quickly — earn trust first",
+      "After Question 3 or 4 — repeat their words back: 'So what I'm hearing is… the biggest concern is [X]… right?' This alone increases close rate significantly.",
+    ],
+    references: [
+      {
+        title: "🔟 The 10 Power Questions",
+        content: ["These questions feed directly into Option A/B/C relevance, ROI positioning, energy close strength, objection routing, and T-close framing."],
+        subSections: [
+          {
+            heading: "1. \"What made you decide to have us out today?\"",
+            items: [
+              "Finds the trigger event",
+              "Reveals urgency level",
+              "Tells you if they're reactive or proactive",
+              "👉 This sets the tone for the entire appointment",
+            ],
+          },
+          {
+            heading: "2. \"How long have you been dealing with this?\"",
+            items: [
+              "Measures pain duration",
+              "Longer = more emotional fatigue = easier close",
+            ],
+          },
+          {
+            heading: "3. \"What concerns you most about it right now?\"",
+            items: [
+              "Identifies the true problem — not always leaks",
+              "Could be: energy bills, appearance, resale value",
+              "👉 You sell to THIS, not the roof",
+            ],
+          },
+          {
+            heading: "4. \"What happens if this doesn't get taken care of?\"",
+            items: [
+              "Creates future pain visualization",
+              "Builds urgency without pressure",
+              "👉 This is 🔥 for the T-close later",
+            ],
+          },
+          {
+            heading: "5. \"Have you had anyone else take a look at this yet?\"",
+            items: [
+              "Identifies competition",
+              "Tells you if they're shopping, comparing, or just exploring",
+            ],
+          },
+          {
+            heading: "6. \"What did they tell you?\"",
+            items: [
+              "Reveals misinformation, price anchoring, objections before they happen",
+              "👉 You can pre-handle objections early",
+            ],
+          },
+          {
+            heading: "7. \"What are you hoping to get out of this project?\"",
+            items: [
+              "Defines their win condition",
+              "Position: Option A = ideal, Option B = compromise",
+            ],
+          },
+          {
+            heading: "8. \"How long do you plan on being in the home?\"",
+            items: [
+              "Determines ROI relevance, energy close strength, product tier positioning",
+              "Short term → cost focus | Long term → value focus",
+            ],
+          },
+          {
+            heading: "9. \"If everything made sense today, is this something you'd want to take care of now or are you more in the research phase?\"",
+            items: [
+              "Identifies timing truth",
+              "Soft commitment without pressure",
+              "👉 This is a hidden pre-close",
+            ],
+          },
+          {
+            heading: "10. \"Is there anything that would stop you from moving forward today besides the investment?\"",
+            items: [
+              "Isolates objections EARLY",
+              "Sets up your final close later",
+              "👉 One of the most important questions you'll ask",
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -154,19 +240,43 @@ export const SELLING_STEPS: SellingStep[] = [
   {
     id: 7,
     title: "PTA — Ask for the Business",
-    subtitle: "Monthly payment range & comfortable down payment",
+    subtitle: "Preparing to Ask for the Order",
     icon: HandshakeIcon,
-    script: `"Based on everything we've gone through, I'd love to earn your business today. Let me ask — if the monthly payment felt comfortable, is this something you'd want to take care of now rather than later?"`,
+    script: `"By the look on your face it seems as if we found the right (Roofing/Siding/Windows/Bath) system for you, am I right?\n\nAre there any features you would like to add or change?\n\nThat brings me to the most important question of the day, is there anything other than price that would stop you from using DaBella as your contractor and the (Applicable Product) System as your (Product) of choice?"`,
+    detailedScripts: [
+      {
+        label: "Response: 'No, I think it's just the money'",
+        text: `"Great, since it all boils down to dollars and cents, do you mind if we talk about that for a minute?"\n(Response) "Yes, that's what we've been waiting for."\n\nUSE THE PROJECT REVIEW SHEET TO TALK ABOUT BELOW:\n\n"I find that most of my clients fall within 1 of 3 monthly investment categories in terms of financing. These are — $500–600 per month, $400–500 per month, or $300–400 per month. Which one of those best fits your budget?"`,
+      },
+      {
+        label: "Response: 'I'm not buying anything today'",
+        text: `"I'm not asking you to buy anything right now. What I am doing is preparing a 3-point comprehensive bid that includes:\n• The scope of work\n• The terms of finance\n• The amount of the initial deposit\nThat way you can give this careful consideration — sound good?"\n\n"So what would be comfortable for you? $500–600, $400–500, or $300–400?"\n(Response) "$300–400"\n\n"Is that closer to $300 or $400, or in the middle?"\n(Response) "In the middle somewhere"\n\n"Great I'll make a note of that — and last but not least, what would a comfortable deposit be?"`,
+      },
+      {
+        label: "Response: 'Again, I'm not buying anything'",
+        text: `"I understand… again it's just to give you the information in order for you to give careful consideration. So if you called me in the next 30 days, and said I've earned your business and nothing financially has changed for you, what would a comfortable deposit look like?"\n(Response) "What is required?"\n\n"Ideally the banks like to see a 10% commitment, so in your case that would be around $3,000 (whatever 10% of their project is)."\n(Response) "I can't swing that."\n\n"How about if we cut that in half? Say $1,500?"\n(Response) "Yeah, I can do that."\n\n"So if I can get your payment around $350 and your deposit at $1,500 would I earn your business?"`,
+      },
+      {
+        label: "If they say 'I'm not buying anything tonight!'",
+        text: `"But you could at least give it careful consideration?"\n"Yes!"`,
+      },
+    ],
     checklist: [
-      "Ask about comfortable monthly payment range",
-      "Determine preferred down payment amount",
-      "Present the 3 options (A, B, C)",
-      "Ask which option they'd eliminate first",
+      "Confirm they like the product/system",
+      "Ask if any features to add or change",
+      "Ask: anything besides price stopping you?",
+      "Identify comfortable monthly payment range ($300–400, $400–500, $500–600)",
+      "Narrow down: closer to $300 or $400?",
+      "Determine comfortable deposit amount",
+      "Present the 3-point comprehensive bid",
       "Gauge buying temperature",
     ],
     tips: [
       "The PTA is about permission, not pressure",
-      "Use the option elimination technique: 'Which would you remove?'",
+      "Use the 3-range technique: $500–600, $400–500, $300–400",
+      "When they resist, reframe as 'careful consideration' not buying",
+      "Banks like 10% down — but cutting in half often gets the yes",
+      "Always end with: 'Would I earn your business?'",
       "Never skip this step — it transitions to the close",
     ],
   },
@@ -195,18 +305,46 @@ export const SELLING_STEPS: SellingStep[] = [
     title: "Efficiency",
     subtitle: "1-year deferral & manager on-demand call",
     icon: Zap,
-    script: `"I want to check one more thing for you. We sometimes have efficiency pricing available for homeowners who are ready to move forward when everything makes sense. Let me make a quick call to my manager."`,
+    script: `"I want to check one more thing for you. The homeowners who move forward when everything makes sense are the ones we can reward with our efficiency pricing. Let me make a quick call to my manager to see what we can do."`,
+    detailedScripts: [
+      {
+        label: "Efficiency pricing intro",
+        text: `"Here's the thing — when a homeowner like you says 'this makes sense, I want to move forward,' we can save on a second trip, re-measuring, re-presenting… all of that costs money. So we pass that savings on to you. That's what efficiency pricing is — you're not getting a discount, you're earning a better price by being efficient."`,
+      },
+      {
+        label: "1-Year deferral offer",
+        text: `"One more option I want to make sure you know about — we have a 1-year deferral program. That means you can get this project done now, lock in today's pricing, and not make your first payment for 12 months. That gives you time to budget, plan, and enjoy the new system without any financial pressure right away."`,
+      },
+      {
+        label: "Manager on-demand call",
+        text: `"Let me call my manager real quick. I want to see if there's any additional room we can work with based on your situation. This isn't something I can do on my own — but if they approve it, this would be the absolute best pricing available."\n\n[MAKE THE CALL]\n\n"Great news — my manager approved (efficiency pricing / standby program / additional discount). This is only available because you're moving forward today. Here's what that looks like…"`,
+      },
+      {
+        label: "Standby program",
+        text: `"We may have limited room in a standby program if you can be flexible on install timing. Instead of us scheduling you in a premium slot, you'd go on standby — meaning we fit you in when there's an opening. In exchange, you save even more. Would it be okay if I check on that for you?"`,
+      },
+      {
+        label: "Final close after efficiency",
+        text: `"So with the efficiency pricing, your payment comes down to [amount], your deposit is [amount], and you get the full warranty, full system, full installation. Based on everything we've gone through — would you like to handle the deposit with a check or card?"`,
+      },
+    ],
     checklist: [
-      "Offer efficiency / standby pricing if applicable",
+      "Explain efficiency pricing — earned, not discounted",
       "Present 1-year deferral option",
       "Make the manager on-demand call",
       "Get manager approval for final pricing",
-      "Present the final, best offer",
+      "Present standby program if applicable",
+      "Present the final, best offer with new numbers",
+      "Ask for the business with updated payment",
     ],
     tips: [
       "This is your ace — don't play it too early",
       "The manager call adds authority and urgency",
       "Frame savings as earned, not discounted",
+      "Efficiency = saving on second trip, re-measuring, re-presenting",
+      "The 1-year deferral removes the 'not right now' objection",
+      "Standby only works if they can be flexible on timing",
+      "Always present the new monthly payment — not just the discount amount",
     ],
   },
   {
