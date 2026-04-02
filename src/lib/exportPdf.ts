@@ -734,7 +734,7 @@ export async function exportCustomerPdf(
   selectedOption?: "A" | "B" | "C" | null,
 ) {
   const pdf = new jsPDF("p", "mm", "a4");
-  const isWindows = state.product === "Windows";
+  const isWindows = hasProduct(state.products, "Windows");
   let pageCount = selectedOption ? 6 : 4;
   if (isWindows) pageCount += 1; // window inspection page
 
