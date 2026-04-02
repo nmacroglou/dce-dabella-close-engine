@@ -3,7 +3,7 @@ import type { EngineState, ComputedValues } from "@/types/engine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
 import { fmt } from "@/lib/format";
-import { getNames } from "@/lib/engineHelpers";
+import { getNames, getOptionMetrics, getOptionLabel } from "@/lib/engineHelpers";
 
 // Brand colors
 const BLUE = [37, 99, 235] as const;
@@ -357,19 +357,288 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
   pdf.text("www.dabella.us", pw / 2, ph - 20, { align: "center" });
 }
 
+// ─── PAGE: T-CLOSE BOARD ─────────────────────────────────────
+function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, selectedKey: "A" | "B" | "C") {
+  const pw = 210;
+  const margin = 20;
+  const m = getOptionMetrics(selectedKey, computed);
+  const label = getOptionLabel(selectedKey, state);
+  const futurePrice = m.price + m.inflationPenalty;
+
+  let y = 18;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(18);
+  setColor(pdf, DARK);
+  pdf.text("T-Close Board", pw / 2, y, { align: "center" });
+
+  y += 8;
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  setColor(pdf, GRAY);
+  pdf.text(`Option ${selectedKey}: ${label} — why acting today saves you money`, pw / 2, y, { align: "center" });
+
+  // Coach script
+  y += 12;
+  roundedRect(pdf, margin, y, pw - margin * 2, 22, 4, LIGHT_BG, BORDER);
+  pdf.setFont("helvetica", "italic");
+  pdf.setFontSize(8);
+  setColor(pdf, DARK);
+  const scriptLines = pdf.splitTextToSize(
+    '"Most people at this point aren\'t deciding if they\'re doing the project — they\'re deciding whether the money feels right. Let me show you what the numbers actually look like…"',
+    pw - margin * 2 - 16
+  );
+  scriptLines.forEach((line: string, i: number) => {
+    pdf.text(line, margin + 8, y + 7 + i * 4);
+  });
+
+  // The Math section
+  y += 30;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(11);
+  setColor(pdf, DARK);
+  pdf.text(`The Math — ${label}`, pw / 2, y, { align: "center" });
+
+  y += 10;
+  const halfW = (pw - margin * 2 - 8) / 2;
+
+  // Today's price box
+  roundedRect(pdf, margin, y, halfW, 30, 4, WHITE, BORDER);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text("TODAY'S PRICE", margin + halfW / 2, y + 7, { align: "center" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text(`Locked in = ${fmt(m.price)}`, margin + halfW / 2, y + 14, { align: "center" });
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  setColor(pdf, BLUE);
+  pdf.text(fmt(m.price), margin + halfW / 2, y + 25, { align: "center" });
+
+  // Future price box
+  const rx = margin + halfW + 8;
+  roundedRect(pdf, rx, y, halfW, 30, 4, WHITE, BORDER);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text("SAME ROOF IN 10 YEARS", rx + halfW / 2, y + 7, { align: "center" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text(`${fmt(m.price)} x 1.08^10 = ${fmt(futurePrice)}`, rx + halfW / 2, y + 14, { align: "center" });
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  setColor(pdf, [220, 38, 38]);
+  pdf.text(fmt(futurePrice), rx + halfW / 2, y + 25, { align: "center" });
+
+  // Cost of waiting
+  y += 38;
+  const RED: RGB = [220, 38, 38];
+  roundedRect(pdf, margin + 20, y, pw - margin * 2 - 40, 32, 4, [254, 242, 242], [252, 165, 165]);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, RED);
+  pdf.text("COST OF WAITING", pw / 2, y + 7, { align: "center" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text(`${fmt(futurePrice)} - ${fmt(m.price)} = ${fmt(m.inflationPenalty)}`, pw / 2, y + 14, { align: "center" });
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(18);
+  setColor(pdf, RED);
+  pdf.text(fmt(m.inflationPenalty), pw / 2, y + 26, { align: "center" });
+
+  // Yes vs No comparison
+  y += 40;
+  const compW = (pw - margin * 2 - 8) / 2;
+
+  // Say Yes
+  roundedRect(pdf, margin, y, compW, 40, 4, [240, 253, 244], [134, 239, 172]);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, GREEN);
+  pdf.text("SAY YES TODAY", margin + compW / 2, y + 8, { align: "center" });
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
+  setColor(pdf, DARK);
+  pdf.text(fmt(m.price), margin + compW / 2, y + 20, { align: "center" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text(`Lock in & add ${fmt(m.roi)}`, margin + compW / 2, y + 28, { align: "center" });
+  pdf.text("in home value", margin + compW / 2, y + 33, { align: "center" });
+
+  // Wait & Pay More
+  const nx = margin + compW + 8;
+  roundedRect(pdf, nx, y, compW, 40, 4, [254, 242, 242], [252, 165, 165]);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, RED);
+  pdf.text("WAIT & PAY MORE", nx + compW / 2, y + 8, { align: "center" });
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
+  setColor(pdf, DARK);
+  pdf.text(fmt(futurePrice), nx + compW / 2, y + 20, { align: "center" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text(`Same roof costs more &`, nx + compW / 2, y + 28, { align: "center" });
+  pdf.text(`you lose ${fmt(m.inflationPenalty)}`, nx + compW / 2, y + 33, { align: "center" });
+}
+
+// ─── PAGE: 10-YEAR FINANCIAL IMPACT ──────────────────────────
+function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedValues, selectedKey: "A" | "B" | "C") {
+  const pw = 210;
+  const margin = 20;
+  const m = getOptionMetrics(selectedKey, computed);
+  const label = getOptionLabel(selectedKey, state);
+
+  let y = 18;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(18);
+  setColor(pdf, DARK);
+  pdf.text("10-Year Financial Impact", pw / 2, y, { align: "center" });
+
+  y += 8;
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  setColor(pdf, GRAY);
+  pdf.text(`Option ${selectedKey}: ${label} — the full picture over 10 years`, pw / 2, y, { align: "center" });
+
+  // Impact rows table
+  y += 14;
+  const colW = pw - margin * 2;
+  const rowH = 18;
+
+  // Header
+  roundedRect(pdf, margin, y, colW, 10, 3, BLUE);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, WHITE);
+  pdf.text("CATEGORY", margin + 8, y + 7);
+  pdf.text("MOVE FORWARD", margin + colW * 0.55, y + 7);
+  pdf.text("DO NOTHING", margin + colW * 0.8, y + 7);
+  y += 12;
+
+  const rows = [
+    {
+      label: "Home Value Increase",
+      hint: `${state.roiPercent}% ROI on ${fmt(m.price)}`,
+      forward: `+${fmt(m.roi)}`,
+      nothing: "$0",
+      forwardColor: GREEN,
+      nothingColor: GRAY,
+    },
+    {
+      label: "Energy Savings (10yr)",
+      hint: `${state.energySavingsPct}% of ${fmt(state.monthlyBill)}/mo x 120`,
+      forward: `+${fmt(computed.energySavings)}`,
+      nothing: `-${fmt(computed.tenYearCost)}`,
+      forwardColor: GREEN,
+      nothingColor: [220, 38, 38] as RGB,
+    },
+    {
+      label: "Price Lock Savings",
+      hint: "8% annual material inflation over 10 years",
+      forward: `+${fmt(m.lockedInSavings)}`,
+      nothing: `-${fmt(m.inflationPenalty)}`,
+      forwardColor: GREEN,
+      nothingColor: [220, 38, 38] as RGB,
+    },
+  ];
+
+  rows.forEach((row, i) => {
+    if (i % 2 === 0) {
+      roundedRect(pdf, margin, y, colW, rowH, 2, LIGHT_BG);
+    }
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(8);
+    setColor(pdf, DARK);
+    pdf.text(row.label, margin + 8, y + 7);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(6.5);
+    setColor(pdf, GRAY);
+    pdf.text(row.hint, margin + 8, y + 13);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    setColor(pdf, row.forwardColor);
+    pdf.text(row.forward, margin + colW * 0.55, y + 10);
+
+    setColor(pdf, row.nothingColor);
+    pdf.text(row.nothing, margin + colW * 0.8, y + 10);
+
+    y += rowH;
+  });
+
+  // Totals
+  y += 6;
+  const totalH = 30;
+  const halfW = (colW - 8) / 2;
+
+  // Move Forward total
+  roundedRect(pdf, margin, y, halfW, totalH, 4, [240, 253, 244], [134, 239, 172]);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, GREEN);
+  pdf.text("MOVE FORWARD", margin + halfW / 2, y + 8, { align: "center" });
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
+  setColor(pdf, DARK);
+  pdf.text(`+${fmt(m.moveForward)}`, margin + halfW / 2, y + 22, { align: "center" });
+
+  // Do Nothing total
+  const RED: RGB = [220, 38, 38];
+  const dnx = margin + halfW + 8;
+  roundedRect(pdf, dnx, y, halfW, totalH, 4, [254, 242, 242], [252, 165, 165]);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, RED);
+  pdf.text("DO NOTHING", dnx + halfW / 2, y + 8, { align: "center" });
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
+  setColor(pdf, DARK);
+  pdf.text(fmt(m.doNothing), dnx + halfW / 2, y + 22, { align: "center" });
+
+  // Net advantage
+  y += totalH + 10;
+  roundedRect(pdf, margin + 20, y, colW - 40, 28, 5, BLUE);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, [200, 220, 255]);
+  pdf.text("NET ADVANTAGE OF MOVING FORWARD", pw / 2, y + 8, { align: "center" });
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(20);
+  setColor(pdf, WHITE);
+  pdf.text(`+${fmt(m.netDiff)}`, pw / 2, y + 22, { align: "center" });
+}
+
 // ─── MAIN EXPORT ──────────────────────────────────────────────
 export async function exportCustomerPdf(
   state: EngineState,
   computed: ComputedValues,
   options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
   filename = "DaBella-Proposal.pdf",
+  selectedOption?: "A" | "B" | "C" | null,
 ) {
   const pdf = new jsPDF("p", "mm", "a4");
+  const totalPages = selectedOption ? 6 : 4;
 
   drawCover(pdf, state);
 
   pdf.addPage();
   drawOptions(pdf, state, computed, options);
+
+  if (selectedOption) {
+    pdf.addPage();
+    drawTClose(pdf, state, computed, selectedOption);
+
+    pdf.addPage();
+    drawFinancialImpact(pdf, state, computed, selectedOption);
+  }
 
   pdf.addPage();
   drawScope(pdf);
@@ -377,16 +646,16 @@ export async function exportCustomerPdf(
   pdf.addPage();
   drawWelcome(pdf, state);
 
-  // Footer on pages 2 & 3
-  [2, 3].forEach((p) => {
+  // Footer on content pages (all except cover and welcome)
+  for (let p = 2; p <= totalPages - 1; p++) {
     pdf.setPage(p);
     drawLine(pdf, 20, 285, 190, 285, BORDER);
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(7);
     setColor(pdf, GRAY);
     pdf.text("DaBella — Home Improvement Experts", 20, 290);
-    pdf.text(`Page ${p} of 4`, 190, 290, { align: "right" });
-  });
+    pdf.text(`Page ${p} of ${totalPages}`, 190, 290, { align: "right" });
+  }
 
   pdf.save(filename);
 }
