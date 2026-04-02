@@ -263,27 +263,42 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
           </>
         )}
 
-        {stage === "options" && selectedOption && selectedComputed && (
+        {stage === "options" && selectedOption && (
           <>
-            {/* Show accepted option + financial impact */}
-            <div className="max-w-md mx-auto mb-8">
+            <div className="max-w-md mx-auto mb-6">
               <OptionCard
                 optionKey={selectedOption}
                 name={options.find((o) => o.key === selectedOption)?.name || ""}
                 computed={computed}
                 selected={true}
               />
+              <button
+                onClick={() => { setSelectedOption(null); setStage("options"); }}
+                className="mt-3 mx-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Change selection
+              </button>
             </div>
+            <TrustBar />
+          </>
+        )}
 
+        {stage === "impact" && selectedOption && selectedComputed && (
+          <div className="animate-fade-in space-y-6">
+            <div className="text-center mb-6">
+              <h1 className="text-3xl font-display font-extrabold text-foreground tracking-tight mb-1">
+                The Numbers Behind Your Decision
+              </h1>
+              <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                Here's what moving forward with Option {selectedOption} looks like over the next 10 years.
+              </p>
+            </div>
             <FinancialImpact
               state={{ ...state, selectedOption }}
               computed={selectedComputed}
             />
-
-            <div className="mt-8">
-              <TrustBar />
-            </div>
-          </>
+          </div>
         )}
 
         {stage === "inspection" && isWindows && (
