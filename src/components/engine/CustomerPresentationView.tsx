@@ -131,7 +131,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
         {stage === "options" && (
           <div className="animate-fade-in">
             <h1 className="text-3xl font-display font-extrabold text-foreground tracking-tight mb-1">
-              Your {state.product} Options
+              Your {productLabel} Options
             </h1>
             <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
               {state.homeowner1}
