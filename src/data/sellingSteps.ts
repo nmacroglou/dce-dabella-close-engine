@@ -1,15 +1,25 @@
 import { Users, ClipboardList, Search, BarChart3, DollarSign, Award, HandshakeIcon, Target, Zap, Heart } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+export interface ReferenceSection {
+  title: string;
+  content: string[];
+  subSections?: { heading: string; items: string[] }[];
+}
+
 export interface SellingStep {
   id: number;
   title: string;
   subtitle: string;
   icon: LucideIcon;
   script: string;
+  /** Additional detailed scripts for specific scenarios */
+  detailedScripts?: { label: string; text: string }[];
   checklist: string[];
   tips: string[];
-  linkTab?: string; // tab value to deep-link to
+  linkTab?: string;
+  /** Reference material (POI guides, payment factors, etc.) */
+  references?: ReferenceSection[];
 }
 
 export const SELLING_STEPS: SellingStep[] = [
@@ -37,16 +47,28 @@ export const SELLING_STEPS: SellingStep[] = [
     title: "Agenda",
     subtitle: "Confirm the appointment flow",
     icon: ClipboardList,
-    script: `"Here's what I'd like to do today — I'll take a look at the exterior, take some measurements, and then we'll sit down together so I can show you exactly what I found and go over your options. Sound good?"`,
+    script: `"Did the person on the phone tell you what to expect from me when I came out this evening?"`,
+    detailedScripts: [
+      {
+        label: "Customer says 'No'",
+        text: `"Well, we come to each appointment with a pretty specific agenda. First, I will have you give me a tour of your roof so I can measure and inspect. Then we can sit down at the table and discuss the results of your inspection.\n\nNext I'll take a couple of minutes and tell you about our company. Let me share this with you. The most important decision you will make regarding a project like yours is not so much the price you pay or even the product you choose, it's the company you decide to have do the work for you. So even though this only takes a few minutes it is the most important part.\n\nThen is the fun part, we'll go product shopping. We have access to a number of different styles and colors to best fit your wants and needs.\n\nAnd last before I leave, we can sit down to write up your contracts, put you on the installation schedule and, if needed, arrange your financing. FAIR ENOUGH?"`,
+      },
+      {
+        label: "Customer: 'I'm not buying anything tonight'",
+        text: `"I understand, I get a bit ahead of myself! Let me re-say correctly, what I meant to say the first time. Often times when I meet with people, they think they will have to search for a bank or find an installer or even go to the city for permits. What I meant to say was, when you DO decide to move forward, I have everything we need, including financing.\n\nI also like to be realistic. I know that one of three things is going to happen in all of my appointments. Either you find a product you like, the timing is right, the price is right and you say yes, and I love to hear that! OR the timing is wrong or whatever else is wrong and you say no. That's fine too, it's part of the job. It's the third response I really try to avoid… 'Call you next week, next month, or next year.' It's not that I won't come back if you asked, but it's been my experience that when someone says that, it is just a nice way to say no.\n\nSo, I will make a deal with you! If you see something you like and I can make it affordable for you say YES, and if not say NO I will take no as graciously as a yes. FAIR ENOUGH?"`,
+      },
+    ],
     checklist: [
       "Confirm both decision-makers are present",
       "Set time expectations (60–90 min)",
       "Outline the inspection → results → options flow",
       "Get verbal agreement on the agenda",
+      "Handle 'not buying tonight' objection with script",
     ],
     tips: [
       "If a decision-maker is missing, reschedule or call them in",
       "Setting the agenda controls the appointment pace",
+      "Always end agenda sections with 'FAIR ENOUGH?' for agreement",
     ],
   },
   {
@@ -195,17 +217,86 @@ export const SELLING_STEPS: SellingStep[] = [
     script: `"Congratulations! Welcome to the DaBella family. Let's get the paperwork taken care of so we can get your project scheduled. I'll need a couple of things from you."`,
     checklist: [
       "Collect signed contract",
-      "Collect proof of income",
+      "Collect proof of income (POI)",
       "Collect 2 forms of ID",
       "Process initial deposit",
+      "ALWAYS get the co-app",
+      "Include customer's last name in subject line of every email to Finance",
       "Set expectations for next steps",
       "Schedule installation timeline",
+      "Get all required paperwork in right away",
       "Provide your contact info for questions",
     ],
     tips: [
       "Celebrate the decision — reinforce they made a great choice",
-      "Be thorough with paperwork to avoid delays",
-      "Leave them feeling excited, not anxious",
+      "POI is required on ALL deals",
+      "Ask how much they make monthly, then ask about bonuses, OT, commission",
+      "Need $2,000 in disposable income",
+      "DTI = monthly recurring debts / monthly gross income",
+      "Ask about ALL household income",
+      "If self-employed: get business name, type, work # — prepare for 1040 & Schedule C",
+      "IDs are required!",
+      "NEVER disclose specific credit info from Finance — we do not run credit",
+      "If customer cancels (cash or financed) — let Finance know right away",
+      "Deals with everything Finance needs get processed FIRST",
+      "Respond to emails quickly and/or acknowledge you are working on it",
+    ],
+    references: [
+      {
+        title: "POI — Proof of Income Guide",
+        content: ["Below is what the bank will accept to prove different types of income."],
+        subSections: [
+          {
+            heading: "Full Time Employee",
+            items: [
+              "Paystub within the last 30–45 days showing: date of check, pay period, gross YTD income, employer's name, employee's name",
+              "W-2 from previous year (in addition to recent paystub) — used when employee has significant OT and/or bonus income",
+            ],
+          },
+          {
+            heading: "Part Time Employee",
+            items: [
+              "Same as full time EXCEPT a W-2 from the previous year is required as well",
+            ],
+          },
+          {
+            heading: "Self Employed / Business Owner",
+            items: [
+              "Two years of tax returns (most recent): 1040, Schedule C, and Schedule E (if applicable)",
+              "Paystub within the last 30–45 days — if they have one",
+            ],
+          },
+          {
+            heading: "Retirement / Disability / Veteran's Benefits / Pension / Annuity",
+            items: [
+              "Recent bank statement(s) showing: date of statement, period covered, customer's name, ALL pages — not just deposits",
+              "Award letters (usually sent at the beginning of the year)",
+              "1099 Tax Documents (sent at the end of the year)",
+            ],
+          },
+          {
+            heading: "Alimony / Child Support",
+            items: [
+              "Court ordered documents / divorce decree showing amount and duration",
+            ],
+          },
+          {
+            heading: "Rental Income",
+            items: [
+              "Two years of taxes to prove rental income: 1040 and Schedule E",
+              "If not claimed on taxes, must provide a formal lease/rental agreement — no guarantee this will clear the income stipulation",
+            ],
+          },
+          {
+            heading: "401K / IRA / Investments",
+            items: [
+              "They DO NOT have to touch this income — just prove it exists",
+              "Provide a recent statement showing current value",
+              "The bank will take a percentage of the amount divided over the term of the loan and consider it an asset",
+            ],
+          },
+        ],
+      },
     ],
   },
 ];

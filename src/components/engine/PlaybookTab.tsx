@@ -1,13 +1,17 @@
 import { useState } from "react";
 import type { EngineTabProps } from "@/types/engine";
 import { SELLING_STEPS } from "@/data/sellingSteps";
+import { PAYMENT_FACTORS, PAYMENT_TERMS } from "@/data/paymentFactors";
 import { Progress } from "@/components/ui/progress";
-import { Check, ChevronRight, ExternalLink } from "lucide-react";
+import { Check, ChevronRight, ChevronDown, ExternalLink, BookOpen, DollarSign } from "lucide-react";
 
 export default function PlaybookTab({ state, update }: EngineTabProps) {
   const [activeStepId, setActiveStepId] = useState<number>(1);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [checkedItems, setCheckedItems] = useState<Record<number, Set<number>>>({});
+  const [expandedScripts, setExpandedScripts] = useState<Set<number>>(new Set());
+  const [expandedRefs, setExpandedRefs] = useState<Set<string>>(new Set());
+  const [showPaymentFactors, setShowPaymentFactors] = useState(false);
 
   const activeStep = SELLING_STEPS.find((s) => s.id === activeStepId)!;
   const progress = (completedSteps.size / SELLING_STEPS.length) * 100;
@@ -26,6 +30,24 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
       const next = new Set(prev);
       if (next.has(stepId)) next.delete(stepId);
       else next.add(stepId);
+      return next;
+    });
+  };
+
+  const toggleScript = (idx: number) => {
+    setExpandedScripts((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  const toggleRef = (key: string) => {
+    setExpandedRefs((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   };
@@ -106,8 +128,31 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
               Suggested Script
             </h4>
-            <div className="script-block text-base leading-relaxed">{activeStep.script}</div>
+            <div className="script-block text-base leading-relaxed whitespace-pre-line">{activeStep.script}</div>
           </div>
+
+          {/* Detailed scripts (expandable) */}
+          {activeStep.detailedScripts && activeStep.detailedScripts.map((ds, idx) => (
+            <div key={idx} className="card-elevated-lg overflow-hidden">
+              <button
+                onClick={() => toggleScript(idx)}
+                className="w-full text-left p-5 flex items-center justify-between hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center rounded-full bg-warning/15 px-2.5 py-0.5 text-[10px] font-semibold text-warning uppercase">
+                    Scenario
+                  </span>
+                  <span className="text-sm font-semibold text-foreground">{ds.label}</span>
+                </div>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expandedScripts.has(idx) ? "rotate-180" : ""}`} />
+              </button>
+              {expandedScripts.has(idx) && (
+                <div className="px-5 pb-5 animate-fade-in">
+                  <div className="script-block text-sm leading-relaxed whitespace-pre-line">{ds.text}</div>
+                </div>
+              )}
+            </div>
+          ))}
 
           {/* Checklist */}
           <div className="card-elevated-lg p-6">
@@ -144,6 +189,46 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
               })}
             </div>
           </div>
+
+          {/* Reference sections */}
+          {activeStep.references && activeStep.references.map((ref, rIdx) => {
+            const refKey = `${activeStepId}-${rIdx}`;
+            const isOpen = expandedRefs.has(refKey);
+            return (
+              <div key={rIdx} className="card-elevated-lg overflow-hidden">
+                <button
+                  onClick={() => toggleRef(refKey)}
+                  className="w-full text-left p-5 flex items-center justify-between hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-bold text-foreground">{ref.title}</span>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 space-y-4 animate-fade-in">
+                    {ref.content.map((p, i) => (
+                      <p key={i} className="text-sm text-muted-foreground">{p}</p>
+                    ))}
+                    {ref.subSections?.map((sub, sIdx) => (
+                      <div key={sIdx} className="space-y-1.5">
+                        <h5 className="text-sm font-bold text-foreground">{sub.heading}</h5>
+                        <ul className="space-y-1 ml-1">
+                          {sub.items.map((item, iIdx) => (
+                            <li key={iIdx} className="flex items-start gap-2 text-sm text-muted-foreground">
+                              <span className="flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full bg-primary/60" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Sidebar */}
@@ -161,6 +246,46 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Payment Factors quick-ref */}
+          <div className="card-elevated-lg overflow-hidden">
+            <button
+              onClick={() => setShowPaymentFactors(!showPaymentFactors)}
+              className="w-full text-left p-5 flex items-center justify-between hover:bg-muted/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <span className="text-sm font-bold text-foreground">Payment Factors Table</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showPaymentFactors ? "rotate-180" : ""}`} />
+            </button>
+            {showPaymentFactors && (
+              <div className="px-3 pb-4 animate-fade-in overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-1.5 font-semibold text-muted-foreground">Rate</th>
+                      {PAYMENT_TERMS.map((t) => (
+                        <th key={t} className="text-center py-2 px-1 font-semibold text-muted-foreground">{t}mo</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {PAYMENT_FACTORS.map((row) => (
+                      <tr key={row.rate} className="border-b border-border/50 hover:bg-muted/30">
+                        <td className="py-1.5 px-1.5 font-semibold text-foreground">{row.rate}</td>
+                        {PAYMENT_TERMS.map((t) => (
+                          <td key={t} className="text-center py-1.5 px-1 text-muted-foreground font-mono">
+                            {row.factors[t] != null ? row.factors[t]!.toFixed(5) : "—"}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* Deep link */}
