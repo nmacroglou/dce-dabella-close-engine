@@ -200,22 +200,116 @@ export const SELLING_STEPS: SellingStep[] = [
   {
     id: 5,
     title: "Cost vs. Value",
-    subtitle: "Present price with context",
+    subtitle: "The Kelley Blue Book for your home",
     icon: DollarSign,
-    script: `"Now let's talk about what this means financially. I want to show you not just the cost, but the value — what it costs to fix it now versus what it costs to wait."`,
+    script: `"Opinions are cheap. Data is powerful. That's why I base every conversation on the Cost vs. Value Report — the nationally recognized benchmark used by real estate investors, appraisers, and networks like HGTV to understand what home improvement projects are actually worth at resale.\n\nThis isn't marketing spin. It's the same authoritative source that financial professionals rely on when evaluating a home's true market position. When I show you the numbers, I'm showing you what the market says — not what a salesperson thinks sounds good."`,
+    detailedScripts: [
+      {
+        label: "Reframe: Investment, not expense",
+        text: `"Understanding this report is your power move as a homeowner. It transforms the roofing conversation from 'how much does this cost?' into 'how does this protect and build my wealth?' — which is the only question that really matters."`,
+      },
+      {
+        label: "Core insight script",
+        text: `"A roof isn't just an expense — it's one of the core value-protection systems of your home."\n\nMost people mentally file 'new roof' under home expenses — right next to HVAC repairs and plumbing fixes. But the Cost vs. Value data tells a fundamentally different story. Your roof is one of the highest-returning investments you can make in your property.\n\nIt's not just protecting your family from the elements. It's protecting your equity. Your insurance rates. Your ability to sell. Your ability to refinance. In Phoenix's competitive real estate market, a compromised roof is a negotiating liability — a certified, upgraded roof is a negotiating asset."`,
+      },
+      {
+        label: "Metal roofing value script",
+        text: `"Metal roofing commands a higher initial investment — but it also delivers a premium end product. The return percentage on metal is lower — but that's only part of the story.\n\nMetal roofs deliver 50+ year lifespans, dramatically lower energy costs in Phoenix's intense heat, superior storm resistance, and a premium aesthetic that attracts higher-end buyers.\n\nThe value equation for metal isn't just resale — it's decades of reduced utility bills, zero replacement cycles, and the peace of mind that comes from owning a roof that essentially never needs to be replaced again.\n\nMetal roofing in Phoenix also reflects solar heat more efficiently — a critical performance advantage in a market where summer cooling costs can be extreme."`,
+      },
+    ],
     checklist: [
-      "Show the 10-year cost comparison",
-      "Present ROI / home value impact",
-      "Frame as investment, not expense",
-      "Use the T-Close board",
+      "Present the Cost vs. Value Report as 'Kelley Blue Book for your home'",
+      "Show Phoenix-specific market data",
+      "Show asphalt shingle ROI: 77.5% value retained",
+      "Show metal roofing ROI: 59.7% value retained (with longevity context)",
+      "Compare to kitchen remodel ROI (60–65%) to contextualize",
+      "Frame roof as value-protection system, not expense",
+      "Use the T-Close board for 10-year comparison",
       "Compare cost of doing nothing",
     ],
     tips: [
-      "Never apologize for price",
+      "Never apologize for price — let the data speak",
       "Always show cost of waiting first, then your price",
       "Use the Financial Impact panel in Presentation",
+      "The CVV Report is used by investors, appraisers, and HGTV",
+      "77.5% retention on roofing beats most kitchen remodels",
+      "For metal: sell the 50+ year lifespan & energy savings, not just resale %",
     ],
     linkTab: "presentation",
+    references: [
+      {
+        title: "Phoenix Market Data — Cost vs. Value 2025",
+        content: ["These are market-verified figures from the 2025 Cost vs. Value Report for the Phoenix metro area."],
+        subSections: [
+          {
+            heading: "Roofing — Asphalt Shingles",
+            items: [
+              "Job Cost: $26,368",
+              "Resale Value: $20,436",
+              "Value Retained: 77.5%",
+              "One of the highest ROI percentages of any major home improvement category",
+            ],
+          },
+          {
+            heading: "Roofing — Metal",
+            items: [
+              "Job Cost: $41,202",
+              "Resale Value: $24,609",
+              "Value Retained: 59.7%",
+              "50+ year lifespan, lower energy costs, superior storm resistance",
+            ],
+          },
+          {
+            heading: "Windows — Vinyl",
+            items: [
+              "Job Cost: $21,022",
+              "Resale Value: $16,312",
+              "Value Retained: 77.6%",
+            ],
+          },
+          {
+            heading: "Windows — Wood",
+            items: [
+              "Job Cost: $26,166",
+              "Resale Value: $17,626",
+              "Value Retained: 67.4%",
+            ],
+          },
+          {
+            heading: "Siding — Vinyl",
+            items: [
+              "Job Cost: $15,343",
+              "Resale Value: $19,828",
+              "Value Retained: 129.2% ✨",
+            ],
+          },
+          {
+            heading: "Siding — Fiber Cement",
+            items: [
+              "Job Cost: $16,573",
+              "Resale Value: $17,130",
+              "Value Retained: 103.4%",
+            ],
+          },
+          {
+            heading: "Comparison: Kitchen Remodels",
+            items: [
+              "Minor Kitchen (Midrange): $28,333 cost → $30,899 resale → 109.1%",
+              "Major Kitchen (Midrange): $81,274 cost → $38,089 resale → 46.9%",
+              "Major Kitchen (Upscale): $158,252 cost → $53,408 resale → 33.7%",
+            ],
+          },
+          {
+            heading: "Other High-ROI Projects",
+            items: [
+              "Garage Door Replacement: 248.3% value recouped",
+              "Steel Entry Door: 194.1% value recouped",
+              "Manufactured Stone Veneer: 160.9% value recouped",
+            ],
+          },
+        ],
+      },
+    ],
   },
   {
     id: 6,
