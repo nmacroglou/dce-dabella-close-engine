@@ -3,7 +3,7 @@ import type { WindowLineItem, WindowInspectionEntry } from "@/data/windowData";
 export interface EngineState {
   homeowner1: string;
   homeowner2: string;
-  product: string;
+  products: string[];
   solarKw: string;
   optionAName: string;
   optionBName: string;

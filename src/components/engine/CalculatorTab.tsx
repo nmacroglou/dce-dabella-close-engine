@@ -1,8 +1,9 @@
+import { useState } from "react";
 import type { EngineTabProps, EngineState } from "@/types/engine";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
 import { PRODUCT_OPTIONS } from "@/data/products";
 import { fmt } from "@/lib/format";
-import { parseNum } from "@/lib/engineHelpers";
+import { parseNum, hasProduct } from "@/lib/engineHelpers";
 import InputField from "./shared/InputField";
 import OptionOutputCard from "./shared/OptionOutputCard";
 import WindowEstimateSection from "./calculator/WindowEstimateSection";
@@ -16,6 +17,28 @@ const OPTION_CONFIG: { key: OptionKey; nameKey: keyof EngineState; priceKey: key
   { key: "B", nameKey: "optionBName", priceKey: "priceB", desc: "Our most popular choice — great balance of quality, protection, and long-term value" },
   { key: "C", nameKey: "optionCName", priceKey: "priceC", desc: "The smart-budget option — solid quality that still protects your investment" },
 ];
+
+function ProductAccordion({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="mt-8 pt-8 border-t border-border">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between text-left group"
+      >
+        <h4 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+          {title}
+        </h4>
+        {open ? (
+          <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform" />
+        ) : (
+          <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform" />
+        )}
+      </button>
+      {open && <div className="mt-4 animate-fade-in">{children}</div>}
+    </div>
+  );
+}
 
 export default function CalculatorTab({ state, computed, update, reset }: EngineTabProps) {
   return (
@@ -70,18 +93,32 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
             "Based on our inspection, here's what we're recommending for your home."
           </p>
           <div className="grid grid-cols-3 gap-5">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Product</label>
-              <p className="text-[11px] text-muted-foreground leading-relaxed -mt-0.5">The type of system we're installing — roofing, HVAC, solar, etc.</p>
-              <select
-                value={state.product}
-                onChange={(e) => update("product", e.target.value)}
-                className="w-full touch-target rounded-xl border border-input bg-card px-4 py-3.5 text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                {PRODUCT_OPTIONS.map((p) => (
-                  <option key={p}>{p}</option>
-                ))}
-              </select>
+            <div className="space-y-2 col-span-3">
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Products</label>
+              <p className="text-[11px] text-muted-foreground leading-relaxed -mt-0.5">Select all systems included in this bid — roofing, windows, solar, etc.</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {PRODUCT_OPTIONS.map((p) => {
+                  const selected = state.products.includes(p);
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => {
+                        const next = selected
+                          ? state.products.filter((x) => x !== p)
+                          : [...state.products, p];
+                        update("products", next.length > 0 ? next : [p]);
+                      }}
+                      className={`px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                        selected
+                          ? "bg-primary text-primary-foreground border-primary shadow-md"
+                          : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <InputField
               label="Solar kW"
@@ -237,11 +274,11 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
           </div>
         </div>
 
-        {/* Windows Estimate — only when Windows is selected */}
-        {state.product === "Windows" && (
-          <div className="mt-8 pt-8 border-t border-border">
+        {/* Product-specific sections as accordions */}
+        {hasProduct(state.products, "Windows") && (
+          <ProductAccordion title="🪟 Window Estimate" defaultOpen>
             <WindowEstimateSection state={state} update={update} />
-          </div>
+          </ProductAccordion>
         )}
       </div>
 

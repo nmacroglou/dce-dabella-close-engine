@@ -4,7 +4,7 @@ import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
 import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
-import { getNames, getOptionMetrics, getOptionLabel } from "@/lib/engineHelpers";
+import { getNames, getOptionMetrics, getOptionLabel, getProductLabel, hasProduct } from "@/lib/engineHelpers";
 
 // Brand colors
 const BLUE = [37, 99, 235] as const;
@@ -79,7 +79,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(20);
   setColor(pdf, DARK);
-  pdf.text(`${state.product} Proposal`, pw / 2, cy + 48, { align: "center" });
+  pdf.text(`${getProductLabel(state.products)} Proposal`, pw / 2, cy + 48, { align: "center" });
 
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   pdf.setFont("helvetica", "normal");
@@ -124,7 +124,7 @@ function drawOptions(
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
   setColor(pdf, DARK);
-  pdf.text(`Your ${state.product} Options`, pw / 2, y, { align: "center" });
+  pdf.text(`Your ${getProductLabel(state.products)} Options`, pw / 2, y, { align: "center" });
 
   y += 8;
   pdf.setFont("helvetica", "normal");
@@ -232,7 +232,7 @@ function drawOptions(
 function drawScope(pdf: jsPDF, state: EngineState) {
   const pw = 210;
   const margin = 20;
-  const isWindows = state.product === "Windows";
+  const isWindows = hasProduct(state.products, "Windows");
   const scopeItems = isWindows ? [...WINDOW_SCOPE_ITEMS] : [...SCOPE_ITEMS];
 
   let y = 18;
@@ -734,7 +734,7 @@ export async function exportCustomerPdf(
   selectedOption?: "A" | "B" | "C" | null,
 ) {
   const pdf = new jsPDF("p", "mm", "a4");
-  const isWindows = state.product === "Windows";
+  const isWindows = hasProduct(state.products, "Windows");
   let pageCount = selectedOption ? 6 : 4;
   if (isWindows) pageCount += 1; // window inspection page
 

@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
 import { exportCustomerPdf } from "@/lib/exportPdf";
-import { buildOptionsArray, getOptionMetrics } from "@/lib/engineHelpers";
+import { buildOptionsArray, getOptionMetrics, getProductLabel, hasProduct } from "@/lib/engineHelpers";
 import dabellaLogo from "@/assets/dabella-logo.png";
 import OptionCard from "./presentation/OptionCard";
 import TrustBar from "./presentation/TrustBar";
@@ -29,7 +29,8 @@ const STAGE_LABELS: Record<Stage, string> = {
 };
 
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
-  const isWindows = state.product === "Windows";
+  const isWindows = hasProduct(state.products, "Windows");
+  const productLabel = getProductLabel(state.products);
   const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
 
   const [stage, setStage] = useState<Stage>("options");
@@ -131,7 +132,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
         {stage === "options" && (
           <div className="animate-fade-in">
             <h1 className="text-3xl font-display font-extrabold text-foreground tracking-tight mb-1">
-              Your {state.product} Options
+              Your {productLabel} Options
             </h1>
             <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
               {state.homeowner1}
@@ -178,7 +179,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
           <WindowInspectionView state={state} />
         )}
 
-        {stage === "scope" && <ScopeOfWork product={state.product} />}
+        {stage === "scope" && <ScopeOfWork products={state.products} />}
 
         {stage === "welcome" && (
           <WelcomeClose homeowner1={state.homeowner1} homeowner2={state.homeowner2} />
