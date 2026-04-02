@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
+import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
 import { getNames, getOptionMetrics, getOptionLabel } from "@/lib/engineHelpers";
 
