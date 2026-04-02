@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
+import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
 import { getNames, getOptionMetrics, getOptionLabel } from "@/lib/engineHelpers";
 
@@ -228,9 +229,11 @@ function drawOptions(
 }
 
 // ─── PAGE 3: SCOPE OF WORK ───────────────────────────────────
-function drawScope(pdf: jsPDF) {
+function drawScope(pdf: jsPDF, state: EngineState) {
   const pw = 210;
   const margin = 20;
+  const isWindows = state.product === "Windows";
+  const scopeItems = isWindows ? [...WINDOW_SCOPE_ITEMS] : [...SCOPE_ITEMS];
 
   let y = 18;
   pdf.setFont("helvetica", "bold");
@@ -242,14 +245,19 @@ function drawScope(pdf: jsPDF) {
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
   setColor(pdf, GRAY);
-  pdf.text("Your complete scope of work — everything included in your project", pw / 2, y, { align: "center" });
+  pdf.text(
+    isWindows
+      ? "Your complete window project scope — from measure to final walkthrough"
+      : "Your complete scope of work — everything included in your project",
+    pw / 2, y, { align: "center" }
+  );
 
   y += 12;
 
-  roundedRect(pdf, margin, y, pw - margin * 2, SCOPE_ITEMS.length * 13 + 16, 5, WHITE, BORDER);
+  roundedRect(pdf, margin, y, pw - margin * 2, scopeItems.length * 13 + 16, 5, WHITE, BORDER);
 
   let sy = y + 10;
-  SCOPE_ITEMS.forEach((item, i) => {
+  scopeItems.forEach((item, i) => {
     const rowX = margin + 8;
     const rowW = pw - margin * 2 - 16;
 
@@ -278,6 +286,107 @@ function drawScope(pdf: jsPDF) {
   pdf.setFontSize(9);
   setColor(pdf, DARK);
   pdf.text('"Does that sound like everything we have spoken about today?"', pw / 2, sy + 9, { align: "center" });
+}
+
+// ─── PAGE: WINDOW INSPECTION ─────────────────────────────────
+function drawWindowInspection(pdf: jsPDF, state: EngineState) {
+  const pw = 210;
+  const margin = 20;
+
+  let y = 18;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(18);
+  setColor(pdf, DARK);
+  pdf.text("Window Inspection Results", pw / 2, y, { align: "center" });
+
+  y += 8;
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  setColor(pdf, GRAY);
+  pdf.text("Here's what we found during our inspection of your windows", pw / 2, y, { align: "center" });
+
+  // Inspection checklist
+  y += 12;
+  const STATUS_COLORS: Record<string, RGB> = {
+    yes: GREEN,
+    no: [220, 38, 38],
+    na: GRAY,
+  };
+  const STATUS_LABELS: Record<string, string> = { yes: "YES", no: "NO", na: "N/A" };
+
+  const colW = (pw - margin * 2 - 8) / 2;
+  state.windowInspection.forEach((entry, i) => {
+    const col = i < 7 ? 0 : 1;
+    const row = i < 7 ? i : i - 7;
+    const x = margin + col * (colW + 8);
+    const ry = y + row * 11;
+
+    if (row % 2 === 0) {
+      roundedRect(pdf, x, ry - 3, colW, 10, 2, LIGHT_BG);
+    }
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(7.5);
+    setColor(pdf, DARK);
+    pdf.text(`${i + 1}. ${entry.label}`, x + 4, ry + 3);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(7);
+    setColor(pdf, STATUS_COLORS[entry.status] || GRAY);
+    pdf.text(STATUS_LABELS[entry.status] || "N/A", x + colW - 4, ry + 3, { align: "right" });
+  });
+
+  // Window schedule table
+  if (state.windowItems.length > 0) {
+    y += 85;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(13);
+    setColor(pdf, DARK);
+    pdf.text(`Window Schedule — ${state.windowItems.length} Window${state.windowItems.length !== 1 ? "s" : ""}`, pw / 2, y, { align: "center" });
+
+    y += 8;
+    const tableW = pw - margin * 2;
+    const cols = [12, 18, 30, 40, 25, 22, 23]; // #, Level, Room, Style, Size, Grids, Notes
+    const headers = ["#", "Level", "Room", "Style", "Size", "Grids", "Notes"];
+
+    // Header row
+    roundedRect(pdf, margin, y, tableW, 8, 2, BLUE);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(6);
+    setColor(pdf, WHITE);
+    let hx = margin + 2;
+    headers.forEach((h, ci) => {
+      pdf.text(h, hx + 1, y + 5.5);
+      hx += cols[ci];
+    });
+
+    y += 9;
+    state.windowItems.forEach((item, i) => {
+      if (i % 2 === 0) {
+        roundedRect(pdf, margin, y - 2, tableW, 8, 1, LIGHT_BG);
+      }
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7);
+      setColor(pdf, DARK);
+      let cx = margin + 2;
+      const vals = [
+        String(item.number),
+        item.level || "—",
+        item.room || "—",
+        item.style.split(" - ").pop() || item.style,
+        item.width && item.height ? `${item.width}×${item.height}` : "—",
+        item.gridPattern,
+        item.observations || "—",
+      ];
+      vals.forEach((v, ci) => {
+        const txt = pdf.splitTextToSize(v, cols[ci] - 3)[0];
+        pdf.text(txt, cx + 1, y + 3.5);
+        cx += cols[ci];
+      });
+      y += 8;
+    });
+  }
 }
 
 // ─── PAGE 4: WELCOME ─────────────────────────────────────────
@@ -625,7 +734,9 @@ export async function exportCustomerPdf(
   selectedOption?: "A" | "B" | "C" | null,
 ) {
   const pdf = new jsPDF("p", "mm", "a4");
-  const totalPages = selectedOption ? 6 : 4;
+  const isWindows = state.product === "Windows";
+  let pageCount = selectedOption ? 6 : 4;
+  if (isWindows) pageCount += 1; // window inspection page
 
   drawCover(pdf, state);
 
@@ -640,13 +751,19 @@ export async function exportCustomerPdf(
     drawFinancialImpact(pdf, state, computed, selectedOption);
   }
 
+  if (isWindows) {
+    pdf.addPage();
+    drawWindowInspection(pdf, state);
+  }
+
   pdf.addPage();
-  drawScope(pdf);
+  drawScope(pdf, state);
 
   pdf.addPage();
   drawWelcome(pdf, state);
 
   // Footer on content pages (all except cover and welcome)
+  const totalPages = pdf.getNumberOfPages();
   for (let p = 2; p <= totalPages - 1; p++) {
     pdf.setPage(p);
     drawLine(pdf, 20, 285, 190, 285, BORDER);

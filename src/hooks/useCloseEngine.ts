@@ -6,6 +6,7 @@ import type {
   EngineUpdater,
   EngineTabProps,
 } from "@/types/engine";
+import { WINDOW_INSPECTION_ITEMS, WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 
 // Re-export all types for backward compatibility
 export type { EngineState, ComputedValues, OptionComputed, EngineUpdater, EngineTabProps };
@@ -37,6 +38,9 @@ const initialState: EngineState = {
   objectionType: null,
   priceShown: false,
   activeTab: "calculator",
+  windowInspection: WINDOW_INSPECTION_ITEMS.map((label) => ({ label, status: "na" as const })),
+  windowItems: [],
+  windowScopeChecks: new Array(WINDOW_SCOPE_ITEMS.length).fill(false),
 };
 
 export function useCloseEngine() {

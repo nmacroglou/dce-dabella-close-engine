@@ -1,3 +1,5 @@
+import type { WindowLineItem, WindowInspectionEntry } from "@/data/windowData";
+
 export interface EngineState {
   homeowner1: string;
   homeowner2: string;
@@ -25,6 +27,10 @@ export interface EngineState {
   objectionType: string | null;
   priceShown: boolean;
   activeTab: string;
+  // Window estimate fields
+  windowInspection: WindowInspectionEntry[];
+  windowItems: WindowLineItem[];
+  windowScopeChecks: boolean[];
 }
 
 export interface OptionComputed {

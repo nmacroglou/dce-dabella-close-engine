@@ -9,6 +9,7 @@ import TrustBar from "./presentation/TrustBar";
 import ScopeOfWork from "./presentation/ScopeOfWork";
 import WelcomeClose from "./presentation/WelcomeClose";
 import FinancialImpact from "./presentation/FinancialImpact";
+import WindowInspectionView from "./presentation/WindowInspectionView";
 
 interface Props {
   state: EngineState;
@@ -16,16 +17,21 @@ interface Props {
   onClose: () => void;
 }
 
-const STAGES = ["options", "scope", "welcome"] as const;
-type Stage = (typeof STAGES)[number];
+const BASE_STAGES = ["options", "scope", "welcome"] as const;
+const WINDOW_STAGES = ["options", "inspection", "scope", "welcome"] as const;
+type Stage = "options" | "inspection" | "scope" | "welcome";
 
 const STAGE_LABELS: Record<Stage, string> = {
   options: "Your Options",
+  inspection: "Inspection",
   scope: "What to Expect",
   welcome: "Welcome",
 };
 
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
+  const isWindows = state.product === "Windows";
+  const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
+
   const [stage, setStage] = useState<Stage>("options");
   const [exporting, setExporting] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
@@ -37,8 +43,8 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
     computed.monthlyA, computed.monthlyB, computed.monthlyC,
   ]);
 
-  const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1]);
-  const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1]);
+  const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1] as Stage);
+  const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1] as Stage);
 
   const handleExportPdf = async () => {
     if (exporting) return;
@@ -168,7 +174,11 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
           </>
         )}
 
-        {stage === "scope" && <ScopeOfWork />}
+        {stage === "inspection" && isWindows && (
+          <WindowInspectionView state={state} />
+        )}
+
+        {stage === "scope" && <ScopeOfWork product={state.product} />}
 
         {stage === "welcome" && (
           <WelcomeClose homeowner1={state.homeowner1} homeowner2={state.homeowner2} />

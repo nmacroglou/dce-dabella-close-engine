@@ -5,6 +5,7 @@ import { fmt } from "@/lib/format";
 import { parseNum } from "@/lib/engineHelpers";
 import InputField from "./shared/InputField";
 import OptionOutputCard from "./shared/OptionOutputCard";
+import WindowEstimateSection from "./calculator/WindowEstimateSection";
 
 const OPTION_ACCENTS = { A: "text-primary", B: "text-accent", C: "text-warning" } as const;
 
@@ -235,6 +236,13 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
             />
           </div>
         </div>
+
+        {/* Windows Estimate — only when Windows is selected */}
+        {state.product === "Windows" && (
+          <div className="mt-8 pt-8 border-t border-border">
+            <WindowEstimateSection state={state} update={update} />
+          </div>
+        )}
       </div>
 
       {/* Output: 3 option cards side by side */}
