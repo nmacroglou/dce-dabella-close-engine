@@ -236,6 +236,13 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
             />
           </div>
         </div>
+
+        {/* Windows Estimate — only when Windows is selected */}
+        {state.product === "Windows" && (
+          <div className="mt-8 pt-8 border-t border-border">
+            <WindowEstimateSection state={state} update={update} />
+          </div>
+        )}
       </div>
 
       {/* Output: 3 option cards side by side */}
