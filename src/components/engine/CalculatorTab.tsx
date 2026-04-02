@@ -71,18 +71,32 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
             "Based on our inspection, here's what we're recommending for your home."
           </p>
           <div className="grid grid-cols-3 gap-5">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Product</label>
-              <p className="text-[11px] text-muted-foreground leading-relaxed -mt-0.5">The type of system we're installing — roofing, HVAC, solar, etc.</p>
-              <select
-                value={state.product}
-                onChange={(e) => update("product", e.target.value)}
-                className="w-full touch-target rounded-xl border border-input bg-card px-4 py-3.5 text-base outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                {PRODUCT_OPTIONS.map((p) => (
-                  <option key={p}>{p}</option>
-                ))}
-              </select>
+            <div className="space-y-2 col-span-3">
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Products</label>
+              <p className="text-[11px] text-muted-foreground leading-relaxed -mt-0.5">Select all systems included in this bid — roofing, windows, solar, etc.</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {PRODUCT_OPTIONS.map((p) => {
+                  const selected = state.products.includes(p);
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => {
+                        const next = selected
+                          ? state.products.filter((x) => x !== p)
+                          : [...state.products, p];
+                        update("products", next.length > 0 ? next : [p]);
+                      }}
+                      className={`px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                        selected
+                          ? "bg-primary text-primary-foreground border-primary shadow-md"
+                          : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <InputField
               label="Solar kW"
