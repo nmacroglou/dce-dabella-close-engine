@@ -28,19 +28,23 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
       <div className="lg:col-span-3 space-y-6">
         <div className="card-elevated-lg p-6">
           <h3 className="text-lg font-display font-bold text-foreground mb-5">Quick comparison board</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {options.map((opt) => (
               <button
                 key={opt.key}
                 onClick={() => update("selectedOption", opt.key)}
-                className={`card-elevated p-5 text-center transition-all active:scale-[0.98] touch-target ${
+                className={`card-elevated p-4 sm:p-5 transition-all active:scale-[0.98] touch-target ${
                   state.selectedOption === opt.key ? "ring-2 ring-primary border-primary" : ""
-                }`}
+                } sm:text-center flex sm:flex-col items-center sm:items-stretch gap-3 sm:gap-0`}
               >
-                <p className="text-[11px] font-semibold text-muted-foreground mb-1 uppercase tracking-[0.15em]">Option {opt.key}</p>
-                <p className="text-2xl font-extrabold text-primary mb-1">{fmt(opt.price)}</p>
-                <p className="text-xs text-muted-foreground mb-2">{fmt(opt.monthly)}/mo</p>
-                <p className="text-sm font-medium text-foreground truncate">{opt.name}</p>
+                <div className="flex-shrink-0 sm:mb-1">
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">Option {opt.key}</p>
+                </div>
+                <div className="flex items-baseline gap-2 sm:flex-col sm:items-center sm:gap-0">
+                  <p className="text-xl sm:text-2xl font-extrabold text-primary">{fmt(opt.price)}</p>
+                  <p className="text-xs text-muted-foreground sm:mb-2">{fmt(opt.monthly)}/mo</p>
+                </div>
+                <p className="text-sm font-medium text-foreground truncate ml-auto sm:ml-0">{opt.name}</p>
               </button>
             ))}
           </div>
