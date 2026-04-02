@@ -1,11 +1,11 @@
-import { useState } from "react";
 import type { EngineTabProps, EngineState } from "@/types/engine";
-import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { PRODUCT_OPTIONS } from "@/data/products";
 import { fmt } from "@/lib/format";
 import { parseNum, hasProduct } from "@/lib/engineHelpers";
 import InputField from "./shared/InputField";
 import OptionOutputCard from "./shared/OptionOutputCard";
+import ProductAccordion from "./shared/ProductAccordion";
 import WindowEstimateSection from "./calculator/WindowEstimateSection";
 
 const OPTION_ACCENTS = { A: "text-primary", B: "text-accent", C: "text-warning" } as const;
@@ -17,28 +17,6 @@ const OPTION_CONFIG: { key: OptionKey; nameKey: keyof EngineState; priceKey: key
   { key: "B", nameKey: "optionBName", priceKey: "priceB", desc: "Our most popular choice — great balance of quality, protection, and long-term value" },
   { key: "C", nameKey: "optionCName", priceKey: "priceC", desc: "The smart-budget option — solid quality that still protects your investment" },
 ];
-
-function ProductAccordion({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className="mt-8 pt-8 border-t border-border">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between text-left group"
-      >
-        <h4 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-          {title}
-        </h4>
-        {open ? (
-          <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform" />
-        ) : (
-          <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform" />
-        )}
-      </button>
-      {open && <div className="mt-4 animate-fade-in">{children}</div>}
-    </div>
-  );
-}
 
 export default function CalculatorTab({ state, computed, update, reset }: EngineTabProps) {
   return (
