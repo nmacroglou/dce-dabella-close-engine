@@ -9,8 +9,10 @@ const PresentationTab = lazy(() => import("@/components/engine/PresentationTab")
 const ObjectionsTab = lazy(() => import("@/components/engine/ObjectionsTab"));
 const ClosingStackTab = lazy(() => import("@/components/engine/ClosingStackTab"));
 const CoachModeTab = lazy(() => import("@/components/engine/CoachModeTab"));
+const PlaybookTab = lazy(() => import("@/components/engine/PlaybookTab"));
 
 const TABS = [
+  { value: "playbook", label: "Playbook", icon: BookOpen },
   { value: "calculator", label: "Calculator", icon: Calculator },
   { value: "presentation", label: "Presentation", icon: Presentation },
   { value: "objections", label: "Objections", icon: ShieldAlert },
