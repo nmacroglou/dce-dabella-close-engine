@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain, Moon, Sun, Loader2 } from "lucide-react";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, Moon, Sun, Loader2, BookOpen } from "lucide-react";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
 const CalculatorTab = lazy(() => import("@/components/engine/CalculatorTab"));
