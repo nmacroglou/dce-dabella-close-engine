@@ -252,11 +252,11 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
           </div>
         </div>
 
-        {/* Windows Estimate — only when Windows is selected */}
-        {state.product === "Windows" && (
-          <div className="mt-8 pt-8 border-t border-border">
+        {/* Product-specific sections as accordions */}
+        {hasProduct(state.products, "Windows") && (
+          <ProductAccordion title="🪟 Window Estimate" defaultOpen>
             <WindowEstimateSection state={state} update={update} />
-          </div>
+          </ProductAccordion>
         )}
       </div>
 
