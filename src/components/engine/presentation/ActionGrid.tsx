@@ -13,7 +13,7 @@ interface ActionGridProps {
 export default memo(function ActionGrid({ state, update, onShowCustomerView, showNarrow, onToggleNarrow }: ActionGridProps) {
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 mt-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
         {/* Customer View */}
         <button
           onClick={onShowCustomerView}
