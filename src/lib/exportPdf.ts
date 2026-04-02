@@ -79,7 +79,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(20);
   setColor(pdf, DARK);
-  pdf.text(`${state.product} Proposal`, pw / 2, cy + 48, { align: "center" });
+  pdf.text(`${getProductLabel(state.products)} Proposal`, pw / 2, cy + 48, { align: "center" });
 
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   pdf.setFont("helvetica", "normal");
