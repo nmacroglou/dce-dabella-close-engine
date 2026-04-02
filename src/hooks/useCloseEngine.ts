@@ -14,7 +14,7 @@ export type { EngineState, ComputedValues, OptionComputed, EngineUpdater, Engine
 const initialState: EngineState = {
   homeowner1: "John",
   homeowner2: "Mary",
-  product: "Roofing System",
+  products: ["Roofing System"],
   solarKw: "8",
   optionAName: "Timberline Energy Charcoal",
   optionBName: "Grand Sequoia Charcoal",

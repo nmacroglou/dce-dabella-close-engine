@@ -41,3 +41,16 @@ export function getNames(state: EngineState) {
 }
 
 export const OPTION_KEYS: readonly ("A" | "B" | "C")[] = ["A", "B", "C"] as const;
+
+/** Format selected products as a display label */
+export function getProductLabel(products: string[]): string {
+  if (products.length === 0) return "Home Improvement";
+  if (products.length === 1) return products[0];
+  if (products.length === 2) return products.join(" & ");
+  return `${products.slice(0, -1).join(", ")} & ${products[products.length - 1]}`;
+}
+
+/** Check if a product is in the selected products array */
+export function hasProduct(products: string[], product: string): boolean {
+  return products.includes(product);
+}
