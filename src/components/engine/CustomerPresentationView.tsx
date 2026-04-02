@@ -17,11 +17,13 @@ interface Props {
   onClose: () => void;
 }
 
-const STAGES = ["options", "scope", "welcome"] as const;
-type Stage = (typeof STAGES)[number];
+const BASE_STAGES = ["options", "scope", "welcome"] as const;
+const WINDOW_STAGES = ["options", "inspection", "scope", "welcome"] as const;
+type Stage = "options" | "inspection" | "scope" | "welcome";
 
 const STAGE_LABELS: Record<Stage, string> = {
   options: "Your Options",
+  inspection: "Inspection",
   scope: "What to Expect",
   welcome: "Welcome",
 };
