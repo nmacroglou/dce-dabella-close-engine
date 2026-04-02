@@ -1,27 +1,35 @@
 import { useState } from "react";
 import { Check, ClipboardCheck } from "lucide-react";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
+import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 
-export default function ScopeOfWork() {
-  const [checked, setChecked] = useState<boolean[]>(new Array(SCOPE_ITEMS.length).fill(false));
+interface Props {
+  product?: string;
+}
+
+export default function ScopeOfWork({ product }: Props) {
+  const isWindows = product === "Windows";
+  const items = isWindows ? [...WINDOW_SCOPE_ITEMS] : [...SCOPE_ITEMS];
+
+  const [checked, setChecked] = useState<boolean[]>(new Array(items.length).fill(false));
   const [animating, setAnimating] = useState(false);
   const allChecked = checked.every(Boolean);
   const checkedCount = checked.filter(Boolean).length;
-  const progress = (checkedCount / SCOPE_ITEMS.length) * 100;
+  const progress = (checkedCount / items.length) * 100;
 
   const toggle = (i: number) =>
     setChecked((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
 
   const reviewAll = () => {
     if (allChecked) {
-      setChecked(new Array(SCOPE_ITEMS.length).fill(false));
+      setChecked(new Array(items.length).fill(false));
       return;
     }
     setAnimating(true);
-    SCOPE_ITEMS.forEach((_, i) => {
+    items.forEach((_, i) => {
       setTimeout(() => {
         setChecked((prev) => prev.map((v, idx) => (idx <= i ? true : v)));
-        if (i === SCOPE_ITEMS.length - 1) setAnimating(false);
+        if (i === items.length - 1) setAnimating(false);
       }, i * 100);
     });
   };
@@ -38,7 +46,9 @@ export default function ScopeOfWork() {
             </h2>
           </div>
           <p className="text-primary-foreground/70 text-sm font-medium">
-            Your complete scope of work — everything included in your project
+            {isWindows
+              ? "Your complete window project scope — from measure to final walkthrough"
+              : "Your complete scope of work — everything included in your project"}
           </p>
         </div>
 
@@ -49,7 +59,7 @@ export default function ScopeOfWork() {
               Scope reviewed
             </span>
             <span className="text-xs font-bold text-primary tabular-nums">
-              {checkedCount} / {SCOPE_ITEMS.length}
+              {checkedCount} / {items.length}
             </span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -62,7 +72,7 @@ export default function ScopeOfWork() {
 
         {/* Checklist */}
         <div className="px-6 py-4 space-y-0.5">
-          {SCOPE_ITEMS.map((item, i) => {
+          {items.map((item, i) => {
             const done = checked[i];
             return (
               <button
