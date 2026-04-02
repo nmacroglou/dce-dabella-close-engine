@@ -124,7 +124,7 @@ function drawOptions(
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
   setColor(pdf, DARK);
-  pdf.text(`Your ${state.product} Options`, pw / 2, y, { align: "center" });
+  pdf.text(`Your ${getProductLabel(state.products)} Options`, pw / 2, y, { align: "center" });
 
   y += 8;
   pdf.setFont("helvetica", "normal");
