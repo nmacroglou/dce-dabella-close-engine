@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
 import { exportCustomerPdf } from "@/lib/exportPdf";
-import { buildOptionsArray, getOptionMetrics } from "@/lib/engineHelpers";
+import { buildOptionsArray, getOptionMetrics, getProductLabel, hasProduct } from "@/lib/engineHelpers";
 import dabellaLogo from "@/assets/dabella-logo.png";
 import OptionCard from "./presentation/OptionCard";
 import TrustBar from "./presentation/TrustBar";
