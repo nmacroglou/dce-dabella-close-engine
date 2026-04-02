@@ -737,16 +737,18 @@ export async function exportCustomerPdf(
 
   drawCover(pdf, state);
 
+  // Only include the accepted option
+  const chosenKey = selectedOption || "A";
+  const chosenOpt = options.find((o) => o.key === chosenKey) || options[0];
+
   pdf.addPage();
-  drawOptions(pdf, state, computed, options);
+  drawSelectedOption(pdf, state, computed, chosenOpt);
 
-  if (selectedOption) {
-    pdf.addPage();
-    drawTClose(pdf, state, computed, selectedOption);
+  pdf.addPage();
+  drawTClose(pdf, state, computed, chosenKey);
 
-    pdf.addPage();
-    drawFinancialImpact(pdf, state, computed, selectedOption);
-  }
+  pdf.addPage();
+  drawFinancialImpact(pdf, state, computed, chosenKey);
 
   if (isWindows) {
     pdf.addPage();
