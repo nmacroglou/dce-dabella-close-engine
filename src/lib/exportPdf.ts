@@ -232,7 +232,7 @@ function drawOptions(
 function drawScope(pdf: jsPDF, state: EngineState) {
   const pw = 210;
   const margin = 20;
-  const isWindows = state.product === "Windows";
+  const isWindows = hasProduct(state.products, "Windows");
   const scopeItems = isWindows ? [...WINDOW_SCOPE_ITEMS] : [...SCOPE_ITEMS];
 
   let y = 18;
