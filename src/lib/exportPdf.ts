@@ -734,7 +734,9 @@ export async function exportCustomerPdf(
   selectedOption?: "A" | "B" | "C" | null,
 ) {
   const pdf = new jsPDF("p", "mm", "a4");
-  const totalPages = selectedOption ? 6 : 4;
+  const isWindows = state.product === "Windows";
+  let pageCount = selectedOption ? 6 : 4;
+  if (isWindows) pageCount += 1; // window inspection page
 
   drawCover(pdf, state);
 
@@ -749,13 +751,19 @@ export async function exportCustomerPdf(
     drawFinancialImpact(pdf, state, computed, selectedOption);
   }
 
+  if (isWindows) {
+    pdf.addPage();
+    drawWindowInspection(pdf, state);
+  }
+
   pdf.addPage();
-  drawScope(pdf);
+  drawScope(pdf, state);
 
   pdf.addPage();
   drawWelcome(pdf, state);
 
   // Footer on content pages (all except cover and welcome)
+  const totalPages = pdf.getNumberOfPages();
   for (let p = 2; p <= totalPages - 1; p++) {
     pdf.setPage(p);
     drawLine(pdf, 20, 285, 190, 285, BORDER);
