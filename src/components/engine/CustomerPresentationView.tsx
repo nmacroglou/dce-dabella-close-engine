@@ -46,7 +46,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
     try {
       const name = state.homeowner1 || "Customer";
       const { exportCustomerPdf } = await import("@/lib/exportPdf");
-      await exportCustomerPdf(state, computed, options, `DaBella-Proposal-${name}.pdf`);
+      await exportCustomerPdf(state, computed, options, `DaBella-Proposal-${name}.pdf`, selectedOption);
     } finally {
       setExporting(false);
     }
