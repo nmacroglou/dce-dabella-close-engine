@@ -73,7 +73,7 @@ export default function Index() {
       {/* Main */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
-          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card border border-border rounded-2xl mb-6 grid grid-cols-6 gap-1">
+          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card border border-border rounded-2xl mb-6 grid grid-cols-7 gap-1">
             {TABS.map(({ value, label, icon: Icon }) => (
               <TabsTrigger
                 key={value}
