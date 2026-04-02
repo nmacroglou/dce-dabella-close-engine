@@ -1,42 +1,37 @@
-## Refactor Plan
+## Windows Estimate Feature
 
-### 1. Extract Data Constants
-- Move objection routes, closing steps, scope items, and coaching logic out of components into `src/data/` files
-- Eliminates SCOPE_ITEMS duplication (exists in both `ScopeOfWork.tsx` and `exportPdf.ts`)
-- Remove duplicate `fmt` function from `exportPdf.ts` (already in `format.ts`)
+### 1. Data Model (`src/types/engine.ts`)
+Add window-specific fields to `EngineState`:
+- `windowInspection`: array of 14 inspection items with yes/no/na status
+- `windowItems`: array of window line items (number, level, room, style, dimensions, grids, obs, etc.)
+- `windowScopeChecks`: object tracking scope of work checkboxes (reasons, company, frame, warranty, glass, plus the process steps)
 
-### 2. Improve Type Safety
-- Fix `InputField` onChange `any` type → proper union type
-- Add stricter typing for objection IDs and product types
+### 2. Window Data Constants (`src/data/windowData.ts`)
+- Window styles list (CO/Casement, Picture, Awning, Twin-Casement, Triple-Casement, Bay, Bow, Garden, Sliding Patio Door, Double Hung, 2-Lite Slider, 3-Lite End Vent, Welded Dead Lite, Hopper)
+- Inspection checklist items (14 items from the form)
+- Grid patterns (Colonial, Perimeter, Prairie)
+- Window scope of work steps
 
-### 3. Performance Optimization
-- Add `React.lazy` + `Suspense` for tab content (only load active tab)
-- Wrap leaf components (`PromoRow`, `ValueRow`, `ScriptCard`, `TrustBar`) with `React.memo`
-- Memoize options arrays in PresentationTab and CustomerPresentationView
+### 3. Calculator Section (`src/components/engine/calculator/WindowEstimateSection.tsx`)
+- Only visible when `state.product === "Windows"`
+- **Inspection Checklist** — 14-item yes/no checklist
+- **Window Schedule** — table to add/edit window line items (number, level, room, style, color, dimensions, grids, observations)
+- **Scope of Work** — checkbox items for window-specific scope
 
-### 4. Component Cleanup
-- Extract the 2x2 action button grid from `PresentationTab` into its own `ActionGrid` component
-- Extract the T-close + 10-year impact section into `FinancialImpact` component
-- Simplify `CustomerPresentationView` export handler (already improved, just clean up unused import)
+### 4. Presentation Integration
+- **New stage** in `CustomerPresentationView`: "Window Inspection" page showing the inspection results and window schedule
+- **Merged into existing**: Window scope items replace roofing scope items when product is Windows
 
-### 5. UI/UX Polish
-- Add subtle hover transitions to `PromoRow` and `ValueRow`
-- Improve mobile responsiveness for the tab bar (horizontal scroll on small screens)
-- Add loading skeleton for lazy-loaded tabs
+### 5. PDF Export
+- Add a "Window Inspection" page to the PDF with inspection results table and window schedule
+- Update scope page to use window-specific scope items when applicable
 
-### 6. File Structure
-```
-src/
-  data/
-    objections.ts      — objection routes data
-    closingSteps.ts    — closing stack steps
-    scopeItems.ts      — scope of work items (shared by ScopeOfWork + PDF)
-    coachingCards.ts   — coaching card logic
-    products.ts        — product list
-  components/engine/
-    presentation/
-      ActionGrid.tsx   — extracted from PresentationTab
-      FinancialImpact.tsx — T-close + 10-year impact
-```
-
-No business logic or visual design changes — purely structural improvements.
+### Files to create/modify:
+- `src/types/engine.ts` — add window fields
+- `src/data/windowData.ts` — new constants
+- `src/components/engine/calculator/WindowEstimateSection.tsx` — new component
+- `src/components/engine/CalculatorTab.tsx` — import & render window section
+- `src/hooks/useCloseEngine.ts` — add default state
+- `src/components/engine/CustomerPresentationView.tsx` — add window stage
+- `src/data/scopeItems.ts` — add window scope items
+- `src/lib/exportPdf.ts` — add window inspection PDF page
