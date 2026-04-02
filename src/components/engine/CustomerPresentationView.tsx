@@ -179,6 +179,8 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
         )}
 
         {stage === "scope" && <ScopeOfWork product={state.product} />}
+
+        {stage === "welcome" && (
           <WelcomeClose homeowner1={state.homeowner1} homeowner2={state.homeowner2} />
         )}
       </div>
