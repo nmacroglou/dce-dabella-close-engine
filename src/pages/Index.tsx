@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain, Moon, Sun, Loader2, BookOpen } from "lucide-react";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, Moon, Sun, Loader2, BookOpen, DollarSign } from "lucide-react";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
 const CalculatorTab = lazy(() => import("@/components/engine/CalculatorTab"));
@@ -10,6 +10,7 @@ const ObjectionsTab = lazy(() => import("@/components/engine/ObjectionsTab"));
 const ClosingStackTab = lazy(() => import("@/components/engine/ClosingStackTab"));
 const CoachModeTab = lazy(() => import("@/components/engine/CoachModeTab"));
 const PlaybookTab = lazy(() => import("@/components/engine/PlaybookTab"));
+const CommissionTab = lazy(() => import("@/components/engine/CommissionTab"));
 
 const TABS = [
   { value: "playbook", label: "Playbook", icon: BookOpen },
@@ -17,6 +18,7 @@ const TABS = [
   { value: "presentation", label: "Presentation", icon: Presentation },
   { value: "objections", label: "Objections", icon: ShieldAlert },
   { value: "closing", label: "Closing Stack", icon: Layers },
+  { value: "commission", label: "Commission", icon: DollarSign },
   { value: "coach", label: "Coach Mode", icon: Brain },
 ] as const;
 
