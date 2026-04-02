@@ -35,11 +35,97 @@ export const SELLING_STEPS: SellingStep[] = [
       "Compliment something specific about the home",
       "Find common ground (family, pets, neighborhood)",
       "Introduce yourself and your role clearly",
+      "Ask the 10 Power Questions during rapport",
     ],
     tips: [
       "Mirror the homeowner's energy level",
       "Get both decision-makers engaged from the start",
       "Avoid jumping into business too quickly — earn trust first",
+      "After Question 3 or 4 — repeat their words back: 'So what I'm hearing is… the biggest concern is [X]… right?' This alone increases close rate significantly.",
+    ],
+    references: [
+      {
+        title: "🔟 The 10 Power Questions",
+        content: ["These questions feed directly into Option A/B/C relevance, ROI positioning, energy close strength, objection routing, and T-close framing."],
+        subSections: [
+          {
+            heading: "1. \"What made you decide to have us out today?\"",
+            items: [
+              "Finds the trigger event",
+              "Reveals urgency level",
+              "Tells you if they're reactive or proactive",
+              "👉 This sets the tone for the entire appointment",
+            ],
+          },
+          {
+            heading: "2. \"How long have you been dealing with this?\"",
+            items: [
+              "Measures pain duration",
+              "Longer = more emotional fatigue = easier close",
+            ],
+          },
+          {
+            heading: "3. \"What concerns you most about it right now?\"",
+            items: [
+              "Identifies the true problem — not always leaks",
+              "Could be: energy bills, appearance, resale value",
+              "👉 You sell to THIS, not the roof",
+            ],
+          },
+          {
+            heading: "4. \"What happens if this doesn't get taken care of?\"",
+            items: [
+              "Creates future pain visualization",
+              "Builds urgency without pressure",
+              "👉 This is 🔥 for the T-close later",
+            ],
+          },
+          {
+            heading: "5. \"Have you had anyone else take a look at this yet?\"",
+            items: [
+              "Identifies competition",
+              "Tells you if they're shopping, comparing, or just exploring",
+            ],
+          },
+          {
+            heading: "6. \"What did they tell you?\"",
+            items: [
+              "Reveals misinformation, price anchoring, objections before they happen",
+              "👉 You can pre-handle objections early",
+            ],
+          },
+          {
+            heading: "7. \"What are you hoping to get out of this project?\"",
+            items: [
+              "Defines their win condition",
+              "Position: Option A = ideal, Option B = compromise",
+            ],
+          },
+          {
+            heading: "8. \"How long do you plan on being in the home?\"",
+            items: [
+              "Determines ROI relevance, energy close strength, product tier positioning",
+              "Short term → cost focus | Long term → value focus",
+            ],
+          },
+          {
+            heading: "9. \"If everything made sense today, is this something you'd want to take care of now or are you more in the research phase?\"",
+            items: [
+              "Identifies timing truth",
+              "Soft commitment without pressure",
+              "👉 This is a hidden pre-close",
+            ],
+          },
+          {
+            heading: "10. \"Is there anything that would stop you from moving forward today besides the investment?\"",
+            items: [
+              "Isolates objections EARLY",
+              "Sets up your final close later",
+              "👉 One of the most important questions you'll ask",
+            ],
+          },
+        ],
+      },
     ],
   },
   {
