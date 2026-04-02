@@ -108,124 +108,121 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   });
 }
 
-// ─── PAGE 2: OPTIONS ──────────────────────────────────────────
-function drawOptions(
+// ─── PAGE 2: SELECTED OPTION ──────────────────────────────────
+function drawSelectedOption(
   pdf: jsPDF,
   state: EngineState,
   computed: ComputedValues,
-  options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
+  opt: { key: "A" | "B" | "C"; name: string; price: number; monthly: number },
 ) {
   const pw = 210;
-  const margin = 15;
-  const colW = (pw - margin * 2 - 12) / 3;
+  const margin = 30;
   const names = getNames(state);
+  const color = BLUE;
+  const OPTION_BADGES: Record<string, string> = { A: "BEST VALUE", B: "MOST POPULAR", C: "SMART START" };
 
   let y = 18;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
   setColor(pdf, DARK);
-  pdf.text(`Your ${getProductLabel(state.products)} Options`, pw / 2, y, { align: "center" });
+  pdf.text(`Your ${getProductLabel(state.products)} Selection`, pw / 2, y, { align: "center" });
 
   y += 8;
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
   setColor(pdf, GRAY);
-  pdf.text(`${names} — a side-by-side comparison tailored for your home`, pw / 2, y, { align: "center" });
+  pdf.text(`${names} — your selected option for your home`, pw / 2, y, { align: "center" });
 
-  y += 10;
+  y += 14;
 
-  const OPTION_COLORS: Record<string, RGB> = { A: BLUE, B: GREEN, C: AMBER };
-  const OPTION_BADGES: Record<string, string> = { A: "BEST VALUE", B: "MOST POPULAR", C: "SMART START" };
+  const cardW = pw - margin * 2;
+  const cardTop = y;
 
-  options.forEach((opt, i) => {
-    const x = margin + i * (colW + 6);
-    const cardTop = y;
-    const color = OPTION_COLORS[opt.key];
+  roundedRect(pdf, margin, cardTop, cardW, 180, 5, WHITE, BORDER);
 
-    roundedRect(pdf, x, cardTop, colW, 175, 4, WHITE, BORDER);
+  // Top accent bar
+  setFill(pdf, color);
+  pdf.roundedRect(margin, cardTop, cardW, 7, 5, 5, "F");
+  pdf.rect(margin, cardTop + 4, cardW, 3, "F");
 
+  // Badge
+  const badgeW = 32;
+  setFill(pdf, color);
+  pdf.roundedRect(margin + (cardW - badgeW) / 2, cardTop + 1, badgeW, 9, 2, 2, "F");
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(6);
+  setColor(pdf, WHITE);
+  pdf.text(OPTION_BADGES[opt.key] || "YOUR CHOICE", margin + cardW / 2, cardTop + 7, { align: "center" });
+
+  let cy = cardTop + 20;
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  setColor(pdf, GRAY);
+  pdf.text(`OPTION ${opt.key}`, margin + 12, cy);
+
+  cy += 7;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  setColor(pdf, DARK);
+  pdf.text(opt.name, margin + 12, cy);
+
+  // Price block
+  cy += 10;
+  roundedRect(pdf, margin + 10, cy, cardW - 20, 30, 4, LIGHT_BG);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(22);
+  setColor(pdf, color);
+  pdf.text(fmt(opt.price), pw / 2, cy + 14, { align: "center" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  setColor(pdf, GRAY);
+  pdf.text(`as low as ${fmt(opt.monthly)}/mo with financing`, pw / 2, cy + 24, { align: "center" });
+
+  // Features
+  cy += 38;
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text("WHAT'S INCLUDED", margin + 12, cy);
+  cy += 6;
+
+  const features = FEATURES_BY_OPTION[opt.key] || [];
+  features.forEach((f) => {
     setFill(pdf, color);
-    pdf.roundedRect(x, cardTop, colW, 6, 4, 4, "F");
-    pdf.rect(x, cardTop + 3, colW, 3, "F");
-
-    const badgeW = 28;
-    setFill(pdf, color);
-    pdf.roundedRect(x + (colW - badgeW) / 2, cardTop + 1, badgeW, 8, 2, 2, "F");
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(5.5);
-    setColor(pdf, WHITE);
-    pdf.text(OPTION_BADGES[opt.key], x + colW / 2, cardTop + 6, { align: "center" });
-
-    let cy = cardTop + 18;
+    pdf.circle(margin + 14, cy - 0.8, 1.5, "F");
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(7);
-    setColor(pdf, GRAY);
-    pdf.text(`OPTION ${opt.key}`, x + 8, cy);
-
-    cy += 6;
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(10);
+    pdf.setFontSize(8);
     setColor(pdf, DARK);
-    const nameLines = pdf.splitTextToSize(opt.name, colW - 16);
-    nameLines.forEach((line: string, li: number) => { pdf.text(line, x + 8, cy + li * 5); });
-    cy += nameLines.length * 5 + 4;
-
-    roundedRect(pdf, x + 6, cy, colW - 12, 24, 3, LIGHT_BG);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(16);
-    setColor(pdf, color);
-    pdf.text(fmt(opt.price), x + colW / 2, cy + 10, { align: "center" });
-
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(7);
-    setColor(pdf, GRAY);
-    pdf.text(`as low as ${fmt(opt.monthly)}/mo with financing`, x + colW / 2, cy + 18, { align: "center" });
-    cy += 30;
-
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(6);
-    setColor(pdf, GRAY);
-    pdf.text("WHAT'S INCLUDED", x + 8, cy);
-    cy += 5;
-
-    const features = FEATURES_BY_OPTION[opt.key] || [];
-    features.forEach((f) => {
-      setFill(pdf, color);
-      pdf.circle(x + 10, cy - 0.8, 1.2, "F");
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(7);
-      setColor(pdf, DARK);
-      const fLines = pdf.splitTextToSize(f.text, colW - 22);
-      fLines.forEach((line: string, li: number) => { pdf.text(line, x + 14, cy + li * 3.5); });
-      cy += fLines.length * 3.5 + 2;
-    });
-
-    cy = cardTop + 142;
-    roundedRect(pdf, x + 6, cy, colW - 12, 28, 3, LIGHT_BG);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(6);
-    setColor(pdf, GRAY);
-    pdf.text("VALUE SNAPSHOT", x + 10, cy + 5);
-
-    const roi = Math.round(opt.price * (state.roiPercent / 100));
-    const netCost = opt.price - roi - computed.energySavings;
-
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(7);
-    setColor(pdf, DARK);
-    pdf.text("Home value increase", x + 10, cy + 11);
-    pdf.text(`+${fmt(roi)}`, x + colW - 10, cy + 11, { align: "right" });
-    pdf.text("10-yr energy savings", x + 10, cy + 16);
-    pdf.text(`+${fmt(computed.energySavings)}`, x + colW - 10, cy + 16, { align: "right" });
-
-    drawLine(pdf, x + 10, cy + 19, x + colW - 10, cy + 19, BORDER);
-
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(7);
-    setColor(pdf, BLUE);
-    pdf.text("Net effective cost", x + 10, cy + 24);
-    pdf.text(fmt(netCost), x + colW - 10, cy + 24, { align: "right" });
+    const fLines = pdf.splitTextToSize(f.text, cardW - 30);
+    fLines.forEach((line: string, li: number) => { pdf.text(line, margin + 20, cy + li * 4); });
+    cy += fLines.length * 4 + 3;
   });
+
+  // Value snapshot
+  cy += 4;
+  roundedRect(pdf, margin + 10, cy, cardW - 20, 34, 4, LIGHT_BG);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(7);
+  setColor(pdf, GRAY);
+  pdf.text("VALUE SNAPSHOT", margin + 16, cy + 7);
+
+  const optComputed = computed.options[opt.key];
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  setColor(pdf, DARK);
+  pdf.text("Home value increase", margin + 16, cy + 14);
+  pdf.text(`+${fmt(optComputed.roiValue)}`, margin + cardW - 16, cy + 14, { align: "right" });
+  pdf.text("10-yr energy savings", margin + 16, cy + 20);
+  pdf.text(`+${fmt(computed.energySavings)}`, margin + cardW - 16, cy + 20, { align: "right" });
+
+  drawLine(pdf, margin + 16, cy + 24, margin + cardW - 16, cy + 24, BORDER);
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(9);
+  setColor(pdf, BLUE);
+  pdf.text("Net effective cost", margin + 16, cy + 30);
+  pdf.text(fmt(optComputed.netCost), margin + cardW - 16, cy + 30, { align: "right" });
 }
 
 // ─── PAGE 3: SCOPE OF WORK ───────────────────────────────────
@@ -740,16 +737,18 @@ export async function exportCustomerPdf(
 
   drawCover(pdf, state);
 
+  // Only include the accepted option
+  const chosenKey = selectedOption || "A";
+  const chosenOpt = options.find((o) => o.key === chosenKey) || options[0];
+
   pdf.addPage();
-  drawOptions(pdf, state, computed, options);
+  drawSelectedOption(pdf, state, computed, chosenOpt);
 
-  if (selectedOption) {
-    pdf.addPage();
-    drawTClose(pdf, state, computed, selectedOption);
+  pdf.addPage();
+  drawTClose(pdf, state, computed, chosenKey);
 
-    pdf.addPage();
-    drawFinancialImpact(pdf, state, computed, selectedOption);
-  }
+  pdf.addPage();
+  drawFinancialImpact(pdf, state, computed, chosenKey);
 
   if (isWindows) {
     pdf.addPage();
