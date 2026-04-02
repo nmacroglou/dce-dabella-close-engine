@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain, Moon, Sun, Loader2 } from "lucide-react";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, Moon, Sun, Loader2, BookOpen } from "lucide-react";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
 const CalculatorTab = lazy(() => import("@/components/engine/CalculatorTab"));
@@ -9,8 +9,10 @@ const PresentationTab = lazy(() => import("@/components/engine/PresentationTab")
 const ObjectionsTab = lazy(() => import("@/components/engine/ObjectionsTab"));
 const ClosingStackTab = lazy(() => import("@/components/engine/ClosingStackTab"));
 const CoachModeTab = lazy(() => import("@/components/engine/CoachModeTab"));
+const PlaybookTab = lazy(() => import("@/components/engine/PlaybookTab"));
 
 const TABS = [
+  { value: "playbook", label: "Playbook", icon: BookOpen },
   { value: "calculator", label: "Calculator", icon: Calculator },
   { value: "presentation", label: "Presentation", icon: Presentation },
   { value: "objections", label: "Objections", icon: ShieldAlert },
@@ -69,7 +71,7 @@ export default function Index() {
       {/* Main */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
-          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card border border-border rounded-2xl mb-6 grid grid-cols-5 gap-1">
+          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card border border-border rounded-2xl mb-6 grid grid-cols-6 gap-1">
             {TABS.map(({ value, label, icon: Icon }) => (
               <TabsTrigger
                 key={value}
@@ -83,6 +85,7 @@ export default function Index() {
           </TabsList>
 
           <Suspense fallback={<TabLoader />}>
+            <TabsContent value="playbook"><PlaybookTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} reset={reset} /></TabsContent>
             <TabsContent value="presentation"><PresentationTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="objections"><ObjectionsTab state={state} computed={computed} update={update} /></TabsContent>
