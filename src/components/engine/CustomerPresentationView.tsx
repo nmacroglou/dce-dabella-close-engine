@@ -29,6 +29,9 @@ const STAGE_LABELS: Record<Stage, string> = {
 };
 
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
+  const isWindows = state.product === "Windows";
+  const STAGES = isWindows ? WINDOW_STAGES : BASE_STAGES;
+
   const [stage, setStage] = useState<Stage>("options");
   const [exporting, setExporting] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
@@ -40,8 +43,8 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
     computed.monthlyA, computed.monthlyB, computed.monthlyC,
   ]);
 
-  const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1]);
-  const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1]);
+  const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1] as Stage);
+  const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1] as Stage);
 
   const handleExportPdf = async () => {
     if (exporting) return;
