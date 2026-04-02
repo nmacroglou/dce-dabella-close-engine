@@ -30,7 +30,7 @@ const STAGE_LABELS: Record<Stage, string> = {
 
 export default function CustomerPresentationView({ state, computed, onClose }: Props) {
   const isWindows = state.product === "Windows";
-  const STAGES = isWindows ? WINDOW_STAGES : BASE_STAGES;
+  const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
 
   const [stage, setStage] = useState<Stage>("options");
   const [exporting, setExporting] = useState(false);
