@@ -15,7 +15,7 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
   const options = useMemo(() => buildOptionsArray(state, computed), [
     state.optionAName, state.optionBName, state.optionCName,
     state.priceA, state.priceB, state.priceC,
-    computed.monthlyA, computed.monthlyB, computed.monthlyC,
+    computed.options.A.monthly, computed.options.B.monthly, computed.options.C.monthly,
   ]);
 
   if (showCustomerView) {
