@@ -11,7 +11,14 @@ interface Props {
 
 export default function ScopeOfWork({ products = [] }: Props) {
   const isWindows = hasProduct(products, "Windows");
-  const items = isWindows ? [...WINDOW_SCOPE_ITEMS] : [...SCOPE_ITEMS];
+  const isRoofing = hasProduct(products, "Roofing System");
+
+  // Combine scope items from all selected products
+  const items: string[] = [];
+  if (isRoofing) items.push(...SCOPE_ITEMS);
+  if (isWindows) items.push(...WINDOW_SCOPE_ITEMS);
+  // Fallback if neither matched (e.g. other products only)
+  if (items.length === 0) items.push(...SCOPE_ITEMS);
 
   const [checked, setChecked] = useState<boolean[]>(new Array(items.length).fill(false));
   const [animating, setAnimating] = useState(false);
