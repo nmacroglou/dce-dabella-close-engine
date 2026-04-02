@@ -6,9 +6,9 @@ export const parseNum = (v: string): number => parseFloat(v) || 0;
 /** Build the options array used by Presentation & Customer views */
 export function buildOptionsArray(state: EngineState, computed: ComputedValues) {
   return [
-    { key: "A" as const, name: state.optionAName, price: state.priceA, monthly: computed.monthlyA },
-    { key: "B" as const, name: state.optionBName, price: state.priceB, monthly: computed.monthlyB },
-    { key: "C" as const, name: state.optionCName, price: state.priceC, monthly: computed.monthlyC },
+    { key: "A" as const, name: state.optionAName, price: state.priceA, monthly: computed.options.A.monthly },
+    { key: "B" as const, name: state.optionBName, price: state.priceB, monthly: computed.options.B.monthly },
+    { key: "C" as const, name: state.optionCName, price: state.priceC, monthly: computed.options.C.monthly },
   ];
 }
 

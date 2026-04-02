@@ -8,7 +8,6 @@ import type {
 } from "@/types/engine";
 import { WINDOW_INSPECTION_ITEMS, WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 
-// Re-export all types for backward compatibility
 export type { EngineState, ComputedValues, OptionComputed, EngineUpdater, EngineTabProps };
 
 const initialState: EngineState = {
@@ -94,15 +93,12 @@ export function useCloseEngine() {
     };
 
     const optA = options.A;
-    const roiValue = optA.roiValue;
-    // 8% annual inflation on roofing materials over 10 years
-    const inflationMultiplier = Math.pow(1.08, 10); // ~2.159
+    const inflationMultiplier = Math.pow(1.08, 10);
     const inflationPenalty = Math.round(priceA * (inflationMultiplier - 1));
-    const lockedInSavings = inflationPenalty; // locking in today's price saves this
-    const moveForwardImpact = roiValue + energySavings + lockedInSavings;
+    const lockedInSavings = inflationPenalty;
+    const moveForwardImpact = optA.roiValue + energySavings + lockedInSavings;
     const doNothingImpact = -(energySavings + inflationPenalty);
     const netDifference = moveForwardImpact - doNothingImpact;
-    const yesNetCost = priceA - roiValue - energySavings;
 
     const selectedPrice =
       state.selectedOption === "A" ? priceA :
@@ -114,19 +110,6 @@ export function useCloseEngine() {
       annualCost, tenYearCost, energySavings,
       moveForwardImpact, doNothingImpact, netDifference, selectedPrice,
       inflationPenalty, lockedInSavings,
-      efficiencyPrice: options.C.efficiencyPrice,
-      standbyPrice: options.C.standbyPrice,
-      deferred6Price: options.C.deferred6Price,
-      deferred12Price: options.C.deferred12Price,
-      monthlyA: options.A.monthly,
-      monthlyB: options.B.monthly,
-      monthlyC: options.C.monthly,
-      monthlyEfficiency: options.C.monthlyEfficiency,
-      monthlyStandby: options.C.monthlyStandby,
-      monthlyDeferred6: options.C.monthlyDeferred6,
-      monthlyDeferred12: options.C.monthlyDeferred12,
-      roiValue,
-      yesNetCost,
     };
   }, [state]);
 

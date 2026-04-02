@@ -15,7 +15,7 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
   const options = useMemo(() => buildOptionsArray(state, computed), [
     state.optionAName, state.optionBName, state.optionCName,
     state.priceA, state.priceB, state.priceC,
-    computed.monthlyA, computed.monthlyB, computed.monthlyC,
+    computed.options.A.monthly, computed.options.B.monthly, computed.options.C.monthly,
   ]);
 
   if (showCustomerView) {
@@ -71,7 +71,7 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
             <ScriptCard title="Opening control" text={`"Great, give me a second to finalize the numbers and we'll get right to it."`} />
             <ScriptCard title="Price drop" text={`"For all of this, your project comes down to only ..."`} />
             <ScriptCard title="T-close line" text={`"Most people here aren't deciding if — they're deciding whether the money makes sense. Fair?"`} />
-            <ScriptCard title="ROI line" text={`"Based on that percentage, you'd be increasing the value of your home by ${fmt(computed.roiValue)}."`} />
+            <ScriptCard title="ROI line" text={`"Based on that percentage, you'd be increasing the value of your home by ${fmt(computed.options.A.roiValue)}."`} />
             <ScriptCard title="Energy line" text={`"At ${fmt(state.monthlyBill)}/month, that's ${fmt(computed.tenYearCost)} over 10 years. At ${state.energySavingsPct}% savings, that's ${fmt(computed.energySavings)} back in your pocket."`} />
           </div>
         </div>

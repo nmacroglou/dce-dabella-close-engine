@@ -27,7 +27,6 @@ export interface EngineState {
   objectionType: string | null;
   priceShown: boolean;
   activeTab: string;
-  // Window estimate fields
   windowInspection: WindowInspectionEntry[];
   windowItems: WindowLineItem[];
   windowScopeChecks: boolean[];
@@ -59,20 +58,6 @@ export interface ComputedValues {
   inflationPenalty: number;
   lockedInSavings: number;
   selectedPrice: number;
-  // Legacy compat
-  efficiencyPrice: number;
-  standbyPrice: number;
-  deferred6Price: number;
-  deferred12Price: number;
-  monthlyA: number;
-  monthlyB: number;
-  monthlyC: number;
-  monthlyEfficiency: number;
-  monthlyStandby: number;
-  monthlyDeferred6: number;
-  monthlyDeferred12: number;
-  roiValue: number;
-  yesNetCost: number;
 }
 
 export type EngineUpdater = <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
