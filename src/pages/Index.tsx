@@ -92,6 +92,7 @@ export default function Index() {
             <TabsContent value="presentation"><PresentationTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="objections"><ObjectionsTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="closing"><ClosingStackTab state={state} computed={computed} update={update} /></TabsContent>
+            <TabsContent value="commission"><CommissionTab /></TabsContent>
             <TabsContent value="coach"><CoachModeTab state={state} coachingTip={coachingTip} update={update} /></TabsContent>
           </Suspense>
         </Tabs>
