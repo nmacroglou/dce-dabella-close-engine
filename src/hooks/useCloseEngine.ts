@@ -37,7 +37,7 @@ const initialState: EngineState = {
   selectedOption: null,
   objectionType: null,
   priceShown: false,
-  activeTab: "calculator",
+  activeTab: "playbook",
   windowInspection: WINDOW_INSPECTION_ITEMS.map((label) => ({ label, status: "na" as const })),
   windowItems: [],
   windowScopeChecks: new Array(WINDOW_SCOPE_ITEMS.length).fill(false),
