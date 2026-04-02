@@ -1,8 +1,9 @@
+import { useState } from "react";
 import type { EngineTabProps, EngineState } from "@/types/engine";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, ChevronDown, ChevronRight } from "lucide-react";
 import { PRODUCT_OPTIONS } from "@/data/products";
 import { fmt } from "@/lib/format";
-import { parseNum } from "@/lib/engineHelpers";
+import { parseNum, hasProduct } from "@/lib/engineHelpers";
 import InputField from "./shared/InputField";
 import OptionOutputCard from "./shared/OptionOutputCard";
 import WindowEstimateSection from "./calculator/WindowEstimateSection";
