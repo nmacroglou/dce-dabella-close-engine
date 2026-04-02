@@ -5,6 +5,7 @@ import { fmt } from "@/lib/format";
 import { parseNum } from "@/lib/engineHelpers";
 import InputField from "./shared/InputField";
 import OptionOutputCard from "./shared/OptionOutputCard";
+import WindowEstimateSection from "./calculator/WindowEstimateSection";
 
 const OPTION_ACCENTS = { A: "text-primary", B: "text-accent", C: "text-warning" } as const;
 
