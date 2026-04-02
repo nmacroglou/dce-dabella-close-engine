@@ -3,12 +3,14 @@ import { Check, ClipboardCheck } from "lucide-react";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
 import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 
+import { hasProduct } from "@/lib/engineHelpers";
+
 interface Props {
-  product?: string;
+  products?: string[];
 }
 
-export default function ScopeOfWork({ product }: Props) {
-  const isWindows = product === "Windows";
+export default function ScopeOfWork({ products = [] }: Props) {
+  const isWindows = hasProduct(products, "Windows");
   const items = isWindows ? [...WINDOW_SCOPE_ITEMS] : [...SCOPE_ITEMS];
 
   const [checked, setChecked] = useState<boolean[]>(new Array(items.length).fill(false));

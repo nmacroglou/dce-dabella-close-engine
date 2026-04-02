@@ -4,7 +4,7 @@ import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
 import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
-import { getNames, getOptionMetrics, getOptionLabel } from "@/lib/engineHelpers";
+import { getNames, getOptionMetrics, getOptionLabel, getProductLabel, hasProduct } from "@/lib/engineHelpers";
 
 // Brand colors
 const BLUE = [37, 99, 235] as const;
