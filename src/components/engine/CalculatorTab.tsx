@@ -18,6 +18,28 @@ const OPTION_CONFIG: { key: OptionKey; nameKey: keyof EngineState; priceKey: key
   { key: "C", nameKey: "optionCName", priceKey: "priceC", desc: "The smart-budget option — solid quality that still protects your investment" },
 ];
 
+function ProductAccordion({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="mt-8 pt-8 border-t border-border">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between text-left group"
+      >
+        <h4 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+          {title}
+        </h4>
+        {open ? (
+          <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform" />
+        ) : (
+          <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform" />
+        )}
+      </button>
+      {open && <div className="mt-4 animate-fade-in">{children}</div>}
+    </div>
+  );
+}
+
 export default function CalculatorTab({ state, computed, update, reset }: EngineTabProps) {
   return (
     <div className="space-y-8 animate-fade-in">
