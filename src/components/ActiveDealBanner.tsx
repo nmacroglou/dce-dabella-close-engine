@@ -6,13 +6,17 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, X, ChevronDown } from "lucide-react";
+import { Briefcase, X, History } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import StageHistoryTimeline from "@/components/StageHistoryTimeline";
 
 export default function ActiveDealBanner() {
   const navigate = useNavigate();
@@ -107,6 +111,22 @@ export default function ActiveDealBanner() {
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${STAGE_COLORS[deal.stage]}`}>
             {STAGE_LABELS[deal.stage]}
           </span>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-9 px-2 gap-1"
+                aria-label="View stage history"
+              >
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline text-xs font-semibold">History</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 max-h-96 overflow-y-auto">
+              <StageHistoryTimeline deal={deal} />
+            </PopoverContent>
+          </Popover>
           <Select value={deal.stage} onValueChange={(v) => handleStage(v as DealStage)}>
             <SelectTrigger className="w-36 h-9">
               <SelectValue />
