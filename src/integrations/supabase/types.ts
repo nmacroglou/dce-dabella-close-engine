@@ -14,7 +14,172 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      deal_objections: {
+        Row: {
+          created_at: string
+          deal_id: string
+          id: string
+          notes: string | null
+          objection_type: string
+          rep_id: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          id?: string
+          notes?: string | null
+          objection_type: string
+          rep_id: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          id?: string
+          notes?: string | null
+          objection_type?: string
+          rep_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_objections_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_stage_history: {
+        Row: {
+          changed_at: string
+          deal_id: string
+          from_stage: Database["public"]["Enums"]["deal_stage"] | null
+          id: string
+          rep_id: string
+          to_stage: Database["public"]["Enums"]["deal_stage"]
+        }
+        Insert: {
+          changed_at?: string
+          deal_id: string
+          from_stage?: Database["public"]["Enums"]["deal_stage"] | null
+          id?: string
+          rep_id: string
+          to_stage: Database["public"]["Enums"]["deal_stage"]
+        }
+        Update: {
+          changed_at?: string
+          deal_id?: string
+          from_stage?: Database["public"]["Enums"]["deal_stage"] | null
+          id?: string
+          rep_id?: string
+          to_stage?: Database["public"]["Enums"]["deal_stage"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_stage_history_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          address: string | null
+          closed_amount: number | null
+          closed_at: string | null
+          created_at: string
+          engine_state: Json
+          homeowner1: string | null
+          homeowner2: string | null
+          id: string
+          lost_reason: string | null
+          notes: string | null
+          price_a: number | null
+          price_b: number | null
+          price_c: number | null
+          products: string[] | null
+          rep_id: string
+          selected_option: string | null
+          stage: Database["public"]["Enums"]["deal_stage"]
+          stage_changed_at: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          closed_amount?: number | null
+          closed_at?: string | null
+          created_at?: string
+          engine_state?: Json
+          homeowner1?: string | null
+          homeowner2?: string | null
+          id?: string
+          lost_reason?: string | null
+          notes?: string | null
+          price_a?: number | null
+          price_b?: number | null
+          price_c?: number | null
+          products?: string[] | null
+          rep_id: string
+          selected_option?: string | null
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          stage_changed_at?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          closed_amount?: number | null
+          closed_at?: string | null
+          created_at?: string
+          engine_state?: Json
+          homeowner1?: string | null
+          homeowner2?: string | null
+          id?: string
+          lost_reason?: string | null
+          notes?: string | null
+          price_a?: number | null
+          price_b?: number | null
+          price_c?: number | null
+          products?: string[] | null
+          rep_id?: string
+          selected_option?: string | null
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          stage_changed_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +188,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      deal_stage: "inspecting" | "presented" | "follow_up" | "won" | "lost"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +315,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      deal_stage: ["inspecting", "presented", "follow_up", "won", "lost"],
+    },
   },
 } as const
