@@ -1,8 +1,9 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain, Moon, Sun, Loader2, BookOpen, DollarSign } from "lucide-react";
-import dabellaLogo from "@/assets/dabella-logo.png";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign } from "lucide-react";
+import AppHeader from "@/components/AppHeader";
+import ActiveDealBanner from "@/components/ActiveDealBanner";
 
 const CalculatorTab = lazy(() => import("@/components/engine/CalculatorTab"));
 const PresentationTab = lazy(() => import("@/components/engine/PresentationTab"));
@@ -32,46 +33,14 @@ function TabLoader() {
 
 export default function Index() {
   const { state, update, computed, coachingTip, reset } = useCloseEngine();
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img src={dabellaLogo} alt="DaBella" className="h-9 w-auto" />
-            <div className="h-6 w-px bg-border hidden sm:block" />
-            <div className="hidden sm:block">
-              <h1 className="text-lg font-display font-extrabold text-foreground tracking-tight leading-none">
-                Close Engine
-              </h1>
-              <p className="text-xs text-muted-foreground font-medium mt-0.5">
-                Inspection → Close Assistant
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setDark(!dark)}
-              className="rounded-xl bg-muted border border-border p-2.5 hover:bg-muted/80 transition-colors"
-              aria-label="Toggle dark mode"
-            >
-              {dark ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
-            </button>
-            <span className="hidden sm:inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              DSE Field App
-            </span>
-          </div>
-        </div>
-      </header>
+      <AppHeader />
 
-      {/* Main */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+        <ActiveDealBanner />
+
         <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
           <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card border border-border rounded-2xl mb-6 grid grid-cols-7 gap-1">
             {TABS.map(({ value, label, icon: Icon }) => (
