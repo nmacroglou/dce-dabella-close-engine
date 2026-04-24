@@ -209,6 +209,15 @@ export default function ActiveDealBanner() {
               />
               <p className="text-xs text-muted-foreground">Selected option: <span className="font-semibold">{deal.selected_option ?? "—"}</span></p>
             </div>
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Textarea
+                value={winNote}
+                onChange={(e) => setWinNote(e.target.value)}
+                placeholder="What sealed it? Hot button, financing tier, who said yes…"
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button onClick={confirmWin}>Confirm win</Button>
@@ -231,9 +240,51 @@ export default function ActiveDealBanner() {
                 autoFocus
               />
             </div>
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Textarea
+                value={lostNote}
+                onChange={(e) => setLostNote(e.target.value)}
+                placeholder="What did they say? Any objection you couldn't overcome?"
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="destructive" onClick={confirmLost}>Confirm loss</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={stageNoteOpen} onOpenChange={setStageNoteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Move to {pendingStage ? STAGE_LABELS[pendingStage] : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Textarea
+                value={stageNote}
+                onChange={(e) => setStageNote(e.target.value)}
+                placeholder="What did you say or observe? Hot button, next step, scheduled callback…"
+                rows={4}
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground">
+                Saved to the stage timeline. Skip to move without a note.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={confirmStageChange}>
+              Skip
+            </Button>
+            <Button onClick={confirmStageChange}>
+              Save & move
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
