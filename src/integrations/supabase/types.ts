@@ -55,6 +55,7 @@ export type Database = {
           deal_id: string
           from_stage: Database["public"]["Enums"]["deal_stage"] | null
           id: string
+          note: string | null
           rep_id: string
           to_stage: Database["public"]["Enums"]["deal_stage"]
         }
@@ -63,6 +64,7 @@ export type Database = {
           deal_id: string
           from_stage?: Database["public"]["Enums"]["deal_stage"] | null
           id?: string
+          note?: string | null
           rep_id: string
           to_stage: Database["public"]["Enums"]["deal_stage"]
         }
@@ -71,6 +73,7 @@ export type Database = {
           deal_id?: string
           from_stage?: Database["public"]["Enums"]["deal_stage"] | null
           id?: string
+          note?: string | null
           rep_id?: string
           to_stage?: Database["public"]["Enums"]["deal_stage"]
         }

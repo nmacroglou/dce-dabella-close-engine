@@ -1,8 +1,11 @@
-import { useStageHistory } from "@/hooks/useStageHistory";
+import { useState } from "react";
+import { useStageHistory, useUpdateStageNote, type StageHistoryEntry } from "@/hooks/useStageHistory";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import type { Deal } from "@/types/deal";
-import { Clock, TrendingDown, TrendingUp, ArrowRight } from "lucide-react";
+import { Clock, TrendingDown, TrendingUp, ArrowRight, Pencil, Check, X as XIcon, StickyNote } from "lucide-react";
 import { fmt as formatCurrency } from "@/lib/format";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 interface StageHistoryTimelineProps {
   deal: Deal;
@@ -135,10 +138,100 @@ export default function StageHistoryTimeline({ deal }: StageHistoryTimelineProps
                   </span>
                 </div>
               )}
+
+              <NoteEditor entry={entry} />
             </li>
           );
         })}
       </ol>
     </div>
+  );
+}
+
+function NoteEditor({ entry }: { entry: StageHistoryEntry }) {
+  const updateNote = useUpdateStageNote();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(entry.note ?? "");
+
+  const startEdit = () => {
+    setDraft(entry.note ?? "");
+    setEditing(true);
+  };
+
+  const save = () => {
+    updateNote.mutate(
+      { id: entry.id, note: draft },
+      { onSuccess: () => setEditing(false) }
+    );
+  };
+
+  const cancel = () => {
+    setDraft(entry.note ?? "");
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <div className="mt-1.5 space-y-1.5">
+        <Textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          rows={3}
+          placeholder="What did you say or observe?"
+          className="text-xs"
+          autoFocus
+        />
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            variant="default"
+            className="h-7 px-2 text-xs"
+            onClick={save}
+            disabled={updateNote.isPending}
+          >
+            <Check className="h-3 w-3 mr-1" />
+            Save
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 px-2 text-xs"
+            onClick={cancel}
+          >
+            <XIcon className="h-3 w-3 mr-1" />
+            Cancel
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (entry.note) {
+    return (
+      <button
+        type="button"
+        onClick={startEdit}
+        className="mt-1.5 w-full text-left rounded-md bg-muted/50 hover:bg-muted px-2 py-1.5 transition-colors group"
+      >
+        <div className="flex items-start gap-1.5">
+          <StickyNote className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
+          <span className="text-xs text-foreground whitespace-pre-wrap flex-1">
+            {entry.note}
+          </span>
+          <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 flex-shrink-0 mt-0.5" />
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={startEdit}
+      className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+    >
+      <Pencil className="h-3 w-3" />
+      Add note
+    </button>
   );
 }

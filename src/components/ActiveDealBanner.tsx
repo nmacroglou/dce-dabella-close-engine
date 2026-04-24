@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal, useUpdateDealStage } from "@/hooks/useDeals";
+import { attachNoteToLatestStageEntry } from "@/hooks/useStageHistory";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -16,6 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import StageHistoryTimeline from "@/components/StageHistoryTimeline";
 
 export default function ActiveDealBanner() {
@@ -23,11 +26,17 @@ export default function ActiveDealBanner() {
   const { activeDealId, setActiveDealId } = useActiveDeal();
   const { data: deal } = useDeal(activeDealId);
   const updateStage = useUpdateDealStage();
+  const qc = useQueryClient();
 
   const [winOpen, setWinOpen] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
+  const [stageNoteOpen, setStageNoteOpen] = useState(false);
+  const [pendingStage, setPendingStage] = useState<DealStage | null>(null);
   const [winAmount, setWinAmount] = useState("");
+  const [winNote, setWinNote] = useState("");
   const [lostReason, setLostReason] = useState("");
+  const [lostNote, setLostNote] = useState("");
+  const [stageNote, setStageNote] = useState("");
 
   if (!activeDealId) {
     return (
@@ -53,6 +62,7 @@ export default function ActiveDealBanner() {
   if (!deal) return null;
 
   const handleStage = (next: DealStage) => {
+    if (next === deal.stage) return;
     if (next === "won") {
       setWinAmount(
         deal.selected_option === "A" ? String(deal.price_a ?? "") :
@@ -60,35 +70,69 @@ export default function ActiveDealBanner() {
         deal.selected_option === "C" ? String(deal.price_c ?? "") :
         String(deal.price_a ?? "")
       );
+      setWinNote("");
       setWinOpen(true);
       return;
     }
     if (next === "lost") {
+      setLostReason("");
+      setLostNote("");
       setLostOpen(true);
       return;
     }
-    updateStage.mutate({ id: deal.id, stage: next });
+    setPendingStage(next);
+    setStageNote("");
+    setStageNoteOpen(true);
+  };
+
+  const persistStageNote = async (stage: DealStage, note: string) => {
+    if (!note.trim()) return;
+    await attachNoteToLatestStageEntry(deal.id, stage, note);
+    qc.invalidateQueries({ queryKey: ["stage-history", deal.id] });
+  };
+
+  const confirmStageChange = () => {
+    if (!pendingStage) return;
+    const stage = pendingStage;
+    const note = stageNote;
+    updateStage.mutate(
+      { id: deal.id, stage },
+      { onSuccess: () => persistStageNote(stage, note) }
+    );
+    setStageNoteOpen(false);
+    setPendingStage(null);
+    setStageNote("");
   };
 
   const confirmWin = () => {
-    updateStage.mutate({
-      id: deal.id,
-      stage: "won",
-      closed_amount: parseFloat(winAmount) || 0,
-      selected_option: deal.selected_option,
-    });
+    const note = winNote;
+    updateStage.mutate(
+      {
+        id: deal.id,
+        stage: "won",
+        closed_amount: parseFloat(winAmount) || 0,
+        selected_option: deal.selected_option,
+      },
+      { onSuccess: () => persistStageNote("won", note) }
+    );
     setWinOpen(false);
   };
 
   const confirmLost = () => {
-    updateStage.mutate({
-      id: deal.id,
-      stage: "lost",
-      lost_reason: lostReason.trim() || null,
-    });
+    const note = lostNote;
+    updateStage.mutate(
+      {
+        id: deal.id,
+        stage: "lost",
+        lost_reason: lostReason.trim() || null,
+      },
+      { onSuccess: () => persistStageNote("lost", note) }
+    );
     setLostOpen(false);
     setLostReason("");
+    setLostNote("");
   };
+
 
   return (
     <>
@@ -165,6 +209,15 @@ export default function ActiveDealBanner() {
               />
               <p className="text-xs text-muted-foreground">Selected option: <span className="font-semibold">{deal.selected_option ?? "—"}</span></p>
             </div>
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Textarea
+                value={winNote}
+                onChange={(e) => setWinNote(e.target.value)}
+                placeholder="What sealed it? Hot button, financing tier, who said yes…"
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button onClick={confirmWin}>Confirm win</Button>
@@ -187,9 +240,51 @@ export default function ActiveDealBanner() {
                 autoFocus
               />
             </div>
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Textarea
+                value={lostNote}
+                onChange={(e) => setLostNote(e.target.value)}
+                placeholder="What did they say? Any objection you couldn't overcome?"
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="destructive" onClick={confirmLost}>Confirm loss</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={stageNoteOpen} onOpenChange={setStageNoteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Move to {pendingStage ? STAGE_LABELS[pendingStage] : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Textarea
+                value={stageNote}
+                onChange={(e) => setStageNote(e.target.value)}
+                placeholder="What did you say or observe? Hot button, next step, scheduled callback…"
+                rows={4}
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground">
+                Saved to the stage timeline. Skip to move without a note.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={confirmStageChange}>
+              Skip
+            </Button>
+            <Button onClick={confirmStageChange}>
+              Save & move
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
