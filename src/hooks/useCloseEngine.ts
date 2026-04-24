@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import type {
   EngineState,
   ComputedValues,
@@ -7,12 +7,14 @@ import type {
   EngineTabProps,
 } from "@/types/engine";
 import { WINDOW_INSPECTION_ITEMS, WINDOW_SCOPE_ITEMS } from "@/data/windowData";
+import { useActiveDeal } from "@/contexts/ActiveDealContext";
+import { useDeal, useUpdateDeal } from "@/hooks/useDeals";
 
 export type { EngineState, ComputedValues, OptionComputed, EngineUpdater, EngineTabProps };
 
 const initialState: EngineState = {
-  homeowner1: "John",
-  homeowner2: "Mary",
+  homeowner1: "",
+  homeowner2: "",
   products: ["Roofing System"],
   solarKw: "8",
   optionAName: "Timberline Energy Charcoal",
@@ -20,9 +22,9 @@ const initialState: EngineState = {
   optionCName: "Timberline American Harvest",
   gutterFeet: "100",
   downPayment: 0,
-  priceA: 158832,
-  priceB: 68678,
-  priceC: 43399,
+  priceA: 0,
+  priceB: 0,
+  priceC: 0,
   financingFactor1: 0.01074,
   financingFactor2: 0.015,
   efficiencyDiscount: 2170,
@@ -43,13 +45,63 @@ const initialState: EngineState = {
 };
 
 export function useCloseEngine() {
+  const { activeDealId } = useActiveDeal();
+  const { data: deal } = useDeal(activeDealId);
+  const updateDeal = useUpdateDeal();
+
   const [state, setState] = useState<EngineState>(initialState);
+  const hydratedDealIdRef = useRef<string | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Hydrate when active deal loads (only when the deal id changes)
+  useEffect(() => {
+    if (deal && deal.id !== hydratedDealIdRef.current) {
+      const merged: EngineState = {
+        ...initialState,
+        ...(deal.engine_state as Partial<EngineState>),
+        homeowner1: deal.homeowner1 ?? initialState.homeowner1,
+        homeowner2: deal.homeowner2 ?? initialState.homeowner2,
+      };
+      setState(merged);
+      hydratedDealIdRef.current = deal.id;
+    }
+    // When unloading the active deal, reset to initial state
+    if (!activeDealId && hydratedDealIdRef.current) {
+      hydratedDealIdRef.current = null;
+      setState(initialState);
+    }
+  }, [deal, activeDealId]);
 
   const update: EngineUpdater = useCallback((key, value) => {
     setState((prev) => ({ ...prev, [key]: value }));
   }, []);
 
   const reset = useCallback(() => setState(initialState), []);
+
+  // Debounced auto-save to active deal
+  useEffect(() => {
+    if (!activeDealId || hydratedDealIdRef.current !== activeDealId) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      updateDeal.mutate({
+        id: activeDealId,
+        updates: {
+          homeowner1: state.homeowner1,
+          homeowner2: state.homeowner2,
+          products: state.products,
+          price_a: state.priceA,
+          price_b: state.priceB,
+          price_c: state.priceC,
+          selected_option: state.selectedOption,
+          engine_state: state,
+        },
+      });
+    }, 800);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, activeDealId]);
 
   const computed = useMemo((): ComputedValues => {
     const {

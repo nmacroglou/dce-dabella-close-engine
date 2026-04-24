@@ -1,34 +1,92 @@
 import type { EngineTabProps } from "@/types/engine";
 import { OBJECTIONS, OBJECTION_ROUTES } from "@/data/objections";
-import { AlertTriangle, ChevronRight } from "lucide-react";
+import { AlertTriangle, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { useActiveDeal } from "@/contexts/ActiveDealContext";
+import { useDealObjections, useLogObjection, useDeleteDealObjection } from "@/hooks/useDealObjections";
+import { Button } from "@/components/ui/button";
 
 export default function ObjectionsTab({ state, update }: EngineTabProps) {
   const active = state.objectionType;
   const route = active ? OBJECTION_ROUTES[active] : null;
 
+  const { activeDealId } = useActiveDeal();
+  const { data: logged = [] } = useDealObjections(activeDealId);
+  const log = useLogObjection();
+  const del = useDeleteDealObjection();
+
+  const handleLog = (id: string) => {
+    if (!activeDealId) return;
+    log.mutate({ dealId: activeDealId, objectionType: id });
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-2 space-y-4">
         <div className="card-elevated-lg p-6">
           <h3 className="text-lg font-bold text-foreground mb-5">Objection router</h3>
           <div className="space-y-3">
             {OBJECTIONS.map(({ id, label, icon: Icon }) => (
-              <button
+              <div
                 key={id}
-                onClick={() => update("objectionType", id)}
-                className={`w-full card-elevated p-5 flex items-center gap-4 transition-all active:scale-[0.98] touch-target ${
+                className={`card-elevated p-4 flex items-center gap-3 transition-all ${
                   active === id ? "ring-2 ring-primary border-primary" : ""
                 }`}
               >
-                <div className="rounded-xl bg-primary/10 p-3">
-                  <Icon className="h-6 w-6 text-primary" />
-                </div>
-                <span className="text-base font-semibold text-foreground flex-1 text-left">{label}</span>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-              </button>
+                <button
+                  onClick={() => update("objectionType", id)}
+                  className="flex items-center gap-3 flex-1 text-left active:scale-[0.98]"
+                >
+                  <div className="rounded-xl bg-primary/10 p-2.5">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="text-sm font-semibold text-foreground flex-1">{label}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+                {activeDealId && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleLog(id)}
+                    aria-label="Log this objection"
+                    title="Log this objection on the deal"
+                  >
+                    <Plus className="h-4 w-4 text-primary" />
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
+          {!activeDealId && (
+            <p className="text-xs text-muted-foreground mt-4 italic">
+              Open an active deal to log objections — feeds the dashboard heatmap.
+            </p>
+          )}
         </div>
+
+        {activeDealId && logged.length > 0 && (
+          <div className="card-elevated p-5">
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+              Logged on this deal ({logged.length})
+            </h4>
+            <ul className="space-y-2">
+              {logged.map((o) => {
+                const meta = OBJECTIONS.find((x) => x.id === o.objection_type);
+                return (
+                  <li key={o.id} className="flex items-center justify-between text-sm">
+                    <span className="text-foreground font-medium">{meta?.label ?? o.objection_type}</span>
+                    <button
+                      onClick={() => del.mutate({ id: o.id, dealId: activeDealId })}
+                      className="text-muted-foreground hover:text-destructive"
+                      aria-label="Remove logged objection"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="lg:col-span-3">
