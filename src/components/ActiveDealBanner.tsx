@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, X, ChevronDown, History } from "lucide-react";
+import { Briefcase, X, History } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
