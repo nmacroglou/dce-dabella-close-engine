@@ -26,11 +26,17 @@ export default function ActiveDealBanner() {
   const { activeDealId, setActiveDealId } = useActiveDeal();
   const { data: deal } = useDeal(activeDealId);
   const updateStage = useUpdateDealStage();
+  const qc = useQueryClient();
 
   const [winOpen, setWinOpen] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
+  const [stageNoteOpen, setStageNoteOpen] = useState(false);
+  const [pendingStage, setPendingStage] = useState<DealStage | null>(null);
   const [winAmount, setWinAmount] = useState("");
+  const [winNote, setWinNote] = useState("");
   const [lostReason, setLostReason] = useState("");
+  const [lostNote, setLostNote] = useState("");
+  const [stageNote, setStageNote] = useState("");
 
   if (!activeDealId) {
     return (
@@ -56,6 +62,7 @@ export default function ActiveDealBanner() {
   if (!deal) return null;
 
   const handleStage = (next: DealStage) => {
+    if (next === deal.stage) return;
     if (next === "won") {
       setWinAmount(
         deal.selected_option === "A" ? String(deal.price_a ?? "") :
@@ -63,35 +70,69 @@ export default function ActiveDealBanner() {
         deal.selected_option === "C" ? String(deal.price_c ?? "") :
         String(deal.price_a ?? "")
       );
+      setWinNote("");
       setWinOpen(true);
       return;
     }
     if (next === "lost") {
+      setLostReason("");
+      setLostNote("");
       setLostOpen(true);
       return;
     }
-    updateStage.mutate({ id: deal.id, stage: next });
+    setPendingStage(next);
+    setStageNote("");
+    setStageNoteOpen(true);
+  };
+
+  const persistStageNote = async (stage: DealStage, note: string) => {
+    if (!note.trim()) return;
+    await attachNoteToLatestStageEntry(deal.id, stage, note);
+    qc.invalidateQueries({ queryKey: ["stage-history", deal.id] });
+  };
+
+  const confirmStageChange = () => {
+    if (!pendingStage) return;
+    const stage = pendingStage;
+    const note = stageNote;
+    updateStage.mutate(
+      { id: deal.id, stage },
+      { onSuccess: () => persistStageNote(stage, note) }
+    );
+    setStageNoteOpen(false);
+    setPendingStage(null);
+    setStageNote("");
   };
 
   const confirmWin = () => {
-    updateStage.mutate({
-      id: deal.id,
-      stage: "won",
-      closed_amount: parseFloat(winAmount) || 0,
-      selected_option: deal.selected_option,
-    });
+    const note = winNote;
+    updateStage.mutate(
+      {
+        id: deal.id,
+        stage: "won",
+        closed_amount: parseFloat(winAmount) || 0,
+        selected_option: deal.selected_option,
+      },
+      { onSuccess: () => persistStageNote("won", note) }
+    );
     setWinOpen(false);
   };
 
   const confirmLost = () => {
-    updateStage.mutate({
-      id: deal.id,
-      stage: "lost",
-      lost_reason: lostReason.trim() || null,
-    });
+    const note = lostNote;
+    updateStage.mutate(
+      {
+        id: deal.id,
+        stage: "lost",
+        lost_reason: lostReason.trim() || null,
+      },
+      { onSuccess: () => persistStageNote("lost", note) }
+    );
     setLostOpen(false);
     setLostReason("");
+    setLostNote("");
   };
+
 
   return (
     <>
