@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal, useUpdateDealStage } from "@/hooks/useDeals";
+import { attachNoteToLatestStageEntry } from "@/hooks/useStageHistory";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -16,6 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import StageHistoryTimeline from "@/components/StageHistoryTimeline";
 
 export default function ActiveDealBanner() {
