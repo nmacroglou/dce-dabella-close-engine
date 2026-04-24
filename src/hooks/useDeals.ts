@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Deal, DealStage } from "@/types/deal";
 import type { EngineState } from "@/types/engine";
@@ -57,7 +58,7 @@ export function useCreateDeal() {
           address: initial.address ?? "",
           notes: initial.notes ?? "",
           stage: initial.stage ?? "inspecting",
-          engine_state: initial.engine_state ?? {},
+          engine_state: (initial.engine_state ?? {}) as unknown as Json,
           products: initial.products ?? [],
           price_a: initial.price_a ?? null,
           price_b: initial.price_b ?? null,
@@ -82,9 +83,13 @@ export function useUpdateDeal() {
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Deal> }): Promise<Deal> => {
+      const payload = { ...updates } as Record<string, unknown>;
+      if (payload.engine_state) {
+        payload.engine_state = payload.engine_state as unknown as Json;
+      }
       const { data, error } = await supabase
         .from("deals")
-        .update(updates)
+        .update(payload as never)
         .eq("id", id)
         .select()
         .single();
@@ -143,7 +148,7 @@ export function useUpdateDealStage() {
       if (closed_amount !== undefined) updates.closed_amount = closed_amount;
       if (lost_reason !== undefined) updates.lost_reason = lost_reason;
 
-      const { error } = await supabase.from("deals").update(updates).eq("id", id);
+      const { error } = await supabase.from("deals").update(updates as never).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
