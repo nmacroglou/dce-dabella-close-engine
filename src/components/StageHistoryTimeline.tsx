@@ -2,7 +2,7 @@ import { useStageHistory } from "@/hooks/useStageHistory";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import type { Deal } from "@/types/deal";
 import { Clock, TrendingDown, TrendingUp, ArrowRight } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { fmt as formatCurrency } from "@/lib/format";
 
 interface StageHistoryTimelineProps {
   deal: Deal;
