@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      commission_grids: {
+        Row: {
+          created_at: string
+          front_end_pct: number
+          id: string
+          rep_id: string
+          tiers: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          front_end_pct?: number
+          id?: string
+          rep_id: string
+          tiers?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          front_end_pct?: number
+          id?: string
+          rep_id?: string
+          tiers?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       deal_objections: {
         Row: {
           created_at: string
@@ -92,6 +119,7 @@ export type Database = {
           address: string | null
           closed_amount: number | null
           closed_at: string | null
+          commission_sheet: Json
           created_at: string
           engine_state: Json
           homeowner1: string | null
@@ -113,6 +141,7 @@ export type Database = {
           address?: string | null
           closed_amount?: number | null
           closed_at?: string | null
+          commission_sheet?: Json
           created_at?: string
           engine_state?: Json
           homeowner1?: string | null
@@ -134,6 +163,7 @@ export type Database = {
           address?: string | null
           closed_amount?: number | null
           closed_at?: string | null
+          commission_sheet?: Json
           created_at?: string
           engine_state?: Json
           homeowner1?: string | null
