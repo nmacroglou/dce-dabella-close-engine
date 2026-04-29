@@ -18,12 +18,18 @@ interface FieldProps {
   type?: "text" | "number" | "date";
   placeholder?: string;
   prefix?: string;
+  hint?: string;
 }
 
-function Field({ label, value, onChange, type = "text", placeholder, prefix }: FieldProps) {
+function Field({ label, value, onChange, type = "text", placeholder, prefix, hint }: FieldProps) {
   return (
     <label className="space-y-1 block">
-      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</span>
+      {label && (
+        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">{label}</span>
+      )}
+      {hint && (
+        <span className="block text-[10px] leading-snug text-muted-foreground/80 italic -mt-0.5">{hint}</span>
+      )}
       <div className="relative">
         {prefix && (
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{prefix}</span>
