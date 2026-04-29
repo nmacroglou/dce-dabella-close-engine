@@ -8,7 +8,7 @@ import {
   type CommissionSheetInputs,
 } from "@/types/commission";
 import { fmt } from "@/lib/format";
-import { FileText, Loader2 } from "lucide-react";
+import { FileText, Loader2, Sparkles } from "lucide-react";
 import StatCard from "../shared/StatCard";
 
 interface FieldProps {
@@ -19,9 +19,10 @@ interface FieldProps {
   placeholder?: string;
   prefix?: string;
   hint?: string;
+  readOnly?: boolean;
 }
 
-function Field({ label, value, onChange, type = "text", placeholder, prefix, hint }: FieldProps) {
+function Field({ label, value, onChange, type = "text", placeholder, prefix, hint, readOnly }: FieldProps) {
   return (
     <label className="space-y-1 block">
       {label && (
@@ -39,10 +40,58 @@ function Field({ label, value, onChange, type = "text", placeholder, prefix, hin
           value={value === 0 && type === "number" ? "" : value ?? ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={`w-full rounded-xl border border-border bg-background py-2 text-sm font-medium text-foreground ${prefix ? "pl-7 pr-3" : "px-3"}`}
+          readOnly={readOnly}
+          className={`w-full rounded-xl border ${readOnly ? "border-dashed border-border/60 bg-muted/40 text-muted-foreground" : "border-border bg-background text-foreground"} py-2 text-sm font-medium ${prefix ? "pl-7 pr-3" : "px-3"}`}
         />
       </div>
     </label>
+  );
+}
+
+/** A single "trade" row: Worth + Sold For — the two numbers the rep actually knows. */
+function TradeRow({
+  label,
+  worth,
+  soldFor,
+  onWorthChange,
+  onSoldChange,
+}: {
+  label: string;
+  worth: number;
+  soldFor: number;
+  onWorthChange: (v: string) => void;
+  onSoldChange: (v: string) => void;
+}) {
+  const pct = worth > 0 ? (soldFor / worth) * 100 : 0;
+  return (
+    <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-bold uppercase tracking-wide text-foreground">{label}</span>
+        {worth > 0 && soldFor > 0 && (
+          <span className="text-[10px] font-bold uppercase text-primary">
+            {pct.toFixed(0)}% of worth
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field
+          label="Worth ($)"
+          type="number"
+          prefix="$"
+          value={worth}
+          onChange={onWorthChange}
+          hint="Full Option A / 100% price"
+        />
+        <Field
+          label="Sold For ($)"
+          type="number"
+          prefix="$"
+          value={soldFor}
+          onChange={onSoldChange}
+          hint="What customer signed"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -127,6 +176,9 @@ export default memo(function CommissionSheet() {
         <h3 className="text-center text-sm font-extrabold uppercase tracking-wider text-foreground">
           Hover Commission Sheet
         </h3>
+        <p className="text-center text-[11px] text-muted-foreground mt-1">
+          Just enter <strong className="text-foreground">Worth</strong> and <strong className="text-foreground">Sold For</strong> per trade — everything else fills in automatically.
+        </p>
       </div>
 
       {/* Identity row */}
@@ -136,41 +188,99 @@ export default memo(function CommissionSheet() {
           type="date"
           value={sheet.date_of_sale ?? ""}
           onChange={(v) => set("date_of_sale", v || null)}
-          hint="The day the contract was signed. e.g. 04/22/2026"
+          hint="The day the contract was signed"
         />
         <Field
           label="Customer Name"
           value={deal?.homeowner1 ?? ""}
           onChange={() => {}}
           placeholder="From deal"
-          hint="Auto-filled from this deal's homeowner. Read-only."
+          readOnly
+          hint="Auto from this deal"
         />
         <Field
           label="Job #"
           value={sheet.job_number ?? ""}
           onChange={(v) => set("job_number", v || null)}
-          hint="Hover/CRM job number from the signed contract. e.g. 184502"
+          hint="Hover/CRM job number e.g. 184502"
         />
         <Field
           label="Rep Last, First Initial"
           value={sheet.rep_last_first ?? ""}
           onChange={(v) => set("rep_last_first", v || null)}
           placeholder="Macroglou, N"
-          hint="Your name as it appears on payroll. e.g. Macroglou, N"
+          hint="As it appears on payroll"
         />
       </div>
 
-      {/* Project Total panel */}
+      {/* PRIMARY INPUTS — Trades (Worth + Sold For) */}
       <div className="card-elevated-lg p-5 space-y-4">
-        <div className="rounded-xl bg-foreground/5 px-4 py-2 space-y-1">
-          <h4 className="text-center text-xs font-extrabold uppercase tracking-wider text-foreground">Project Total</h4>
-          <p className="text-center text-[10px] italic text-muted-foreground/80 leading-snug">
-            Tip: Project Price is your 100% benchmark. Contract Total ÷ Project Price = % of Project, which picks your commission tier.
-          </p>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <h4 className="text-sm font-extrabold uppercase tracking-wider text-foreground">
+            Step 1 — Enter Each Trade
+          </h4>
+        </div>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          For each trade you sold: enter what it was <em>worth</em> (full price) and what it <em>sold for</em> (signed price). Skip any trade that wasn't part of the deal.
+        </p>
+
+        <div className="grid gap-3 md:grid-cols-3">
+          <TradeRow
+            label="Roof"
+            worth={sheet.project_roof}
+            soldFor={sheet.contract_roof}
+            onWorthChange={setNum("project_roof")}
+            onSoldChange={setNum("contract_roof")}
+          />
+          <TradeRow
+            label="Siding"
+            worth={sheet.project_siding}
+            soldFor={sheet.contract_siding}
+            onWorthChange={setNum("project_siding")}
+            onSoldChange={setNum("contract_siding")}
+          />
+          <TradeRow
+            label="Gutters"
+            worth={sheet.project_gutters}
+            soldFor={sheet.contract_gutters}
+            onWorthChange={setNum("project_gutters")}
+            onSoldChange={setNum("contract_gutters")}
+          />
+        </div>
+
+        {/* Auto totals from trades */}
+        <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Worth</p>
+            <p className="text-lg font-extrabold font-display text-foreground">{fmt(computed.projectTotal)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Sold For</p>
+            <p className="text-lg font-extrabold font-display text-foreground">{fmt(computed.contractTotal)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">% of Worth</p>
+            <p className="text-lg font-extrabold font-display text-primary">{computed.popPct.toFixed(1)}%</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Commission %</p>
+            <p className="text-lg font-extrabold font-display text-accent">{computed.commissionPct}%</p>
+          </div>
+        </div>
+      </div>
+
+      {/* STEP 2 — Adjustments */}
+      <div className="card-elevated-lg p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <h4 className="text-sm font-extrabold uppercase tracking-wider text-foreground">
+            Step 2 — Adjustments (optional)
+          </h4>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-5">
-          {/* Left column: financials */}
+          {/* Left column: financial inputs */}
           <div className="space-y-3">
             <Field
               label="Company Paid Finance Fees"
@@ -178,31 +288,8 @@ export default memo(function CommissionSheet() {
               prefix="$"
               value={sheet.company_paid_finance_fees}
               onChange={setNum("company_paid_finance_fees")}
-              hint="Dealer fee DaBella absorbs for the finance plan. e.g. $4,200 on a 9.99% 15-yr"
+              hint="Dealer fee DaBella absorbs. e.g. $4,200 on a 9.99% 15-yr"
             />
-            <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Contract Total</span>
-                <span className="font-bold text-foreground">{fmt(computed.contractTotal)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Contract Less Co. Paid Finance Fees</span>
-                <span className="font-bold text-foreground">{fmt(computed.contractLessFees)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">% of Project Price After Finance Fees</span>
-                <span className="font-bold text-primary">{computed.popPct.toFixed(1)}%</span>
-              </div>
-              <div className="flex justify-between text-xs pt-1.5 border-t border-border">
-                <span className="text-muted-foreground">Commission % (from grid)</span>
-                <span className="font-bold text-accent">{computed.commissionPct}%</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Subtotal Commission Due</span>
-                <span className="font-bold text-foreground">{fmt(computed.subtotalCommissionDue)}</span>
-              </div>
-            </div>
-
             <div className="grid grid-cols-2 gap-3">
               <Field
                 label="$ for $"
@@ -210,71 +297,100 @@ export default memo(function CommissionSheet() {
                 prefix="$"
                 value={sheet.dollar_for_dollar}
                 onChange={setNum("dollar_for_dollar")}
-                hint="Dollar-for-dollar add-on (referrals, demo $, etc.). e.g. $250"
+                hint="Referrals, demo $, etc."
               />
               <Field
-                label="Bonus / Self-Gen Fee"
+                label="Bonus / Self-Gen"
                 type="number"
                 prefix="$"
                 value={sheet.bonus_self_gen_fee}
                 onChange={setNum("bonus_self_gen_fee")}
-                hint="Self-generated lead bonus or spiff. e.g. $500 for self-gen"
+                hint="Self-gen bonus or spiff"
               />
             </div>
 
-            <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-3">
-              <div className="flex justify-between items-baseline">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Commission Due</span>
-                <span className="text-xl font-extrabold font-display text-primary">{fmt(computed.totalCommissionDue)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right column: project price + promo + rep split */}
-          <div className="space-y-3">
-            <Field
-              label="Project Price"
-              type="number"
-              prefix="$"
-              value={sheet.project_price}
-              onChange={setNum("project_price")}
-              hint="The 100% (Option A / 'good') price — your benchmark for % of Project. e.g. $42,000"
-            />
             <label className="block space-y-1">
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
-                Promotion or Special Approved By
+                Promotion / Special Approved By
               </span>
               <span className="block text-[10px] leading-snug italic text-muted-foreground/80 -mt-0.5">
-                Any extra % or override and who approved it. e.g. "Extra 1% POI Bonus — approved by RSM Smith"
+                Any extra % or override and who approved it
               </span>
               <textarea
                 value={sheet.promotion_note}
                 onChange={(e) => set("promotion_note", e.target.value)}
                 rows={2}
-                placeholder='e.g. "Extra 1% for POI Bonus"'
+                placeholder='e.g. "Extra 1% for POI Bonus — RSM Smith"'
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground"
               />
             </label>
+          </div>
 
-            <div className="rounded-xl border border-border p-3 space-y-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Commission % Taken
+          {/* Right column: cascading math (read-only) */}
+          <div className="space-y-3">
+            <div className="rounded-xl border border-dashed border-border bg-muted/30 p-3 space-y-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                Auto-calculated
               </p>
-              <p className="text-[10px] italic text-muted-foreground/80 leading-snug -mt-1">
-                How the commission splits between reps. Must total 100. e.g. 50 / 50
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Rep 1 %" type="number" value={sheet.rep1_pct} onChange={setNum("rep1_pct")} />
-                <Field label="Rep 2 %" type="number" value={sheet.rep2_pct} onChange={setNum("rep2_pct")} />
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Sold For Total</span>
+                <span className="font-bold text-foreground">{fmt(computed.contractTotal)}</span>
               </div>
-              {sheet.rep1_pct + sheet.rep2_pct !== 100 && (
-                <p className="text-[11px] text-warning">⚠ Rep 1 + Rep 2 should total 100%</p>
-              )}
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">− Finance Fees</span>
+                <span className="font-bold text-foreground">−{fmt(sheet.company_paid_finance_fees)}</span>
+              </div>
+              <div className="flex justify-between text-xs pt-1.5 border-t border-border">
+                <span className="text-muted-foreground">Net Sold (after fees)</span>
+                <span className="font-bold text-foreground">{fmt(computed.contractLessFees)}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">% of Worth (after fees)</span>
+                <span className="font-bold text-primary">{computed.popPct.toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Commission % from grid</span>
+                <span className="font-bold text-accent">{computed.commissionPct}%</span>
+              </div>
+              <div className="flex justify-between text-xs pt-1.5 border-t border-border">
+                <span className="text-muted-foreground">Subtotal Commission</span>
+                <span className="font-bold text-foreground">{fmt(computed.subtotalCommissionDue)}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">+ $ for $ / Bonuses</span>
+                <span className="font-bold text-foreground">+{fmt(sheet.dollar_for_dollar + sheet.bonus_self_gen_fee)}</span>
+              </div>
+            </div>
+
+            <div className="rounded-xl border-2 border-primary/40 bg-primary/5 p-3">
+              <div className="flex justify-between items-baseline">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Commission Due</span>
+                <span className="text-2xl font-extrabold font-display text-primary">{fmt(computed.totalCommissionDue)}</span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Per-rep payouts */}
+      {/* STEP 3 — Split */}
+      <div className="card-elevated-lg p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <h4 className="text-sm font-extrabold uppercase tracking-wider text-foreground">
+            Step 3 — Split Between Reps
+          </h4>
+        </div>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Solo deal? Leave Rep 1 at 100. Two reps? Set the split (must total 100). e.g. 50 / 50
+        </p>
+        <div className="grid grid-cols-2 gap-3 max-w-sm">
+          <Field label="Rep 1 %" type="number" value={sheet.rep1_pct} onChange={setNum("rep1_pct")} />
+          <Field label="Rep 2 %" type="number" value={sheet.rep2_pct} onChange={setNum("rep2_pct")} />
+        </div>
+        {sheet.rep1_pct + sheet.rep2_pct !== 100 && (
+          <p className="text-[11px] text-warning">⚠ Rep 1 + Rep 2 should total 100%</p>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
           {[
             { label: "Rep 1", commission: computed.rep1Commission, advance: computed.rep1Advance, earned: computed.rep1Earned },
@@ -290,40 +406,6 @@ export default memo(function CommissionSheet() {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Contract / Project line items */}
-      <div className="card-elevated-lg p-5 space-y-3">
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Line Items</h4>
-          <p className="text-[10px] italic text-muted-foreground/80 leading-snug mt-0.5">
-            <strong className="not-italic font-semibold">Contract</strong> = signed price for that line. <strong className="not-italic font-semibold">Project</strong> = 100% Option A price for that line. e.g. Contract Roof $28,500 / Project Roof $32,000.
-          </p>
-        </div>
-        <div className="grid grid-cols-3 gap-3 text-[11px] font-bold uppercase text-muted-foreground px-1">
-          <span></span>
-          <span className="text-center">Contract</span>
-          <span className="text-center">Project</span>
-        </div>
-        {(["roof", "siding", "gutters"] as const).map((row) => (
-          <div key={row} className="grid grid-cols-3 gap-3 items-center">
-            <span className="text-sm font-bold uppercase text-foreground">{row}</span>
-            <Field
-              label=""
-              type="number"
-              prefix="$"
-              value={sheet[`contract_${row}` as const]}
-              onChange={setNum(`contract_${row}` as keyof CommissionSheetInputs)}
-            />
-            <Field
-              label=""
-              type="number"
-              prefix="$"
-              value={sheet[`project_${row}` as const]}
-              onChange={setNum(`project_${row}` as keyof CommissionSheetInputs)}
-            />
-          </div>
-        ))}
       </div>
 
       <p className="text-[11px] text-muted-foreground text-center">
