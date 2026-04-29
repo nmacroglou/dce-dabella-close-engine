@@ -294,7 +294,12 @@ export default memo(function CommissionSheet() {
 
       {/* Contract / Project line items */}
       <div className="card-elevated-lg p-5 space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Line Items</h4>
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Line Items</h4>
+          <p className="text-[10px] italic text-muted-foreground/80 leading-snug mt-0.5">
+            <strong className="not-italic font-semibold">Contract</strong> = signed price for that line. <strong className="not-italic font-semibold">Project</strong> = 100% Option A price for that line. e.g. Contract Roof $28,500 / Project Roof $32,000.
+          </p>
+        </div>
         <div className="grid grid-cols-3 gap-3 text-[11px] font-bold uppercase text-muted-foreground px-1">
           <span></span>
           <span className="text-center">Contract</span>
