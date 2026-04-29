@@ -210,6 +210,7 @@ export default memo(function CommissionSheet() {
                 prefix="$"
                 value={sheet.dollar_for_dollar}
                 onChange={setNum("dollar_for_dollar")}
+                hint="Dollar-for-dollar add-on (referrals, demo $, etc.). e.g. $250"
               />
               <Field
                 label="Bonus / Self-Gen Fee"
@@ -217,6 +218,7 @@ export default memo(function CommissionSheet() {
                 prefix="$"
                 value={sheet.bonus_self_gen_fee}
                 onChange={setNum("bonus_self_gen_fee")}
+                hint="Self-generated lead bonus or spiff. e.g. $500 for self-gen"
               />
             </div>
 
