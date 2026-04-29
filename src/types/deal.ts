@@ -1,4 +1,5 @@
 import type { EngineState } from "@/types/engine";
+import type { CommissionSheetInputs } from "@/types/commission";
 
 export type DealStage = "inspecting" | "presented" | "follow_up" | "won" | "lost";
 
@@ -38,6 +39,7 @@ export interface Deal {
   price_a: number | null;
   price_b: number | null;
   price_c: number | null;
+  commission_sheet: CommissionSheetInputs;
   created_at: string;
   updated_at: string;
 }

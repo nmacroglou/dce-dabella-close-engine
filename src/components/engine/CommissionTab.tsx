@@ -1,12 +1,23 @@
 import { useState, useMemo, useCallback } from "react";
-import { DollarSign, Plus } from "lucide-react";
+import { DollarSign, Plus, FileText, Settings2, Calculator } from "lucide-react";
 import { getMonthlyBonus, MONTHLY_BONUS_TIERS } from "@/data/commissionData";
 import SectionHeader from "./shared/SectionHeader";
 import DealCard, { type Deal, emptyDeal, computeDeal } from "./commission/DealCard";
 import MonthlyOverview from "./commission/MonthlyOverview";
 import CommissionReferenceTables from "./commission/CommissionReferenceTables";
+import CommissionSheet from "./commission/CommissionSheet";
+import CommissionGridEditor from "./commission/CommissionGridEditor";
+
+type View = "sheet" | "estimator" | "grid";
+
+const VIEWS: { key: View; label: string; icon: typeof FileText; desc: string }[] = [
+  { key: "sheet", label: "Live Sheet", icon: FileText, desc: "Auto-fill from active deal" },
+  { key: "estimator", label: "Quick Estimator", icon: Calculator, desc: "Multi-deal monthly NIS" },
+  { key: "grid", label: "My Grid", icon: Settings2, desc: "Edit your % tiers" },
+];
 
 export default function CommissionTab() {
+  const [view, setView] = useState<View>("sheet");
   const [deals, setDeals] = useState<Deal[]>([emptyDeal()]);
 
   const addDeal = useCallback(() => setDeals((prev) => [...prev, emptyDeal()]), []);
@@ -28,35 +39,66 @@ export default function CommissionTab() {
 
   return (
     <div className="space-y-6">
-      <MonthlyOverview {...monthly} />
-
-      <div className="space-y-3">
-        <SectionHeader
-          icon={<DollarSign className="h-5 w-5 text-primary" />}
-          title="Deals"
-          subtitle="Add each deal to estimate commissions and track NIS"
-        />
-
-        {deals.map((deal, i) => (
-          <DealCard
-            key={deal.id}
-            deal={deal}
-            index={i}
-            onChange={(d) => updateDeal(deal.id, d)}
-            onRemove={() => removeDeal(deal.id)}
-          />
+      {/* View switcher */}
+      <div className="grid grid-cols-3 gap-2 p-1.5 bg-card border border-border rounded-2xl">
+        {VIEWS.map(({ key, label, icon: Icon, desc }) => (
+          <button
+            key={key}
+            onClick={() => setView(key)}
+            className={`rounded-xl px-3 py-2.5 text-left transition-all ${
+              view === key
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "hover:bg-muted text-muted-foreground"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Icon className="h-4 w-4" />
+              <span className="text-sm font-semibold">{label}</span>
+            </div>
+            <p className={`text-[10px] mt-0.5 ${view === key ? "text-primary-foreground/80" : "text-muted-foreground/70"}`}>
+              {desc}
+            </p>
+          </button>
         ))}
-
-        <button
-          onClick={addDeal}
-          className="w-full rounded-2xl border-2 border-dashed border-border hover:border-primary/30 p-4 flex items-center justify-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add Deal
-        </button>
       </div>
 
-      <CommissionReferenceTables />
+      {view === "sheet" && <CommissionSheet />}
+
+      {view === "grid" && <CommissionGridEditor />}
+
+      {view === "estimator" && (
+        <>
+          <MonthlyOverview {...monthly} />
+
+          <div className="space-y-3">
+            <SectionHeader
+              icon={<DollarSign className="h-5 w-5 text-primary" />}
+              title="Deals"
+              subtitle="Add each deal to estimate commissions and track NIS"
+            />
+
+            {deals.map((deal, i) => (
+              <DealCard
+                key={deal.id}
+                deal={deal}
+                index={i}
+                onChange={(d) => updateDeal(deal.id, d)}
+                onRemove={() => removeDeal(deal.id)}
+              />
+            ))}
+
+            <button
+              onClick={addDeal}
+              className="w-full rounded-2xl border-2 border-dashed border-border hover:border-primary/30 p-4 flex items-center justify-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add Deal
+            </button>
+          </div>
+
+          <CommissionReferenceTables />
+        </>
+      )}
     </div>
   );
 }
