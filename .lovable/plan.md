@@ -1,37 +1,36 @@
-## Windows Estimate Feature
+## Goal
 
-### 1. Data Model (`src/types/engine.ts`)
-Add window-specific fields to `EngineState`:
-- `windowInspection`: array of 14 inspection items with yes/no/na status
-- `windowItems`: array of window line items (number, level, room, style, dimensions, grids, obs, etc.)
-- `windowScopeChecks`: object tracking scope of work checkboxes (reasons, company, frame, warranty, glass, plus the process steps)
+On the Live Sheet (Commission tab → Live Sheet), add a short helper line under every input that explains what the number is and gives a concrete example, so it's obvious what to type in each box.
 
-### 2. Window Data Constants (`src/data/windowData.ts`)
-- Window styles list (CO/Casement, Picture, Awning, Twin-Casement, Triple-Casement, Bay, Bow, Garden, Sliding Patio Door, Double Hung, 2-Lite Slider, 3-Lite End Vent, Welded Dead Lite, Hopper)
-- Inspection checklist items (14 items from the form)
-- Grid patterns (Colonial, Perimeter, Prairie)
-- Window scope of work steps
+## What the user will see
 
-### 3. Calculator Section (`src/components/engine/calculator/WindowEstimateSection.tsx`)
-- Only visible when `state.product === "Windows"`
-- **Inspection Checklist** — 14-item yes/no checklist
-- **Window Schedule** — table to add/edit window line items (number, level, room, style, color, dimensions, grids, observations)
-- **Scope of Work** — checkbox items for window-specific scope
+Under each field label, a small muted line of text like:
 
-### 4. Presentation Integration
-- **New stage** in `CustomerPresentationView`: "Window Inspection" page showing the inspection results and window schedule
-- **Merged into existing**: Window scope items replace roofing scope items when product is Windows
+- **Date of Sale** — _"The day the contract was signed. e.g. 04/22/2026"_
+- **Customer Name** — _"Auto-filled from the deal's homeowner. Read-only."_
+- **Job #** — _"Hover/CRM job number from the signed contract. e.g. 184502"_
+- **Rep Last, First Initial** — _"Your name as it appears on payroll. e.g. Macroglou, N"_
+- **Company Paid Finance Fees** — _"Dealer fee DaBella absorbs for the finance plan. e.g. $4,200 on a 9.99% 15-yr"_
+- **Project Price** — _"The 100% (Option A / 'good') price — the benchmark used for % of Project. e.g. $42,000"_
+- **Promotion or Special Approved By** — _"Any extra % or override and who approved it. e.g. 'Extra 1% POI Bonus — approved by RSM Smith'"_
+- **$ for $** — _"Dollar-for-dollar add-on (referrals, demo $, etc.). e.g. $250"_
+- **Bonus / Self-Gen Fee** — _"Self-generated lead bonus or spiff. e.g. $500 for self-gen"_
+- **Rep 1 % / Rep 2 %** — _"How the commission splits between reps. Must total 100. e.g. 50 / 50"_
+- **Contract Roof / Siding / Gutters** — _"What the customer is paying for this line on the signed contract. e.g. $28,500"_
+- **Project Roof / Siding / Gutters** — _"The 100% project price for this line (matches the Option A price). e.g. $32,000"_
 
-### 5. PDF Export
-- Add a "Window Inspection" page to the PDF with inspection results table and window schedule
-- Update scope page to use window-specific scope items when applicable
+The helper text is a small, muted second line under each label — same style we already use in `InputField.tsx` (the `description` prop). It does not change layout or any calculations.
 
-### Files to create/modify:
-- `src/types/engine.ts` — add window fields
-- `src/data/windowData.ts` — new constants
-- `src/components/engine/calculator/WindowEstimateSection.tsx` — new component
-- `src/components/engine/CalculatorTab.tsx` — import & render window section
-- `src/hooks/useCloseEngine.ts` — add default state
-- `src/components/engine/CustomerPresentationView.tsx` — add window stage
-- `src/data/scopeItems.ts` — add window scope items
-- `src/lib/exportPdf.ts` — add window inspection PDF page
+## Files to change
+
+1. **`src/components/engine/commission/CommissionSheet.tsx`**
+   - Extend the local `Field` component to accept an optional `hint?: string` prop and render it as a small `text-[10px] text-muted-foreground` line under the label.
+   - Pass a `hint` to every `<Field>` in the sheet (identity row, Project Total panel, rep split, and the Contract/Project line items). For the line-item rows, since they currently render `<Field label="">`, add a single hint line under the row header ("Contract = signed price for this line. Project = 100% Option A price.") instead of repeating it on every cell.
+   - Add a one-line legend at the top of the Project Total panel: _"Tip: Project Price is your 100% benchmark. Contract Total ÷ Project Price = % of Project, which picks your commission tier."_
+
+2. No changes to `commission.ts`, the grid editor, hooks, or the database — this is purely UI helper text.
+
+## Out of scope
+
+- No changes to calculations, persistence, or the grid.
+- No tooltips/popovers — the hints render inline so they're visible on iPad without tapping.
