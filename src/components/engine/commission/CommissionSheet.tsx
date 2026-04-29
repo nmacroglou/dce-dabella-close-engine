@@ -238,10 +238,14 @@ export default memo(function CommissionSheet() {
               prefix="$"
               value={sheet.project_price}
               onChange={setNum("project_price")}
+              hint="The 100% (Option A / 'good') price — your benchmark for % of Project. e.g. $42,000"
             />
             <label className="block space-y-1">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
                 Promotion or Special Approved By
+              </span>
+              <span className="block text-[10px] leading-snug italic text-muted-foreground/80 -mt-0.5">
+                Any extra % or override and who approved it. e.g. "Extra 1% POI Bonus — approved by RSM Smith"
               </span>
               <textarea
                 value={sheet.promotion_note}
@@ -255,6 +259,9 @@ export default memo(function CommissionSheet() {
             <div className="rounded-xl border border-border p-3 space-y-2">
               <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 Commission % Taken
+              </p>
+              <p className="text-[10px] italic text-muted-foreground/80 leading-snug -mt-1">
+                How the commission splits between reps. Must total 100. e.g. 50 / 50
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Rep 1 %" type="number" value={sheet.rep1_pct} onChange={setNum("rep1_pct")} />
