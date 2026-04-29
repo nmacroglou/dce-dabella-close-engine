@@ -18,12 +18,18 @@ interface FieldProps {
   type?: "text" | "number" | "date";
   placeholder?: string;
   prefix?: string;
+  hint?: string;
 }
 
-function Field({ label, value, onChange, type = "text", placeholder, prefix }: FieldProps) {
+function Field({ label, value, onChange, type = "text", placeholder, prefix, hint }: FieldProps) {
   return (
     <label className="space-y-1 block">
-      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</span>
+      {label && (
+        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">{label}</span>
+      )}
+      {hint && (
+        <span className="block text-[10px] leading-snug text-muted-foreground/80 italic -mt-0.5">{hint}</span>
+      )}
       <div className="relative">
         {prefix && (
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{prefix}</span>
@@ -125,16 +131,42 @@ export default memo(function CommissionSheet() {
 
       {/* Identity row */}
       <div className="card-elevated-lg p-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Field label="Date of Sale" type="date" value={sheet.date_of_sale ?? ""} onChange={(v) => set("date_of_sale", v || null)} />
-        <Field label="Customer Name" value={deal?.homeowner1 ?? ""} onChange={() => {}} placeholder="From deal" />
-        <Field label="Job #" value={sheet.job_number ?? ""} onChange={(v) => set("job_number", v || null)} />
-        <Field label="Rep Last, First Initial" value={sheet.rep_last_first ?? ""} onChange={(v) => set("rep_last_first", v || null)} placeholder="Macroglou, N" />
+        <Field
+          label="Date of Sale"
+          type="date"
+          value={sheet.date_of_sale ?? ""}
+          onChange={(v) => set("date_of_sale", v || null)}
+          hint="The day the contract was signed. e.g. 04/22/2026"
+        />
+        <Field
+          label="Customer Name"
+          value={deal?.homeowner1 ?? ""}
+          onChange={() => {}}
+          placeholder="From deal"
+          hint="Auto-filled from this deal's homeowner. Read-only."
+        />
+        <Field
+          label="Job #"
+          value={sheet.job_number ?? ""}
+          onChange={(v) => set("job_number", v || null)}
+          hint="Hover/CRM job number from the signed contract. e.g. 184502"
+        />
+        <Field
+          label="Rep Last, First Initial"
+          value={sheet.rep_last_first ?? ""}
+          onChange={(v) => set("rep_last_first", v || null)}
+          placeholder="Macroglou, N"
+          hint="Your name as it appears on payroll. e.g. Macroglou, N"
+        />
       </div>
 
       {/* Project Total panel */}
       <div className="card-elevated-lg p-5 space-y-4">
-        <div className="rounded-xl bg-foreground/5 px-4 py-2">
+        <div className="rounded-xl bg-foreground/5 px-4 py-2 space-y-1">
           <h4 className="text-center text-xs font-extrabold uppercase tracking-wider text-foreground">Project Total</h4>
+          <p className="text-center text-[10px] italic text-muted-foreground/80 leading-snug">
+            Tip: Project Price is your 100% benchmark. Contract Total ÷ Project Price = % of Project, which picks your commission tier.
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-5">
@@ -146,6 +178,7 @@ export default memo(function CommissionSheet() {
               prefix="$"
               value={sheet.company_paid_finance_fees}
               onChange={setNum("company_paid_finance_fees")}
+              hint="Dealer fee DaBella absorbs for the finance plan. e.g. $4,200 on a 9.99% 15-yr"
             />
             <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-1.5">
               <div className="flex justify-between text-xs">
@@ -177,6 +210,7 @@ export default memo(function CommissionSheet() {
                 prefix="$"
                 value={sheet.dollar_for_dollar}
                 onChange={setNum("dollar_for_dollar")}
+                hint="Dollar-for-dollar add-on (referrals, demo $, etc.). e.g. $250"
               />
               <Field
                 label="Bonus / Self-Gen Fee"
@@ -184,6 +218,7 @@ export default memo(function CommissionSheet() {
                 prefix="$"
                 value={sheet.bonus_self_gen_fee}
                 onChange={setNum("bonus_self_gen_fee")}
+                hint="Self-generated lead bonus or spiff. e.g. $500 for self-gen"
               />
             </div>
 
@@ -203,10 +238,14 @@ export default memo(function CommissionSheet() {
               prefix="$"
               value={sheet.project_price}
               onChange={setNum("project_price")}
+              hint="The 100% (Option A / 'good') price — your benchmark for % of Project. e.g. $42,000"
             />
             <label className="block space-y-1">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
                 Promotion or Special Approved By
+              </span>
+              <span className="block text-[10px] leading-snug italic text-muted-foreground/80 -mt-0.5">
+                Any extra % or override and who approved it. e.g. "Extra 1% POI Bonus — approved by RSM Smith"
               </span>
               <textarea
                 value={sheet.promotion_note}
@@ -220,6 +259,9 @@ export default memo(function CommissionSheet() {
             <div className="rounded-xl border border-border p-3 space-y-2">
               <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 Commission % Taken
+              </p>
+              <p className="text-[10px] italic text-muted-foreground/80 leading-snug -mt-1">
+                How the commission splits between reps. Must total 100. e.g. 50 / 50
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Rep 1 %" type="number" value={sheet.rep1_pct} onChange={setNum("rep1_pct")} />
@@ -252,7 +294,12 @@ export default memo(function CommissionSheet() {
 
       {/* Contract / Project line items */}
       <div className="card-elevated-lg p-5 space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Line Items</h4>
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Line Items</h4>
+          <p className="text-[10px] italic text-muted-foreground/80 leading-snug mt-0.5">
+            <strong className="not-italic font-semibold">Contract</strong> = signed price for that line. <strong className="not-italic font-semibold">Project</strong> = 100% Option A price for that line. e.g. Contract Roof $28,500 / Project Roof $32,000.
+          </p>
+        </div>
         <div className="grid grid-cols-3 gap-3 text-[11px] font-bold uppercase text-muted-foreground px-1">
           <span></span>
           <span className="text-center">Contract</span>
