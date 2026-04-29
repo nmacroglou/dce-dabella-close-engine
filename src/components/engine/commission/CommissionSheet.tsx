@@ -131,10 +131,33 @@ export default memo(function CommissionSheet() {
 
       {/* Identity row */}
       <div className="card-elevated-lg p-5 grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Field label="Date of Sale" type="date" value={sheet.date_of_sale ?? ""} onChange={(v) => set("date_of_sale", v || null)} />
-        <Field label="Customer Name" value={deal?.homeowner1 ?? ""} onChange={() => {}} placeholder="From deal" />
-        <Field label="Job #" value={sheet.job_number ?? ""} onChange={(v) => set("job_number", v || null)} />
-        <Field label="Rep Last, First Initial" value={sheet.rep_last_first ?? ""} onChange={(v) => set("rep_last_first", v || null)} placeholder="Macroglou, N" />
+        <Field
+          label="Date of Sale"
+          type="date"
+          value={sheet.date_of_sale ?? ""}
+          onChange={(v) => set("date_of_sale", v || null)}
+          hint="The day the contract was signed. e.g. 04/22/2026"
+        />
+        <Field
+          label="Customer Name"
+          value={deal?.homeowner1 ?? ""}
+          onChange={() => {}}
+          placeholder="From deal"
+          hint="Auto-filled from this deal's homeowner. Read-only."
+        />
+        <Field
+          label="Job #"
+          value={sheet.job_number ?? ""}
+          onChange={(v) => set("job_number", v || null)}
+          hint="Hover/CRM job number from the signed contract. e.g. 184502"
+        />
+        <Field
+          label="Rep Last, First Initial"
+          value={sheet.rep_last_first ?? ""}
+          onChange={(v) => set("rep_last_first", v || null)}
+          placeholder="Macroglou, N"
+          hint="Your name as it appears on payroll. e.g. Macroglou, N"
+        />
       </div>
 
       {/* Project Total panel */}
