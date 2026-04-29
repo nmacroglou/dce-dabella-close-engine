@@ -162,8 +162,11 @@ export default memo(function CommissionSheet() {
 
       {/* Project Total panel */}
       <div className="card-elevated-lg p-5 space-y-4">
-        <div className="rounded-xl bg-foreground/5 px-4 py-2">
+        <div className="rounded-xl bg-foreground/5 px-4 py-2 space-y-1">
           <h4 className="text-center text-xs font-extrabold uppercase tracking-wider text-foreground">Project Total</h4>
+          <p className="text-center text-[10px] italic text-muted-foreground/80 leading-snug">
+            Tip: Project Price is your 100% benchmark. Contract Total ÷ Project Price = % of Project, which picks your commission tier.
+          </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-5">
@@ -175,6 +178,7 @@ export default memo(function CommissionSheet() {
               prefix="$"
               value={sheet.company_paid_finance_fees}
               onChange={setNum("company_paid_finance_fees")}
+              hint="Dealer fee DaBella absorbs for the finance plan. e.g. $4,200 on a 9.99% 15-yr"
             />
             <div className="rounded-xl border border-border bg-muted/30 p-3 space-y-1.5">
               <div className="flex justify-between text-xs">
