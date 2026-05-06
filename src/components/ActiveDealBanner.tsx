@@ -4,11 +4,15 @@ import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal, useUpdateDealStage } from "@/hooks/useDeals";
 import { attachNoteToLatestStageEntry } from "@/hooks/useStageHistory";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCommissionGrid } from "@/hooks/useCommissionGrid";
+import { scheduleSLAFollowUps } from "@/lib/scheduleFollowUps";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, X, History } from "lucide-react";
+import { Briefcase, X, History, Sparkles } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -20,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import StageHistoryTimeline from "@/components/StageHistoryTimeline";
+import FollowUpComposer from "@/components/followups/FollowUpComposer";
 
 export default function ActiveDealBanner() {
   const navigate = useNavigate();
