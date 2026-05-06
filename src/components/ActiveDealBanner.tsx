@@ -321,6 +321,12 @@ export default function ActiveDealBanner() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <FollowUpComposer
+        dealId={activeDealId}
+        open={composerOpen}
+        onOpenChange={setComposerOpen}
+      />
     </>
   );
 }
