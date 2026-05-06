@@ -105,7 +105,23 @@ export default function ActiveDealBanner() {
     const note = stageNote;
     updateStage.mutate(
       { id: deal.id, stage },
-      { onSuccess: () => persistStageNote(stage, note) }
+      {
+        onSuccess: async () => {
+          await persistStageNote(stage, note);
+          if (stage === "follow_up" && user && grid) {
+            try {
+              const n = await scheduleSLAFollowUps(deal.id, user.id, grid.follow_up_sla);
+              if (n > 0) {
+                toast.success(`${n} follow-up touchpoints scheduled`);
+                qc.invalidateQueries({ queryKey: ["follow-ups"] });
+                setComposerOpen(true);
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        },
+      }
     );
     setStageNoteOpen(false);
     setPendingStage(null);
