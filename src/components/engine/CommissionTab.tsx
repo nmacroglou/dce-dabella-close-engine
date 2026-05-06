@@ -7,6 +7,7 @@ import MonthlyOverview from "./commission/MonthlyOverview";
 import CommissionReferenceTables from "./commission/CommissionReferenceTables";
 import CommissionSheet from "./commission/CommissionSheet";
 import CommissionGridEditor from "./commission/CommissionGridEditor";
+import MonthlyPromosEditor from "./commission/MonthlyPromosEditor";
 
 type View = "sheet" | "estimator" | "grid";
 
