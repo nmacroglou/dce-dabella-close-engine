@@ -103,37 +103,57 @@ export default memo(function CommissionSheet() {
 
   const [sheet, setSheet] = useState<CommissionSheetInputs>(emptyCommissionSheet());
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hydrated = useRef(false);
+  const hydratedDealId = useRef<string | null>(null);
 
-  // Hydrate from saved deal + auto-fill from engine_state when fields are blank
+  // Hydrate ONCE per active deal. Auto-fill from engine_state only if the
+  // saved sheet is still completely empty (first time opening this deal).
+  // Subsequent refetches must NOT clobber the in-flight user input.
   useEffect(() => {
     if (!deal) return;
+    if (hydratedDealId.current === deal.id) return;
+
     const saved = (deal.commission_sheet ?? emptyCommissionSheet()) as CommissionSheetInputs;
-    const engine = deal.engine_state ?? {};
-    const auto: CommissionSheetInputs = {
-      ...emptyCommissionSheet(),
-      ...saved,
-      project_price: saved.project_price || Number(engine.priceA ?? 0),
-      contract_roof:
-        saved.contract_roof ||
-        (deal.selected_option === "B"
+    const isBlank =
+      !saved.project_price &&
+      !saved.contract_roof && !saved.contract_siding && !saved.contract_gutters &&
+      !saved.project_roof && !saved.project_siding && !saved.project_gutters;
+
+    if (isBlank) {
+      const engine = deal.engine_state ?? {};
+      const selectedPrice =
+        deal.selected_option === "B"
           ? Number(deal.price_b ?? 0)
           : deal.selected_option === "C"
           ? Number(deal.price_c ?? 0)
-          : Number(deal.price_a ?? 0)),
-      project_roof: saved.project_roof || Number(engine.priceA ?? 0),
-    };
-    setSheet(auto);
-    hydrated.current = true;
+          : Number(deal.price_a ?? 0);
+      setSheet({
+        ...emptyCommissionSheet(),
+        ...saved,
+        project_price: Number(engine.priceA ?? 0),
+        contract_roof: selectedPrice,
+        project_roof: Number(engine.priceA ?? 0),
+      });
+    } else {
+      setSheet({ ...emptyCommissionSheet(), ...saved });
+    }
+    hydratedDealId.current = deal.id;
   }, [deal]);
 
-  // Debounced auto-save
+  // Reset hydration flag when switching deals
   useEffect(() => {
-    if (!hydrated.current || !activeDealId) return;
+    if (activeDealId !== hydratedDealId.current) {
+      // allow re-hydration for the new deal once its data arrives
+      hydratedDealId.current = null;
+    }
+  }, [activeDealId]);
+
+  // Debounced auto-save (only after hydration of the current deal)
+  useEffect(() => {
+    if (!activeDealId || hydratedDealId.current !== activeDealId) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       updateDeal.mutate({ id: activeDealId, updates: { commission_sheet: sheet } as never });
-    }, 800);
+    }, 600);
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
