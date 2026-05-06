@@ -9,6 +9,7 @@ import {
   type MonthlyPromo,
   type MonthlyBonusTier,
 } from "@/types/commission";
+import { DEFAULT_FOLLOW_UP_SLA, type FollowUpSLA } from "@/types/followUp";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -33,11 +34,13 @@ export function useCommissionGrid() {
           front_end_pct: 50,
           promos: [],
           monthly_bonus_tiers: DEFAULT_MONTHLY_BONUS_TIERS,
+          follow_up_sla: DEFAULT_FOLLOW_UP_SLA,
         };
       }
       const row = data as typeof data & {
         promos?: unknown;
         monthly_bonus_tiers?: unknown;
+        follow_up_sla?: unknown;
       };
       return {
         id: data.id,
@@ -47,6 +50,8 @@ export function useCommissionGrid() {
         promos: (row.promos as unknown as MonthlyPromo[]) ?? [],
         monthly_bonus_tiers:
           (row.monthly_bonus_tiers as unknown as MonthlyBonusTier[]) ?? DEFAULT_MONTHLY_BONUS_TIERS,
+        follow_up_sla:
+          (row.follow_up_sla as unknown as FollowUpSLA) ?? DEFAULT_FOLLOW_UP_SLA,
       };
     },
   });
@@ -61,6 +66,7 @@ export function useSaveCommissionGrid() {
       front_end_pct: number;
       promos?: MonthlyPromo[];
       monthly_bonus_tiers?: MonthlyBonusTier[];
+      follow_up_sla?: FollowUpSLA;
     }) => {
       if (!user) throw new Error("Not authenticated");
       const payload: Record<string, unknown> = {
@@ -71,6 +77,8 @@ export function useSaveCommissionGrid() {
       if (input.promos) payload.promos = input.promos as unknown as Json;
       if (input.monthly_bonus_tiers)
         payload.monthly_bonus_tiers = input.monthly_bonus_tiers as unknown as Json;
+      if (input.follow_up_sla)
+        payload.follow_up_sla = input.follow_up_sla as unknown as Json;
       const { error } = await supabase
         .from("commission_grids")
         .upsert(payload as never, { onConflict: "rep_id" });

@@ -60,6 +60,7 @@ export interface CommissionGrid {
   front_end_pct: number; // advance %
   promos: MonthlyPromo[];
   monthly_bonus_tiers: MonthlyBonusTier[];
+  follow_up_sla: import("./followUp").FollowUpSLA;
 }
 
 export const DEFAULT_MONTHLY_BONUS_TIERS: MonthlyBonusTier[] = [

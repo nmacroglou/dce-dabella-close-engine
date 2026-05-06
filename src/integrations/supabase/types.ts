@@ -17,6 +17,7 @@ export type Database = {
       commission_grids: {
         Row: {
           created_at: string
+          follow_up_sla: Json
           front_end_pct: number
           id: string
           monthly_bonus_tiers: Json
@@ -27,6 +28,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          follow_up_sla?: Json
           front_end_pct?: number
           id?: string
           monthly_bonus_tiers?: Json
@@ -37,6 +39,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          follow_up_sla?: Json
           front_end_pct?: number
           id?: string
           monthly_bonus_tiers?: Json
@@ -185,6 +188,51 @@ export type Database = {
           selected_option?: string | null
           stage?: Database["public"]["Enums"]["deal_stage"]
           stage_changed_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      follow_ups: {
+        Row: {
+          ai_email_body: string | null
+          ai_email_subject: string | null
+          channel: string | null
+          completed_at: string | null
+          created_at: string
+          deal_id: string
+          due_at: string
+          id: string
+          notes: string | null
+          rep_id: string
+          touchpoint_number: number
+          updated_at: string
+        }
+        Insert: {
+          ai_email_body?: string | null
+          ai_email_subject?: string | null
+          channel?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deal_id: string
+          due_at: string
+          id?: string
+          notes?: string | null
+          rep_id: string
+          touchpoint_number?: number
+          updated_at?: string
+        }
+        Update: {
+          ai_email_body?: string | null
+          ai_email_subject?: string | null
+          channel?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deal_id?: string
+          due_at?: string
+          id?: string
+          notes?: string | null
+          rep_id?: string
+          touchpoint_number?: number
           updated_at?: string
         }
         Relationships: []

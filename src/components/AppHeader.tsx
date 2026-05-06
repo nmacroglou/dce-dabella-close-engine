@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
@@ -16,6 +16,7 @@ import dabellaLogo from "@/assets/dabella-logo.png";
 const NAV = [
   { to: "/", label: "Engine", icon: Wrench, end: true },
   { to: "/deals", label: "Deals", icon: Briefcase, end: false },
+  { to: "/pipeline", label: "Pipeline", icon: GitBranch, end: false },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: false },
 ] as const;
 

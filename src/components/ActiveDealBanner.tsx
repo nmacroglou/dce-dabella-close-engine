@@ -4,11 +4,15 @@ import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal, useUpdateDealStage } from "@/hooks/useDeals";
 import { attachNoteToLatestStageEntry } from "@/hooks/useStageHistory";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCommissionGrid } from "@/hooks/useCommissionGrid";
+import { scheduleSLAFollowUps } from "@/lib/scheduleFollowUps";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, X, History } from "lucide-react";
+import { Briefcase, X, History, Sparkles } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -20,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import StageHistoryTimeline from "@/components/StageHistoryTimeline";
+import FollowUpComposer from "@/components/followups/FollowUpComposer";
 
 export default function ActiveDealBanner() {
   const navigate = useNavigate();
@@ -27,6 +32,8 @@ export default function ActiveDealBanner() {
   const { data: deal } = useDeal(activeDealId);
   const updateStage = useUpdateDealStage();
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const { data: grid } = useCommissionGrid();
 
   const [winOpen, setWinOpen] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
@@ -37,6 +44,7 @@ export default function ActiveDealBanner() {
   const [lostReason, setLostReason] = useState("");
   const [lostNote, setLostNote] = useState("");
   const [stageNote, setStageNote] = useState("");
+  const [composerOpen, setComposerOpen] = useState(false);
 
   if (!activeDealId) {
     return (
@@ -97,7 +105,23 @@ export default function ActiveDealBanner() {
     const note = stageNote;
     updateStage.mutate(
       { id: deal.id, stage },
-      { onSuccess: () => persistStageNote(stage, note) }
+      {
+        onSuccess: async () => {
+          await persistStageNote(stage, note);
+          if (stage === "follow_up" && user && grid) {
+            try {
+              const n = await scheduleSLAFollowUps(deal.id, user.id, grid.follow_up_sla);
+              if (n > 0) {
+                toast.success(`${n} follow-up touchpoints scheduled`);
+                qc.invalidateQueries({ queryKey: ["follow-ups"] });
+                setComposerOpen(true);
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        },
+      }
     );
     setStageNoteOpen(false);
     setPendingStage(null);
@@ -171,6 +195,15 @@ export default function ActiveDealBanner() {
               <StageHistoryTimeline deal={deal} />
             </PopoverContent>
           </Popover>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9 gap-1.5"
+            onClick={() => setComposerOpen(true)}
+          >
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span className="hidden sm:inline text-xs font-semibold">Follow-up</span>
+          </Button>
           <Select value={deal.stage} onValueChange={(v) => handleStage(v as DealStage)}>
             <SelectTrigger className="w-36 h-9">
               <SelectValue />
@@ -288,6 +321,12 @@ export default function ActiveDealBanner() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <FollowUpComposer
+        dealId={activeDealId}
+        open={composerOpen}
+        onOpenChange={setComposerOpen}
+      />
     </>
   );
 }

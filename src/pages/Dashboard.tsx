@@ -1,7 +1,13 @@
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFollowUps } from "@/hooks/useFollowUps";
+import { useDeals } from "@/hooks/useDeals";
+import { followUpStatus } from "@/types/followUp";
 import AppHeader from "@/components/AppHeader";
-import { Loader2, TrendingUp, TrendingDown, Target, DollarSign, Award, Flame, Clock, AlertCircle, Trophy, BarChart3 } from "lucide-react";
+import FollowUpComposer from "@/components/followups/FollowUpComposer";
+import { Loader2, TrendingUp, TrendingDown, Target, DollarSign, Award, Flame, Clock, AlertCircle, Trophy, BarChart3, Sparkles, Calendar } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { STAGE_LABELS, type DealStage } from "@/types/deal";
 import { OBJECTIONS } from "@/data/objections";
