@@ -250,7 +250,7 @@ export default function Dashboard() {
                   <Link key={f.id} to="/deals" className="group rounded-xl border border-border bg-card p-3 hover:border-destructive/40 transition-colors">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-foreground truncate">{d?.customer_name ?? "Deal"}</p>
+                        <p className="text-sm font-bold text-foreground truncate">{d?.homeowner1 ?? "Deal"}</p>
                         <p className="text-[11px] text-muted-foreground truncate">Touchpoint #{f.touchpoint_number} · {f.channel}</p>
                       </div>
                       <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded bg-destructive/15 text-destructive">
