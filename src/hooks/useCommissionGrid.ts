@@ -44,9 +44,9 @@ export function useCommissionGrid() {
         rep_id: data.rep_id,
         tiers: (data.tiers as unknown as CommissionGridTier[]) ?? DEFAULT_TIERS,
         front_end_pct: Number(data.front_end_pct),
-        promos: (row.promos as MonthlyPromo[]) ?? [],
+        promos: (row.promos as unknown as MonthlyPromo[]) ?? [],
         monthly_bonus_tiers:
-          (row.monthly_bonus_tiers as MonthlyBonusTier[]) ?? DEFAULT_MONTHLY_BONUS_TIERS,
+          (row.monthly_bonus_tiers as unknown as MonthlyBonusTier[]) ?? DEFAULT_MONTHLY_BONUS_TIERS,
       };
     },
   });
