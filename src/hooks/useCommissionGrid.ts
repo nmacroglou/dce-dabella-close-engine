@@ -1,7 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { DEFAULT_TIERS, type CommissionGrid, type CommissionGridTier } from "@/types/commission";
+import {
+  DEFAULT_TIERS,
+  DEFAULT_MONTHLY_BONUS_TIERS,
+  type CommissionGrid,
+  type CommissionGridTier,
+  type MonthlyPromo,
+  type MonthlyBonusTier,
+} from "@/types/commission";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -24,13 +31,22 @@ export function useCommissionGrid() {
           rep_id: user.id,
           tiers: DEFAULT_TIERS,
           front_end_pct: 50,
+          promos: [],
+          monthly_bonus_tiers: DEFAULT_MONTHLY_BONUS_TIERS,
         };
       }
+      const row = data as typeof data & {
+        promos?: unknown;
+        monthly_bonus_tiers?: unknown;
+      };
       return {
         id: data.id,
         rep_id: data.rep_id,
         tiers: (data.tiers as unknown as CommissionGridTier[]) ?? DEFAULT_TIERS,
         front_end_pct: Number(data.front_end_pct),
+        promos: (row.promos as MonthlyPromo[]) ?? [],
+        monthly_bonus_tiers:
+          (row.monthly_bonus_tiers as MonthlyBonusTier[]) ?? DEFAULT_MONTHLY_BONUS_TIERS,
       };
     },
   });
@@ -40,23 +56,29 @@ export function useSaveCommissionGrid() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { tiers: CommissionGridTier[]; front_end_pct: number }) => {
+    mutationFn: async (input: {
+      tiers: CommissionGridTier[];
+      front_end_pct: number;
+      promos?: MonthlyPromo[];
+      monthly_bonus_tiers?: MonthlyBonusTier[];
+    }) => {
       if (!user) throw new Error("Not authenticated");
+      const payload: Record<string, unknown> = {
+        rep_id: user.id,
+        tiers: input.tiers as unknown as Json,
+        front_end_pct: input.front_end_pct,
+      };
+      if (input.promos) payload.promos = input.promos as unknown as Json;
+      if (input.monthly_bonus_tiers)
+        payload.monthly_bonus_tiers = input.monthly_bonus_tiers as unknown as Json;
       const { error } = await supabase
         .from("commission_grids")
-        .upsert(
-          {
-            rep_id: user.id,
-            tiers: input.tiers as unknown as Json,
-            front_end_pct: input.front_end_pct,
-          },
-          { onConflict: "rep_id" }
-        );
+        .upsert(payload as never, { onConflict: "rep_id" });
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["commission-grid"] });
-      toast.success("Commission grid saved");
+      toast.success("Saved");
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
