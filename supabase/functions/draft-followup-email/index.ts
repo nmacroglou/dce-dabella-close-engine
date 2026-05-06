@@ -2,6 +2,7 @@
 // Returns { subject, body } as a JSON object using tool calling.
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
 
+interface ReqAttachment { url?: string; name?: string; type?: string; caption?: string; }
 interface ReqBody {
   homeowner?: string;
   rep_name?: string;
@@ -15,6 +16,8 @@ interface ReqBody {
   price_c?: number | null;
   objections?: string[];
   touchpoint_number?: number;
+  context_notes?: string;
+  attachments?: ReqAttachment[];
 }
 
 const SYSTEM = `You are an elite DaBella exterior remodeling sales coach writing
