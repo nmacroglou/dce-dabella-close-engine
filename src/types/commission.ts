@@ -38,11 +38,45 @@ export interface CommissionGridTier {
   commission_pct: number; // commission % awarded at that floor
 }
 
+export interface MonthlyPromo {
+  id: string;
+  month: string;          // e.g. "2026-05" or freeform "May"
+  product: string;        // Roof, Siding, Baths, Windows, Solar, Financing, Other
+  label: string;          // short headline e.g. "Free Gutters @ 100%"
+  details: string;        // long form / fine print
+  override_pct: number;   // commission % override applied when this promo is active (0 = no math change)
+  active: boolean;
+}
+
+export interface MonthlyBonusTier {
+  min_nis: number;
+  pct: number;
+}
+
 export interface CommissionGrid {
   id: string;
   rep_id: string;
   tiers: CommissionGridTier[];
   front_end_pct: number; // advance %
+  promos: MonthlyPromo[];
+  monthly_bonus_tiers: MonthlyBonusTier[];
+}
+
+export const DEFAULT_MONTHLY_BONUS_TIERS: MonthlyBonusTier[] = [
+  { min_nis: 75000, pct: 1.0 },
+  { min_nis: 100000, pct: 1.25 },
+  { min_nis: 125000, pct: 1.5 },
+  { min_nis: 150000, pct: 1.75 },
+  { min_nis: 175000, pct: 2.0 },
+  { min_nis: 200000, pct: 2.5 },
+];
+
+export function lookupMonthlyBonusPct(totalNIS: number, tiers: MonthlyBonusTier[]): number {
+  if (totalNIS <= 0 || tiers.length === 0) return 0;
+  const sorted = [...tiers].sort((a, b) => a.min_nis - b.min_nis);
+  let pct = 0;
+  for (const t of sorted) if (totalNIS >= t.min_nis) pct = t.pct;
+  return pct;
 }
 
 export const DEFAULT_TIERS: CommissionGridTier[] = [

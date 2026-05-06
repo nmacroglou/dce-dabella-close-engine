@@ -19,6 +19,8 @@ export type Database = {
           created_at: string
           front_end_pct: number
           id: string
+          monthly_bonus_tiers: Json
+          promos: Json
           rep_id: string
           tiers: Json
           updated_at: string
@@ -27,6 +29,8 @@ export type Database = {
           created_at?: string
           front_end_pct?: number
           id?: string
+          monthly_bonus_tiers?: Json
+          promos?: Json
           rep_id: string
           tiers?: Json
           updated_at?: string
@@ -35,6 +39,8 @@ export type Database = {
           created_at?: string
           front_end_pct?: number
           id?: string
+          monthly_bonus_tiers?: Json
+          promos?: Json
           rep_id?: string
           tiers?: Json
           updated_at?: string
