@@ -195,6 +195,15 @@ export default function ActiveDealBanner() {
               <StageHistoryTimeline deal={deal} />
             </PopoverContent>
           </Popover>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9 gap-1.5"
+            onClick={() => setComposerOpen(true)}
+          >
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span className="hidden sm:inline text-xs font-semibold">Follow-up</span>
+          </Button>
           <Select value={deal.stage} onValueChange={(v) => handleStage(v as DealStage)}>
             <SelectTrigger className="w-36 h-9">
               <SelectValue />
