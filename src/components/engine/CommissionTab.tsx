@@ -65,7 +65,12 @@ export default function CommissionTab() {
 
       {view === "sheet" && <CommissionSheet />}
 
-      {view === "grid" && <CommissionGridEditor />}
+      {view === "grid" && (
+        <div className="space-y-5">
+          <CommissionGridEditor />
+          <MonthlyPromosEditor />
+        </div>
+      )}
 
       {view === "estimator" && (
         <>
