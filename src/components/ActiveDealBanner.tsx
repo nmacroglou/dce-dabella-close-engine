@@ -32,6 +32,8 @@ export default function ActiveDealBanner() {
   const { data: deal } = useDeal(activeDealId);
   const updateStage = useUpdateDealStage();
   const qc = useQueryClient();
+  const { user } = useAuth();
+  const { data: grid } = useCommissionGrid();
 
   const [winOpen, setWinOpen] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
@@ -42,6 +44,7 @@ export default function ActiveDealBanner() {
   const [lostReason, setLostReason] = useState("");
   const [lostNote, setLostNote] = useState("");
   const [stageNote, setStageNote] = useState("");
+  const [composerOpen, setComposerOpen] = useState(false);
 
   if (!activeDealId) {
     return (
