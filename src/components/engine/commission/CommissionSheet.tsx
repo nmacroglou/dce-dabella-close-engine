@@ -279,6 +279,55 @@ export default memo(function CommissionSheet() {
           </h4>
         </div>
 
+        {/* Active monthly promos quick-pick */}
+        {grid?.promos?.some((p) => p.active) && (
+          <div className="rounded-xl border border-accent/30 bg-accent/5 p-3 space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-accent">
+              This Month's Promos · tap to apply
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {grid.promos
+                .filter((p) => p.active)
+                .map((p) => {
+                  const applied =
+                    sheet.promotion_pct_override === p.override_pct &&
+                    sheet.promotion_note.includes(p.label);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        if (applied) {
+                          set("promotion_pct_override", 0);
+                          set("promotion_note", "");
+                        } else {
+                          set("promotion_pct_override", p.override_pct);
+                          set(
+                            "promotion_note",
+                            `${p.product}: ${p.label}${p.details ? ` — ${p.details}` : ""}`
+                          );
+                        }
+                      }}
+                      className={`text-left rounded-lg px-3 py-2 text-xs font-semibold border transition-colors ${
+                        applied
+                          ? "bg-accent text-accent-foreground border-accent"
+                          : "bg-background border-border hover:border-accent/50 text-foreground"
+                      }`}
+                    >
+                      <span className="block">
+                        {p.product} · {p.label || "(no label)"}
+                      </span>
+                      {p.override_pct > 0 && (
+                        <span className="block text-[10px] opacity-80 mt-0.5">
+                          +{p.override_pct}% override
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-2 gap-5">
           {/* Left column: financial inputs */}
           <div className="space-y-3">
