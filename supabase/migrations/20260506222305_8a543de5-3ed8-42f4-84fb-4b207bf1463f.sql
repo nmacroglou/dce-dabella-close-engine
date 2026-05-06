@@ -1,0 +1,1 @@
+drop policy if exists "Public can view followup attachments" on storage.objects;

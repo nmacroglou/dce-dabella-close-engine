@@ -196,8 +196,10 @@ export type Database = {
         Row: {
           ai_email_body: string | null
           ai_email_subject: string | null
+          attachments: Json
           channel: string | null
           completed_at: string | null
+          context_notes: string | null
           created_at: string
           deal_id: string
           due_at: string
@@ -210,8 +212,10 @@ export type Database = {
         Insert: {
           ai_email_body?: string | null
           ai_email_subject?: string | null
+          attachments?: Json
           channel?: string | null
           completed_at?: string | null
+          context_notes?: string | null
           created_at?: string
           deal_id: string
           due_at: string
@@ -224,8 +228,10 @@ export type Database = {
         Update: {
           ai_email_body?: string | null
           ai_email_subject?: string | null
+          attachments?: Json
           channel?: string | null
           completed_at?: string | null
+          context_notes?: string | null
           created_at?: string
           deal_id?: string
           due_at?: string

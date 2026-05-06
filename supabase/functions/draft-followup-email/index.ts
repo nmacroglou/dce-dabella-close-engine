@@ -2,6 +2,7 @@
 // Returns { subject, body } as a JSON object using tool calling.
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
 
+interface ReqAttachment { url?: string; name?: string; type?: string; caption?: string; }
 interface ReqBody {
   homeowner?: string;
   rep_name?: string;
@@ -15,6 +16,8 @@ interface ReqBody {
   price_c?: number | null;
   objections?: string[];
   touchpoint_number?: number;
+  context_notes?: string;
+  attachments?: ReqAttachment[];
 }
 
 const SYSTEM = `You are an elite DaBella exterior remodeling sales coach writing
@@ -49,6 +52,10 @@ Deno.serve(async (req) => {
       body.price_c ? `Option C price: $${body.price_c}` : "",
       body.objections?.length ? `Objections raised: ${body.objections.join(", ")}` : "",
       body.notes ? `Appointment notes: ${body.notes}` : "",
+      body.context_notes ? `Additional rep context for this touch: ${body.context_notes}` : "",
+      body.attachments?.length
+        ? `Attachments the rep gathered (reference these naturally — e.g. "I've attached the photo of your north slope"):\n${body.attachments.map((a, i) => `  ${i + 1}. ${a.name ?? "file"}${a.type ? ` (${a.type})` : ""}${a.caption ? ` — ${a.caption}` : ""}`).join("\n")}`
+        : "",
       `Touchpoint #: ${body.touchpoint_number ?? 1}`,
     ].filter(Boolean).join("\n");
 
