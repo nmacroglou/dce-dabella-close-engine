@@ -52,6 +52,10 @@ Deno.serve(async (req) => {
       body.price_c ? `Option C price: $${body.price_c}` : "",
       body.objections?.length ? `Objections raised: ${body.objections.join(", ")}` : "",
       body.notes ? `Appointment notes: ${body.notes}` : "",
+      body.context_notes ? `Additional rep context for this touch: ${body.context_notes}` : "",
+      body.attachments?.length
+        ? `Attachments the rep gathered (reference these naturally — e.g. "I've attached the photo of your north slope"):\n${body.attachments.map((a, i) => `  ${i + 1}. ${a.name ?? "file"}${a.type ? ` (${a.type})` : ""}${a.caption ? ` — ${a.caption}` : ""}`).join("\n")}`
+        : "",
       `Touchpoint #: ${body.touchpoint_number ?? 1}`,
     ].filter(Boolean).join("\n");
 
