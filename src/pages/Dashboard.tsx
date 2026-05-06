@@ -16,12 +16,14 @@ function StatCard({ icon: Icon, label, value, sub, accent = "text-primary" }: {
   accent?: string;
 }) {
   return (
-    <div className="card-elevated p-5">
+    <div className="card-elevated p-5 group hover:border-primary/30 transition-colors">
       <div className="flex items-start justify-between mb-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
-        <Icon className={`h-4 w-4 ${accent}`} />
+        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{label}</p>
+        <div className={`h-8 w-8 rounded-lg bg-muted/60 grid place-items-center ${accent} group-hover:scale-110 transition-transform`}>
+          <Icon className="h-4 w-4" />
+        </div>
       </div>
-      <p className="text-2xl font-display font-extrabold text-foreground">{value}</p>
+      <p className="text-2xl font-display font-extrabold text-foreground tracking-tight">{value}</p>
       {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
@@ -58,13 +60,18 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        <div>
-          <h2 className="text-2xl font-display font-extrabold text-foreground">
-            Hey {greeting} — here's your HUD
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Live performance, patterns, and the moves that'll close more deals this month.
-          </p>
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6">
+          <div className="absolute inset-0 -z-0 opacity-60 gradient-surface" />
+          <div className="absolute -top-20 -right-10 w-64 h-64 rounded-full opacity-20 blur-3xl gradient-brand" />
+          <div className="relative">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-1">Daily HUD</p>
+            <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-foreground">
+              Hey {greeting} — here's your <span className="gradient-text">edge</span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl">
+              Live performance, patterns, and the moves that'll close more deals this month.
+            </p>
+          </div>
         </div>
 
         {/* Row 1: Month at a glance */}
