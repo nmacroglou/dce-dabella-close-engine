@@ -60,13 +60,18 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        <div>
-          <h2 className="text-2xl font-display font-extrabold text-foreground">
-            Hey {greeting} — here's your HUD
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Live performance, patterns, and the moves that'll close more deals this month.
-          </p>
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6">
+          <div className="absolute inset-0 -z-0 opacity-60 gradient-surface" />
+          <div className="absolute -top-20 -right-10 w-64 h-64 rounded-full opacity-20 blur-3xl gradient-brand" />
+          <div className="relative">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-1">Daily HUD</p>
+            <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-foreground">
+              Hey {greeting} — here's your <span className="gradient-text">edge</span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-2xl">
+              Live performance, patterns, and the moves that'll close more deals this month.
+            </p>
+          </div>
         </div>
 
         {/* Row 1: Month at a glance */}
