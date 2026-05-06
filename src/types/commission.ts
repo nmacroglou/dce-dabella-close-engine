@@ -21,7 +21,11 @@ export interface CommissionSheetInputs {
 
   company_paid_finance_fees: number;
   promotion_note: string;
+  /** Override commission % (e.g. POI promo bumps tier). 0 = use grid lookup. */
+  promotion_pct_override: number;
   bonus_self_gen_fee: number;
+  /** Who earned the self-gen bonus: 1 = rep1, 2 = rep2, 0 = split per rep% */
+  self_gen_to_rep: 0 | 1 | 2;
   dollar_for_dollar: number;
 
   // Split between the two reps (must sum to 100)
