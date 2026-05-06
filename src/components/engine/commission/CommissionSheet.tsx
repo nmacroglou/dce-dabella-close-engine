@@ -372,11 +372,13 @@ export default memo(function CommissionSheet() {
                 <span className="font-bold text-foreground">{fmt(computed.contractLessFees)}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">% of Worth (after fees)</span>
+                <span className="text-muted-foreground">% of Worth (POP)</span>
                 <span className="font-bold text-primary">{computed.popPct.toFixed(1)}%</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Commission % from grid</span>
+                <span className="text-muted-foreground">
+                  Commission % {computed.commissionPctSource === "override" ? "(override)" : "(from grid)"}
+                </span>
                 <span className="font-bold text-accent">{computed.commissionPct}%</span>
               </div>
               <div className="flex justify-between text-xs pt-1.5 border-t border-border">
