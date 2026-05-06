@@ -288,7 +288,7 @@ export default memo(function CommissionSheet() {
               prefix="$"
               value={sheet.company_paid_finance_fees}
               onChange={setNum("company_paid_finance_fees")}
-              hint="Dealer fee DaBella absorbs. e.g. $4,200 on a 9.99% 15-yr"
+              hint="Dealer fee DaBella absorbs. Lowers commissionable $ but NOT your POP tier."
             />
             <div className="grid grid-cols-2 gap-3">
               <Field
@@ -297,7 +297,7 @@ export default memo(function CommissionSheet() {
                 prefix="$"
                 value={sheet.dollar_for_dollar}
                 onChange={setNum("dollar_for_dollar")}
-                hint="Referrals, demo $, etc."
+                hint="Referrals, demo $, etc. Splits per rep %."
               />
               <Field
                 label="Bonus / Self-Gen"
@@ -309,12 +309,39 @@ export default memo(function CommissionSheet() {
               />
             </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <Field
+                label="Promotion / Override %"
+                type="number"
+                value={sheet.promotion_pct_override}
+                onChange={setNum("promotion_pct_override")}
+                hint="e.g. 1 = +1% POI bump. Replaces grid % if > 0."
+              />
+              <label className="space-y-1 block">
+                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
+                  Bonus Goes To
+                </span>
+                <span className="block text-[10px] leading-snug text-muted-foreground/80 italic -mt-0.5">
+                  Who keeps the self-gen
+                </span>
+                <select
+                  value={sheet.self_gen_to_rep}
+                  onChange={(e) => set("self_gen_to_rep", Number(e.target.value) as 0 | 1 | 2)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground"
+                >
+                  <option value={0}>Split per rep %</option>
+                  <option value={1}>Rep 1 (100%)</option>
+                  <option value={2}>Rep 2 (100%)</option>
+                </select>
+              </label>
+            </div>
+
             <label className="block space-y-1">
               <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block">
                 Promotion / Special Approved By
               </span>
               <span className="block text-[10px] leading-snug italic text-muted-foreground/80 -mt-0.5">
-                Any extra % or override and who approved it
+                Note who approved any extra % or override
               </span>
               <textarea
                 value={sheet.promotion_note}
