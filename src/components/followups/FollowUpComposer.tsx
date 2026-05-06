@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { Sparkles, Loader2, Mail, Copy, Calendar as CalendarIcon, Check } from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Sparkles, Loader2, Mail, Copy, Calendar as CalendarIcon, Check, Paperclip, X, Image as ImageIcon, FileText } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
@@ -14,15 +14,17 @@ import { useDealObjections } from "@/hooks/useDealObjections";
 import { useCommissionGrid } from "@/hooks/useCommissionGrid";
 import { useFollowUps, useCreateFollowUp, useUpdateFollowUp } from "@/hooks/useFollowUps";
 import { OBJECTIONS } from "@/data/objections";
+import type { FollowUpAttachment } from "@/types/followUp";
 import { toast } from "sonner";
 
 interface Props {
   dealId: string | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  /** Existing follow-up to edit; if absent we create a new one */
   followUpId?: string | null;
 }
+
+const BUCKET = "followup-attachments";
 
 export default function FollowUpComposer({ dealId, open, onOpenChange, followUpId }: Props) {
   const { user } = useAuth();
@@ -42,10 +44,13 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
   const [dueAt, setDueAt] = useState<string>("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [contextNotes, setContextNotes] = useState("");
+  const [attachments, setAttachments] = useState<FollowUpAttachment[]>([]);
   const [drafting, setDrafting] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  // Initialize when opening
   useEffect(() => {
     if (!open) return;
     if (editing) {
@@ -53,18 +58,61 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
       setDueAt(editing.due_at.slice(0, 16));
       setSubject(editing.ai_email_subject ?? "");
       setBody(editing.ai_email_body ?? "");
+      setContextNotes(editing.context_notes ?? "");
+      setAttachments(editing.attachments ?? []);
     } else {
       const nextNum = (existingList.filter((f) => !f.completed_at).length) + 1;
       setTouchpoint(nextNum);
-      // default due based on SLA
       const sla = grid?.follow_up_sla?.touchpoints?.[nextNum - 1];
       const offsetH = sla?.offset_hours ?? 24;
       const d = new Date(Date.now() + offsetH * 36e5);
       setDueAt(d.toISOString().slice(0, 16));
       setSubject("");
       setBody("");
+      setContextNotes("");
+      setAttachments([]);
     }
   }, [open, editing, grid, existingList]);
+
+  const onUpload = async (files: FileList | null) => {
+    if (!files || !files.length || !user || !dealId) return;
+    setUploading(true);
+    try {
+      const added: FollowUpAttachment[] = [];
+      for (const file of Array.from(files)) {
+        if (file.size > 15 * 1024 * 1024) {
+          toast.error(`${file.name} exceeds 15MB`);
+          continue;
+        }
+        const ext = file.name.split(".").pop() || "bin";
+        const path = `${user.id}/${dealId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+          contentType: file.type,
+          upsert: false,
+        });
+        if (error) { toast.error(error.message); continue; }
+        const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        added.push({
+          url: pub.publicUrl, path, name: file.name,
+          type: file.type, size: file.size, caption: "",
+        });
+      }
+      setAttachments((prev) => [...prev, ...added]);
+      if (added.length) toast.success(`Added ${added.length} file${added.length > 1 ? "s" : ""}`);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const removeAttachment = async (att: FollowUpAttachment) => {
+    await supabase.storage.from(BUCKET).remove([att.path]).catch(() => {});
+    setAttachments((prev) => prev.filter((a) => a.path !== att.path));
+  };
+
+  const updateCaption = (path: string, caption: string) => {
+    setAttachments((prev) => prev.map((a) => a.path === path ? { ...a, caption } : a));
+  };
 
   const generate = async () => {
     if (!deal) return;
@@ -88,6 +136,10 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
           price_c: deal.price_c,
           objections: objLabels,
           touchpoint_number: touchpoint,
+          context_notes: contextNotes,
+          attachments: attachments.map((a) => ({
+            name: a.name, type: a.type, caption: a.caption, url: a.url,
+          })),
         },
       });
       if (error) throw error;
@@ -112,6 +164,8 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
           due_at: new Date(dueAt).toISOString(),
           ai_email_subject: subject,
           ai_email_body: body,
+          context_notes: contextNotes || null,
+          attachments,
         },
       });
       toast.success("Follow-up updated");
@@ -124,6 +178,8 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
         notes: null,
         ai_email_subject: subject || null,
         ai_email_body: body || null,
+        context_notes: contextNotes || null,
+        attachments,
       });
       toast.success("Follow-up scheduled");
     }
@@ -141,15 +197,21 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
   };
 
   const copyEmail = async () => {
-    await navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
+    const links = attachments.length
+      ? `\n\nAttachments:\n${attachments.map((a) => `• ${a.name}: ${a.url}`).join("\n")}`
+      : "";
+    await navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}${links}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
 
   const mailto = useMemo(() => {
-    const params = new URLSearchParams({ subject, body });
+    const links = attachments.length
+      ? `\n\nAttachments:\n${attachments.map((a) => `${a.name}: ${a.url}`).join("\n")}`
+      : "";
+    const params = new URLSearchParams({ subject, body: `${body}${links}` });
     return `mailto:?${params.toString()}`;
-  }, [subject, body]);
+  }, [subject, body, attachments]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -161,7 +223,7 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
           </DialogTitle>
           <DialogDescription>
             {deal?.homeowner1 ? `For ${deal.homeowner1}${deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}` : ""}
-            {" · "}AI drafts a personalized DaBella email from your appointment notes.
+            {" · "}AI drafts a personalized DaBella email from your notes & photos.
           </DialogDescription>
         </DialogHeader>
 
@@ -180,7 +242,76 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Notes for the AI (key points, objections, next steps)</Label>
+            <Textarea
+              value={contextNotes}
+              onChange={(e) => setContextNotes(e.target.value)}
+              rows={3}
+              placeholder="e.g. Mentioned the leak above the garage. Wife wants financing options under $300/mo. Likes Option B but worried about timing."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs flex items-center gap-1.5">
+                <Paperclip className="h-3.5 w-3.5" /> Attachments ({attachments.length})
+              </Label>
+              <Button
+                type="button" variant="outline" size="sm"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="gap-1.5 h-8"
+              >
+                {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Paperclip className="h-3.5 w-3.5" />}
+                Add files
+              </Button>
+              <input
+                ref={fileRef} type="file" multiple hidden
+                accept="image/*,application/pdf,.doc,.docx,.txt"
+                onChange={(e) => onUpload(e.target.files)}
+              />
+            </div>
+            {attachments.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {attachments.map((a) => (
+                  <div key={a.path} className="rounded-lg border bg-muted/30 p-2 space-y-1.5">
+                    <div className="flex items-start gap-2">
+                      {a.type?.startsWith("image/") ? (
+                        <img src={a.url} alt={a.name}
+                          className="h-14 w-14 rounded object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="h-14 w-14 rounded bg-background border flex items-center justify-center flex-shrink-0">
+                          <FileText className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{a.name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {(a.size / 1024).toFixed(0)} KB
+                        </p>
+                      </div>
+                      <Button
+                        type="button" variant="ghost" size="icon"
+                        className="h-6 w-6 flex-shrink-0"
+                        onClick={() => removeAttachment(a)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <Input
+                      value={a.caption ?? ""}
+                      onChange={(e) => updateCaption(a.path, e.target.value)}
+                      placeholder="Caption (e.g. north-slope wear)"
+                      className="h-7 text-xs"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
             <Button onClick={generate} disabled={drafting} variant="default" className="gap-2">
               {drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {body ? "Re-generate draft" : "Generate AI draft"}
@@ -208,7 +339,7 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
           <div className="space-y-1.5">
             <Label className="text-xs">Body</Label>
             <Textarea value={body} onChange={(e) => setBody(e.target.value)}
-              rows={14} placeholder="Click ‘Generate AI draft’ to compose a personalized email."
+              rows={12} placeholder="Click 'Generate AI draft' to compose a personalized email."
               className="font-mono text-xs" />
           </div>
         </div>
