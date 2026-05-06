@@ -15,6 +15,15 @@ export const DEFAULT_FOLLOW_UP_SLA: FollowUpSLA = {
   ],
 };
 
+export interface FollowUpAttachment {
+  url: string;
+  path: string;
+  name: string;
+  type: string;
+  size: number;
+  caption?: string;
+}
+
 export interface FollowUp {
   id: string;
   deal_id: string;
@@ -26,6 +35,8 @@ export interface FollowUp {
   notes: string | null;
   ai_email_subject: string | null;
   ai_email_body: string | null;
+  context_notes: string | null;
+  attachments: FollowUpAttachment[];
   created_at: string;
   updated_at: string;
 }
