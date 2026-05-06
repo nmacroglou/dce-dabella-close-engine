@@ -16,12 +16,14 @@ function StatCard({ icon: Icon, label, value, sub, accent = "text-primary" }: {
   accent?: string;
 }) {
   return (
-    <div className="card-elevated p-5">
+    <div className="card-elevated p-5 group hover:border-primary/30 transition-colors">
       <div className="flex items-start justify-between mb-2">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
-        <Icon className={`h-4 w-4 ${accent}`} />
+        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{label}</p>
+        <div className={`h-8 w-8 rounded-lg bg-muted/60 grid place-items-center ${accent} group-hover:scale-110 transition-transform`}>
+          <Icon className="h-4 w-4" />
+        </div>
       </div>
-      <p className="text-2xl font-display font-extrabold text-foreground">{value}</p>
+      <p className="text-2xl font-display font-extrabold text-foreground tracking-tight">{value}</p>
       {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
