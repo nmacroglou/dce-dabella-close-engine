@@ -90,10 +90,12 @@ export interface CommissionSheetComputed {
   contractTotal: number;
   projectTotal: number;
   contractLessFees: number;
-  popPct: number;                  // % of Project Price after finance fees
-  commissionPct: number;           // looked up from grid
+  popPct: number;                  // % of Project Price (true POP — fees do NOT lower it)
+  commissionPct: number;           // looked up from grid or override
+  commissionPctSource: "grid" | "override";
   subtotalCommissionDue: number;   // contractLessFees * commissionPct
-  totalCommissionDue: number;      // subtotal + bonus + $-for-$
+  splitable: number;               // subtotal + $-for-$ (split per rep %)
+  totalCommissionDue: number;      // splitable + bonuses
   rep1Commission: number;
   rep2Commission: number;
   rep1Advance: number;
@@ -109,17 +111,28 @@ export function computeCommissionSheet(
 ): CommissionSheetComputed {
   const contractTotal = s.contract_roof + s.contract_siding + s.contract_gutters;
   const projectTotalLines = s.project_roof + s.project_siding + s.project_gutters;
-  // Prefer the line-item project total; fall back to header project_price if blank
   const projectTotal = projectTotalLines > 0 ? projectTotalLines : s.project_price;
 
-  const contractLessFees = contractTotal - s.company_paid_finance_fees;
-  const popPct = projectTotal > 0 ? (contractLessFees / projectTotal) * 100 : 0;
-  const commissionPct = lookupCommissionPct(popPct, tiers);
-  const subtotalCommissionDue = contractLessFees * (commissionPct / 100);
-  const totalCommissionDue = subtotalCommissionDue + s.bonus_self_gen_fee + s.dollar_for_dollar;
+  const contractLessFees = Math.max(0, contractTotal - s.company_paid_finance_fees);
+  // True POP: fees DaBella absorbs do NOT punish the rep's tier.
+  const popPct = projectTotal > 0 ? (contractTotal / projectTotal) * 100 : 0;
+  const gridPct = lookupCommissionPct(popPct, tiers);
+  const override = s.promotion_pct_override || 0;
+  const commissionPct = override > 0 ? override : gridPct;
+  const commissionPctSource: "grid" | "override" = override > 0 ? "override" : "grid";
 
-  const rep1Commission = totalCommissionDue * (s.rep1_pct / 100);
-  const rep2Commission = totalCommissionDue * (s.rep2_pct / 100);
+  const subtotalCommissionDue = contractLessFees * (commissionPct / 100);
+  const splitable = subtotalCommissionDue + s.dollar_for_dollar;
+  const totalCommissionDue = splitable + s.bonus_self_gen_fee;
+
+  const r1 = s.rep1_pct / 100;
+  const r2 = s.rep2_pct / 100;
+  const bonus = s.bonus_self_gen_fee;
+  const rep1Bonus = s.self_gen_to_rep === 1 ? bonus : s.self_gen_to_rep === 2 ? 0 : bonus * r1;
+  const rep2Bonus = s.self_gen_to_rep === 2 ? bonus : s.self_gen_to_rep === 1 ? 0 : bonus * r2;
+
+  const rep1Commission = splitable * r1 + rep1Bonus;
+  const rep2Commission = splitable * r2 + rep2Bonus;
   const advance = frontEndPct / 100;
 
   return {
@@ -128,7 +141,9 @@ export function computeCommissionSheet(
     contractLessFees,
     popPct,
     commissionPct,
+    commissionPctSource,
     subtotalCommissionDue,
+    splitable,
     totalCommissionDue,
     rep1Commission,
     rep2Commission,
