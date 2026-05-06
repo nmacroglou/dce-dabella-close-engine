@@ -8,6 +8,7 @@ import CommissionReferenceTables from "./commission/CommissionReferenceTables";
 import CommissionSheet from "./commission/CommissionSheet";
 import CommissionGridEditor from "./commission/CommissionGridEditor";
 import MonthlyPromosEditor from "./commission/MonthlyPromosEditor";
+import FollowUpSLAEditor from "@/components/followups/FollowUpSLAEditor";
 
 type View = "sheet" | "estimator" | "grid";
 
@@ -69,6 +70,7 @@ export default function CommissionTab() {
         <div className="space-y-5">
           <CommissionGridEditor />
           <MonthlyPromosEditor />
+          <FollowUpSLAEditor />
         </div>
       )}
 
