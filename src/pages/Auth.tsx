@@ -68,12 +68,24 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center bg-background p-4">
-      <div className="w-full max-w-md card-elevated-lg p-8">
-        <div className="flex flex-col items-center mb-6">
-          <img src={dabellaLogo} alt="DaBella" className="h-10 w-auto mb-4" />
-          <h1 className="text-2xl font-display font-extrabold text-foreground">Close Engine</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+    <div className="min-h-screen relative grid place-items-center bg-background p-4 overflow-hidden">
+      {/* Ambient background */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -top-32 -left-32 w-[480px] h-[480px] rounded-full opacity-30 blur-3xl gradient-brand" />
+        <div className="absolute -bottom-40 -right-32 w-[520px] h-[520px] rounded-full opacity-25 blur-3xl gradient-accent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsl(var(--primary)/0.08),transparent_60%)]" />
+      </div>
+
+      <div className="w-full max-w-md card-elevated-lg p-8 backdrop-blur-sm">
+        <div className="flex flex-col items-center mb-7">
+          <div className="relative mb-4">
+            <div className="absolute inset-0 rounded-2xl gradient-brand opacity-30 blur-xl" />
+            <img src={dabellaLogo} alt="DaBella" className="relative h-10 w-auto" />
+          </div>
+          <h1 className="text-2xl font-display font-extrabold text-foreground">
+            Close <span className="gradient-text">Engine</span>
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1.5">
             {mode === "signin" ? "Sign in to your rep dashboard" : "Create your rep account"}
           </p>
         </div>
