@@ -11,10 +11,11 @@ interface OptionRevealProps {
   onAccept: (key: "A" | "B" | "C") => void;
   onShowNext: () => void;
   onGoBack: () => void;
+  customFeatures?: string[];
 }
 
 export default memo(function OptionReveal({
-  revealIndex, options, computed, onAccept, onShowNext, onGoBack,
+  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures,
 }: OptionRevealProps) {
   const currentKey = OPTION_KEYS[revealIndex];
   const currentOption = options[revealIndex];
@@ -49,6 +50,7 @@ export default memo(function OptionReveal({
         name={currentOption.name}
         computed={computed}
         selected={false}
+        customFeatures={customFeatures}
       />
 
       {/* Action buttons */}
