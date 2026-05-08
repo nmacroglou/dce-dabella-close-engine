@@ -1,4 +1,6 @@
-export function StatTile({ icon: Icon, label, value, accent }: {
+import { memo } from "react";
+
+function StatTileBase({ icon: Icon, label, value, accent }: {
   icon: React.ElementType; label: string; value: string; accent: string;
 }) {
   return (
