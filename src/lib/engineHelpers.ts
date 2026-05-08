@@ -54,3 +54,30 @@ export function getProductLabel(products: string[]): string {
 export function hasProduct(products: string[], product: string): boolean {
   return products.includes(product);
 }
+
+/** Apply a percentage discount across all option prices in a ComputedValues snapshot. */
+export function applyDiscountToComputed(computed: ComputedValues, pct: number): ComputedValues {
+  if (!pct) return computed;
+  const f = 1 - pct / 100;
+  const scale = (n: number) => Math.round(n * f);
+  const scaleOpt = (o: ComputedValues["options"]["A"]): ComputedValues["options"]["A"] => ({
+    price: scale(o.price),
+    monthly: scale(o.monthly),
+    efficiencyPrice: scale(o.efficiencyPrice),
+    standbyPrice: scale(o.standbyPrice),
+    deferred6Price: scale(o.deferred6Price),
+    deferred12Price: scale(o.deferred12Price),
+    monthlyEfficiency: scale(o.monthlyEfficiency),
+    monthlyStandby: scale(o.monthlyStandby),
+    monthlyDeferred6: scale(o.monthlyDeferred6),
+    monthlyDeferred12: scale(o.monthlyDeferred12),
+    roiValue: scale(o.roiValue),
+    netCost: scale(o.price) - scale(o.roiValue) - computed.energySavings,
+  });
+  return {
+    ...computed,
+    options: { A: scaleOpt(computed.options.A), B: scaleOpt(computed.options.B), C: scaleOpt(computed.options.C) },
+    selectedPrice: scale(computed.selectedPrice),
+  };
+}
+
