@@ -168,14 +168,16 @@
 
 @layer utilities {
   .card-elevated {
-    @apply bg-card rounded-2xl border border-border;
+    @apply bg-card rounded-2xl border border-border transition-shadow duration-200;
     box-shadow: var(--shadow-sm);
   }
+  .card-elevated:hover { box-shadow: var(--shadow-md); }
 
   .card-elevated-lg {
-    @apply bg-card rounded-2xl border border-border;
+    @apply bg-card rounded-2xl border border-border transition-shadow duration-200;
     box-shadow: var(--shadow-md);
   }
+  .card-elevated-lg:hover { box-shadow: var(--shadow-lg); }
 
   .card-glow {
     @apply bg-card rounded-2xl border border-primary/20;
@@ -183,11 +185,15 @@
   }
 
   .metric-card {
-    @apply bg-card rounded-xl border border-border px-4 py-3;
+    @apply bg-card rounded-xl border border-border px-4 py-3 transition-all duration-200;
     box-shadow: var(--shadow-sm);
   }
+  .metric-card:hover {
+    @apply border-primary/30 -translate-y-0.5;
+    box-shadow: var(--shadow-md);
+  }
 
-  .touch-target { @apply min-h-[48px] min-w-[48px]; }
+  .touch-target { @apply min-h-[44px] min-w-[44px]; }
 
   .script-block {
     @apply bg-muted/80 rounded-xl p-5 text-base leading-relaxed italic text-foreground/80 border-l-4 border-primary;
@@ -205,4 +211,32 @@
   .glass {
     @apply bg-card/70 backdrop-blur-xl border border-border;
   }
+
+  .surface-premium {
+    background:
+      radial-gradient(1200px 600px at 0% -10%, hsl(var(--primary) / 0.08), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, hsl(var(--accent) / 0.06), transparent 60%),
+      hsl(var(--background));
+  }
+
+  .ring-focus {
+    @apply ring-1 ring-border hover:ring-primary/40 transition-all;
+  }
+
+  .row-zebra > *:nth-child(even) { background-color: hsl(var(--muted) / 0.35); }
+
+  .animate-fade-in-up { animation: fade-in 0.4s ease-out both; }
+  .animate-shimmer {
+    background: linear-gradient(90deg,
+      hsl(var(--muted) / 0.4) 0%,
+      hsl(var(--muted) / 0.7) 50%,
+      hsl(var(--muted) / 0.4) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
 }
+
