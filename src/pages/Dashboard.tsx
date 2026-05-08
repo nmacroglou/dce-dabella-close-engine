@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,11 +9,14 @@ import AppHeader from "@/components/AppHeader";
 import {
   Loader2, TrendingUp, TrendingDown, Target, DollarSign, Award,
   Flame, Clock, AlertCircle, Trophy, BarChart3, Sparkles, ArrowUpRight,
-  Zap, Activity,
+  Zap, Activity, Hourglass, Wallet, Gauge, Pencil,
 } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { STAGE_LABELS, type DealStage } from "@/types/deal";
 import { OBJECTIONS } from "@/data/objections";
+
+const HOURS_KEY = "dabella.hud.weeklyHours";
+const COMMISSION_KEY = "dabella.hud.commissionPct";
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
