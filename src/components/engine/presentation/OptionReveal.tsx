@@ -12,14 +12,17 @@ interface OptionRevealProps {
   onShowNext: () => void;
   onGoBack: () => void;
   customFeatures?: string[];
+  originalOptions?: { key: "A" | "B" | "C"; price: number }[];
+  discountPct?: number;
 }
 
 export default memo(function OptionReveal({
-  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures,
+  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures, originalOptions, discountPct,
 }: OptionRevealProps) {
   const currentKey = OPTION_KEYS[revealIndex];
   const currentOption = options[revealIndex];
   const isLastOption = revealIndex >= 2;
+  const originalPrice = originalOptions?.find((o) => o.key === currentKey)?.price;
 
   return (
     <div className="max-w-md mx-auto animate-fade-in">
@@ -51,6 +54,8 @@ export default memo(function OptionReveal({
         computed={computed}
         selected={false}
         customFeatures={customFeatures}
+        originalPrice={originalPrice}
+        discountPct={discountPct}
       />
 
       {/* Action buttons */}
