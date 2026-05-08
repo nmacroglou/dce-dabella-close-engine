@@ -46,11 +46,55 @@ export default memo(function OptionOutputCard({ label, name, opt, energySavings,
       <div className="space-y-2">
         <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
           <DollarSign className="h-4 w-4 text-primary" /> Promotional Financing Options
+          <span className="ml-auto text-[10px] font-medium normal-case tracking-normal text-muted-foreground/80">
+            tap <Info className="inline h-3 w-3 -mt-0.5" /> for math
+          </span>
         </p>
-        <PromoRow label="Efficiency Discount" price={opt.efficiencyPrice} monthly={opt.monthlyEfficiency} />
-        <PromoRow label="Standby Discount" price={opt.standbyPrice} monthly={opt.monthlyStandby} />
-        <PromoRow label="6 Month Deferred" price={opt.deferred6Price} monthly={opt.monthlyDeferred6} />
-        <PromoRow label="12 Month Deferred" price={opt.deferred12Price} monthly={opt.monthlyDeferred12} />
+        {(() => {
+          const effDisc = opt.price - opt.efficiencyPrice;
+          const stbDisc = opt.price - opt.standbyPrice;
+          const d6Pct = opt.price > 0 ? Math.round(((opt.price - opt.deferred6Price) / opt.price) * 100) : 0;
+          const d12Pct = opt.price > 0 ? Math.round(((opt.price - opt.deferred12Price) / opt.price) * 100) : 0;
+          const ff = financingFactor ?? 0;
+          const dp = downPayment ?? 0;
+          const monthlyFormula = (p: number) =>
+            `(${fmt(p)} − ${fmt(dp)} down) × ${ff.toFixed(5)} = ${fmt(Math.round((p - dp) * ff))}/mo`;
+          return (
+            <>
+              <PromoRow
+                label="Efficiency Discount"
+                price={opt.efficiencyPrice}
+                monthly={opt.monthlyEfficiency}
+                explanation={`A flat dollar discount applied for opting into the efficiency package. Subtracted directly from the option price, then financed.`}
+                formula={`Price: ${fmt(opt.price)} − ${fmt(effDisc)} disc = ${fmt(opt.efficiencyPrice)}\nMonthly: ${monthlyFormula(opt.efficiencyPrice)}`}
+              />
+              <PromoRow
+                label="Standby Discount"
+                price={opt.standbyPrice}
+                monthly={opt.monthlyStandby}
+                explanation={`A flat dollar standby/quick-decision incentive. Subtracted from the option price, then financed at the same rate.`}
+                formula={`Price: ${fmt(opt.price)} − ${fmt(stbDisc)} disc = ${fmt(opt.standbyPrice)}\nMonthly: ${monthlyFormula(opt.standbyPrice)}`}
+              />
+              <PromoRow
+                label="6 Month Deferred"
+                price={opt.deferred6Price}
+                monthly={opt.monthlyDeferred6}
+                explanation={`Lender promo: no payments for 6 months. The discount is a percentage of the option price (set in Settings).`}
+                formula={`Price: ${fmt(opt.price)} × (1 − ${d6Pct}%) = ${fmt(opt.deferred6Price)}\nMonthly: ${monthlyFormula(opt.deferred6Price)}`}
+              />
+              <PromoRow
+                label="12 Month Deferred"
+                price={opt.deferred12Price}
+                monthly={opt.monthlyDeferred12}
+                explanation={`Lender promo: no payments for 12 months. The discount is a percentage of the option price (set in Settings).`}
+                formula={`Price: ${fmt(opt.price)} × (1 − ${d12Pct}%) = ${fmt(opt.deferred12Price)}\nMonthly: ${monthlyFormula(opt.deferred12Price)}`}
+              />
+              <p className="text-[10px] text-muted-foreground/80 px-1 pt-1 leading-relaxed">
+                <span className="font-semibold text-foreground/70">Variables:</span> Financing Factor = {ff.toFixed(5)} (rate × term factor) · Down Payment = {fmt(dp)} · Discounts configured in Calculator inputs.
+              </p>
+            </>
+          );
+        })()}
       </div>
 
       {/* Discount tiers — quick what-if */}
