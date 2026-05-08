@@ -27,7 +27,7 @@ function ValueLine({ icon: Icon, label, value, color }: { icon: typeof BarChart3
   );
 }
 
-export default memo(function OptionOutputCard({ label, name, opt, energySavings, accent }: OptionOutputCardProps) {
+export default memo(function OptionOutputCard({ label, name, opt, energySavings, accent, financingFactor, downPayment = 0 }: OptionOutputCardProps) {
   return (
     <div className="card-elevated-lg p-6 space-y-5">
       <div className="flex items-center justify-between">
