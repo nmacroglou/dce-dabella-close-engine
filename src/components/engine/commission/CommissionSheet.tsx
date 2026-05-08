@@ -194,7 +194,7 @@ export default memo(function CommissionSheet() {
       {/* Header band */}
       <div className="rounded-2xl border border-border bg-success/10 p-4">
         <h3 className="text-center text-sm font-extrabold uppercase tracking-wider text-foreground">
-          Hover Commission Sheet
+          Commission Sheet
         </h3>
         <p className="text-center text-[11px] text-muted-foreground mt-1">
           Just enter <strong className="text-foreground">Worth</strong> and <strong className="text-foreground">Sold For</strong> per trade — everything else fills in automatically.
