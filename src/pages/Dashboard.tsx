@@ -172,6 +172,52 @@ export default function Dashboard() {
     return { overdue, today, upcoming, completed, compliancePct, overdueList: overdueList.slice(0, 5) };
   }, [followUps]);
 
+  /* ---- Rep economics: editable inputs persisted to localStorage ---- */
+  const [weeklyHours, setWeeklyHours] = useState<number>(40);
+  const [commissionPct, setCommissionPct] = useState<number>(8);
+  const [editingEcon, setEditingEcon] = useState(false);
+
+  useEffect(() => {
+    const h = parseFloat(localStorage.getItem(HOURS_KEY) ?? "");
+    const c = parseFloat(localStorage.getItem(COMMISSION_KEY) ?? "");
+    if (!Number.isNaN(h) && h > 0) setWeeklyHours(h);
+    if (!Number.isNaN(c) && c > 0) setCommissionPct(c);
+  }, []);
+  useEffect(() => { localStorage.setItem(HOURS_KEY, String(weeklyHours)); }, [weeklyHours]);
+  useEffect(() => { localStorage.setItem(COMMISSION_KEY, String(commissionPct)); }, [commissionPct]);
+
+  const economics = useMemo(() => {
+    const now = Date.now();
+    const weekAgo = now - 7 * 864e5;
+    const wonThisWeek = deals.filter(
+      (d) => d.stage === "won" && d.closed_at && new Date(d.closed_at).getTime() >= weekAgo
+    );
+    const earnedThisWeek = wonThisWeek.reduce(
+      (s, d) => s + ((d.closed_amount ?? 0) * commissionPct) / 100, 0
+    );
+    const dollarsPerHour = weeklyHours > 0 ? earnedThisWeek / weeklyHours : 0;
+
+    // Money in motion — open pipeline value (best price per open deal)
+    const openDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost");
+    const moneyInMotion = openDeals.reduce(
+      (s, d) => s + Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0), 0
+    );
+    const expectedCommissionInMotion = (moneyInMotion * commissionPct) / 100;
+
+    // Pipeline velocity: $ closed per active selling day this month
+    const monthStart = new Date();
+    monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+    const daysIntoMonth = Math.max(1, Math.ceil((now - monthStart.getTime()) / 864e5));
+    const velocityPerDay = stats!.monthRevenue / daysIntoMonth;
+    const projectedMonth = velocityPerDay * 30;
+
+    return {
+      dollarsPerHour, earnedThisWeek, wonThisWeekCount: wonThisWeek.length,
+      moneyInMotion, expectedCommissionInMotion, openDealsCount: openDeals.length,
+      velocityPerDay, projectedMonth,
+    };
+  }, [deals, weeklyHours, commissionPct, stats]);
+
   if (isLoading || !stats) {
     return (
       <div className="min-h-screen bg-background">
