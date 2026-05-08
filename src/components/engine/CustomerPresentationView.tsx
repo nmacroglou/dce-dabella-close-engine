@@ -81,9 +81,9 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
 
   const selectedComputed = useMemo(() => {
     if (!selectedOption) return null;
-    const m = getOptionMetrics(selectedOption, computed);
+    const m = getOptionMetrics(selectedOption, discountedComputed);
     return {
-      ...computed,
+      ...discountedComputed,
       selectedPrice: m.price,
       roiValue: m.roi,
       inflationPenalty: m.inflationPenalty,
@@ -92,7 +92,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
       doNothingImpact: m.doNothing,
       netDifference: m.netDiff,
     };
-  }, [selectedOption, computed]);
+  }, [selectedOption, discountedComputed]);
 
   /* ─── Header subtitle by stage ─── */
   const headerContent = (() => {
