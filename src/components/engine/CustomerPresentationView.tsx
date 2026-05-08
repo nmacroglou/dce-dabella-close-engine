@@ -176,6 +176,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
                 name={options.find((o) => o.key === selectedOption)?.name || ""}
                 computed={computed}
                 selected
+                customFeatures={state.customFeatures}
               />
               <button
                 onClick={() => { setSelectedOption(null); setStage("options"); }}
