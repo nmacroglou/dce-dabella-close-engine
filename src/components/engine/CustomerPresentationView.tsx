@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
-import { buildOptionsArray, getOptionMetrics, getProductLabel, hasProduct } from "@/lib/engineHelpers";
+import { buildOptionsArray, getOptionMetrics, getProductLabel, hasProduct, applyDiscountToComputed } from "@/lib/engineHelpers";
 import dabellaLogo from "@/assets/dabella-logo.png";
 import OptionCard from "./presentation/OptionCard";
 import OptionReveal from "./presentation/OptionReveal";
@@ -10,6 +10,7 @@ import ScopeOfWork from "./presentation/ScopeOfWork";
 import WelcomeClose from "./presentation/WelcomeClose";
 import FinancialImpact from "./presentation/FinancialImpact";
 import WindowInspectionView from "./presentation/WindowInspectionView";
+import PromoTrigger, { EMPTY_PROMOS, totalDiscountPct, type PromoState } from "./presentation/PromoTrigger";
 
 interface Props {
   state: EngineState;
@@ -38,12 +39,24 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const [exporting, setExporting] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
   const [revealIndex, setRevealIndex] = useState(0);
+  const [promos, setPromos] = useState<PromoState>(EMPTY_PROMOS);
   const stageIndex = STAGES.indexOf(stage);
 
-  const options = useMemo(() => buildOptionsArray(state, computed), [
+  const discountPct = totalDiscountPct(promos);
+  const discountedComputed = useMemo(
+    () => applyDiscountToComputed(computed, discountPct),
+    [computed, discountPct],
+  );
+
+  const originalOptions = useMemo(() => buildOptionsArray(state, computed), [
     state.optionAName, state.optionBName, state.optionCName,
     state.priceA, state.priceB, state.priceC,
     computed.options.A.monthly, computed.options.B.monthly, computed.options.C.monthly,
+  ]);
+
+  const options = useMemo(() => buildOptionsArray(state, discountedComputed), [
+    state.optionAName, state.optionBName, state.optionCName,
+    discountedComputed,
   ]);
 
   const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1] as Stage);
@@ -68,9 +81,9 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
 
   const selectedComputed = useMemo(() => {
     if (!selectedOption) return null;
-    const m = getOptionMetrics(selectedOption, computed);
+    const m = getOptionMetrics(selectedOption, discountedComputed);
     return {
-      ...computed,
+      ...discountedComputed,
       selectedPrice: m.price,
       roiValue: m.roi,
       inflationPenalty: m.inflationPenalty,
@@ -79,7 +92,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
       doNothingImpact: m.doNothing,
       netDifference: m.netDiff,
     };
-  }, [selectedOption, computed]);
+  }, [selectedOption, discountedComputed]);
 
   /* ─── Header subtitle by stage ─── */
   const headerContent = (() => {
@@ -102,6 +115,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
     <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in">
       {/* Top-right actions */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <PromoTrigger promos={promos} onChange={setPromos} />
         {selectedOption && (
           <button
             onClick={handleExportPdf}
@@ -158,11 +172,13 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
             <OptionReveal
               revealIndex={revealIndex}
               options={options}
-              computed={computed}
+              computed={discountedComputed}
               onAccept={handleAccept}
               onShowNext={() => setRevealIndex((p) => Math.min(p + 1, 2))}
               onGoBack={() => setRevealIndex((p) => Math.max(p - 1, 0))}
               customFeatures={state.customFeatures}
+              originalOptions={originalOptions.map((o) => ({ key: o.key, price: o.price }))}
+              discountPct={discountPct}
             />
             <div className="mt-8"><TrustBar /></div>
           </>
@@ -174,9 +190,11 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
               <OptionCard
                 optionKey={selectedOption}
                 name={options.find((o) => o.key === selectedOption)?.name || ""}
-                computed={computed}
+                computed={discountedComputed}
                 selected
                 customFeatures={state.customFeatures}
+                originalPrice={originalOptions.find((o) => o.key === selectedOption)?.price}
+                discountPct={discountPct}
               />
               <button
                 onClick={() => { setSelectedOption(null); setStage("options"); }}

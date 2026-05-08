@@ -10,15 +10,18 @@ interface OptionCardProps {
   selected?: boolean;
   onClick?: () => void;
   customFeatures?: string[];
+  originalPrice?: number;
+  discountPct?: number;
 }
 
-export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures }: OptionCardProps) {
+export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, originalPrice, discountPct }: OptionCardProps) {
   const theme = OPTION_THEMES[optionKey];
   const features = customFeatures && customFeatures.length > 0
     ? featuresFromTexts(customFeatures)
     : FEATURES_BY_OPTION[optionKey];
   const isHighlighted = optionKey === "A";
   const opt = computed.options[optionKey];
+  const showStrike = !!discountPct && !!originalPrice && originalPrice > opt.price;
 
   return (
     <div
@@ -53,6 +56,14 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
 
         {/* Price */}
         <div className={`rounded-2xl p-5 mb-6 ${theme.bgAccent} border ${theme.borderAccent}`}>
+          {showStrike && (
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-base font-bold text-muted-foreground line-through">{fmt(originalPrice!)}</p>
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-accent-foreground">
+                -{discountPct}%
+              </span>
+            </div>
+          )}
           <p className={`text-4xl font-extrabold ${theme.accent} mb-1 tracking-tight`}>{fmt(opt.price)}</p>
           <p className="text-sm text-muted-foreground">
             as low as <span className="font-bold text-foreground">{fmt(opt.monthly)}/mo</span> with financing
