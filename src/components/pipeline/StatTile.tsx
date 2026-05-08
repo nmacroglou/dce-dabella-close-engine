@@ -13,3 +13,6 @@ function StatTileBase({ icon: Icon, label, value, accent }: {
     </div>
   );
 }
+
+export const StatTile = memo(StatTileBase);
+
