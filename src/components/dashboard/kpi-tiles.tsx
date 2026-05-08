@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 /* ---------- Hero KPI tile (large, gradient-accent) ---------- */
-export function HeroKPI({
+function HeroKPIBase({
   icon: Icon, label, value, sub, tone = "brand", trend,
 }: {
   icon: React.ElementType;
@@ -45,7 +46,7 @@ export function HeroKPI({
 }
 
 /* ---------- Compact stat ---------- */
-export function MiniStat({ icon: Icon, label, value, sub, accent = "text-primary" }: {
+function MiniStatBase({ icon: Icon, label, value, sub, accent = "text-primary" }: {
   icon: React.ElementType; label: string; value: string; sub?: string; accent?: string;
 }) {
   return (
@@ -61,7 +62,7 @@ export function MiniStat({ icon: Icon, label, value, sub, accent = "text-primary
 }
 
 /* ---------- Win rate donut (SVG) ---------- */
-export function WinRateDonut({ won, lost, pending }: { won: number; lost: number; pending: number }) {
+function WinRateDonutBase({ won, lost, pending }: { won: number; lost: number; pending: number }) {
   const total = Math.max(won + lost + pending, 1);
   const C = 2 * Math.PI * 42;
   const seg = (n: number) => (n / total) * C;
@@ -93,7 +94,7 @@ export function WinRateDonut({ won, lost, pending }: { won: number; lost: number
 }
 
 /* ---------- Rep Economics KPI tile (premium) ---------- */
-export function EconomicsKPI({
+function EconomicsKPIBase({
   icon: Icon, label, value, sub, accent, footer,
 }: {
   icon: React.ElementType;
@@ -127,3 +128,9 @@ export function EconomicsKPI({
     </div>
   );
 }
+
+export const HeroKPI = memo(HeroKPIBase);
+export const MiniStat = memo(MiniStatBase);
+export const WinRateDonut = memo(WinRateDonutBase);
+export const EconomicsKPI = memo(EconomicsKPIBase);
+
