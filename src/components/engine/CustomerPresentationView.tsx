@@ -115,6 +115,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
     <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in">
       {/* Top-right actions */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <PromoTrigger promos={promos} onChange={setPromos} />
         {selectedOption && (
           <button
             onClick={handleExportPdf}
