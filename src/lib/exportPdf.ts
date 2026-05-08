@@ -186,7 +186,10 @@ function drawSelectedOption(
   pdf.text("WHAT'S INCLUDED", margin + 12, cy);
   cy += 6;
 
-  const features = FEATURES_BY_OPTION[opt.key] || [];
+  const customTexts = state.customFeatures && state.customFeatures.length > 0 ? state.customFeatures : null;
+  const features = customTexts
+    ? customTexts.map((text) => ({ text }))
+    : (FEATURES_BY_OPTION[opt.key] || []);
   features.forEach((f) => {
     setFill(pdf, color);
     pdf.circle(margin + 14, cy - 0.8, 1.5, "F");
