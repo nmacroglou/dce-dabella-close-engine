@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,11 +9,14 @@ import AppHeader from "@/components/AppHeader";
 import {
   Loader2, TrendingUp, TrendingDown, Target, DollarSign, Award,
   Flame, Clock, AlertCircle, Trophy, BarChart3, Sparkles, ArrowUpRight,
-  Zap, Activity,
+  Zap, Activity, Hourglass, Wallet, Gauge, Pencil,
 } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { STAGE_LABELS, type DealStage } from "@/types/deal";
 import { OBJECTIONS } from "@/data/objections";
+
+const HOURS_KEY = "dabella.hud.weeklyHours";
+const COMMISSION_KEY = "dabella.hud.commissionPct";
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
@@ -109,6 +112,42 @@ function WinRateDonut({ won, lost, pending }: { won: number; lost: number; pendi
   );
 }
 
+/* ---------- Rep Economics KPI tile (premium, editable) ---------- */
+function EconomicsKPI({
+  icon: Icon, label, value, sub, accent, footer,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  sub?: string;
+  accent: "primary" | "success" | "warning";
+  footer?: React.ReactNode;
+}) {
+  const accentMap = {
+    primary: { ring: "ring-primary/20", glow: "from-primary/30", icon: "text-primary", border: "border-primary/30" },
+    success: { ring: "ring-success/20", glow: "from-success/30", icon: "text-success", border: "border-success/30" },
+    warning: { ring: "ring-warning/20", glow: "from-warning/30", icon: "text-warning", border: "border-warning/30" },
+  }[accent];
+  return (
+    <div className={`relative overflow-hidden rounded-2xl border-2 ${accentMap.border} bg-card p-5 ring-1 ${accentMap.ring}`}>
+      <div className={`absolute -top-16 -right-12 h-44 w-44 rounded-full bg-gradient-to-br ${accentMap.glow} to-transparent blur-3xl`} />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className={`h-8 w-8 rounded-lg grid place-items-center bg-background/80 backdrop-blur border border-border ${accentMap.icon}`}>
+              <Icon className="h-4 w-4" />
+            </div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+          </div>
+        </div>
+        <p className="text-4xl font-display font-extrabold tracking-tight text-foreground leading-none">{value}</p>
+        {sub && <p className="text-xs text-muted-foreground mt-2">{sub}</p>}
+        {footer && <div className="mt-3 pt-3 border-t border-border/60">{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
@@ -132,6 +171,52 @@ export default function Dashboard() {
     const compliancePct = totalDue + completed > 0 ? Math.round((completed / (totalDue + completed)) * 100) : 0;
     return { overdue, today, upcoming, completed, compliancePct, overdueList: overdueList.slice(0, 5) };
   }, [followUps]);
+
+  /* ---- Rep economics: editable inputs persisted to localStorage ---- */
+  const [weeklyHours, setWeeklyHours] = useState<number>(40);
+  const [commissionPct, setCommissionPct] = useState<number>(8);
+  const [editingEcon, setEditingEcon] = useState(false);
+
+  useEffect(() => {
+    const h = parseFloat(localStorage.getItem(HOURS_KEY) ?? "");
+    const c = parseFloat(localStorage.getItem(COMMISSION_KEY) ?? "");
+    if (!Number.isNaN(h) && h > 0) setWeeklyHours(h);
+    if (!Number.isNaN(c) && c > 0) setCommissionPct(c);
+  }, []);
+  useEffect(() => { localStorage.setItem(HOURS_KEY, String(weeklyHours)); }, [weeklyHours]);
+  useEffect(() => { localStorage.setItem(COMMISSION_KEY, String(commissionPct)); }, [commissionPct]);
+
+  const economics = useMemo(() => {
+    const now = Date.now();
+    const weekAgo = now - 7 * 864e5;
+    const wonThisWeek = deals.filter(
+      (d) => d.stage === "won" && d.closed_at && new Date(d.closed_at).getTime() >= weekAgo
+    );
+    const earnedThisWeek = wonThisWeek.reduce(
+      (s, d) => s + ((d.closed_amount ?? 0) * commissionPct) / 100, 0
+    );
+    const dollarsPerHour = weeklyHours > 0 ? earnedThisWeek / weeklyHours : 0;
+
+    // Money in motion — open pipeline value (best price per open deal)
+    const openDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost");
+    const moneyInMotion = openDeals.reduce(
+      (s, d) => s + Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0), 0
+    );
+    const expectedCommissionInMotion = (moneyInMotion * commissionPct) / 100;
+
+    // Pipeline velocity: $ closed per active selling day this month
+    const monthStart = new Date();
+    monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+    const daysIntoMonth = Math.max(1, Math.ceil((now - monthStart.getTime()) / 864e5));
+    const velocityPerDay = stats!.monthRevenue / daysIntoMonth;
+    const projectedMonth = velocityPerDay * 30;
+
+    return {
+      dollarsPerHour, earnedThisWeek, wonThisWeekCount: wonThisWeek.length,
+      moneyInMotion, expectedCommissionInMotion, openDealsCount: openDeals.length,
+      velocityPerDay, projectedMonth,
+    };
+  }, [deals, weeklyHours, commissionPct, stats]);
 
   if (isLoading || !stats) {
     return (
@@ -225,6 +310,89 @@ export default function Dashboard() {
           <HeroKPI icon={AlertCircle} label="Overdue follow-ups" value={String(followUpInsights.overdue)}
             sub={`${followUpInsights.today} due today`}
             tone={followUpInsights.overdue > 0 ? "destructive" : "success"} />
+        </section>
+
+        {/* ===== REP ECONOMICS ===== */}
+        <section>
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-lg bg-primary/15 grid place-items-center">
+                <Gauge className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Rep Economics</h3>
+              <span className="text-[10px] text-muted-foreground hidden sm:inline">— how every hour and every open deal maps to dollars</span>
+            </div>
+            <button
+              onClick={() => setEditingEcon((v) => !v)}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
+            >
+              <Pencil className="h-3 w-3" />
+              {editingEcon ? "Done" : `${weeklyHours}h/wk · ${commissionPct}% comm`}
+            </button>
+          </div>
+
+          {editingEcon && (
+            <div className="rounded-xl border border-border bg-muted/30 p-3 mb-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="flex items-center gap-2 text-xs">
+                <span className="font-semibold text-muted-foreground w-32">Hours per week</span>
+                <input
+                  type="number" min={1} max={120} value={weeklyHours}
+                  onChange={(e) => setWeeklyHours(Math.max(1, parseFloat(e.target.value) || 1))}
+                  className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-xs">
+                <span className="font-semibold text-muted-foreground w-32">Commission %</span>
+                <input
+                  type="number" min={0} max={100} step={0.5} value={commissionPct}
+                  onChange={(e) => setCommissionPct(Math.max(0, parseFloat(e.target.value) || 0))}
+                  className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <EconomicsKPI
+              icon={Hourglass}
+              label="$ / Hour (this week)"
+              accent="success"
+              value={fmt(Math.round(economics.dollarsPerHour))}
+              sub={`${fmt(Math.round(economics.earnedThisWeek))} earned · ${weeklyHours}h worked`}
+              footer={
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground">{economics.wonThisWeekCount} deal{economics.wonThisWeekCount === 1 ? "" : "s"} closed (7d)</span>
+                  <span className="font-bold text-success">{commissionPct}% comm</span>
+                </div>
+              }
+            />
+            <EconomicsKPI
+              icon={Wallet}
+              label="Money in Motion"
+              accent="primary"
+              value={fmt(Math.round(economics.moneyInMotion))}
+              sub={`${economics.openDealsCount} open deal${economics.openDealsCount === 1 ? "" : "s"} in your pipeline`}
+              footer={
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground">Est. commission if all close</span>
+                  <span className="font-bold text-primary">{fmt(Math.round(economics.expectedCommissionInMotion))}</span>
+                </div>
+              }
+            />
+            <EconomicsKPI
+              icon={Gauge}
+              label="Pipeline Velocity"
+              accent="warning"
+              value={`${fmt(Math.round(economics.velocityPerDay))}/day`}
+              sub="Avg revenue closed per day this month"
+              footer={
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground">Projected month at this pace</span>
+                  <span className="font-bold text-warning">{fmt(Math.round(economics.projectedMonth))}</span>
+                </div>
+              }
+            />
+          </div>
         </section>
 
         {/* ===== FOLLOW-UP COMMAND STRIP ===== */}
