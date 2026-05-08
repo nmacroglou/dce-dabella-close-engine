@@ -19,7 +19,7 @@ const TABS = [
   { value: "presentation", label: "Presentation", icon: Presentation },
   { value: "objections", label: "Objections", icon: ShieldAlert },
   { value: "closing", label: "Closing Stack", icon: Layers },
-  { value: "commission", label: "Performance", icon: DollarSign },
+  { value: "commission", label: "Commission Sheet", icon: DollarSign },
   { value: "coach", label: "Coach Mode", icon: Brain },
 ] as const;
 

@@ -120,7 +120,7 @@ export default memo(function MonthlyPromosEditor() {
                   />
                 </label>
                 <label className="space-y-1">
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Override %</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Optional % Add</span>
                   <input
                     type="number"
                     step="0.25"
