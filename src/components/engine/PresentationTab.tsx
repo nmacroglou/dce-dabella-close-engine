@@ -59,6 +59,11 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
           />
         </div>
 
+        <IncludedFeaturesEditor
+          value={state.customFeatures}
+          onChange={(next) => update("customFeatures", next)}
+        />
+
         <FinancialImpact state={state} computed={computed} />
       </div>
 
