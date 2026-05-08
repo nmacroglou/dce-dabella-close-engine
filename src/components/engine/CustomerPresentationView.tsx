@@ -39,12 +39,24 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const [exporting, setExporting] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
   const [revealIndex, setRevealIndex] = useState(0);
+  const [promos, setPromos] = useState<PromoState>(EMPTY_PROMOS);
   const stageIndex = STAGES.indexOf(stage);
 
-  const options = useMemo(() => buildOptionsArray(state, computed), [
+  const discountPct = totalDiscountPct(promos);
+  const discountedComputed = useMemo(
+    () => applyDiscountToComputed(computed, discountPct),
+    [computed, discountPct],
+  );
+
+  const originalOptions = useMemo(() => buildOptionsArray(state, computed), [
     state.optionAName, state.optionBName, state.optionCName,
     state.priceA, state.priceB, state.priceC,
     computed.options.A.monthly, computed.options.B.monthly, computed.options.C.monthly,
+  ]);
+
+  const options = useMemo(() => buildOptionsArray(state, discountedComputed), [
+    state.optionAName, state.optionBName, state.optionCName,
+    discountedComputed,
   ]);
 
   const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1] as Stage);
