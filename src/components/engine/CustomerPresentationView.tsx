@@ -172,11 +172,13 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
             <OptionReveal
               revealIndex={revealIndex}
               options={options}
-              computed={computed}
+              computed={discountedComputed}
               onAccept={handleAccept}
               onShowNext={() => setRevealIndex((p) => Math.min(p + 1, 2))}
               onGoBack={() => setRevealIndex((p) => Math.max(p - 1, 0))}
               customFeatures={state.customFeatures}
+              originalOptions={originalOptions.map((o) => ({ key: o.key, price: o.price }))}
+              discountPct={discountPct}
             />
             <div className="mt-8"><TrustBar /></div>
           </>
@@ -188,9 +190,11 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
               <OptionCard
                 optionKey={selectedOption}
                 name={options.find((o) => o.key === selectedOption)?.name || ""}
-                computed={computed}
+                computed={discountedComputed}
                 selected
                 customFeatures={state.customFeatures}
+                originalPrice={originalOptions.find((o) => o.key === selectedOption)?.price}
+                discountPct={discountPct}
               />
               <button
                 onClick={() => { setSelectedOption(null); setStage("options"); }}
