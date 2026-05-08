@@ -60,7 +60,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
             <div className="flex items-center gap-2 mb-1">
               <p className="text-base font-bold text-muted-foreground line-through">{fmt(originalPrice!)}</p>
               <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-accent-foreground">
-                -{discountPct}%
+                −{discountPct}%
               </span>
             </div>
           )}
@@ -68,6 +68,12 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
           <p className="text-sm text-muted-foreground">
             as low as <span className="font-bold text-foreground">{fmt(opt.monthly)}/mo</span> with financing
           </p>
+          {showStrike && (
+            <div className="mt-3 pt-3 border-t border-accent/30 flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-accent">You save</span>
+              <span className="text-lg font-extrabold text-accent">{fmt(originalPrice! - opt.price)}</span>
+            </div>
+          )}
         </div>
 
         {/* Features */}
