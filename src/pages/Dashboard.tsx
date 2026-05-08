@@ -312,6 +312,89 @@ export default function Dashboard() {
             tone={followUpInsights.overdue > 0 ? "destructive" : "success"} />
         </section>
 
+        {/* ===== REP ECONOMICS ===== */}
+        <section>
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-lg bg-primary/15 grid place-items-center">
+                <Gauge className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Rep Economics</h3>
+              <span className="text-[10px] text-muted-foreground hidden sm:inline">— how every hour and every open deal maps to dollars</span>
+            </div>
+            <button
+              onClick={() => setEditingEcon((v) => !v)}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
+            >
+              <Pencil className="h-3 w-3" />
+              {editingEcon ? "Done" : `${weeklyHours}h/wk · ${commissionPct}% comm`}
+            </button>
+          </div>
+
+          {editingEcon && (
+            <div className="rounded-xl border border-border bg-muted/30 p-3 mb-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="flex items-center gap-2 text-xs">
+                <span className="font-semibold text-muted-foreground w-32">Hours per week</span>
+                <input
+                  type="number" min={1} max={120} value={weeklyHours}
+                  onChange={(e) => setWeeklyHours(Math.max(1, parseFloat(e.target.value) || 1))}
+                  className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-xs">
+                <span className="font-semibold text-muted-foreground w-32">Commission %</span>
+                <input
+                  type="number" min={0} max={100} step={0.5} value={commissionPct}
+                  onChange={(e) => setCommissionPct(Math.max(0, parseFloat(e.target.value) || 0))}
+                  className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </label>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <EconomicsKPI
+              icon={Hourglass}
+              label="$ / Hour (this week)"
+              accent="success"
+              value={fmt(Math.round(economics.dollarsPerHour))}
+              sub={`${fmt(Math.round(economics.earnedThisWeek))} earned · ${weeklyHours}h worked`}
+              footer={
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground">{economics.wonThisWeekCount} deal{economics.wonThisWeekCount === 1 ? "" : "s"} closed (7d)</span>
+                  <span className="font-bold text-success">{commissionPct}% comm</span>
+                </div>
+              }
+            />
+            <EconomicsKPI
+              icon={Wallet}
+              label="Money in Motion"
+              accent="primary"
+              value={fmt(Math.round(economics.moneyInMotion))}
+              sub={`${economics.openDealsCount} open deal${economics.openDealsCount === 1 ? "" : "s"} in your pipeline`}
+              footer={
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground">Est. commission if all close</span>
+                  <span className="font-bold text-primary">{fmt(Math.round(economics.expectedCommissionInMotion))}</span>
+                </div>
+              }
+            />
+            <EconomicsKPI
+              icon={Gauge}
+              label="Pipeline Velocity"
+              accent="warning"
+              value={`${fmt(Math.round(economics.velocityPerDay))}/day`}
+              sub="Avg revenue closed per day this month"
+              footer={
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-muted-foreground">Projected month at this pace</span>
+                  <span className="font-bold text-warning">{fmt(Math.round(economics.projectedMonth))}</span>
+                </div>
+              }
+            />
+          </div>
+        </section>
+
         {/* ===== FOLLOW-UP COMMAND STRIP ===== */}
         {followUpInsights.overdueList.length > 0 && (
           <section className="rounded-2xl border border-destructive/30 bg-gradient-to-r from-destructive/5 via-card to-card p-5">
