@@ -112,6 +112,42 @@ function WinRateDonut({ won, lost, pending }: { won: number; lost: number; pendi
   );
 }
 
+/* ---------- Rep Economics KPI tile (premium, editable) ---------- */
+function EconomicsKPI({
+  icon: Icon, label, value, sub, accent, footer,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  sub?: string;
+  accent: "primary" | "success" | "warning";
+  footer?: React.ReactNode;
+}) {
+  const accentMap = {
+    primary: { ring: "ring-primary/20", glow: "from-primary/30", icon: "text-primary", border: "border-primary/30" },
+    success: { ring: "ring-success/20", glow: "from-success/30", icon: "text-success", border: "border-success/30" },
+    warning: { ring: "ring-warning/20", glow: "from-warning/30", icon: "text-warning", border: "border-warning/30" },
+  }[accent];
+  return (
+    <div className={`relative overflow-hidden rounded-2xl border-2 ${accentMap.border} bg-card p-5 ring-1 ${accentMap.ring}`}>
+      <div className={`absolute -top-16 -right-12 h-44 w-44 rounded-full bg-gradient-to-br ${accentMap.glow} to-transparent blur-3xl`} />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className={`h-8 w-8 rounded-lg grid place-items-center bg-background/80 backdrop-blur border border-border ${accentMap.icon}`}>
+              <Icon className="h-4 w-4" />
+            </div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+          </div>
+        </div>
+        <p className="text-4xl font-display font-extrabold tracking-tight text-foreground leading-none">{value}</p>
+        {sub && <p className="text-xs text-muted-foreground mt-2">{sub}</p>}
+        {footer && <div className="mt-3 pt-3 border-t border-border/60">{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
