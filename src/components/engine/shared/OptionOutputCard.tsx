@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { DollarSign, Zap, TrendingUp, BarChart3, Sparkles, Percent } from "lucide-react";
+import { DollarSign, Zap, TrendingUp, BarChart3, Sparkles, Percent, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
 import type { OptionComputed } from "@/types/engine";
 import PromoRow from "./PromoRow";
