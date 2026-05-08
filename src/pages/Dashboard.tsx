@@ -208,7 +208,7 @@ export default function Dashboard() {
     const monthStart = new Date();
     monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
     const daysIntoMonth = Math.max(1, Math.ceil((now - monthStart.getTime()) / 864e5));
-    const velocityPerDay = stats!.monthRevenue / daysIntoMonth;
+    const velocityPerDay = (stats?.monthRevenue ?? 0) / daysIntoMonth;
     const projectedMonth = velocityPerDay * 30;
 
     return {
