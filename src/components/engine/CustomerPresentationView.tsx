@@ -10,7 +10,7 @@ import ScopeOfWork from "./presentation/ScopeOfWork";
 import WelcomeClose from "./presentation/WelcomeClose";
 import FinancialImpact from "./presentation/FinancialImpact";
 import WindowInspectionView from "./presentation/WindowInspectionView";
-import PromoTrigger, { EMPTY_PROMOS, totalDiscountPct, type PromoState } from "./presentation/PromoTrigger";
+import PromoTrigger, { tierPct, type TierState } from "./presentation/PromoTrigger";
 
 interface Props {
   state: EngineState;
@@ -39,10 +39,10 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const [exporting, setExporting] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
   const [revealIndex, setRevealIndex] = useState(0);
-  const [promos, setPromos] = useState<PromoState>(EMPTY_PROMOS);
+  const [tier, setTier] = useState<TierState>(null);
   const stageIndex = STAGES.indexOf(stage);
 
-  const discountPct = totalDiscountPct(promos);
+  const discountPct = tierPct(tier);
   const discountedComputed = useMemo(
     () => applyDiscountToComputed(computed, discountPct),
     [computed, discountPct],
@@ -115,7 +115,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
     <div className="fixed inset-0 z-50 bg-background overflow-auto animate-fade-in">
       {/* Top-right actions */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        <PromoTrigger promos={promos} onChange={setPromos} />
+        <PromoTrigger tier={tier} onChange={setTier} />
         {selectedOption && (
           <button
             onClick={handleExportPdf}
