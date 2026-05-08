@@ -7,18 +7,19 @@ import { useDeals } from "@/hooks/useDeals";
 import { followUpStatus } from "@/types/followUp";
 import AppHeader from "@/components/AppHeader";
 import {
-  Loader2, TrendingUp, TrendingDown, Target, DollarSign, Award,
+  Loader2, Target, DollarSign, Award,
   Flame, Clock, AlertCircle, Trophy, BarChart3, Sparkles, ArrowUpRight,
   Zap, Activity, Hourglass, Wallet, Gauge, Pencil,
 } from "lucide-react";
-import { fmt } from "@/lib/format";
+import { fmt, pct } from "@/lib/format";
 import { STAGE_LABELS, type DealStage } from "@/types/deal";
 import { OBJECTIONS } from "@/data/objections";
+import { HeroKPI, MiniStat, WinRateDonut, EconomicsKPI } from "@/components/dashboard/kpi-tiles";
+import { EarningsLeadFlowChart } from "@/components/dashboard/EarningsLeadFlowChart";
+import { buildTrendSeries } from "@/lib/trendSeries";
 
 const HOURS_KEY = "dabella.hud.weeklyHours";
 const COMMISSION_KEY = "dabella.hud.commissionPct";
-
-const pct = (n: number) => `${Math.round(n * 100)}%`;
 
 /* ---------- Hero KPI tile (large, gradient-accent) ---------- */
 function HeroKPI({
