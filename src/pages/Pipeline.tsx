@@ -57,7 +57,7 @@ export default function Pipeline() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen surface-premium">
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <div>

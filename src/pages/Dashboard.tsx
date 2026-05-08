@@ -102,7 +102,7 @@ export default function Dashboard() {
 
   if (isLoading || !stats) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen surface-premium">
         <AppHeader />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 text-primary animate-spin" />
@@ -122,7 +122,7 @@ export default function Dashboard() {
   const dealById = new Map(deals.map((d) => [d.id, d]));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen surface-premium">
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
