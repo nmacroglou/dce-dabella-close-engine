@@ -461,6 +461,9 @@ export default function Dashboard() {
             tone={followUpInsights.overdue > 0 ? "destructive" : "success"} />
         </section>
 
+        {/* ===== EARNINGS VELOCITY VS LEAD FLOW ===== */}
+        <EarningsLeadFlowChart {...trendSeries} />
+
         {/* ===== REP ECONOMICS ===== */}
         <section>
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
