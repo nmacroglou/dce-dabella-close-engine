@@ -38,7 +38,7 @@ export default function Index() {
     <div className="min-h-screen surface-premium">
       <AppHeader />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 animate-fade-in-up">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
         <ActiveDealBanner />
 
         <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
