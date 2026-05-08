@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 /* ---------- Hero KPI tile (large, gradient-accent) ---------- */
