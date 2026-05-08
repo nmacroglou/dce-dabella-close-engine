@@ -1,36 +1,51 @@
 ## Goal
 
-On the Live Sheet (Commission tab → Live Sheet), add a short helper line under every input that explains what the number is and gives a concrete example, so it's obvious what to type in each box.
+Refactor the entire DaBella Close Engine in 3 sequential phases — one per turn — so nothing breaks between steps. After each phase you'll see the preview, sign off, and we move to the next.
 
-## What the user will see
+## Phase 1 — Code structure cleanup (no visual change)
 
-Under each field label, a small muted line of text like:
+Largest files today are doing too much. We split them, extract shared logic, and tighten types. Zero pixel changes — pure plumbing.
 
-- **Date of Sale** — _"The day the contract was signed. e.g. 04/22/2026"_
-- **Customer Name** — _"Auto-filled from the deal's homeowner. Read-only."_
-- **Job #** — _"Hover/CRM job number from the signed contract. e.g. 184502"_
-- **Rep Last, First Initial** — _"Your name as it appears on payroll. e.g. Macroglou, N"_
-- **Company Paid Finance Fees** — _"Dealer fee DaBella absorbs for the finance plan. e.g. $4,200 on a 9.99% 15-yr"_
-- **Project Price** — _"The 100% (Option A / 'good') price — the benchmark used for % of Project. e.g. $42,000"_
-- **Promotion or Special Approved By** — _"Any extra % or override and who approved it. e.g. 'Extra 1% POI Bonus — approved by RSM Smith'"_
-- **$ for $** — _"Dollar-for-dollar add-on (referrals, demo $, etc.). e.g. $250"_
-- **Bonus / Self-Gen Fee** — _"Self-generated lead bonus or spiff. e.g. $500 for self-gen"_
-- **Rep 1 % / Rep 2 %** — _"How the commission splits between reps. Must total 100. e.g. 50 / 50"_
-- **Contract Roof / Siding / Gutters** — _"What the customer is paying for this line on the signed contract. e.g. $28,500"_
-- **Project Roof / Siding / Gutters** — _"The 100% project price for this line (matches the Option A price). e.g. $32,000"_
+Targets:
+- `src/pages/Dashboard.tsx` (753 lines) → split into:
+  - `dashboard/HeroKpis.tsx`
+  - `dashboard/EarningsLeadFlowChart.tsx` (already a sub-component, move out)
+  - `dashboard/RepEconomics.tsx`
+  - `dashboard/TrendSeries.ts` (the `trendSeries` useMemo as a pure helper + unit-testable)
+- `src/components/engine/commission/CommissionSheet.tsx` (514) → split header, totals, line-items, promo block.
+- `src/lib/exportPdf.ts` (780) → split per-section renderers (`pdf/cover.ts`, `pdf/options.ts`, `pdf/commission.ts`).
+- `src/pages/Pipeline.tsx` (350) → extract `pipeline/StageColumn.tsx`, `pipeline/DealRow.tsx`.
+- `src/components/followups/FollowUpComposer.tsx` (359) → extract AI-email block + attachments block.
+- Consolidate duplicate money/percent formatters into `src/lib/format.ts`.
+- Remove dead imports, tighten `any` types in hooks.
 
-The helper text is a small, muted second line under each label — same style we already use in `InputField.tsx` (the `description` prop). It does not change layout or any calculations.
+## Phase 2 — Performance & scalability
 
-## Files to change
+- Wrap heavy lists (`Pipeline`, `Deals`, `CommissionSheet`) in `React.memo` + stable callbacks.
+- Move `trendSeries`-style derivations into `useMemo` with proper deps; audit `useEffect` dep arrays for the bug class that caused the recent `monthRevenue` crash.
+- Lazy-load tab routes with `React.lazy` + `Suspense` so the Dashboard doesn't ship the whole Close Engine bundle.
+- Add a tiny query cache layer for `useDeals` / `useDashboardStats` (stale-while-revalidate) so tab switches feel instant.
+- Virtualize the deals list if >50 rows.
+- Add a single `ErrorBoundary` around each top-level route so one bad calc never blanks the whole app again.
 
-1. **`src/components/engine/commission/CommissionSheet.tsx`**
-   - Extend the local `Field` component to accept an optional `hint?: string` prop and render it as a small `text-[10px] text-muted-foreground` line under the label.
-   - Pass a `hint` to every `<Field>` in the sheet (identity row, Project Total panel, rep split, and the Contract/Project line items). For the line-item rows, since they currently render `<Field label="">`, add a single hint line under the row header ("Contract = signed price for this line. Project = 100% Option A price.") instead of repeating it on every cell.
-   - Add a one-line legend at the top of the Project Total panel: _"Tip: Project Price is your 100% benchmark. Contract Total ÷ Project Price = % of Project, which picks your commission tier."_
+## Phase 3 — Visual upscale (premium feel)
 
-2. No changes to `commission.ts`, the grid editor, hooks, or the database — this is purely UI helper text.
+Keeping the dark theme + Inter/Plus Jakarta + #2563EB primary you already locked in.
 
-## Out of scope
+- Tighten the design tokens in `index.css`: add elevation scale (`--shadow-1..4`), a 2-stop primary gradient, and a "glass" surface token used by Hero KPIs and the chart card.
+- Typography rhythm pass: consistent heading sizes (`text-2xl/tight` H1, `text-lg/snug` section), tabular-nums on every dollar value.
+- Motion: framer-motion stagger on KPI cards on mount, subtle hover lift on option cards, animated number count-up on Hero KPIs.
+- Chart polish: rounded bar tops, soft glow on the line, hovered tooltip with date + both metrics.
+- Commission Sheet: zebra rows, sticky totals row, color-coded promo chips.
+- Dashboard hero: bigger primary metric, secondary metrics demoted, a single accent color per KPI instead of every card competing.
+- iPad-first spacing audit (your reps use iPads): increase tap targets to 44px min, bump section padding at `md:` breakpoint.
 
-- No changes to calculations, persistence, or the grid.
-- No tooltips/popovers — the hints render inline so they're visible on iPad without tapping.
+## How we'll execute
+
+Reply "go" and I do **Phase 1** only. When you're happy with the preview, say "phase 2" and so on. If at any point you want to skip or reorder, just say so.
+
+## Technical notes
+
+- No DB or RLS changes in any phase — pure frontend.
+- No new dependencies in Phase 1 or 3. Phase 2 may add `@tanstack/react-virtual` only if the deals list is long enough to justify it; I'll check first.
+- All edits stay inside `src/` and design tokens stay in `index.css` / `tailwind.config.ts` per the project rules.
