@@ -7,6 +7,7 @@ import ScriptCard from "./shared/ScriptCard";
 import CustomerPresentationView from "./CustomerPresentationView";
 import ActionGrid from "./presentation/ActionGrid";
 import FinancialImpact from "./presentation/FinancialImpact";
+import IncludedFeaturesEditor from "./presentation/IncludedFeaturesEditor";
 
 export default function PresentationTab({ state, computed, update }: EngineTabProps) {
   const [showNarrow, setShowNarrow] = useState(false);
