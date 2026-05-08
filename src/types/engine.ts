@@ -30,6 +30,7 @@ export interface EngineState {
   windowInspection: WindowInspectionEntry[];
   windowItems: WindowLineItem[];
   windowScopeChecks: boolean[];
+  customFeatures?: string[];
 }
 
 export interface OptionComputed {

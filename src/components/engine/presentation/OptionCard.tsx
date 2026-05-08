@@ -1,6 +1,6 @@
 import { CheckCircle2, TrendingUp, Zap, Sparkles } from "lucide-react";
 import { fmt } from "@/lib/format";
-import { OPTION_THEMES, FEATURES_BY_OPTION } from "./constants";
+import { OPTION_THEMES, FEATURES_BY_OPTION, featuresFromTexts } from "./constants";
 import type { ComputedValues } from "@/types/engine";
 
 interface OptionCardProps {
@@ -9,11 +9,14 @@ interface OptionCardProps {
   computed: ComputedValues;
   selected?: boolean;
   onClick?: () => void;
+  customFeatures?: string[];
 }
 
-export default function OptionCard({ optionKey, name, computed, selected, onClick }: OptionCardProps) {
+export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures }: OptionCardProps) {
   const theme = OPTION_THEMES[optionKey];
-  const features = FEATURES_BY_OPTION[optionKey];
+  const features = customFeatures && customFeatures.length > 0
+    ? featuresFromTexts(customFeatures)
+    : FEATURES_BY_OPTION[optionKey];
   const isHighlighted = optionKey === "A";
   const opt = computed.options[optionKey];
 

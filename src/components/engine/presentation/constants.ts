@@ -50,6 +50,13 @@ const SHARED_FEATURES: { icon: LucideIcon; text: string }[] = [
   { icon: TrendingUp, text: "Best long-term ROI" },
 ];
 
+export const DEFAULT_FEATURE_TEXTS: string[] = SHARED_FEATURES.map((f) => f.text);
+
+export function featuresFromTexts(texts: string[]): { icon: LucideIcon; text: string }[] {
+  const iconCycle = [Shield, Award, Zap, Star, Home, TrendingUp];
+  return texts.map((text, i) => ({ icon: iconCycle[i % iconCycle.length], text }));
+}
+
 export const FEATURES_BY_OPTION: Record<string, { icon: LucideIcon; text: string }[]> = {
   A: SHARED_FEATURES,
   B: SHARED_FEATURES,
