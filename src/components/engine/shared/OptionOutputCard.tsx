@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { DollarSign, Zap, TrendingUp, BarChart3, Sparkles } from "lucide-react";
+import { DollarSign, Zap, TrendingUp, BarChart3, Sparkles, Percent } from "lucide-react";
 import { fmt } from "@/lib/format";
 import type { OptionComputed } from "@/types/engine";
 import PromoRow from "./PromoRow";
@@ -10,7 +10,11 @@ interface OptionOutputCardProps {
   opt: OptionComputed;
   energySavings: number;
   accent: string;
+  financingFactor?: number;
+  downPayment?: number;
 }
+
+const DISCOUNT_TIERS = [5, 10, 15, 20] as const;
 
 function ValueLine({ icon: Icon, label, value, color }: { icon: typeof BarChart3; label: string; value: string; color: string }) {
   return (
