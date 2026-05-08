@@ -270,6 +270,8 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
             opt={computed.options[key]}
             energySavings={computed.energySavings}
             accent={OPTION_ACCENTS[key]}
+            financingFactor={state.financingFactor2}
+            downPayment={state.downPayment}
           />
         ))}
       </div>
