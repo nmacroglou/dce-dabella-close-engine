@@ -162,6 +162,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
               onAccept={handleAccept}
               onShowNext={() => setRevealIndex((p) => Math.min(p + 1, 2))}
               onGoBack={() => setRevealIndex((p) => Math.max(p - 1, 0))}
+              customFeatures={state.customFeatures}
             />
             <div className="mt-8"><TrustBar /></div>
           </>
