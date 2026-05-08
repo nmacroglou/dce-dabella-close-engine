@@ -2,22 +2,26 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
 import { useDeals } from "@/hooks/useDeals";
-import { useFollowUps } from "@/hooks/useFollowUps";
+import { useFollowUps, useUpdateFollowUp, useDeleteFollowUp } from "@/hooks/useFollowUps";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
-import { followUpStatus } from "@/types/followUp";
+import { followUpStatus, type FollowUp } from "@/types/followUp";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
-import { AlertCircle, Calendar, CheckCircle2, Clock, Sparkles, TrendingUp } from "lucide-react";
+import { AlertCircle, Calendar, CheckCircle2, Clock, Sparkles, TrendingUp, Mail, Pencil, Trash2, Paperclip, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FollowUpComposer from "@/components/followups/FollowUpComposer";
+import { toast } from "sonner";
 
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 
 export default function Pipeline() {
   const { data: deals = [] } = useDeals();
   const { data: followUps = [] } = useFollowUps();
+  const updateFollowUp = useUpdateFollowUp();
+  const deleteFollowUp = useDeleteFollowUp();
   const { setActiveDealId } = useActiveDeal();
   const navigate = useNavigate();
-  const [composerDeal, setComposerDeal] = useState<string | null>(null);
+  const [composer, setComposer] = useState<{ dealId: string; followUpId?: string } | null>(null);
+  const [filter, setFilter] = useState<"open" | "drafts" | "completed" | "all">("open");
 
   const stats = useMemo(() => {
     const open = followUps.filter((f) => !f.completed_at);
