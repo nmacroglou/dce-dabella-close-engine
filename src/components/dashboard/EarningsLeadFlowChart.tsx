@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { Activity } from "lucide-react";
 import { fmt } from "@/lib/format";
 
 export type ChartBucket = { label: string; shortDate: string; dollars: number; leads: number };
 
-export function EarningsLeadFlowChart({
+function EarningsLeadFlowChartBase({
   buckets, maxDollars, maxLeads, totalLeads, avgDollars,
 }: {
   buckets: ChartBucket[];
@@ -112,3 +113,6 @@ export function EarningsLeadFlowChart({
     </section>
   );
 }
+
+export const EarningsLeadFlowChart = memo(EarningsLeadFlowChartBase);
+
