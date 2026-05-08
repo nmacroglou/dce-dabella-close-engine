@@ -263,6 +263,8 @@ function EarningsLeadFlowChart({
     </section>
   );
 }
+
+export default function Dashboard() {
   const { user } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
   const { data: followUps = [] } = useFollowUps();
