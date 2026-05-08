@@ -39,10 +39,10 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const [exporting, setExporting] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
   const [revealIndex, setRevealIndex] = useState(0);
-  const [promos, setPromos] = useState<PromoState>(EMPTY_PROMOS);
+  const [tier, setTier] = useState<TierState>(null);
   const stageIndex = STAGES.indexOf(stage);
 
-  const discountPct = totalDiscountPct(promos);
+  const discountPct = tierPct(tier);
   const discountedComputed = useMemo(
     () => applyDiscountToComputed(computed, discountPct),
     [computed, discountPct],
