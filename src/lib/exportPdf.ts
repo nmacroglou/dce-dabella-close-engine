@@ -6,15 +6,22 @@ import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
 import { getNames, getOptionMetrics, getOptionLabel, getProductLabel, hasProduct } from "@/lib/engineHelpers";
 
-// Brand colors
-const BLUE = [37, 99, 235] as const;
-const DARK = [15, 23, 42] as const;
+// Brand colors — premium palette
+const BLUE = [29, 78, 216] as const;
+const BLUE_DEEP = [17, 40, 120] as const;
+const BLUE_SOFT = [219, 234, 254] as const;
+const DARK = [10, 18, 38] as const;
 const GRAY = [100, 116, 139] as const;
+const GRAY_SOFT = [148, 163, 184] as const;
 const LIGHT_BG = [248, 250, 252] as const;
 const WHITE = [255, 255, 255] as const;
 const GREEN = [16, 185, 129] as const;
+const GREEN_SOFT = [220, 252, 231] as const;
 const AMBER = [245, 158, 11] as const;
+const GOLD = [202, 138, 4] as const;
+const GOLD_SOFT = [254, 243, 199] as const;
 const BORDER = [226, 232, 240] as const;
+const RED_BRAND = [220, 38, 38] as const;
 
 type RGB = readonly [number, number, number];
 
@@ -27,9 +34,31 @@ function roundedRect(pdf: jsPDF, x: number, y: number, w: number, h: number, r: 
   setFill(pdf, fill);
   if (stroke) {
     setDraw(pdf, stroke);
+    pdf.setLineWidth(0.4);
     pdf.roundedRect(x, y, w, h, r, r, "FD");
   } else {
     pdf.roundedRect(x, y, w, h, r, r, "F");
+  }
+}
+
+// Soft drop-shadow effect (offset gray rect behind a card)
+function shadowRect(pdf: jsPDF, x: number, y: number, w: number, h: number, r: number, opacity = 0.08) {
+  pdf.setGState(pdf.GState({ opacity }));
+  setFill(pdf, DARK);
+  pdf.roundedRect(x + 0.6, y + 1.2, w, h, r, r, "F");
+  pdf.setGState(pdf.GState({ opacity: 1 }));
+}
+
+// Vertical gradient via stacked thin rectangles
+function vGradient(pdf: jsPDF, x: number, y: number, w: number, h: number, top: RGB, bottom: RGB, steps = 24) {
+  const sh = h / steps;
+  for (let i = 0; i < steps; i++) {
+    const t = i / (steps - 1);
+    const r = Math.round(top[0] + (bottom[0] - top[0]) * t);
+    const g = Math.round(top[1] + (bottom[1] - top[1]) * t);
+    const b = Math.round(top[2] + (bottom[2] - top[2]) * t);
+    pdf.setFillColor(r, g, b);
+    pdf.rect(x, y + i * sh, w, sh + 0.3, "F");
   }
 }
 
