@@ -6,21 +6,21 @@ import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
 import { getNames, getOptionMetrics, getOptionLabel, getProductLabel, hasProduct } from "@/lib/engineHelpers";
 
-// Brand colors — premium palette
-const BLUE = [29, 78, 216] as const;
-const BLUE_DEEP = [17, 40, 120] as const;
-const BLUE_SOFT = [219, 234, 254] as const;
-const DARK = [10, 18, 38] as const;
+// Brand colors — DaBella palette (lime green butterfly + dark)
+const BLUE = [141, 198, 63] as const;       // DaBella lime green (primary)
+const BLUE_DEEP = [27, 94, 32] as const;    // Deep forest green
+const BLUE_SOFT = [220, 237, 200] as const; // Pale green wash
+const DARK = [17, 24, 33] as const;         // Near-black
 const GRAY = [100, 116, 139] as const;
 const GRAY_SOFT = [148, 163, 184] as const;
-const LIGHT_BG = [248, 250, 252] as const;
+const LIGHT_BG = [248, 250, 248] as const;
 const WHITE = [255, 255, 255] as const;
-const GREEN = [16, 185, 129] as const;
+const GREEN = [46, 125, 50] as const;       // Mid forest green for "good" indicators
 const GREEN_SOFT = [220, 252, 231] as const;
 const AMBER = [245, 158, 11] as const;
-const GOLD = [202, 138, 4] as const;
-const GOLD_SOFT = [254, 243, 199] as const;
-const BORDER = [226, 232, 240] as const;
+const GOLD = [46, 125, 50] as const;        // Repurposed: darker green accent (was gold)
+const GOLD_SOFT = [220, 252, 231] as const;
+const BORDER = [226, 232, 226] as const;
 const RED_BRAND = [220, 38, 38] as const;
 
 type RGB = readonly [number, number, number];
@@ -75,7 +75,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   const names = getNames(state);
 
   // Full-page deep-blue gradient
-  vGradient(pdf, 0, 0, pw, ph, BLUE_DEEP, BLUE);
+  vGradient(pdf, 0, 0, pw, ph, [10,30,12], BLUE_DEEP);
 
   // Decorative soft circles
   pdf.setGState(pdf.GState({ opacity: 0.07 }));
@@ -234,7 +234,7 @@ function drawSelectedOption(
 
   // Price block — premium gradient
   cy += 10;
-  vGradient(pdf, margin + 10, cy, cardW - 20, 36, BLUE_DEEP, BLUE);
+  vGradient(pdf, margin + 10, cy, cardW - 20, 36, [10,30,12], BLUE_DEEP);
   // gold hairline accent
   setFill(pdf, GOLD);
   pdf.rect(margin + 10, cy + 35, cardW - 20, 0.8, "F");
