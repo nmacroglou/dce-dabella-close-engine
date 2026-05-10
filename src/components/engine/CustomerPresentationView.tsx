@@ -68,17 +68,8 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
     setStage("impact");
   };
 
-  const handleExportPdf = async () => {
-    if (exporting) return;
-    setExporting(true);
-    try {
-      const name = state.homeowner1 || "Customer";
-      const { exportCustomerPdf } = await import("@/lib/exportPdf");
-      await exportCustomerPdf(state, computed, options, `DaBella-Proposal-${name}.pdf`, selectedOption);
-    } finally {
-      setExporting(false);
-    }
-  };
+
+
 
   const selectedComputed = useMemo(() => {
     if (!selectedOption) return null;
