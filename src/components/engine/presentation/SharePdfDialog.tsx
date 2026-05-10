@@ -24,8 +24,8 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
   const [busy, setBusy] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("menu");
-  const [email, setEmail] = useState(state.homeownerEmail || "");
-  const [phone, setPhone] = useState(state.homeownerPhone || "");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [copied, setCopied] = useState(false);
 
   const customerName = state.homeowner1 || "Customer";
