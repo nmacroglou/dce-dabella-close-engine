@@ -110,13 +110,12 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
         <PromoTrigger tier={tier} onChange={setTier} />
         {selectedOption && (
           <button
-            onClick={handleExportPdf}
-            disabled={exporting}
-            className="flex items-center gap-2 rounded-full bg-card border border-border shadow-md px-4 py-2 hover:bg-muted transition-colors text-sm font-semibold text-foreground disabled:opacity-60"
-            aria-label="Export PDF"
+            onClick={() => setShareOpen(true)}
+            className="flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md px-4 py-2 hover:bg-primary/90 transition-colors text-sm font-semibold"
+            aria-label="Share proposal"
           >
-            {exporting ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : <Download className="h-4 w-4 text-muted-foreground" />}
-            {exporting ? "Exporting…" : "Export PDF"}
+            <Share2 className="h-4 w-4" />
+            Share Proposal
           </button>
         )}
         <button onClick={onClose} className="rounded-full bg-card border border-border shadow-md p-2 hover:bg-muted transition-colors" aria-label="Close presentation">
