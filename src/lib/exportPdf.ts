@@ -796,22 +796,18 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   pdf.text(`+${fmt(m.netDiff)}`, pw / 2, y + 22, { align: "center" });
 }
 
-// ─── MAIN EXPORT ──────────────────────────────────────────────
-export async function exportCustomerPdf(
+// ─── MAIN BUILDER ─────────────────────────────────────────────
+export async function buildCustomerPdf(
   state: EngineState,
   computed: ComputedValues,
   options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
-  filename = "DaBella-Proposal.pdf",
   selectedOption?: "A" | "B" | "C" | null,
-) {
-  const pdf = new jsPDF("p", "mm", "a4");
+): Promise<{ blob: Blob; doc: jsPDF }> {
+  const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
   const isWindows = hasProduct(state.products, "Windows");
-  let pageCount = selectedOption ? 6 : 4;
-  if (isWindows) pageCount += 1; // window inspection page
 
   drawCover(pdf, state);
 
-  // Only include the accepted option
   const chosenKey = selectedOption || "A";
   const chosenOpt = options.find((o) => o.key === chosenKey) || options[0];
 
@@ -835,7 +831,6 @@ export async function exportCustomerPdf(
   pdf.addPage();
   drawWelcome(pdf, state);
 
-  // Footer on content pages (all except cover and welcome)
   const totalPages = pdf.getNumberOfPages();
   for (let p = 2; p <= totalPages - 1; p++) {
     pdf.setPage(p);
@@ -847,5 +842,18 @@ export async function exportCustomerPdf(
     pdf.text(`Page ${p} of ${totalPages}`, 190, 290, { align: "right" });
   }
 
-  pdf.save(filename);
+  return { blob: pdf.output("blob"), doc: pdf };
 }
+
+// ─── MAIN EXPORT (download) ───────────────────────────────────
+export async function exportCustomerPdf(
+  state: EngineState,
+  computed: ComputedValues,
+  options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
+  filename = "DaBella-Proposal.pdf",
+  selectedOption?: "A" | "B" | "C" | null,
+) {
+  const { doc } = await buildCustomerPdf(state, computed, options, selectedOption);
+  doc.save(filename);
+}
+
