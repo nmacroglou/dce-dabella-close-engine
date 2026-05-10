@@ -71,52 +71,6 @@ function drawLine(pdf: jsPDF, x1: number, y1: number, x2: number, y2: number, c:
 // ─── PAGE 1: COVER ────────────────────────────────────────────
 function drawCover(pdf: jsPDF, state: EngineState) {
   const pw = 210;
-  const names = getNames(state);
-
-  setFill(pdf, BLUE);
-  pdf.rect(0, 0, pw, 100, "F");
-
-  pdf.setGState(pdf.GState({ opacity: 0.08 }));
-  setFill(pdf, WHITE);
-  pdf.circle(160, 20, 60, "F");
-  pdf.circle(30, 80, 40, "F");
-  pdf.setGState(pdf.GState({ opacity: 1 }));
-
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(32);
-  setColor(pdf, WHITE);
-  pdf.text("DaBella", pw / 2, 40, { align: "center" });
-
-  pdf.setFontSize(13);
-  pdf.setFont("helvetica", "normal");
-  setColor(pdf, [200, 220, 255]);
-  pdf.text("HOME IMPROVEMENT EXPERTS", pw / 2, 52, { align: "center" });
-
-  const cy = 140;
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
-  setColor(pdf, BLUE);
-  pdf.text("PREPARED EXCLUSIVELY FOR", pw / 2, cy, { align: "center" });
-
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(28);
-  setColor(pdf, DARK);
-  pdf.text(names, pw / 2, cy + 18, { align: "center" });
-
-  drawLine(pdf, 70, cy + 30, 140, cy + 30, BORDER);
-
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(20);
-  setColor(pdf, DARK);
-  pdf.text(`${getProductLabel(state.products)} Proposal`, pw / 2, cy + 48, { align: "center" });
-
-  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(11);
-  setColor(pdf, GRAY);
-// ─── PAGE 1: COVER ────────────────────────────────────────────
-function drawCover(pdf: jsPDF, state: EngineState) {
-  const pw = 210;
   const ph = 297;
   const names = getNames(state);
 
