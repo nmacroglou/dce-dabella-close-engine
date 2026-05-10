@@ -75,7 +75,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   const names = getNames(state);
 
   // Full-page deep-blue gradient
-  vGradient(pdf, 0, 0, pw, ph, BLUE_DEEP, BLUE);
+  vGradient(pdf, 0, 0, pw, ph, [10,30,12], BLUE_DEEP);
 
   // Decorative soft circles
   pdf.setGState(pdf.GState({ opacity: 0.07 }));
@@ -234,7 +234,7 @@ function drawSelectedOption(
 
   // Price block — premium gradient
   cy += 10;
-  vGradient(pdf, margin + 10, cy, cardW - 20, 36, BLUE_DEEP, BLUE);
+  vGradient(pdf, margin + 10, cy, cardW - 20, 36, [10,30,12], BLUE_DEEP);
   // gold hairline accent
   setFill(pdf, GOLD);
   pdf.rect(margin + 10, cy + 35, cardW - 20, 0.8, "F");
