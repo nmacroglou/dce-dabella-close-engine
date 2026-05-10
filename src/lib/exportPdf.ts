@@ -6,15 +6,22 @@ import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
 import { getNames, getOptionMetrics, getOptionLabel, getProductLabel, hasProduct } from "@/lib/engineHelpers";
 
-// Brand colors
-const BLUE = [37, 99, 235] as const;
-const DARK = [15, 23, 42] as const;
+// Brand colors — premium palette
+const BLUE = [29, 78, 216] as const;
+const BLUE_DEEP = [17, 40, 120] as const;
+const BLUE_SOFT = [219, 234, 254] as const;
+const DARK = [10, 18, 38] as const;
 const GRAY = [100, 116, 139] as const;
+const GRAY_SOFT = [148, 163, 184] as const;
 const LIGHT_BG = [248, 250, 252] as const;
 const WHITE = [255, 255, 255] as const;
 const GREEN = [16, 185, 129] as const;
+const GREEN_SOFT = [220, 252, 231] as const;
 const AMBER = [245, 158, 11] as const;
+const GOLD = [202, 138, 4] as const;
+const GOLD_SOFT = [254, 243, 199] as const;
 const BORDER = [226, 232, 240] as const;
+const RED_BRAND = [220, 38, 38] as const;
 
 type RGB = readonly [number, number, number];
 
@@ -27,9 +34,31 @@ function roundedRect(pdf: jsPDF, x: number, y: number, w: number, h: number, r: 
   setFill(pdf, fill);
   if (stroke) {
     setDraw(pdf, stroke);
+    pdf.setLineWidth(0.4);
     pdf.roundedRect(x, y, w, h, r, r, "FD");
   } else {
     pdf.roundedRect(x, y, w, h, r, r, "F");
+  }
+}
+
+// Soft drop-shadow effect (offset gray rect behind a card)
+function shadowRect(pdf: jsPDF, x: number, y: number, w: number, h: number, r: number, opacity = 0.08) {
+  pdf.setGState(pdf.GState({ opacity }));
+  setFill(pdf, DARK);
+  pdf.roundedRect(x + 0.6, y + 1.2, w, h, r, r, "F");
+  pdf.setGState(pdf.GState({ opacity: 1 }));
+}
+
+// Vertical gradient via stacked thin rectangles
+function vGradient(pdf: jsPDF, x: number, y: number, w: number, h: number, top: RGB, bottom: RGB, steps = 24) {
+  const sh = h / steps;
+  for (let i = 0; i < steps; i++) {
+    const t = i / (steps - 1);
+    const r = Math.round(top[0] + (bottom[0] - top[0]) * t);
+    const g = Math.round(top[1] + (bottom[1] - top[1]) * t);
+    const b = Math.round(top[2] + (bottom[2] - top[2]) * t);
+    pdf.setFillColor(r, g, b);
+    pdf.rect(x, y + i * sh, w, sh + 0.3, "F");
   }
 }
 
@@ -42,70 +71,103 @@ function drawLine(pdf: jsPDF, x1: number, y1: number, x2: number, y2: number, c:
 // ─── PAGE 1: COVER ────────────────────────────────────────────
 function drawCover(pdf: jsPDF, state: EngineState) {
   const pw = 210;
+  const ph = 297;
   const names = getNames(state);
 
-  setFill(pdf, BLUE);
-  pdf.rect(0, 0, pw, 100, "F");
+  // Full-page deep-blue gradient
+  vGradient(pdf, 0, 0, pw, ph, BLUE_DEEP, BLUE);
 
-  pdf.setGState(pdf.GState({ opacity: 0.08 }));
+  // Decorative soft circles
+  pdf.setGState(pdf.GState({ opacity: 0.07 }));
   setFill(pdf, WHITE);
-  pdf.circle(160, 20, 60, "F");
-  pdf.circle(30, 80, 40, "F");
+  pdf.circle(170, 40, 70, "F");
+  pdf.circle(20, 200, 55, "F");
+  pdf.circle(195, 260, 35, "F");
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
+  // Gold hairline at top
+  setFill(pdf, GOLD);
+  pdf.rect(0, 0, pw, 1.4, "F");
+
+  // Logo wordmark
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(32);
+  pdf.setFontSize(36);
   setColor(pdf, WHITE);
-  pdf.text("DaBella", pw / 2, 40, { align: "center" });
+  pdf.text("DaBella", pw / 2, 50, { align: "center" });
 
-  pdf.setFontSize(13);
   pdf.setFont("helvetica", "normal");
-  setColor(pdf, [200, 220, 255]);
-  pdf.text("HOME IMPROVEMENT EXPERTS", pw / 2, 52, { align: "center" });
+  pdf.setFontSize(9);
+  setColor(pdf, GOLD);
+  pdf.text("H O M E   I M P R O V E M E N T   E X P E R T S", pw / 2, 60, { align: "center", charSpace: 0.5 });
 
-  const cy = 140;
+  // Center white card with gold accent
+  const cardX = 25, cardY = 110, cardW = pw - 50, cardH = 90;
+  shadowRect(pdf, cardX, cardY, cardW, cardH, 6, 0.18);
+  roundedRect(pdf, cardX, cardY, cardW, cardH, 6, WHITE);
+
+  // Gold accent stripe
+  setFill(pdf, GOLD);
+  pdf.roundedRect(cardX, cardY, cardW, 4, 6, 6, "F");
+  pdf.rect(cardX, cardY + 2, cardW, 2, "F");
+
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
+  pdf.setFontSize(9);
+  setColor(pdf, GOLD);
+  pdf.text("PREPARED EXCLUSIVELY FOR", pw / 2, cardY + 18, { align: "center", charSpace: 1 });
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(26);
+  setColor(pdf, DARK);
+  pdf.text(names, pw / 2, cardY + 38, { align: "center" });
+
+  // Gold hairline divider
+  setDraw(pdf, GOLD);
+  pdf.setLineWidth(0.6);
+  pdf.line(pw / 2 - 18, cardY + 46, pw / 2 + 18, cardY + 46);
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
   setColor(pdf, BLUE);
-  pdf.text("PREPARED EXCLUSIVELY FOR", pw / 2, cy, { align: "center" });
-
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(28);
-  setColor(pdf, DARK);
-  pdf.text(names, pw / 2, cy + 18, { align: "center" });
-
-  drawLine(pdf, 70, cy + 30, 140, cy + 30, BORDER);
-
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(20);
-  setColor(pdf, DARK);
-  pdf.text(`${getProductLabel(state.products)} Proposal`, pw / 2, cy + 48, { align: "center" });
+  pdf.text(`${getProductLabel(state.products)} Proposal`, pw / 2, cardY + 60, { align: "center" });
 
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(11);
+  pdf.setFontSize(10);
   setColor(pdf, GRAY);
-  pdf.text(today, pw / 2, cy + 62, { align: "center" });
+  pdf.text(today, pw / 2, cardY + 72, { align: "center" });
 
-  const ph = 297;
-  const badgeY = ph - 50;
-  const badges = ["Lifetime Warranty", "GAF Master Elite", "Top-Rated Crews", "Locally Owned"];
+  // Trust badges
+  const badgeY = ph - 55;
+  const badges = ["LIFETIME WARRANTY", "GAF MASTER ELITE", "TOP-RATED CREWS", "LOCALLY OWNED"];
   const badgeWidth = 40;
   const totalWidth = badges.length * badgeWidth + (badges.length - 1) * 6;
   let bx = (pw - totalWidth) / 2;
 
   badges.forEach((label) => {
-    roundedRect(pdf, bx, badgeY, badgeWidth, 20, 3, LIGHT_BG, BORDER);
+    pdf.setGState(pdf.GState({ opacity: 0.18 }));
+    setFill(pdf, WHITE);
+    pdf.roundedRect(bx, badgeY, badgeWidth, 18, 3, 3, "F");
+    pdf.setGState(pdf.GState({ opacity: 1 }));
+    setDraw(pdf, GOLD);
+    pdf.setLineWidth(0.3);
+    pdf.roundedRect(bx, badgeY, badgeWidth, 18, 3, 3, "S");
+
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(7);
-    setColor(pdf, DARK);
+    pdf.setFontSize(6.5);
+    setColor(pdf, WHITE);
     const lines = pdf.splitTextToSize(label, badgeWidth - 6);
     const textY = badgeY + 10 - ((lines.length - 1) * 3.5) / 2;
     lines.forEach((line: string, li: number) => {
-      pdf.text(line, bx + badgeWidth / 2, textY + li * 3.5, { align: "center" });
+      pdf.text(line, bx + badgeWidth / 2, textY + li * 3.5, { align: "center", charSpace: 0.3 });
     });
     bx += badgeWidth + 6;
   });
+
+  // Footer URL
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  setColor(pdf, [180, 200, 255]);
+  pdf.text("www.dabella.us", pw / 2, ph - 14, { align: "center" });
 }
 
 // ─── PAGE 2: SELECTED OPTION ──────────────────────────────────
@@ -116,20 +178,24 @@ function drawSelectedOption(
   opt: { key: "A" | "B" | "C"; name: string; price: number; monthly: number },
 ) {
   const pw = 210;
-  const margin = 30;
+  const margin = 22;
   const names = getNames(state);
   const color = BLUE;
   const OPTION_BADGES: Record<string, string> = { A: "BEST VALUE", B: "MOST POPULAR", C: "SMART START" };
 
-  let y = 18;
+  let y = 20;
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(18);
+  pdf.setFontSize(20);
   setColor(pdf, DARK);
   pdf.text(`Your ${getProductLabel(state.products)} Selection`, pw / 2, y, { align: "center" });
 
-  y += 8;
+  // Gold accent under title
+  setFill(pdf, GOLD);
+  pdf.rect(pw / 2 - 14, y + 3, 28, 1.2, "F");
+
+  y += 12;
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(9);
+  pdf.setFontSize(9.5);
   setColor(pdf, GRAY);
   pdf.text(`${names} — your selected option for your home`, pw / 2, y, { align: "center" });
 
@@ -166,17 +232,22 @@ function drawSelectedOption(
   setColor(pdf, DARK);
   pdf.text(opt.name, margin + 12, cy);
 
-  // Price block
+  // Price block — premium gradient
   cy += 10;
-  roundedRect(pdf, margin + 10, cy, cardW - 20, 30, 4, LIGHT_BG);
+  vGradient(pdf, margin + 10, cy, cardW - 20, 36, BLUE_DEEP, BLUE);
+  // gold hairline accent
+  setFill(pdf, GOLD);
+  pdf.rect(margin + 10, cy + 35, cardW - 20, 0.8, "F");
+
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(22);
-  setColor(pdf, color);
-  pdf.text(fmt(opt.price), pw / 2, cy + 14, { align: "center" });
+  pdf.setFontSize(30);
+  setColor(pdf, WHITE);
+  pdf.text(fmt(opt.price), pw / 2, cy + 19, { align: "center" });
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
-  setColor(pdf, GRAY);
-  pdf.text(`as low as ${fmt(opt.monthly)}/mo with financing`, pw / 2, cy + 24, { align: "center" });
+  setColor(pdf, [200, 220, 255]);
+  pdf.text(`as low as ${fmt(opt.monthly)}/mo with financing`, pw / 2, cy + 30, { align: "center" });
+  cy += 6;
 
   // Features
   cy += 38;
@@ -725,22 +796,18 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   pdf.text(`+${fmt(m.netDiff)}`, pw / 2, y + 22, { align: "center" });
 }
 
-// ─── MAIN EXPORT ──────────────────────────────────────────────
-export async function exportCustomerPdf(
+// ─── MAIN BUILDER ─────────────────────────────────────────────
+export async function buildCustomerPdf(
   state: EngineState,
   computed: ComputedValues,
   options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
-  filename = "DaBella-Proposal.pdf",
   selectedOption?: "A" | "B" | "C" | null,
-) {
-  const pdf = new jsPDF("p", "mm", "a4");
+): Promise<{ blob: Blob; doc: jsPDF }> {
+  const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
   const isWindows = hasProduct(state.products, "Windows");
-  let pageCount = selectedOption ? 6 : 4;
-  if (isWindows) pageCount += 1; // window inspection page
 
   drawCover(pdf, state);
 
-  // Only include the accepted option
   const chosenKey = selectedOption || "A";
   const chosenOpt = options.find((o) => o.key === chosenKey) || options[0];
 
@@ -764,7 +831,6 @@ export async function exportCustomerPdf(
   pdf.addPage();
   drawWelcome(pdf, state);
 
-  // Footer on content pages (all except cover and welcome)
   const totalPages = pdf.getNumberOfPages();
   for (let p = 2; p <= totalPages - 1; p++) {
     pdf.setPage(p);
@@ -776,5 +842,18 @@ export async function exportCustomerPdf(
     pdf.text(`Page ${p} of ${totalPages}`, 190, 290, { align: "right" });
   }
 
-  pdf.save(filename);
+  return { blob: pdf.output("blob"), doc: pdf };
 }
+
+// ─── MAIN EXPORT (download) ───────────────────────────────────
+export async function exportCustomerPdf(
+  state: EngineState,
+  computed: ComputedValues,
+  options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
+  filename = "DaBella-Proposal.pdf",
+  selectedOption?: "A" | "B" | "C" | null,
+) {
+  const { doc } = await buildCustomerPdf(state, computed, options, selectedOption);
+  doc.save(filename);
+}
+
