@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
-import { X, ChevronRight, ChevronLeft, Download, Loader2 } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Share2 } from "lucide-react";
 import { buildOptionsArray, getOptionMetrics, getProductLabel, hasProduct, applyDiscountToComputed } from "@/lib/engineHelpers";
 import dabellaLogo from "@/assets/dabella-logo.png";
 import OptionCard from "./presentation/OptionCard";
@@ -11,6 +11,7 @@ import WelcomeClose from "./presentation/WelcomeClose";
 import FinancialImpact from "./presentation/FinancialImpact";
 import WindowInspectionView from "./presentation/WindowInspectionView";
 import PromoTrigger, { tierPct, type TierState } from "./presentation/PromoTrigger";
+import SharePdfDialog from "./presentation/SharePdfDialog";
 
 interface Props {
   state: EngineState;
