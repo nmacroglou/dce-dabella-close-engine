@@ -114,27 +114,106 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(11);
   setColor(pdf, GRAY);
-  pdf.text(today, pw / 2, cy + 62, { align: "center" });
-
+// ─── PAGE 1: COVER ────────────────────────────────────────────
+function drawCover(pdf: jsPDF, state: EngineState) {
+  const pw = 210;
   const ph = 297;
-  const badgeY = ph - 50;
-  const badges = ["Lifetime Warranty", "GAF Master Elite", "Top-Rated Crews", "Locally Owned"];
+  const names = getNames(state);
+
+  // Full-page deep-blue gradient
+  vGradient(pdf, 0, 0, pw, ph, BLUE_DEEP, BLUE);
+
+  // Decorative soft circles
+  pdf.setGState(pdf.GState({ opacity: 0.07 }));
+  setFill(pdf, WHITE);
+  pdf.circle(170, 40, 70, "F");
+  pdf.circle(20, 200, 55, "F");
+  pdf.circle(195, 260, 35, "F");
+  pdf.setGState(pdf.GState({ opacity: 1 }));
+
+  // Gold hairline at top
+  setFill(pdf, GOLD);
+  pdf.rect(0, 0, pw, 1.4, "F");
+
+  // Logo wordmark
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(36);
+  setColor(pdf, WHITE);
+  pdf.text("DaBella", pw / 2, 50, { align: "center" });
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  setColor(pdf, GOLD);
+  pdf.text("H O M E   I M P R O V E M E N T   E X P E R T S", pw / 2, 60, { align: "center", charSpace: 0.5 });
+
+  // Center white card with gold accent
+  const cardX = 25, cardY = 110, cardW = pw - 50, cardH = 90;
+  shadowRect(pdf, cardX, cardY, cardW, cardH, 6, 0.18);
+  roundedRect(pdf, cardX, cardY, cardW, cardH, 6, WHITE);
+
+  // Gold accent stripe
+  setFill(pdf, GOLD);
+  pdf.roundedRect(cardX, cardY, cardW, 4, 6, 6, "F");
+  pdf.rect(cardX, cardY + 2, cardW, 2, "F");
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  setColor(pdf, GOLD);
+  pdf.text("PREPARED EXCLUSIVELY FOR", pw / 2, cardY + 18, { align: "center", charSpace: 1 });
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(26);
+  setColor(pdf, DARK);
+  pdf.text(names, pw / 2, cardY + 38, { align: "center" });
+
+  // Gold hairline divider
+  setDraw(pdf, GOLD);
+  pdf.setLineWidth(0.6);
+  pdf.line(pw / 2 - 18, cardY + 46, pw / 2 + 18, cardY + 46);
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
+  setColor(pdf, BLUE);
+  pdf.text(`${getProductLabel(state.products)} Proposal`, pw / 2, cardY + 60, { align: "center" });
+
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(10);
+  setColor(pdf, GRAY);
+  pdf.text(today, pw / 2, cardY + 72, { align: "center" });
+
+  // Trust badges
+  const badgeY = ph - 55;
+  const badges = ["LIFETIME WARRANTY", "GAF MASTER ELITE", "TOP-RATED CREWS", "LOCALLY OWNED"];
   const badgeWidth = 40;
   const totalWidth = badges.length * badgeWidth + (badges.length - 1) * 6;
   let bx = (pw - totalWidth) / 2;
 
   badges.forEach((label) => {
-    roundedRect(pdf, bx, badgeY, badgeWidth, 20, 3, LIGHT_BG, BORDER);
+    pdf.setGState(pdf.GState({ opacity: 0.18 }));
+    setFill(pdf, WHITE);
+    pdf.roundedRect(bx, badgeY, badgeWidth, 18, 3, 3, "F");
+    pdf.setGState(pdf.GState({ opacity: 1 }));
+    setDraw(pdf, GOLD);
+    pdf.setLineWidth(0.3);
+    pdf.roundedRect(bx, badgeY, badgeWidth, 18, 3, 3, "S");
+
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(7);
-    setColor(pdf, DARK);
+    pdf.setFontSize(6.5);
+    setColor(pdf, WHITE);
     const lines = pdf.splitTextToSize(label, badgeWidth - 6);
     const textY = badgeY + 10 - ((lines.length - 1) * 3.5) / 2;
     lines.forEach((line: string, li: number) => {
-      pdf.text(line, bx + badgeWidth / 2, textY + li * 3.5, { align: "center" });
+      pdf.text(line, bx + badgeWidth / 2, textY + li * 3.5, { align: "center", charSpace: 0.3 });
     });
     bx += badgeWidth + 6;
   });
+
+  // Footer URL
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(8);
+  setColor(pdf, [180, 200, 255]);
+  pdf.text("www.dabella.us", pw / 2, ph - 14, { align: "center" });
 }
 
 // ─── PAGE 2: SELECTED OPTION ──────────────────────────────────
@@ -145,20 +224,24 @@ function drawSelectedOption(
   opt: { key: "A" | "B" | "C"; name: string; price: number; monthly: number },
 ) {
   const pw = 210;
-  const margin = 30;
+  const margin = 22;
   const names = getNames(state);
   const color = BLUE;
   const OPTION_BADGES: Record<string, string> = { A: "BEST VALUE", B: "MOST POPULAR", C: "SMART START" };
 
-  let y = 18;
+  let y = 20;
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(18);
+  pdf.setFontSize(20);
   setColor(pdf, DARK);
   pdf.text(`Your ${getProductLabel(state.products)} Selection`, pw / 2, y, { align: "center" });
 
-  y += 8;
+  // Gold accent under title
+  setFill(pdf, GOLD);
+  pdf.rect(pw / 2 - 14, y + 3, 28, 1.2, "F");
+
+  y += 12;
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(9);
+  pdf.setFontSize(9.5);
   setColor(pdf, GRAY);
   pdf.text(`${names} — your selected option for your home`, pw / 2, y, { align: "center" });
 
