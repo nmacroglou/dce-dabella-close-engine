@@ -239,6 +239,14 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
           )}
         </div>
       </div>
+
+      <SharePdfDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        state={state}
+        computed={discountedComputed}
+        selectedOption={selectedOption}
+      />
     </div>
   );
 }
