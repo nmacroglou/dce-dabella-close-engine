@@ -232,17 +232,22 @@ function drawSelectedOption(
   setColor(pdf, DARK);
   pdf.text(opt.name, margin + 12, cy);
 
-  // Price block
+  // Price block — premium gradient
   cy += 10;
-  roundedRect(pdf, margin + 10, cy, cardW - 20, 30, 4, LIGHT_BG);
+  vGradient(pdf, margin + 10, cy, cardW - 20, 36, BLUE_DEEP, BLUE);
+  // gold hairline accent
+  setFill(pdf, GOLD);
+  pdf.rect(margin + 10, cy + 35, cardW - 20, 0.8, "F");
+
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(22);
-  setColor(pdf, color);
-  pdf.text(fmt(opt.price), pw / 2, cy + 14, { align: "center" });
+  pdf.setFontSize(30);
+  setColor(pdf, WHITE);
+  pdf.text(fmt(opt.price), pw / 2, cy + 19, { align: "center" });
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
-  setColor(pdf, GRAY);
-  pdf.text(`as low as ${fmt(opt.monthly)}/mo with financing`, pw / 2, cy + 24, { align: "center" });
+  setColor(pdf, [200, 220, 255]);
+  pdf.text(`as low as ${fmt(opt.monthly)}/mo with financing`, pw / 2, cy + 30, { align: "center" });
+  cy += 6;
 
   // Features
   cy += 38;
