@@ -37,7 +37,7 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
 
   const [stage, setStage] = useState<Stage>("options");
-  const [exporting, setExporting] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<"A" | "B" | "C" | null>(null);
   const [revealIndex, setRevealIndex] = useState(0);
   const [tier, setTier] = useState<TierState>(null);
