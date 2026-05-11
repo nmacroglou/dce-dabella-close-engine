@@ -1005,6 +1005,8 @@ export async function buildCustomerPdf(
     trackedText(pdf, `${String(p).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`, PW - 22, PH - 11, { align: "right", charSpace: 0.3 });
   }
 
+  if (debugBoxes) drawDebugOverlay(pdf, debugBoxes);
+
   return { blob: pdf.output("blob"), doc: pdf };
 }
 
