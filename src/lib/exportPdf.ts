@@ -502,9 +502,11 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
     `Option ${selectedKey} · ${label} — what happens if you move forward, vs. if you don't.`,
   );
 
-  // Two-column header
+  // Two-column header — full table width
   const ty = 78;
-  const colW = (PW - 44) / 2;
+  const tableW = PW - 44;
+  const colForward = 22 + tableW * 0.62;
+  const colNothing = 22 + tableW;
 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(7);
@@ -512,10 +514,10 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   pdf.text("CATEGORY", 22, ty, { charSpace: 1.4 });
   pdf.setCharSpace(0);
   setColor(pdf, POSITIVE);
-  pdf.text("MOVE FORWARD", 22 + colW * 0.55, ty, { charSpace: 1.4 });
+  pdf.text("MOVE FORWARD", colForward, ty, { charSpace: 1.4 });
   pdf.setCharSpace(0);
   setColor(pdf, NEGATIVE);
-  pdf.text("DO NOTHING", 22 + colW * 0.95, ty, { align: "right", charSpace: 1.4 });
+  pdf.text("DO NOTHING", colNothing, ty, { align: "right", charSpace: 1.4 });
   pdf.setCharSpace(0);
 
   hairline(pdf, 22, ty + 3, PW - 22, ty + 3, FOREST_INK, 0.4);
@@ -562,10 +564,10 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(13);
     setColor(pdf, r.forwardColor);
-    pdf.text(r.forward, 22 + colW * 0.55, y + 2);
+    pdf.text(r.forward, colForward, y + 2);
 
     setColor(pdf, r.nothingColor);
-    pdf.text(r.nothing, 22 + colW * 0.95, y + 2, { align: "right" });
+    pdf.text(r.nothing, colNothing, y + 2, { align: "right" });
 
     hairline(pdf, 22, y + 11, PW - 22, y + 11, MIST, 0.2);
     y += 18;
