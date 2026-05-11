@@ -27,6 +27,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [copied, setCopied] = useState(false);
+  const [debug, setDebug] = useState(false);
 
   const customerName = state.homeowner1 || "Customer";
   const filename = `DaBella-Proposal-${customerName.replace(/\s+/g, "-")}.pdf`;
