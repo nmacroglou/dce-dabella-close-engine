@@ -9,8 +9,9 @@ import dabellaLogoUrl from "@/assets/dabella-logo.png";
 
 async function fetchArrayBuffer(url: string): Promise<ArrayBuffer | null> {
   try {
-    if (typeof window === "undefined" && typeof Bun !== "undefined" && url.startsWith("/dev-server/")) {
-      return await Bun.file(url).arrayBuffer();
+    const bunRuntime = (globalThis as { Bun?: { file: (path: string) => { arrayBuffer: () => Promise<ArrayBuffer> } } }).Bun;
+    if (typeof window === "undefined" && bunRuntime && url.startsWith("/dev-server/")) {
+      return await bunRuntime.file(url).arrayBuffer();
     }
     const res = await fetch(url);
     return await res.arrayBuffer();
