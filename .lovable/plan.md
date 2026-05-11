@@ -1,51 +1,126 @@
-## Goal
+# Refactor & Upscale Plan
 
-Refactor the entire DaBella Close Engine in 3 sequential phases — one per turn — so nothing breaks between steps. After each phase you'll see the preview, sign off, and we move to the next.
+Two coordinated workstreams: **(A) PDF export module** and **(B) Whole‑app design system**. Each section has a code‑quality pass, a polish pass, and a performance pass. Behavior stays identical for the user — same pages, same numbers, same routes.
 
-## Phase 1 — Code structure cleanup (no visual change)
+---
 
-Largest files today are doing too much. We split them, extract shared logic, and tighten types. Zero pixel changes — pure plumbing.
+## A. PDF export module (`src/lib/exportPdf.ts`, 1,025 lines → ~7 small files)
 
-Targets:
-- `src/pages/Dashboard.tsx` (753 lines) → split into:
-  - `dashboard/HeroKpis.tsx`
-  - `dashboard/EarningsLeadFlowChart.tsx` (already a sub-component, move out)
-  - `dashboard/RepEconomics.tsx`
-  - `dashboard/TrendSeries.ts` (the `trendSeries` useMemo as a pure helper + unit-testable)
-- `src/components/engine/commission/CommissionSheet.tsx` (514) → split header, totals, line-items, promo block.
-- `src/lib/exportPdf.ts` (780) → split per-section renderers (`pdf/cover.ts`, `pdf/options.ts`, `pdf/commission.ts`).
-- `src/pages/Pipeline.tsx` (350) → extract `pipeline/StageColumn.tsx`, `pipeline/DealRow.tsx`.
-- `src/components/followups/FollowUpComposer.tsx` (359) → extract AI-email block + attachments block.
-- Consolidate duplicate money/percent formatters into `src/lib/format.ts`.
-- Remove dead imports, tighten `any` types in hooks.
+### Current pain
+- One 1,025‑line file mixing brand tokens, low‑level jsPDF helpers, page renderers, font loading, debug overlay, and the public API.
+- Magic numbers (margins, line heights, column splits) repeated across every page renderer.
+- Colors typed as `readonly [number, number, number]` tuples — no semantic naming when used inside a renderer.
+- Font loading runs on every export; no cache between exports in a session.
+- Debug overlay (just added) lives next to the builder and inflates the file further.
 
-## Phase 2 — Performance & scalability
+### Target structure
+```text
+src/lib/pdf/
+  index.ts              ← re-exports buildCustomerPdf, exportCustomerPdf
+  build.ts              ← orchestrator (was buildCustomerPdf)
+  theme.ts              ← brand palette + typography tokens (single source of truth)
+  primitives.ts         ← rect, rounded, shadow, vGradient, hairline, eyebrow, trackedText
+  fonts.ts              ← registerPdfFonts + module-level cache
+  assets.ts             ← loadImageDataUrl + cache
+  debug.ts              ← installDebugRecorder + drawDebugOverlay
+  pages/
+    cover.ts
+    selectedOption.ts
+    tClose.ts
+    financialImpact.ts
+    windowInspection.ts
+    scope.ts
+    welcome.ts
+    footer.ts           ← shared interior-page footer
+```
 
-- Wrap heavy lists (`Pipeline`, `Deals`, `CommissionSheet`) in `React.memo` + stable callbacks.
-- Move `trendSeries`-style derivations into `useMemo` with proper deps; audit `useEffect` dep arrays for the bug class that caused the recent `monthRevenue` crash.
-- Lazy-load tab routes with `React.lazy` + `Suspense` so the Dashboard doesn't ship the whole Close Engine bundle.
-- Add a tiny query cache layer for `useDeals` / `useDashboardStats` (stale-while-revalidate) so tab switches feel instant.
-- Virtualize the deals list if >50 rows.
-- Add a single `ErrorBoundary` around each top-level route so one bad calc never blanks the whole app again.
+### Code‑quality changes
+- Extract magic numbers into `theme.ts` as a `LAYOUT` object: `PAGE_W`, `PAGE_H`, `MARGIN`, `GUTTER`, `BODY_LH`, etc.
+- Replace ad‑hoc tuple colors with a `Palette` object: `palette.forest`, `palette.lime`, `palette.brass`, `palette.posSoft`, etc. Each page renderer imports from `theme.ts` only.
+- Introduce a small `PdfCtx` object passed to every page renderer (`{ pdf, palette, layout, logo }`) so renderers don't all import six modules.
+- Add a `Section` helper (`section(ctx, { x, y, w, title, eyebrow })`) to standardize headers used across pages.
+- Tighten types: replace `any` casts in the debug recorder with proper jsPDF types.
+- Keep the public API unchanged: `buildCustomerPdf(state, computed, options, selectedOption?, opts?)`.
 
-## Phase 3 — Visual upscale (premium feel)
+### Visual polish
+- Single shared interior footer (currently re‑drawn in a loop) becomes `pages/footer.ts` and is called per page in the orchestrator.
+- Standardize section spacing rhythm via `LAYOUT.section.gap` so all pages breathe the same.
+- Align column widths in Selected Option, T‑Close, and Financial Impact to the same 2‑col grid (currently each uses slightly different math).
 
-Keeping the dark theme + Inter/Plus Jakarta + #2563EB primary you already locked in.
+### Performance
+- Cache the registered font VFS payload at module scope so the second export in a session skips `fetch` + base64 work.
+- Cache the logo data URL the same way.
+- Build pages without the debug recorder unless `opts.debug` is set (already true; keep it that way after refactor).
 
-- Tighten the design tokens in `index.css`: add elevation scale (`--shadow-1..4`), a 2-stop primary gradient, and a "glass" surface token used by Hero KPIs and the chart card.
-- Typography rhythm pass: consistent heading sizes (`text-2xl/tight` H1, `text-lg/snug` section), tabular-nums on every dollar value.
-- Motion: framer-motion stagger on KPI cards on mount, subtle hover lift on option cards, animated number count-up on Hero KPIs.
-- Chart polish: rounded bar tops, soft glow on the line, hovered tooltip with date + both metrics.
-- Commission Sheet: zebra rows, sticky totals row, color-coded promo chips.
-- Dashboard hero: bigger primary metric, secondary metrics demoted, a single accent color per KPI instead of every card competing.
-- iPad-first spacing audit (your reps use iPads): increase tap targets to 44px min, bump section padding at `md:` breakpoint.
+### Risk control
+- One‑file‑at‑a‑time extraction; after each move, render a sample PDF and diff‑check it visually with the existing debug overlay (collisions = 0).
+- No business‑logic changes in `engineHelpers` or `useCloseEngine`.
 
-## How we'll execute
+---
 
-Reply "go" and I do **Phase 1** only. When you're happy with the preview, say "phase 2" and so on. If at any point you want to skip or reorder, just say so.
+## B. Whole‑app design system
 
-## Technical notes
+### Current pain
+- `index.css` defines tokens for both light and dark, but components still use ad‑hoc utility combos (`bg-card border border-border rounded-2xl`) repeatedly instead of the existing `card-elevated` / `metric-card` / `glass` utilities.
+- Two display fonts are declared (`Plus Jakarta Sans`, `Inter`) but several screens override with `font-display` / `font-extrabold` inline in inconsistent sizes.
+- Custom hex colors leak into a few presentation components instead of going through tokens.
+- Animations are defined in `tailwind.config.ts` but components also use raw `transition-all` strings.
 
-- No DB or RLS changes in any phase — pure frontend.
-- No new dependencies in Phase 1 or 3. Phase 2 may add `@tanstack/react-virtual` only if the deals list is long enough to justify it; I'll check first.
-- All edits stay inside `src/` and design tokens stay in `index.css` / `tailwind.config.ts` per the project rules.
+### Tokens & typography
+- Add a small **type scale** in `tailwind.config.ts`: `text-display-xl`, `text-display-lg`, `text-eyebrow`, `text-metric` — wired to fontSize + lineHeight + letterSpacing pairs. Replace ad‑hoc `text-3xl font-extrabold tracking-tight` clusters.
+- Add semantic surface tokens to `index.css`: `--surface-1`, `--surface-2`, `--surface-raised` mapped to the existing card/muted hierarchy. Components stop hand‑rolling `bg-card/70 backdrop-blur-xl`.
+- Promote `--radius-pill`, `--radius-card`, `--radius-chip` so corner radii stop drifting.
+- Audit dark mode contrast on the Customer Presentation header and Financial Impact tiles; tune `--muted-foreground` if any field reads gray‑on‑gray.
+
+### Reusable primitives (no behavior change)
+Create `src/components/ui/primitives/`:
+- `Eyebrow.tsx` — uppercase, tracked label used across presentation pages.
+- `StatTile.tsx` already exists in pipeline; generalize and re‑use in dashboard + presentation.
+- `SectionHeader.tsx` already exists; expand to take `eyebrow`, `title`, `kicker` and adopt across CalculatorTab, PlaybookTab, CoachModeTab.
+- `MetricRow` for the repeated label/value rows in Calculator and Commission.
+
+### Refactors per area
+- `CustomerPresentationView.tsx` (252 lines) → split into `PresentationHeader`, `PresentationStageNav`, `PresentationFooterNav`. Body stays in the parent.
+- `CalculatorTab.tsx` (280 lines) → extract `PriceInputsRow`, `OptionPriceTrio`, `FinanceTermsRow`.
+- `CommissionTab.tsx` and `commission/*` → consolidate the two grid editors' shared row/cell rendering.
+- `engineHelpers.ts` + `useCloseEngine.ts` → move pure math (discount application, ROI, monthly conversion) to `src/lib/engine/math.ts` so both PDF and UI import the same functions.
+
+### Performance
+- Lazy‑load the heavy customer presentation: `const CustomerPresentationView = React.lazy(...)` in `PresentationTab.tsx` so it isn't in the initial dashboard bundle.
+- Lazy‑load `exportPdf` (`pdf/index.ts`) only when the Share dialog opens (already only imported there — confirm and keep).
+- Add `vite` manualChunks for `jspdf` so it stays out of the main chunk.
+- Wrap chart/table rows that re‑render on every state change with `React.memo` where props are stable (Commission grid cells, FinancialImpact rows).
+
+### Risk control
+- Token rename uses codemod‑style search‑and‑replace per file, never global. Spot‑check the dashboard, deals page, and presentation flow after each batch.
+- No changes to data shapes, Supabase calls, or routes.
+
+---
+
+## Sequencing (suggested order across multiple turns)
+
+1. **Turn 1 — PDF refactor (structure only):** create `src/lib/pdf/` files, move helpers and pages with no logic changes, keep `src/lib/exportPdf.ts` as a thin re‑export shim. Verify with debug overlay.
+2. **Turn 2 — PDF polish + caching:** unify section/footer, font + logo caching, layout grid normalization.
+3. **Turn 3 — Design tokens:** type scale, surface tokens, radius tokens; migrate `CustomerPresentationView` + `CalculatorTab` to the new tokens as the proof‑of‑pattern.
+4. **Turn 4 — Primitives + remaining tabs:** roll the new primitives across Commission, Playbook, Coach, Objections, Closing Stack.
+5. **Turn 5 — Performance:** lazy routes, manualChunks, memoization sweep.
+
+Each turn is independently shippable and visually identical (or strictly tighter) to the previous version.
+
+---
+
+## Out of scope (explicit)
+- No Supabase schema changes.
+- No new features, no auth changes, no routing changes.
+- No copy or pricing logic edits.
+- No swap of jsPDF for another library (would invalidate the just‑tuned typography work).
+
+---
+
+## Technical notes (for engineers)
+- `installDebugRecorder` will be moved verbatim into `pdf/debug.ts`; the `any` casts get replaced with `jsPDF["text"]` parameter types.
+- Module‑scope caches: `let _fontsRegistered = false; let _logoDataUrl: string | null = null;` guarded by a `WeakMap<jsPDF, true>` so multiple `pdf` instances per session still register fonts on each new doc but skip the network fetch.
+- Vite `build.rollupOptions.output.manualChunks`: `{ jspdf: ['jspdf'], radix: [/@radix-ui/], charts: ['recharts'] }`.
+- Type scale entries follow `[fontSize, { lineHeight, letterSpacing, fontWeight }]` tuple form supported by Tailwind.
+
+Approve and I'll start with **Turn 1 (PDF structural refactor)** unless you want a different starting point.
