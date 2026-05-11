@@ -4,31 +4,34 @@ import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFollowUps } from "@/hooks/useFollowUps";
 import { useDeals } from "@/hooks/useDeals";
+import { useActivityTimeline } from "@/hooks/useActivityTimeline";
 import { followUpStatus } from "@/types/followUp";
 import AppHeader from "@/components/AppHeader";
 import {
   Loader2, Target, DollarSign, Award,
-  Flame, Clock, AlertCircle, Trophy, BarChart3, Sparkles, ArrowUpRight,
+  Flame, Clock, AlertCircle, Trophy, Sparkles, ArrowUpRight,
   Zap, Activity, Hourglass, Wallet, Gauge, Pencil,
 } from "lucide-react";
 import { fmt, pct } from "@/lib/format";
-import { STAGE_LABELS, type DealStage } from "@/types/deal";
 import { OBJECTIONS } from "@/data/objections";
-import { HeroKPI, MiniStat, WinRateDonut, EconomicsKPI } from "@/components/dashboard/kpi-tiles";
-import { EarningsLeadFlowChart } from "@/components/dashboard/EarningsLeadFlowChart";
-import { buildTrendSeries } from "@/lib/trendSeries";
+import { HeroKPI, MiniStat, EconomicsKPI } from "@/components/dashboard/kpi-tiles";
+import { WowChipStrip } from "@/components/dashboard/WowChipStrip";
+import { TrendsCard } from "@/components/dashboard/TrendsCard";
+import { ConversionRibbon } from "@/components/dashboard/ConversionRibbon";
+import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline";
+import { ObjectionHeatmap } from "@/components/dashboard/ObjectionHeatmap";
+import { ReportingActions } from "@/components/dashboard/ReportingActions";
+import { bucketByDay, splitCurrentPrior, sumBuckets, wowDelta } from "@/lib/dashboardSeries";
 
 const HOURS_KEY = "dabella.hud.weeklyHours";
 const COMMISSION_KEY = "dabella.hud.commissionPct";
-
-/* Tiles & chart now live in src/components/dashboard/* */
-
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
   const { data: followUps = [] } = useFollowUps();
   const { data: deals = [] } = useDeals();
+  const { data: timelineEvents = [], isLoading: timelineLoading } = useActivityTimeline(14);
 
   const followUpInsights = useMemo(() => {
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
@@ -48,7 +51,7 @@ export default function Dashboard() {
     return { overdue, today, upcoming, completed, compliancePct, overdueList: overdueList.slice(0, 5) };
   }, [followUps]);
 
-  /* ---- Rep economics: editable inputs persisted to localStorage ---- */
+  /* ---- Rep economics inputs ---- */
   const [weeklyHours, setWeeklyHours] = useState<number>(40);
   const [commissionPct, setCommissionPct] = useState<number>(8);
   const [editingEcon, setEditingEcon] = useState(false);
@@ -72,21 +75,16 @@ export default function Dashboard() {
       (s, d) => s + ((d.closed_amount ?? 0) * commissionPct) / 100, 0
     );
     const dollarsPerHour = weeklyHours > 0 ? earnedThisWeek / weeklyHours : 0;
-
-    // Money in motion — open pipeline value (best price per open deal)
     const openDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost");
     const moneyInMotion = openDeals.reduce(
       (s, d) => s + Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0), 0
     );
     const expectedCommissionInMotion = (moneyInMotion * commissionPct) / 100;
-
-    // Pipeline velocity: $ closed per active selling day this month
     const monthStart = new Date();
     monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
     const daysIntoMonth = Math.max(1, Math.ceil((now - monthStart.getTime()) / 864e5));
     const velocityPerDay = (stats?.monthRevenue ?? 0) / daysIntoMonth;
     const projectedMonth = velocityPerDay * 30;
-
     return {
       dollarsPerHour, earnedThisWeek, wonThisWeekCount: wonThisWeek.length,
       moneyInMotion, expectedCommissionInMotion, openDealsCount: openDeals.length,
@@ -94,11 +92,42 @@ export default function Dashboard() {
     };
   }, [deals, weeklyHours, commissionPct, stats]);
 
-  /* ---- 14-day series: $/hour vs lead flow ---- */
-  const trendSeries = useMemo(
-    () => buildTrendSeries(deals, weeklyHours, commissionPct, 14),
+  /* ---- WoW chip strip & report payload (last 14d split into 7/7) ---- */
+  const dayBuckets14 = useMemo(
+    () => bucketByDay(deals, 14, weeklyHours, commissionPct),
     [deals, weeklyHours, commissionPct],
   );
+  const wow = useMemo(() => {
+    const { current, prior } = splitCurrentPrior(dayBuckets14);
+    const curRev = sumBuckets(current, "revenue");
+    const priRev = sumBuckets(prior, "revenue");
+    const curWon = sumBuckets(current, "won");
+    const priWon = sumBuckets(prior, "won");
+    const curRun = sumBuckets(current, "dealsRun");
+    const priRun = sumBuckets(prior, "dealsRun");
+    const curLost = sumBuckets(current, "lost");
+    const priLost = sumBuckets(prior, "lost");
+    const curDph = sumBuckets(current, "dollarsPerHour");
+    const priDph = sumBuckets(prior, "dollarsPerHour");
+    const curRate = curWon + curLost > 0 ? curWon / (curWon + curLost) : 0;
+    const priRate = priWon + priLost > 0 ? priWon / (priWon + priLost) : 0;
+    return {
+      revenue: { current: curRev, prior: priRev, delta: wowDelta(curRev, priRev) },
+      closeRate: { current: curRate, prior: priRate, delta: wowDelta(curRate * 100, priRate * 100) },
+      dealsRun: { current: curRun, prior: priRun, delta: wowDelta(curRun, priRun) },
+      dollarsPerHour: { current: curDph, prior: priDph, delta: wowDelta(curDph, priDph) },
+      closedDeals: { current: curWon, prior: priWon },
+    };
+  }, [dayBuckets14]);
+
+  const topObjection = useMemo(() => {
+    if (!stats) return undefined;
+    const sorted = Object.entries(stats.objectionCounts).sort((a, b) => b[1].total - a[1].total);
+    if (sorted.length === 0) return undefined;
+    const [id, v] = sorted[0];
+    const label = OBJECTIONS.find((o) => o.id === id)?.label ?? id;
+    return `${label} (${v.total})`;
+  }, [stats]);
 
   if (isLoading || !stats) {
     return (
@@ -111,22 +140,14 @@ export default function Dashboard() {
     );
   }
 
-  const optTotal = stats.optionMix.A + stats.optionMix.B + stats.optionMix.C;
   const greeting = (user?.user_metadata?.full_name || user?.email || "").split(" ")[0] || "rep";
-  const funnelOrder: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost"];
-  const maxFunnel = Math.max(...stats.funnel.map((f) => f.count), 1);
-
-  const objectionRows = Object.entries(stats.objectionCounts).sort((a, b) => b[1].total - a[1].total);
-  const maxObj = Math.max(...objectionRows.map(([, v]) => v.total), 1);
-
-  const dealById = new Map(deals.map((d) => [d.id, d]));
 
   return (
     <div className="min-h-screen surface-premium">
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-        {/* ===== HERO ===== */}
+        {/* ===== HERO with State of the Week ===== */}
         <section className="relative overflow-hidden rounded-3xl border border-border bg-card">
           <div className="absolute inset-0 gradient-surface opacity-80" />
           <div className="absolute -top-24 -right-16 w-[28rem] h-[28rem] rounded-full opacity-30 blur-3xl gradient-brand" />
@@ -137,17 +158,33 @@ export default function Dashboard() {
           }} />
 
           <div className="relative p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-end">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
-                <Sparkles className="h-3 w-3 text-primary" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">DaBella Daily HUD</span>
+            <div className="min-w-0">
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">DaBella Operator HUD</span>
+                </div>
+                <ReportingActions
+                  rangeLabel="Last 7 days"
+                  buckets={dayBuckets14}
+                  summary={{
+                    rangeLabel: "Last 7 days",
+                    revenue: { current: wow.revenue.current, prior: wow.revenue.prior },
+                    closedDeals: wow.closedDeals,
+                    closeRate: { current: wow.closeRate.current, prior: wow.closeRate.prior },
+                    dealsRun: { current: wow.dealsRun.current, prior: wow.dealsRun.prior },
+                    dollarsPerHour: { current: wow.dollarsPerHour.current, prior: wow.dollarsPerHour.prior },
+                    topObjection,
+                  }}
+                />
               </div>
+
               <h2 className="text-3xl sm:text-5xl font-display font-extrabold text-foreground tracking-tight leading-[1.05]">
                 Hey {greeting} —<br className="hidden sm:block" />
-                <span className="gradient-text">today's edge</span> is loaded.
+                <span className="gradient-text">state of the week</span> is in.
               </h2>
               <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-xl">
-                Live performance, pipeline pressure, and the next move that closes more deals.
+                Live performance, week-over-week trends, and the next move that closes more deals.
               </p>
               <div className="flex flex-wrap items-center gap-2 mt-5">
                 <Link to="/pipeline" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
@@ -156,6 +193,15 @@ export default function Dashboard() {
                 <Link to="/deals" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card font-bold text-sm hover:bg-accent/10 transition-colors">
                   My Deals
                 </Link>
+              </div>
+
+              <div className="mt-6">
+                <WowChipStrip chips={[
+                  { label: "Revenue (7d)", current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
+                  { label: "Close rate", current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta },
+                  { label: "Deals run", current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
+                  { label: "$/Hour", current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
+                ]} />
               </div>
             </div>
 
@@ -194,8 +240,11 @@ export default function Dashboard() {
             tone={followUpInsights.overdue > 0 ? "destructive" : "success"} />
         </section>
 
-        {/* ===== EARNINGS VELOCITY VS LEAD FLOW ===== */}
-        <EarningsLeadFlowChart {...trendSeries} />
+        {/* ===== TRENDS — period over period ===== */}
+        <TrendsCard deals={deals} weeklyHours={weeklyHours} commissionPct={commissionPct} />
+
+        {/* ===== CONVERSION RIBBON ===== */}
+        <ConversionRibbon deals={deals} />
 
         {/* ===== REP ECONOMICS ===== */}
         <section>
@@ -239,9 +288,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <EconomicsKPI
-              icon={Hourglass}
-              label="$ / Hour (this week)"
-              accent="success"
+              icon={Hourglass} label="$ / Hour (this week)" accent="success"
               value={fmt(Math.round(economics.dollarsPerHour))}
               sub={`${fmt(Math.round(economics.earnedThisWeek))} earned · ${weeklyHours}h worked`}
               footer={
@@ -252,9 +299,7 @@ export default function Dashboard() {
               }
             />
             <EconomicsKPI
-              icon={Wallet}
-              label="Money in Motion"
-              accent="primary"
+              icon={Wallet} label="Money in Motion" accent="primary"
               value={fmt(Math.round(economics.moneyInMotion))}
               sub={`${economics.openDealsCount} open deal${economics.openDealsCount === 1 ? "" : "s"} in your pipeline`}
               footer={
@@ -265,9 +310,7 @@ export default function Dashboard() {
               }
             />
             <EconomicsKPI
-              icon={Gauge}
-              label="Pipeline Velocity"
-              accent="warning"
+              icon={Gauge} label="Pipeline Velocity" accent="warning"
               value={`${fmt(Math.round(economics.velocityPerDay))}/day`}
               sub="Avg revenue closed per day this month"
               footer={
@@ -280,7 +323,15 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* ===== FOLLOW-UP COMMAND STRIP ===== */}
+        {/* ===== ACTIVITY TIMELINE + OBJECTION HEATMAP ===== */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <ActivityTimeline events={timelineEvents} isLoading={timelineLoading} />
+          </div>
+          <ObjectionHeatmap />
+        </div>
+
+        {/* ===== FOLLOW-UP HOT LIST ===== */}
         {followUpInsights.overdueList.length > 0 && (
           <section className="rounded-2xl border border-destructive/30 bg-gradient-to-r from-destructive/5 via-card to-card p-5">
             <div className="flex items-center justify-between mb-4">
@@ -297,7 +348,7 @@ export default function Dashboard() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {followUpInsights.overdueList.map((f) => {
-                const d = dealById.get(f.deal_id);
+                const d = deals.find((dd) => dd.id === f.deal_id);
                 const hoursLate = Math.round((Date.now() - new Date(f.due_at).getTime()) / 36e5);
                 return (
                   <Link key={f.id} to="/deals" className="group rounded-xl border border-border bg-card p-3 hover:border-destructive/40 transition-colors">
@@ -316,158 +367,6 @@ export default function Dashboard() {
             </div>
           </section>
         )}
-
-        {/* ===== PIPELINE FUNNEL + WIN/LOSS DONUT ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <section className="lg:col-span-2 rounded-2xl border border-border bg-card p-6">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-lg font-bold text-foreground">Pipeline funnel</h3>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <p className="text-xs text-muted-foreground mb-6">
-              Where every deal sits — and how well you're moving them through.
-            </p>
-            <div className="space-y-4">
-              {funnelOrder.map((stage) => {
-                const count = stats.funnel.find((f) => f.stage === stage)?.count ?? 0;
-                const widthPct = (count / maxFunnel) * 100;
-                const color =
-                  stage === "won" ? "bg-success" :
-                  stage === "lost" ? "bg-destructive" :
-                  stage === "follow_up" ? "bg-warning" : "bg-primary";
-                return (
-                  <div key={stage}>
-                    <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
-                      <span className="text-foreground">{STAGE_LABELS[stage]}</span>
-                      <span className="text-muted-foreground tabular-nums">{count}</span>
-                    </div>
-                    <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full transition-all duration-700 ${color}`}
-                        style={{ width: `${widthPct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="grid grid-cols-2 gap-3 mt-6 pt-5 border-t border-border">
-              <div className="rounded-xl bg-muted/40 p-3">
-                <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Inspected → Presented</p>
-                <p className="text-2xl font-display font-extrabold text-foreground mt-1">{pct(stats.inspectedToPresented)}</p>
-              </div>
-              <div className="rounded-xl bg-success/5 border border-success/20 p-3">
-                <p className="text-[10px] uppercase tracking-wider font-bold text-success">Presented → Won</p>
-                <p className="text-2xl font-display font-extrabold text-success mt-1">{pct(stats.presentedToWon)}</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-border bg-card p-6">
-            <h3 className="text-lg font-bold text-foreground mb-1">Win / Loss</h3>
-            <p className="text-xs text-muted-foreground mb-5">All-time outcomes & avg deal size.</p>
-            <WinRateDonut won={stats.winLoss.won} lost={stats.winLoss.lost} pending={stats.winLoss.pending} />
-            <div className="grid grid-cols-3 gap-2 mt-5 text-center">
-              <div>
-                <div className="flex items-center justify-center gap-1">
-                  <div className="h-2 w-2 rounded-full bg-success" />
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Won</p>
-                </div>
-                <p className="text-lg font-bold text-foreground mt-0.5">{stats.winLoss.won}</p>
-              </div>
-              <div>
-                <div className="flex items-center justify-center gap-1">
-                  <div className="h-2 w-2 rounded-full bg-destructive" />
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Lost</p>
-                </div>
-                <p className="text-lg font-bold text-foreground mt-0.5">{stats.winLoss.lost}</p>
-              </div>
-              <div>
-                <div className="flex items-center justify-center gap-1">
-                  <div className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-                  <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Open</p>
-                </div>
-                <p className="text-lg font-bold text-foreground mt-0.5">{stats.winLoss.pending}</p>
-              </div>
-            </div>
-            <div className="mt-5 pt-4 border-t border-border space-y-1.5">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Avg won</span>
-                <span className="font-bold text-success tabular-nums">{fmt(stats.winLoss.avgWon)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Avg lost (Opt A)</span>
-                <span className="font-semibold text-muted-foreground tabular-nums">{fmt(stats.winLoss.avgLost)}</span>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* ===== OPTION MIX + OBJECTIONS ===== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <section className="rounded-2xl border border-border bg-card p-6">
-            <h3 className="text-lg font-bold text-foreground mb-1">Option mix on closes</h3>
-            <p className="text-xs text-muted-foreground mb-5">
-              {optTotal === 0
-                ? "No closes yet — once you start winning, you'll see if you're leaving Option A on the table."
-                : "Are you closing on the right tier?"}
-            </p>
-            {optTotal === 0 ? (
-              <p className="text-sm text-muted-foreground italic">No data yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {(["A", "B", "C"] as const).map((k) => {
-                  const count = stats.optionMix[k];
-                  const p = (count / optTotal) * 100;
-                  const grad = k === "A"
-                    ? "from-primary to-[hsl(var(--brand-to))]"
-                    : k === "B" ? "from-accent to-[hsl(var(--accent-to))]"
-                    : "from-warning to-[hsl(38_92%_60%)]";
-                  return (
-                    <div key={k}>
-                      <div className="flex justify-between text-xs font-semibold mb-1.5">
-                        <span className="text-foreground">Option {k}</span>
-                        <span className="text-muted-foreground tabular-nums">{count} · {Math.round(p)}%</span>
-                      </div>
-                      <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full bg-gradient-to-r ${grad}`} style={{ width: `${p}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-2xl border border-border bg-card p-6">
-            <h3 className="text-lg font-bold text-foreground mb-1">Objection heatmap</h3>
-            <p className="text-xs text-muted-foreground mb-5">What's coming up most — and how it correlates with outcomes.</p>
-            {objectionRows.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">
-                Tag objections from a deal's Objections tab to see patterns here.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {objectionRows.slice(0, 6).map(([type, v]) => {
-                  const label = OBJECTIONS.find((o) => o.id === type)?.label ?? type;
-                  const w = (v.total / maxObj) * 100;
-                  return (
-                    <div key={type}>
-                      <div className="flex justify-between text-xs font-semibold mb-1.5">
-                        <span className="text-foreground">{label}</span>
-                        <span className="text-muted-foreground tabular-nums">
-                          {v.total} · <span className="text-success">{v.onWins}W</span> / <span className="text-destructive">{v.onLosses}L</span>
-                        </span>
-                      </div>
-                      <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-gradient-to-r from-warning to-destructive/70"
-                          style={{ width: `${w}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        </div>
 
         {/* ===== BOTTOM MINI ROW ===== */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
