@@ -163,24 +163,21 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
   // Header — issue/date band
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(7);
+  setDisplayFont(pdf, 7);
   setColor(pdf, LIME);
   trackedText(pdf, "DABELLA", 22, 22, { charSpace: 0.7 });
-  pdf.setFont("helvetica", "normal");
+  setBodyFont(pdf, 7);
   setColor(pdf, [220, 230, 220]);
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   trackedText(pdf, today.toUpperCase(), PW - 22, 22, { align: "right", charSpace: 0.45 });
 
   // Eyebrow
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(8);
+  setDisplayFont(pdf, 8);
   setColor(pdf, LIME);
   trackedText(pdf, "PRIVATE PROPOSAL · NO. 001", 22, 100, { charSpace: 0.6 });
 
   // Editorial headline — sized to fit
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(46);
+  setDisplayFont(pdf, 38);
   setColor(pdf, WHITE);
   pdf.text("A Home", 22, 132);
   pdf.text("Built To Last.", 22, 154);
@@ -190,8 +187,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.rect(22, 162, 30, 1.2, "F");
 
   // Subhead
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(11);
+  setBodyFont(pdf, 10.5);
   setColor(pdf, [220, 232, 220]);
   pdf.text(`A bespoke ${getProductLabel(state.products).toLowerCase()} proposal`, 22, 178);
   pdf.text("crafted for your home — and your future.", 22, 185);
@@ -199,19 +195,17 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   // Recipient block — full-width line, name auto-sized to fit
   const ry = 222;
   hairline(pdf, 22, ry, PW - 22, ry, ACCENT, 0.5);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(7);
+  setDisplayFont(pdf, 7);
   setColor(pdf, ACCENT);
   trackedText(pdf, "PREPARED FOR", 22, ry + 7, { charSpace: 0.55 });
 
   // Auto-fit name
-  pdf.setFont("times", "bold");
   let nameSize = 22;
-  pdf.setFontSize(nameSize);
+  setDisplayFont(pdf, nameSize);
   const maxNameW = PW - 44;
   while (pdf.getTextWidth(names) > maxNameW && nameSize > 12) {
     nameSize -= 1;
-    pdf.setFontSize(nameSize);
+    setDisplayFont(pdf, nameSize);
   }
   setColor(pdf, WHITE);
   pdf.text(names, 22, ry + 22);
@@ -219,8 +213,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   // Credentials — bottom strip (single horizontal row)
   const credY = 256;
   hairline(pdf, 22, credY, PW - 22, credY, [80, 120, 85], 0.3);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(6.5);
+  setDisplayFont(pdf, 6.5);
   setColor(pdf, [200, 215, 200]);
   const creds = ["LIFETIME WARRANTY", "GAF MASTER ELITE", "TOP-RATED CREWS", "LOCALLY OWNED"];
   const credSpacing = (PW - 44) / creds.length;
@@ -229,8 +222,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   });
 
   // Footer
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(7);
+  setBodyFont(pdf, 7);
   setColor(pdf, [180, 200, 180]);
   trackedText(pdf, "DABELLA.US", 22, PH - 14, { charSpace: 0.6 });
   trackedText(pdf, "HOME IMPROVEMENT, EXPERTLY DONE", PW - 22, PH - 14, { align: "right", charSpace: 0.35 });
@@ -295,25 +287,21 @@ function drawSelectedOption(
 
   // Badge pill
   rounded(pdf, 30, heroY + 10, 34, 6.5, 3, ACCENT);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(6.5);
+  setDisplayFont(pdf, 6.5);
   setColor(pdf, FOREST_INK);
   trackedText(pdf, BADGES[opt.key] || "YOUR CHOICE", 47, heroY + 14.4, { align: "center", charSpace: 0.35 });
 
   // Option name
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(13);
+  setDisplayFont(pdf, 12);
   setColor(pdf, WHITE);
   pdf.text(opt.name, 30, heroY + 28);
 
   // Big price (left aligned, oversized)
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(44);
+  setDisplayFont(pdf, 34);
   setColor(pdf, WHITE);
   pdf.text(fmt(opt.price), 30, heroY + 56);
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8);
+  setBodyFont(pdf, 8);
   setColor(pdf, [200, 220, 200]);
   trackedText(pdf, "TOTAL INVESTMENT — TURNKEY", 30, heroY + 65, { charSpace: 0.4 });
 
@@ -321,18 +309,15 @@ function drawSelectedOption(
   const rx = PW - 30;
   hairline(pdf, rx - 60, heroY + 18, rx - 60, heroY + 70, [80, 120, 85], 0.3);
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(7);
+  setDisplayFont(pdf, 7);
   setColor(pdf, LIME);
   trackedText(pdf, "AS LOW AS", rx, heroY + 26, { align: "right", charSpace: 0.5 });
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(28);
+  setDisplayFont(pdf, 24);
   setColor(pdf, WHITE);
   pdf.text(fmt(opt.monthly), rx, heroY + 47, { align: "right" });
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8);
+  setBodyFont(pdf, 7.5);
   setColor(pdf, [200, 220, 200]);
   trackedText(pdf, "PER MONTH WITH FINANCING", rx, heroY + 56, { align: "right", charSpace: 0.35 });
 
@@ -348,8 +333,7 @@ function drawSelectedOption(
   pdf.rect(22, colY, 1.4, featH, "F");
 
   eyebrow(pdf, "What's Included", 30, colY + 10, LIME_DEEP, 7);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(11);
+  setDisplayFont(pdf, 10.5);
   setColor(pdf, FOREST_INK);
   pdf.text("Every detail. Every guarantee.", 30, colY + 18);
 
@@ -364,8 +348,7 @@ function drawSelectedOption(
   features.slice(0, 8).forEach((f) => {
     setFill(pdf, LIME);
     pdf.circle(31, fy - 1.2, 0.9, "F");
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8.5);
+    setBodyFont(pdf, 8.5);
     setColor(pdf, INK);
     const lines = pdf.splitTextToSize(f.text, colW - 20);
     lines.slice(0, 2).forEach((ln: string, li: number) => pdf.text(ln, 35, fy + li * 4.2));
@@ -379,8 +362,7 @@ function drawSelectedOption(
   pdf.rect(rxc, colY, 1.4, featH, "F");
 
   eyebrow(pdf, "Value Snapshot", rxc + 8, colY + 10, [150, 110, 20], 7);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(11);
+  setDisplayFont(pdf, 10.5);
   setColor(pdf, FOREST_INK);
   pdf.text("What this earns you back.", rxc + 8, colY + 18);
 
@@ -396,13 +378,11 @@ function drawSelectedOption(
 
   let vy = colY + 32;
   rows.forEach((r) => {
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8.5);
+    setBodyFont(pdf, 8.5);
     setColor(pdf, GRAPHITE);
     pdf.text(r.label, rxc + 8, vy);
 
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(10);
+    setDisplayFont(pdf, 9.5);
     setColor(pdf, r.valueColor || INK);
     pdf.text(r.value, rxc + colW - 8, vy, { align: "right" });
 
@@ -413,13 +393,11 @@ function drawSelectedOption(
   // Net effective cost — highlight
   vy += 2;
   rounded(pdf, rxc + 6, vy, colW - 12, 18, 2, FOREST_INK);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(6.5);
+  setDisplayFont(pdf, 6.5);
   setColor(pdf, LIME);
   pdf.text("NET EFFECTIVE COST", rxc + 12, vy + 7, { charSpace: 1.4 });
   pdf.setCharSpace(0);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(13);
+  setDisplayFont(pdf, 12.5);
   setColor(pdf, WHITE);
   pdf.text(fmt(optComputed.netCost), rxc + colW - 12, vy + 12, { align: "right" });
 }
