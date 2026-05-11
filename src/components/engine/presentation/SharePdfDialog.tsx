@@ -142,6 +142,21 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
           </div>
         )}
 
+        {mode === "menu" && (
+          <label className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground cursor-pointer select-none">
+            <span>
+              <span className="font-semibold text-foreground">Debug overlay</span>
+              <span className="ml-2">Draw bounding boxes around every text block (collisions in red).</span>
+            </span>
+            <input
+              type="checkbox"
+              checked={debug}
+              onChange={(e) => { setDebug(e.target.checked); setLink(null); }}
+              className="h-4 w-4 accent-primary"
+            />
+          </label>
+        )}
+
         {mode === "email" && (
           <div className="space-y-3">
             <div className="space-y-1.5">
