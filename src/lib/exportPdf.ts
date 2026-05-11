@@ -710,16 +710,14 @@ function drawScope(pdf: jsPDF, state: EngineState) {
     const ry = y + row * rowH;
 
     // Number
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(16);
+    setDisplayFont(pdf, 16);
     setColor(pdf, LIME);
     pdf.text(String(i + 1).padStart(2, "0"), x, ry + 6);
 
     // Hairline
     hairline(pdf, x + 14, ry + 2, x + colW, ry + 2, MIST, 0.2);
 
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8.5);
+    setBodyFont(pdf, 8.5);
     setColor(pdf, INK);
     const lines = pdf.splitTextToSize(item, colW - 18);
     lines.slice(0, 2).forEach((ln: string, li: number) => pdf.text(ln, x + 14, ry + 7 + li * 4.3));
@@ -728,13 +726,11 @@ function drawScope(pdf: jsPDF, state: EngineState) {
   // Pull quote at bottom
   const qy = PH - 50;
   hairline(pdf, 22, qy, PW - 22, qy, ACCENT, 0.4);
-  pdf.setFont("times", "italic");
-  pdf.setFontSize(13);
+  setBodyFont(pdf, 12, "italic");
   setColor(pdf, FOREST_INK);
   pdf.text('"Does that sound like everything we spoke about today?"', PW / 2, qy + 12, { align: "center" });
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(7);
+  setDisplayFont(pdf, 7);
   setColor(pdf, SLATE);
   trackedText(pdf, "YOUR DABELLA PROJECT MANAGER", PW / 2, qy + 19, { align: "center", charSpace: 0.45 });
 }
@@ -766,20 +762,17 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
   }
 
   // Wordmark below logo
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(8);
+  setDisplayFont(pdf, 8);
   setColor(pdf, LIME);
   trackedText(pdf, "DABELLA", PW / 2, 92, { align: "center", charSpace: 0.7 });
 
   // Eyebrow
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(7.5);
+  setDisplayFont(pdf, 7.5);
   setColor(pdf, ACCENT);
   trackedText(pdf, "CHAPTER ONE", PW / 2, 122, { align: "center", charSpace: 0.6 });
 
   // Headline — single line, tightly set
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(40);
+  setDisplayFont(pdf, 34);
   setColor(pdf, WHITE);
   pdf.text("Welcome Home.", PW / 2, 146, { align: "center" });
 
@@ -788,8 +781,7 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
   pdf.rect(PW / 2 - 14, 154, 28, 1.2, "F");
 
   // Personal note
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(11);
+  setBodyFont(pdf, 10.5);
   setColor(pdf, [220, 232, 220]);
   const note = pdf.splitTextToSize(
     `${names}, thank you for trusting us with your home.`,
@@ -797,7 +789,7 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
   );
   note.forEach((ln: string, i: number) => pdf.text(ln, PW / 2, 170 + i * 6, { align: "center" }));
 
-  pdf.setFontSize(10);
+  setBodyFont(pdf, 10);
   setColor(pdf, [190, 210, 195]);
   pdf.text("We are honored to be part of your story.", PW / 2, 170 + note.length * 6 + 4, { align: "center" });
 
@@ -821,13 +813,11 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
     pdf.setLineWidth(0.2);
     pdf.roundedRect(cx, py, cardW, 28, 2, 2, "S");
 
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(7);
+    setDisplayFont(pdf, 7);
     setColor(pdf, LIME);
     trackedText(pdf, top, cx + cardW / 2, py + 11, { align: "center", charSpace: 0.45 });
 
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(11);
+    setDisplayFont(pdf, 10.5);
     setColor(pdf, WHITE);
     pdf.text(bot, cx + cardW / 2, py + 21, { align: "center" });
 
@@ -835,13 +825,11 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
   });
 
   // Closing italic line
-  pdf.setFont("times", "italic");
-  pdf.setFontSize(11);
+  setBodyFont(pdf, 10.5, "italic");
   setColor(pdf, [200, 220, 205]);
   pdf.text('"We don\'t just build homes — we build relationships."', PW / 2, PH - 28, { align: "center" });
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(7);
+  setBodyFont(pdf, 7);
   setColor(pdf, [160, 185, 165]);
   trackedText(pdf, "DABELLA.US", PW / 2, PH - 16, { align: "center", charSpace: 0.65 });
 }
@@ -889,11 +877,10 @@ export async function buildCustomerPdf(
   for (let p = 2; p <= totalPages - 1; p++) {
     pdf.setPage(p);
     hairline(pdf, 22, PH - 16, PW - 22, PH - 16, MIST, 0.2);
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(6.5);
+    setDisplayFont(pdf, 6.5);
     setColor(pdf, SLATE);
     trackedText(pdf, "DABELLA · PROPOSAL", 22, PH - 11, { charSpace: 0.45 });
-    pdf.setFont("helvetica", "normal");
+    setBodyFont(pdf, 6.5);
     trackedText(pdf, `${String(p).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`, PW - 22, PH - 11, { align: "right", charSpace: 0.3 });
   }
 
