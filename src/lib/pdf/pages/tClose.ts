@@ -65,7 +65,7 @@ export function drawTClose(
   pdf.text(fmt(futurePrice), COL_RIGHT_X + HALF_W / 2, py + 36, { align: "center" });
   setBodyFont(pdf, 8);
   setColor(pdf, SLATE);
-  pdf.text("8% material inflation, compounded", fx + halfW / 2, py + 48, { align: "center" });
+  pdf.text("8% material inflation, compounded", COL_RIGHT_X + HALF_W / 2, py + 48, { align: "center" });
 
   const cy = py + pH + 14;
   shadow(pdf, 38, cy, PW - 76, 50, 4, 0.10);
