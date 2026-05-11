@@ -1,13 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import type { EngineTabProps } from "@/types/engine";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Loader2 } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { buildOptionsArray } from "@/lib/engineHelpers";
 import ScriptCard from "./shared/ScriptCard";
-import CustomerPresentationView from "./CustomerPresentationView";
 import ActionGrid from "./presentation/ActionGrid";
 import FinancialImpact from "./presentation/FinancialImpact";
 import IncludedFeaturesEditor from "./presentation/IncludedFeaturesEditor";
+
+const CustomerPresentationView = lazy(() => import("./CustomerPresentationView"));
 
 export default function PresentationTab({ state, computed, update }: EngineTabProps) {
   const [showNarrow, setShowNarrow] = useState(false);
@@ -20,7 +21,15 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
   ]);
 
   if (showCustomerView) {
-    return <CustomerPresentationView state={state} computed={computed} onClose={() => setShowCustomerView(false)} />;
+    return (
+      <Suspense fallback={
+        <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      }>
+        <CustomerPresentationView state={state} computed={computed} onClose={() => setShowCustomerView(false)} />
+      </Suspense>
+    );
   }
 
   return (
