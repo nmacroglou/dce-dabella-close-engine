@@ -785,7 +785,7 @@ function drawScope(pdf: jsPDF, state: EngineState) {
 // ════════════════════════════════════════════════════════════
 //  WELCOME — Closing page
 // ════════════════════════════════════════════════════════════
-function drawWelcome(pdf: jsPDF, state: EngineState) {
+function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null) {
   const names = getNames(state);
 
   // Full-bleed deep gradient
@@ -801,52 +801,58 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
   // Brass top
   rect(pdf, 0, 0, PW, 0.6, ACCENT);
 
-  // Wordmark
+  // Butterfly logo — centered hero
+  if (logoDataUrl) {
+    const logoW = 44;
+    const logoH = logoW * (120 / 192); // preserve aspect
+    pdf.addImage(logoDataUrl, "PNG", (PW - logoW) / 2, 56, logoW, logoH);
+  }
+
+  // Wordmark below logo
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(8);
   setColor(pdf, LIME);
-  pdf.text("DABELLA", PW / 2, 28, { align: "center", charSpace: 3 });
+  pdf.text("DABELLA", PW / 2, 92, { align: "center", charSpace: 3 });
   pdf.setCharSpace(0);
 
   // Eyebrow
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(8);
+  pdf.setFontSize(7.5);
   setColor(pdf, ACCENT);
-  pdf.text("CHAPTER ONE", PW / 2, 100, { align: "center", charSpace: 2.5 });
+  pdf.text("CHAPTER ONE", PW / 2, 122, { align: "center", charSpace: 2.5 });
   pdf.setCharSpace(0);
 
-  // Massive headline
+  // Headline — single line, tightly set
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(46);
+  pdf.setFontSize(40);
   setColor(pdf, WHITE);
-  pdf.text("Welcome", PW / 2, 132, { align: "center" });
-  pdf.text("Home.", PW / 2, 156, { align: "center" });
+  pdf.text("Welcome Home.", PW / 2, 146, { align: "center" });
 
   // Brass underscore
   setFill(pdf, ACCENT);
-  pdf.rect(PW / 2 - 14, 164, 28, 1.2, "F");
+  pdf.rect(PW / 2 - 14, 154, 28, 1.2, "F");
 
   // Personal note
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(11);
   setColor(pdf, [220, 232, 220]);
-  const note1 = pdf.splitTextToSize(
+  const note = pdf.splitTextToSize(
     `${names}, thank you for trusting us with your home.`,
     PW - 60,
   );
-  note1.forEach((ln: string, i: number) => pdf.text(ln, PW / 2, 180 + i * 6, { align: "center" }));
+  note.forEach((ln: string, i: number) => pdf.text(ln, PW / 2, 170 + i * 6, { align: "center" }));
 
   pdf.setFontSize(10);
   setColor(pdf, [190, 210, 195]);
-  pdf.text("We are honored to be part of your story.", PW / 2, 196, { align: "center" });
+  pdf.text("We are honored to be part of your story.", PW / 2, 170 + note.length * 6 + 4, { align: "center" });
 
-  // Three perks — minimal
+  // Three perks
   const perks = [
     { top: "LIFETIME", bot: "Warranty" },
     { top: "FIVE-STAR", bot: "Service" },
     { top: "EXPERT", bot: "Install" },
   ];
-  const py = 222;
+  const py = 212;
   const cardW = 46;
   const gap = 8;
   const totalW = perks.length * cardW + (perks.length - 1) * gap;
@@ -878,12 +884,14 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
   pdf.setFont("times", "italic");
   pdf.setFontSize(11);
   setColor(pdf, [200, 220, 205]);
-  pdf.text('"We don\'t just build homes — we build relationships."', PW / 2, PH - 30, { align: "center" });
+  pdf.text('"We don\'t just build homes — we build relationships."', PW / 2, PH - 28, { align: "center" });
 
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
   setColor(pdf, [160, 185, 165]);
   pdf.text("DABELLA.US", PW / 2, PH - 16, { align: "center", charSpace: 2.4 });
+  pdf.setCharSpace(0);
+}
   pdf.setCharSpace(0);
 }
 
