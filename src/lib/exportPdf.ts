@@ -395,8 +395,7 @@ function drawSelectedOption(
   rounded(pdf, rxc + 6, vy, colW - 12, 18, 2, FOREST_INK);
   setDisplayFont(pdf, 6.5);
   setColor(pdf, LIME);
-  pdf.text("NET EFFECTIVE COST", rxc + 12, vy + 7, { charSpace: 1.4 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "NET EFFECTIVE COST", rxc + 12, vy + 7, { charSpace: 0.45 });
   setDisplayFont(pdf, 12.5);
   setColor(pdf, WHITE);
   pdf.text(fmt(optComputed.netCost), rxc + colW - 12, vy + 12, { align: "right" });
@@ -424,8 +423,7 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   setFill(pdf, ACCENT);
   pdf.rect(22, qy, 1.4, 28, "F");
 
-  pdf.setFont("times", "italic");
-  pdf.setFontSize(12);
+  setBodyFont(pdf, 11, "italic");
   setColor(pdf, FOREST_INK);
   const quote = pdf.splitTextToSize(
     '"Most people aren\'t deciding if they\'re doing the project. They\'re deciding whether the money feels right."',
@@ -443,12 +441,10 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   setFill(pdf, LIME);
   pdf.rect(22, py, halfW, 1.2, "F");
   eyebrow(pdf, "Today's Price · Locked", 28, py + 11, LIME_DEEP, 7);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(34);
+  setDisplayFont(pdf, 30);
   setColor(pdf, FOREST_INK);
   pdf.text(fmt(m.price), 22 + halfW / 2, py + 36, { align: "center" });
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8);
+  setBodyFont(pdf, 8);
   setColor(pdf, SLATE);
   pdf.text("Price guaranteed at signing", 22 + halfW / 2, py + 48, { align: "center" });
 
@@ -458,12 +454,10 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   setFill(pdf, NEGATIVE);
   pdf.rect(fx, py, halfW, 1.2, "F");
   eyebrow(pdf, "Same Project · 10 Years", fx + 6, py + 11, NEGATIVE, 7);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(34);
+  setDisplayFont(pdf, 30);
   setColor(pdf, NEGATIVE);
   pdf.text(fmt(futurePrice), fx + halfW / 2, py + 36, { align: "center" });
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8);
+  setBodyFont(pdf, 8);
   setColor(pdf, SLATE);
   pdf.text("8% material inflation, compounded", fx + halfW / 2, py + 48, { align: "center" });
 
@@ -475,18 +469,15 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   pdf.setLineWidth(0.4);
   pdf.roundedRect(38, cy, PW - 76, 50, 4, 4, "S");
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(8);
+  setDisplayFont(pdf, 8);
   setColor(pdf, NEGATIVE);
   trackedText(pdf, "COST OF WAITING", PW / 2, cy + 11, { align: "center", charSpace: 0.7 });
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(40);
+  setDisplayFont(pdf, 34);
   setColor(pdf, NEGATIVE);
   pdf.text(`+${fmt(m.inflationPenalty)}`, PW / 2, cy + 35, { align: "center" });
 
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(8.5);
+  setBodyFont(pdf, 8.5);
   setColor(pdf, GRAPHITE);
   pdf.text(`${fmt(futurePrice)} − ${fmt(m.price)} = the price of hesitation`, PW / 2, cy + 44, { align: "center" });
 }
