@@ -99,12 +99,23 @@ function hairline(pdf: jsPDF, x1: number, y1: number, x2: number, y2: number, c:
   pdf.line(x1, y1, x2, y2);
 }
 
+function trackedText(
+  pdf: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  options?: Parameters<jsPDF["text"]>[3] & { charSpace?: number },
+) {
+  const safeCharSpace = Math.min(Math.max(options?.charSpace ?? 0, 0), 0.8);
+  pdf.text(text, x, y, { ...options, charSpace: safeCharSpace });
+  pdf.setCharSpace(0);
+}
+
 function eyebrow(pdf: jsPDF, text: string, x: number, y: number, color: RGB = SLATE, size = 7.5) {
   pdf.setFont("times", "bold");
   pdf.setFontSize(size);
   setColor(pdf, color);
-  pdf.text(text.toUpperCase(), x, y, { charSpace: 1.6 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, text.toUpperCase(), x, y, { charSpace: 0.55 });
 }
 
 function pageBg(pdf: jsPDF) {
@@ -232,23 +243,24 @@ function sectionHeader(pdf: jsPDF, eyebrowText: string, title: string, subtitle?
   pdf.setFont("times", "bold");
   pdf.setFontSize(7.5);
   setColor(pdf, LIME_DEEP);
-  pdf.text(eyebrowText.toUpperCase(), 22, 30, { charSpace: 2 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, eyebrowText.toUpperCase(), 22, 30, { charSpace: 0.7 });
 
   pdf.setFont("times", "bold");
   pdf.setFontSize(26);
   setColor(pdf, FOREST_INK);
   pdf.text(title, 22, 45);
 
+  let dividerY = 65;
   if (subtitle) {
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(10);
     setColor(pdf, GRAPHITE);
     const lines = pdf.splitTextToSize(subtitle, PW - 44);
-    lines.forEach((ln: string, i: number) => pdf.text(ln, 22, 53 + i * 5));
+    lines.forEach((ln: string, i: number) => pdf.text(ln, 22, 53 + i * 5.2));
+    dividerY = 57 + lines.length * 5.2 + 4;
   }
 
-  hairline(pdf, 22, 65, PW - 22, 65, MIST, 0.3);
+  hairline(pdf, 22, dividerY, PW - 22, dividerY, MIST, 0.3);
 }
 
 // ════════════════════════════════════════════════════════════
