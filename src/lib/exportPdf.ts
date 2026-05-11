@@ -904,6 +904,7 @@ export async function buildCustomerPdf(
 ): Promise<{ blob: Blob; doc: jsPDF }> {
   const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
   const isWindows = hasProduct(state.products, "Windows");
+  const logoDataUrl = await loadImageDataUrl(dabellaLogoUrl);
 
   drawCover(pdf, state);
 
@@ -928,7 +929,7 @@ export async function buildCustomerPdf(
   drawScope(pdf, state);
 
   pdf.addPage();
-  drawWelcome(pdf, state);
+  drawWelcome(pdf, state, logoDataUrl);
 
   // Refined editorial footer on interior pages
   const totalPages = pdf.getNumberOfPages();
