@@ -160,7 +160,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setCharSpace(0);
 
   // Editorial headline — sized to fit
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(46);
   setColor(pdf, WHITE);
   pdf.text("A Home", 22, 132);
@@ -235,7 +235,7 @@ function sectionHeader(pdf: jsPDF, eyebrowText: string, title: string, subtitle?
   pdf.text(eyebrowText.toUpperCase(), 22, 30, { charSpace: 2 });
   pdf.setCharSpace(0);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(26);
   setColor(pdf, FOREST_INK);
   pdf.text(title, 22, 45);
@@ -295,7 +295,7 @@ function drawSelectedOption(
   pdf.text(opt.name, 30, heroY + 28);
 
   // Big price (left aligned, oversized)
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(44);
   setColor(pdf, WHITE);
   pdf.text(fmt(opt.price), 30, heroY + 56);
@@ -316,7 +316,7 @@ function drawSelectedOption(
   pdf.text("AS LOW AS", rx, heroY + 26, { align: "right", charSpace: 1.6 });
   pdf.setCharSpace(0);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(28);
   setColor(pdf, WHITE);
   pdf.text(fmt(opt.monthly), rx, heroY + 47, { align: "right" });
@@ -456,7 +456,7 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   setFill(pdf, LIME);
   pdf.rect(22, py, halfW, 1.2, "F");
   eyebrow(pdf, "Today's Price · Locked", 28, py + 11, LIME_DEEP, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(34);
   setColor(pdf, FOREST_INK);
   pdf.text(fmt(m.price), 22 + halfW / 2, py + 36, { align: "center" });
@@ -471,7 +471,7 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   setFill(pdf, NEGATIVE);
   pdf.rect(fx, py, halfW, 1.2, "F");
   eyebrow(pdf, "Same Project · 10 Years", fx + 6, py + 11, NEGATIVE, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(34);
   setColor(pdf, NEGATIVE);
   pdf.text(fmt(futurePrice), fx + halfW / 2, py + 36, { align: "center" });
@@ -494,7 +494,7 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   pdf.text("COST OF WAITING", PW / 2, cy + 11, { align: "center", charSpace: 2 });
   pdf.setCharSpace(0);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(40);
   setColor(pdf, NEGATIVE);
   pdf.text(`+${fmt(m.inflationPenalty)}`, PW / 2, cy + 35, { align: "center" });
@@ -598,7 +598,7 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
 
   rounded(pdf, 22, y, halfW, tH, 3, POS_SOFT, [180, 220, 185]);
   eyebrow(pdf, "Move Forward", 28, y + 10, POSITIVE, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(22);
   setColor(pdf, FOREST_INK);
   pdf.text(`+${fmt(m.moveForward)}`, 22 + halfW / 2, y + 26, { align: "center" });
@@ -606,7 +606,7 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   const dx = 22 + halfW + 8;
   rounded(pdf, dx, y, halfW, tH, 3, NEG_SOFT, [240, 180, 180]);
   eyebrow(pdf, "Do Nothing", dx + 6, y + 10, NEGATIVE, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(22);
   setColor(pdf, FOREST_INK);
   pdf.text(fmt(m.doNothing), dx + halfW / 2, y + 26, { align: "center" });
@@ -624,7 +624,7 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   pdf.text("NET ADVANTAGE OF MOVING FORWARD", PW / 2, y + 12, { align: "center", charSpace: 2 });
   pdf.setCharSpace(0);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(34);
   setColor(pdf, WHITE);
   pdf.text(`+${fmt(m.netDiff)}`, PW / 2, y + 32, { align: "center" });
@@ -823,7 +823,7 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
   pdf.setCharSpace(0);
 
   // Headline — single line, tightly set
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(40);
   setColor(pdf, WHITE);
   pdf.text("Welcome Home.", PW / 2, 146, { align: "center" });
