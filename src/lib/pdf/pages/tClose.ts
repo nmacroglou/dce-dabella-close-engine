@@ -85,5 +85,4 @@ export function drawTClose(
   setBodyFont(pdf, 8.5);
   setColor(pdf, GRAPHITE);
   pdf.text(`${fmt(futurePrice)} − ${fmt(m.price)} = the price of hesitation`, PW / 2, cy + 44, { align: "center" });
-  void PH;
 }
