@@ -5,12 +5,13 @@ import { getOptionMetrics, getProductLabel } from "@/lib/engineHelpers";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import {
   type RGB,
-  ACCENT, BORDER, CARD, CREAM, FOREST, FOREST_INK, GRAPHITE, INK,
-  LIME, LIME_DEEP, MIST, POSITIVE, PW, SLATE, WHITE,
+  ACCENT, BORDER, CARD, CREAM, FOREST_INK, GRAPHITE, INK,
+  LIME, LIME_DEEP, MIST, POSITIVE, PW, WHITE,
 } from "../theme";
+import { COL_LEFT_X, COL_RIGHT_X, CONTENT_W, HALF_W, MARGIN, RHYTHM } from "../layout";
 import {
-  eyebrow, hairline, pageBg, rounded, sectionHeader, setBodyFont, setColor,
-  setDisplayFont, setFill, shadow, trackedText, vGradient,
+  eyebrow, hairline, heroBand, pageBg, rounded, sectionHeader, setBodyFont,
+  setColor, setDisplayFont, setFill, trackedText,
 } from "../primitives";
 
 export function drawSelectedOption(
