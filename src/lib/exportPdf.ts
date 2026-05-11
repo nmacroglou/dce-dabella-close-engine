@@ -7,6 +7,15 @@ import { fmt } from "@/lib/format";
 import { getNames, getOptionMetrics, getOptionLabel, getProductLabel, hasProduct } from "@/lib/engineHelpers";
 import dabellaLogoUrl from "@/assets/dabella-logo.png";
 
+async function fetchArrayBuffer(url: string): Promise<ArrayBuffer | null> {
+  try {
+    const res = await fetch(url);
+    return await res.arrayBuffer();
+  } catch {
+    return null;
+  }
+}
+
 async function loadImageDataUrl(url: string): Promise<string | null> {
   try {
     const res = await fetch(url);
@@ -60,13 +69,39 @@ const setFill  = (pdf: jsPDF, c: RGB) => pdf.setFillColor(c[0], c[1], c[2]);
 const setDraw  = (pdf: jsPDF, c: RGB) => pdf.setDrawColor(c[0], c[1], c[2]);
 
 function setDisplayFont(pdf: jsPDF, size: number) {
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("ProposalSans", "bold");
   pdf.setFontSize(size);
 }
 
 function setBodyFont(pdf: jsPDF, size: number, style: BodyFontStyle = "normal") {
-  pdf.setFont("helvetica", style);
+  pdf.setFont("ProposalSans", style);
   pdf.setFontSize(size);
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+async function registerPdfFonts(pdf: jsPDF) {
+  const fonts = [
+    ["https://id-preview--42bd9520-d3ce-43ec-a321-b376a886f49f.lovable.app/LiberationSans-Regular.ttf", "ProposalSans", "normal"],
+    ["https://id-preview--42bd9520-d3ce-43ec-a321-b376a886f49f.lovable.app/LiberationSans-Bold.ttf", "ProposalSans", "bold"],
+    ["https://id-preview--42bd9520-d3ce-43ec-a321-b376a886f49f.lovable.app/LiberationSans-Italic.ttf", "ProposalSans", "italic"],
+  ] as const;
+
+  for (const [url, family, style] of fonts) {
+    const data = await fetchArrayBuffer(url);
+    if (!data) continue;
+    const fileName = `${family}-${style}.ttf`;
+    pdf.addFileToVFS(fileName, arrayBufferToBase64(data));
+    pdf.addFont(fileName, family, style);
+  }
 }
 
 function rect(pdf: jsPDF, x: number, y: number, w: number, h: number, fill: RGB) {
