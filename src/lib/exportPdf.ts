@@ -892,8 +892,6 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
   pdf.text("DABELLA.US", PW / 2, PH - 16, { align: "center", charSpace: 2.4 });
   pdf.setCharSpace(0);
 }
-  pdf.setCharSpace(0);
-}
 
 // ════════════════════════════════════════════════════════════
 //  MAIN BUILDER
