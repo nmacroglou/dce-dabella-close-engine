@@ -4,12 +4,12 @@ import { fmt } from "@/lib/format";
 import { getOptionLabel, getOptionMetrics } from "@/lib/engineHelpers";
 import {
   type RGB,
-  ACCENT, FOREST, FOREST_INK, LIME, MIST, NEG_SOFT, NEGATIVE, POS_SOFT,
-  POSITIVE, PW, SLATE, WHITE,
+  FOREST_INK, LIME, MIST, NEG_SOFT, NEGATIVE, POS_SOFT, POSITIVE, PW, SLATE, WHITE,
 } from "../theme";
+import { COL_LEFT_X, COL_RIGHT_X, CONTENT_W, HALF_W, MARGIN, RHYTHM } from "../layout";
 import {
-  eyebrow, hairline, pageBg, rounded, sectionHeader, setBodyFont, setColor,
-  setDisplayFont, setFill, shadow, trackedText, vGradient,
+  eyebrow, hairline, heroBand, pageBg, rounded, sectionHeader, setBodyFont,
+  setColor, setDisplayFont, trackedText,
 } from "../primitives";
 
 export function drawFinancialImpact(
