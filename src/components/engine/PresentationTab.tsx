@@ -1,13 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, lazy, Suspense } from "react";
 import type { EngineTabProps } from "@/types/engine";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Loader2 } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { buildOptionsArray } from "@/lib/engineHelpers";
 import ScriptCard from "./shared/ScriptCard";
-import CustomerPresentationView from "./CustomerPresentationView";
 import ActionGrid from "./presentation/ActionGrid";
 import FinancialImpact from "./presentation/FinancialImpact";
 import IncludedFeaturesEditor from "./presentation/IncludedFeaturesEditor";
+
+const CustomerPresentationView = lazy(() => import("./CustomerPresentationView"));
 
 export default function PresentationTab({ state, computed, update }: EngineTabProps) {
   const [showNarrow, setShowNarrow] = useState(false);

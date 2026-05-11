@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Download, Mail, MessageSquare, Share2, Link2, Check, Loader2 } from "lucide-react";
-import { buildCustomerPdf } from "@/lib/exportPdf";
+// buildCustomerPdf is dynamically imported to keep jsPDF out of the main bundle
+const loadPdfBuilder = () => import("@/lib/exportPdf").then((m) => m.buildCustomerPdf);
 import { uploadProposalPdf, nativeShare, buildEmailLink, buildSmsLink } from "@/lib/sharePdf";
 import { buildOptionsArray } from "@/lib/engineHelpers";
 import { toast } from "@/hooks/use-toast";
