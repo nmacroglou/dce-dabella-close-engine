@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
