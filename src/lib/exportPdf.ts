@@ -347,10 +347,11 @@ function drawSelectedOption(
   hairline(pdf, rxc + 8, colY + 22, rxc + colW - 8, colY + 22, MIST, 0.3);
 
   const optComputed = computed.options[opt.key];
+  const optMetrics = getOptionMetrics(opt.key, computed);
   const rows: { label: string; value: string; valueColor?: RGB }[] = [
     { label: "Home value increase", value: `+${fmt(optComputed.roiValue)}`, valueColor: POSITIVE },
     { label: "10-yr energy savings", value: `+${fmt(computed.energySavings)}`, valueColor: POSITIVE },
-    { label: "Inflation lock savings", value: `+${fmt(optComputed.lockedInSavings)}`, valueColor: POSITIVE },
+    { label: "Inflation lock savings", value: `+${fmt(optMetrics.lockedInSavings)}`, valueColor: POSITIVE },
   ];
 
   let vy = colY + 32;
