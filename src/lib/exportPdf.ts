@@ -9,6 +9,9 @@ import dabellaLogoUrl from "@/assets/dabella-logo.png";
 
 async function fetchArrayBuffer(url: string): Promise<ArrayBuffer | null> {
   try {
+    if (typeof window === "undefined" && typeof Bun !== "undefined" && url.startsWith("/dev-server/")) {
+      return await Bun.file(url).arrayBuffer();
+    }
     const res = await fetch(url);
     return await res.arrayBuffer();
   } catch {
@@ -89,10 +92,11 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 }
 
 async function registerPdfFonts(pdf: jsPDF) {
+  const basePath = typeof window === "undefined" ? "/dev-server/public/pdf-fonts" : "/pdf-fonts";
   const fonts = [
-    ["https://id-preview--42bd9520-d3ce-43ec-a321-b376a886f49f.lovable.app/LiberationSans-Regular.ttf", "ProposalSans", "normal"],
-    ["https://id-preview--42bd9520-d3ce-43ec-a321-b376a886f49f.lovable.app/LiberationSans-Bold.ttf", "ProposalSans", "bold"],
-    ["https://id-preview--42bd9520-d3ce-43ec-a321-b376a886f49f.lovable.app/LiberationSans-Italic.ttf", "ProposalSans", "italic"],
+    [`${basePath}/LiberationSans-Regular.ttf`, "ProposalSans", "normal"],
+    [`${basePath}/LiberationSans-Bold.ttf`, "ProposalSans", "bold"],
+    [`${basePath}/LiberationSans-Italic.ttf`, "ProposalSans", "italic"],
   ] as const;
 
   for (const [url, family, style] of fonts) {
@@ -879,6 +883,7 @@ export async function buildCustomerPdf(
 ): Promise<{ blob: Blob; doc: jsPDF }> {
   const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
   const isWindows = hasProduct(state.products, "Windows");
+  await registerPdfFonts(pdf);
   const logoDataUrl = await loadImageDataUrl(dabellaLogoUrl);
 
   drawCover(pdf, state);
