@@ -503,8 +503,7 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   const colForward = 22 + tableW * 0.62;
   const colNothing = 22 + tableW;
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(7);
+  setDisplayFont(pdf, 7);
   setColor(pdf, SLATE);
   trackedText(pdf, "CATEGORY", 22, ty, { charSpace: 0.35 });
   setColor(pdf, POSITIVE);
@@ -543,18 +542,15 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
 
   let y = ty + 12;
   rows.forEach((r) => {
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(10);
+    setDisplayFont(pdf, 10);
     setColor(pdf, FOREST_INK);
     pdf.text(r.label, 22, y);
 
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(7.5);
+    setBodyFont(pdf, 7.5);
     setColor(pdf, SLATE);
     pdf.text(r.hint, 22, y + 5);
 
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(13);
+    setDisplayFont(pdf, 13);
     setColor(pdf, r.forwardColor);
     pdf.text(r.forward, colForward, y + 2);
 
@@ -572,16 +568,14 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
 
   rounded(pdf, 22, y, halfW, tH, 3, POS_SOFT, [180, 220, 185]);
   eyebrow(pdf, "Move Forward", 28, y + 10, POSITIVE, 7);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(22);
+  setDisplayFont(pdf, 22);
   setColor(pdf, FOREST_INK);
   pdf.text(`+${fmt(m.moveForward)}`, 22 + halfW / 2, y + 26, { align: "center" });
 
   const dx = 22 + halfW + 8;
   rounded(pdf, dx, y, halfW, tH, 3, NEG_SOFT, [240, 180, 180]);
   eyebrow(pdf, "Do Nothing", dx + 6, y + 10, NEGATIVE, 7);
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(22);
+  setDisplayFont(pdf, 22);
   setColor(pdf, FOREST_INK);
   pdf.text(fmt(m.doNothing), dx + halfW / 2, y + 26, { align: "center" });
 
@@ -592,13 +586,11 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   setFill(pdf, ACCENT);
   pdf.rect(22, y, PW - 44, 0.7, "F");
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(7.5);
+  setDisplayFont(pdf, 7.5);
   setColor(pdf, LIME);
   trackedText(pdf, "NET ADVANTAGE OF MOVING FORWARD", PW / 2, y + 12, { align: "center", charSpace: 0.6 });
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(34);
+  setDisplayFont(pdf, 32);
   setColor(pdf, WHITE);
   pdf.text(`+${fmt(m.netDiff)}`, PW / 2, y + 32, { align: "center" });
 }
@@ -632,13 +624,11 @@ function drawWindowInspection(pdf: jsPDF, state: EngineState) {
 
     if (row % 2 === 0) rounded(pdf, x, ry - 3, colW, 10, 1.5, CREAM);
 
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
+    setBodyFont(pdf, 8);
     setColor(pdf, INK);
     pdf.text(`${i + 1}. ${entry.label}`, x + 5, ry + 3.5);
 
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(7);
+    setDisplayFont(pdf, 7);
     setColor(pdf, STATUS_COLORS[entry.status] || SLATE);
     trackedText(pdf, STATUS_LABELS[entry.status] || "N/A", x + colW - 5, ry + 3.5, { align: "right", charSpace: 0.3 });
   });
@@ -646,8 +636,7 @@ function drawWindowInspection(pdf: jsPDF, state: EngineState) {
   if (state.windowItems.length > 0) {
     y += 88;
     eyebrow(pdf, "Window Schedule", 22, y, LIME_DEEP, 7.5);
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(13);
+    setDisplayFont(pdf, 12);
     setColor(pdf, FOREST_INK);
     pdf.text(`${state.windowItems.length} Window${state.windowItems.length !== 1 ? "s" : ""}`, 22, y + 8);
 
@@ -657,8 +646,7 @@ function drawWindowInspection(pdf: jsPDF, state: EngineState) {
     const headers = ["#", "LEVEL", "ROOM", "STYLE", "SIZE", "GRIDS", "NOTES"];
 
     rect(pdf, 22, y, tableW, 7, FOREST_INK);
-    pdf.setFont("times", "bold");
-    pdf.setFontSize(6.5);
+    setDisplayFont(pdf, 6.5);
     setColor(pdf, LIME);
     let hx = 22 + 2;
     headers.forEach((h, ci) => {
@@ -670,8 +658,7 @@ function drawWindowInspection(pdf: jsPDF, state: EngineState) {
     state.windowItems.forEach((item, i) => {
       if (i % 2 === 0) rect(pdf, 22, y - 2, tableW, 7, CREAM);
 
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(7);
+      setBodyFont(pdf, 7);
       setColor(pdf, INK);
       let cx = 22 + 2;
       const vals = [
