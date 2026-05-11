@@ -21,7 +21,15 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
   ]);
 
   if (showCustomerView) {
-    return <CustomerPresentationView state={state} computed={computed} onClose={() => setShowCustomerView(false)} />;
+    return (
+      <Suspense fallback={
+        <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      }>
+        <CustomerPresentationView state={state} computed={computed} onClose={() => setShowCustomerView(false)} />
+      </Suspense>
+    );
   }
 
   return (
