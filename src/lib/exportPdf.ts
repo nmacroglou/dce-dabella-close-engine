@@ -65,8 +65,7 @@ function setDisplayFont(pdf: jsPDF, size: number) {
 }
 
 function setBodyFont(pdf: jsPDF, size: number, style: BodyFontStyle = "normal") {
-  const variant = style === "italic" ? "oblique" : style;
-  pdf.setFont("helvetica", variant);
+  pdf.setFont("helvetica", style);
   pdf.setFontSize(size);
 }
 
