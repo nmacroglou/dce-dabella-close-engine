@@ -155,20 +155,17 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, LIME);
-  pdf.text("DABELLA", 22, 22, { charSpace: 3 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "DABELLA", 22, 22, { charSpace: 0.7 });
   pdf.setFont("helvetica", "normal");
   setColor(pdf, [220, 230, 220]);
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  pdf.text(today.toUpperCase(), PW - 22, 22, { align: "right", charSpace: 1.4 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, today.toUpperCase(), PW - 22, 22, { align: "right", charSpace: 0.45 });
 
   // Eyebrow
   pdf.setFont("times", "bold");
   pdf.setFontSize(8);
   setColor(pdf, LIME);
-  pdf.text("PRIVATE PROPOSAL · NO. 001", 22, 100, { charSpace: 2.2 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "PRIVATE PROPOSAL · NO. 001", 22, 100, { charSpace: 0.6 });
 
   // Editorial headline — sized to fit
   pdf.setFont("times", "bold");
@@ -194,8 +191,7 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, ACCENT);
-  pdf.text("PREPARED FOR", 22, ry + 7, { charSpace: 1.8 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "PREPARED FOR", 22, ry + 7, { charSpace: 0.55 });
 
   // Auto-fit name
   pdf.setFont("times", "bold");
@@ -218,18 +214,15 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   const creds = ["LIFETIME WARRANTY", "GAF MASTER ELITE", "TOP-RATED CREWS", "LOCALLY OWNED"];
   const credSpacing = (PW - 44) / creds.length;
   creds.forEach((c, i) => {
-    pdf.text(c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 1.2 });
-    pdf.setCharSpace(0);
+    trackedText(pdf, c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 0.4 });
   });
 
   // Footer
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
   setColor(pdf, [180, 200, 180]);
-  pdf.text("DABELLA.US", 22, PH - 14, { charSpace: 2 });
-  pdf.setCharSpace(0);
-  pdf.text("HOME IMPROVEMENT, EXPERTLY DONE", PW - 22, PH - 14, { align: "right", charSpace: 1.4 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "DABELLA.US", 22, PH - 14, { charSpace: 0.6 });
+  trackedText(pdf, "HOME IMPROVEMENT, EXPERTLY DONE", PW - 22, PH - 14, { align: "right", charSpace: 0.35 });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -297,8 +290,7 @@ function drawSelectedOption(
   pdf.setFont("times", "bold");
   pdf.setFontSize(6.5);
   setColor(pdf, FOREST_INK);
-  pdf.text(BADGES[opt.key] || "YOUR CHOICE", 47, heroY + 14.4, { align: "center", charSpace: 1.2 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, BADGES[opt.key] || "YOUR CHOICE", 47, heroY + 14.4, { align: "center", charSpace: 0.35 });
 
   // Option name
   pdf.setFont("times", "bold");
@@ -315,8 +307,7 @@ function drawSelectedOption(
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8);
   setColor(pdf, [200, 220, 200]);
-  pdf.text("TOTAL INVESTMENT — TURNKEY", 30, heroY + 65, { charSpace: 1.4 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "TOTAL INVESTMENT — TURNKEY", 30, heroY + 65, { charSpace: 0.4 });
 
   // Right side — monthly callout
   const rx = PW - 30;
@@ -325,8 +316,7 @@ function drawSelectedOption(
   pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, LIME);
-  pdf.text("AS LOW AS", rx, heroY + 26, { align: "right", charSpace: 1.6 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "AS LOW AS", rx, heroY + 26, { align: "right", charSpace: 0.5 });
 
   pdf.setFont("times", "bold");
   pdf.setFontSize(28);
@@ -336,8 +326,7 @@ function drawSelectedOption(
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(8);
   setColor(pdf, [200, 220, 200]);
-  pdf.text("PER MONTH WITH FINANCING", rx, heroY + 56, { align: "right", charSpace: 1.2 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "PER MONTH WITH FINANCING", rx, heroY + 56, { align: "right", charSpace: 0.35 });
 
   // ─── TWO COLUMN: FEATURES | VALUE SNAPSHOT ─────────────────
   const colY = heroY + heroH + 14;
@@ -370,9 +359,9 @@ function drawSelectedOption(
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8.5);
     setColor(pdf, INK);
-    const lines = pdf.splitTextToSize(f.text, colW - 18);
-    lines.forEach((ln: string, li: number) => pdf.text(ln, 35, fy + li * 4));
-    fy += lines.length * 4 + 3;
+    const lines = pdf.splitTextToSize(f.text, colW - 20);
+    lines.slice(0, 2).forEach((ln: string, li: number) => pdf.text(ln, 35, fy + li * 4.2));
+    fy += lines.slice(0, 2).length * 4.2 + 3.2;
   });
 
   // RIGHT — Value snapshot
@@ -503,8 +492,7 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   pdf.setFont("times", "bold");
   pdf.setFontSize(8);
   setColor(pdf, NEGATIVE);
-  pdf.text("COST OF WAITING", PW / 2, cy + 11, { align: "center", charSpace: 2 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "COST OF WAITING", PW / 2, cy + 11, { align: "center", charSpace: 0.7 });
 
   pdf.setFont("times", "bold");
   pdf.setFontSize(40);
@@ -541,14 +529,11 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, SLATE);
-  pdf.text("CATEGORY", 22, ty, { charSpace: 1.4 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "CATEGORY", 22, ty, { charSpace: 0.35 });
   setColor(pdf, POSITIVE);
-  pdf.text("MOVE FORWARD", colForward, ty, { charSpace: 1.4 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "MOVE FORWARD", colForward, ty, { charSpace: 0.35 });
   setColor(pdf, NEGATIVE);
-  pdf.text("DO NOTHING", colNothing, ty, { align: "right", charSpace: 1.4 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "DO NOTHING", colNothing, ty, { align: "right", charSpace: 0.35 });
 
   hairline(pdf, 22, ty + 3, PW - 22, ty + 3, FOREST_INK, 0.4);
 
@@ -633,8 +618,7 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   pdf.setFont("times", "bold");
   pdf.setFontSize(7.5);
   setColor(pdf, LIME);
-  pdf.text("NET ADVANTAGE OF MOVING FORWARD", PW / 2, y + 12, { align: "center", charSpace: 2 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "NET ADVANTAGE OF MOVING FORWARD", PW / 2, y + 12, { align: "center", charSpace: 0.6 });
 
   pdf.setFont("times", "bold");
   pdf.setFontSize(34);
@@ -679,8 +663,7 @@ function drawWindowInspection(pdf: jsPDF, state: EngineState) {
     pdf.setFont("times", "bold");
     pdf.setFontSize(7);
     setColor(pdf, STATUS_COLORS[entry.status] || SLATE);
-    pdf.text(STATUS_LABELS[entry.status] || "N/A", x + colW - 5, ry + 3.5, { align: "right", charSpace: 1.2 });
-    pdf.setCharSpace(0);
+    trackedText(pdf, STATUS_LABELS[entry.status] || "N/A", x + colW - 5, ry + 3.5, { align: "right", charSpace: 0.3 });
   });
 
   if (state.windowItems.length > 0) {
@@ -702,8 +685,7 @@ function drawWindowInspection(pdf: jsPDF, state: EngineState) {
     setColor(pdf, LIME);
     let hx = 22 + 2;
     headers.forEach((h, ci) => {
-      pdf.text(h, hx + 1, y + 4.8, { charSpace: 1 });
-      pdf.setCharSpace(0);
+      trackedText(pdf, h, hx + 1, y + 4.8, { charSpace: 0.25 });
       hx += cols[ci];
     });
 
@@ -754,7 +736,7 @@ function drawScope(pdf: jsPDF, state: EngineState) {
   // Two-column scope list — numbered editorial
   let y = 78;
   const colW = (PW - 44 - 10) / 2;
-  const rowH = 16;
+  const rowH = 20;
   const perCol = Math.ceil(items.length / 2);
 
   items.forEach((item, i) => {
@@ -775,8 +757,8 @@ function drawScope(pdf: jsPDF, state: EngineState) {
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8.5);
     setColor(pdf, INK);
-    const lines = pdf.splitTextToSize(item, colW - 16);
-    lines.slice(0, 2).forEach((ln: string, li: number) => pdf.text(ln, x + 14, ry + 7 + li * 4));
+    const lines = pdf.splitTextToSize(item, colW - 18);
+    lines.slice(0, 2).forEach((ln: string, li: number) => pdf.text(ln, x + 14, ry + 7 + li * 4.3));
   });
 
   // Pull quote at bottom
@@ -790,8 +772,7 @@ function drawScope(pdf: jsPDF, state: EngineState) {
   pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, SLATE);
-  pdf.text("YOUR DABELLA PROJECT MANAGER", PW / 2, qy + 19, { align: "center", charSpace: 1.6 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "YOUR DABELLA PROJECT MANAGER", PW / 2, qy + 19, { align: "center", charSpace: 0.45 });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -824,15 +805,13 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
   pdf.setFont("times", "bold");
   pdf.setFontSize(8);
   setColor(pdf, LIME);
-  pdf.text("DABELLA", PW / 2, 92, { align: "center", charSpace: 3 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "DABELLA", PW / 2, 92, { align: "center", charSpace: 0.7 });
 
   // Eyebrow
   pdf.setFont("times", "bold");
   pdf.setFontSize(7.5);
   setColor(pdf, ACCENT);
-  pdf.text("CHAPTER ONE", PW / 2, 122, { align: "center", charSpace: 2.5 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "CHAPTER ONE", PW / 2, 122, { align: "center", charSpace: 0.6 });
 
   // Headline — single line, tightly set
   pdf.setFont("times", "bold");
@@ -881,8 +860,7 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
     pdf.setFont("times", "bold");
     pdf.setFontSize(7);
     setColor(pdf, LIME);
-    pdf.text(top, cx + cardW / 2, py + 11, { align: "center", charSpace: 1.6 });
-    pdf.setCharSpace(0);
+    trackedText(pdf, top, cx + cardW / 2, py + 11, { align: "center", charSpace: 0.45 });
 
     pdf.setFont("times", "bold");
     pdf.setFontSize(11);
@@ -901,8 +879,7 @@ function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null)
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
   setColor(pdf, [160, 185, 165]);
-  pdf.text("DABELLA.US", PW / 2, PH - 16, { align: "center", charSpace: 2.4 });
-  pdf.setCharSpace(0);
+  trackedText(pdf, "DABELLA.US", PW / 2, PH - 16, { align: "center", charSpace: 0.65 });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -951,11 +928,9 @@ export async function buildCustomerPdf(
     pdf.setFont("times", "bold");
     pdf.setFontSize(6.5);
     setColor(pdf, SLATE);
-    pdf.text("DABELLA · PROPOSAL", 22, PH - 11, { charSpace: 1.6 });
-    pdf.setCharSpace(0);
+    trackedText(pdf, "DABELLA · PROPOSAL", 22, PH - 11, { charSpace: 0.45 });
     pdf.setFont("helvetica", "normal");
-    pdf.text(`${String(p).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`, PW - 22, PH - 11, { align: "right", charSpace: 1.2 });
-    pdf.setCharSpace(0);
+    trackedText(pdf, `${String(p).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`, PW - 22, PH - 11, { align: "right", charSpace: 0.3 });
   }
 
   return { blob: pdf.output("blob"), doc: pdf };
