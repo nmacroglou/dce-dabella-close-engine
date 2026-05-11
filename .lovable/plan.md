@@ -1,126 +1,57 @@
-# Refactor & Upscale Plan
 
-Two coordinated workstreams: **(A) PDF export module** and **(B) Whole‑app design system**. Each section has a code‑quality pass, a polish pass, and a performance pass. Behavior stays identical for the user — same pages, same numbers, same routes.
+# Dashboard 2.0 — Operator's Command Center
 
----
+Goal: Turn the Dashboard from a snapshot into a true operating cockpit a DaBella rep (and their leader) can use to run the day, spot trends week-over-week, and report up/down with confidence.
 
-## A. PDF export module (`src/lib/exportPdf.ts`, 1,025 lines → ~7 small files)
+## What's changing (visible)
 
-### Current pain
-- One 1,025‑line file mixing brand tokens, low‑level jsPDF helpers, page renderers, font loading, debug overlay, and the public API.
-- Magic numbers (margins, line heights, column splits) repeated across every page renderer.
-- Colors typed as `readonly [number, number, number]` tuples — no semantic naming when used inside a renderer.
-- Font loading runs on every export; no cache between exports in a session.
-- Debug overlay (just added) lives next to the builder and inflates the file further.
+1. **Hero band → "State of the Week"**
+   - Keeps the greeting, but adds a compact **WoW chip strip**: Revenue, Close rate, Deals run, $/hour — each with a delta vs last week (▲/▼ %, color-coded).
+   - SLA ring gains a 7-day trendline underneath.
 
-### Target structure
-```text
-src/lib/pdf/
-  index.ts              ← re-exports buildCustomerPdf, exportCustomerPdf
-  build.ts              ← orchestrator (was buildCustomerPdf)
-  theme.ts              ← brand palette + typography tokens (single source of truth)
-  primitives.ts         ← rect, rounded, shadow, vGradient, hairline, eyebrow, trackedText
-  fonts.ts              ← registerPdfFonts + module-level cache
-  assets.ts             ← loadImageDataUrl + cache
-  debug.ts              ← installDebugRecorder + drawDebugOverlay
-  pages/
-    cover.ts
-    selectedOption.ts
-    tClose.ts
-    financialImpact.ts
-    windowInspection.ts
-    scope.ts
-    welcome.ts
-    footer.ts           ← shared interior-page footer
-```
+2. **New: "Trends — Week over Week" card** (replaces the bare 14-day chart with a richer module)
+   - Toggle: **7d / 4w / 12w** range; metric switch: **Revenue / Close rate / Deals run / Leads / $/hour**.
+   - Dual-series chart: current period (solid) vs prior period (dashed) for instant WoW comparison.
+   - Sparkline tiles below for the other 4 metrics so leaders see all KPIs trending at once.
 
-### Code‑quality changes
-- Extract magic numbers into `theme.ts` as a `LAYOUT` object: `PAGE_W`, `PAGE_H`, `MARGIN`, `GUTTER`, `BODY_LH`, etc.
-- Replace ad‑hoc tuple colors with a `Palette` object: `palette.forest`, `palette.lime`, `palette.brass`, `palette.posSoft`, etc. Each page renderer imports from `theme.ts` only.
-- Introduce a small `PdfCtx` object passed to every page renderer (`{ pdf, palette, layout, logo }`) so renderers don't all import six modules.
-- Add a `Section` helper (`section(ctx, { x, y, w, title, eyebrow })`) to standardize headers used across pages.
-- Tighten types: replace `any` casts in the debug recorder with proper jsPDF types.
-- Keep the public API unchanged: `buildCustomerPdf(state, computed, options, selectedOption?, opts?)`.
+3. **New: "Activity Timeline" (last 14 days)**
+   - Vertical, day-grouped timeline of meaningful events: stage changes (from `deal_stage_history`), wins/losses, follow-up completions/overdues, objections logged.
+   - Filter chips (All / Wins / Losses / Follow-ups / Objections) and search by homeowner.
+   - Each row links to the deal. Powers internal standups and external rep reviews.
 
-### Visual polish
-- Single shared interior footer (currently re‑drawn in a loop) becomes `pages/footer.ts` and is called per page in the orchestrator.
-- Standardize section spacing rhythm via `LAYOUT.section.gap` so all pages breathe the same.
-- Align column widths in Selected Option, T‑Close, and Financial Impact to the same 2‑col grid (currently each uses slightly different math).
+4. **Conversion ribbon**
+   - Inspect → Present → Won funnel with **stage conversion %** between each step and **avg days in stage** (the second number leaders ask for first).
 
-### Performance
-- Cache the registered font VFS payload at module scope so the second export in a session skips `fetch` + base64 work.
-- Cache the logo data URL the same way.
-- Build pages without the debug recorder unless `opts.debug` is set (already true; keep it that way after refactor).
+5. **Objection trends mini-heatmap**
+   - 8-week heatmap (rows = top objections, columns = weeks) showing frequency intensity. Click a cell → filtered timeline.
 
-### Risk control
-- One‑file‑at‑a‑time extraction; after each move, render a sample PDF and diff‑check it visually with the existing debug overlay (collisions = 0).
-- No business‑logic changes in `engineHelpers` or `useCloseEngine`.
+6. **Reporting actions**
+   - Header buttons: **Copy weekly summary** (rich text to clipboard for Slack/email) and **Export CSV** (daily metrics for the selected range). No backend; client-side.
 
----
+## Technical plan
 
-## B. Whole‑app design system
+- **New pure helpers** in `src/lib/dashboardSeries.ts`:
+  - `bucketByDay(deals, days)`, `bucketByWeek(deals, weeks)` returning `{ revenue, dealsRun, won, lost, leads, dollarsPerHour }` per bucket.
+  - `wowDelta(current, prior)` → `{ pct, dir }`.
+  - `weeklySummaryText(stats, wow)` → string for clipboard.
+  - `toCsv(rows)` → string.
+- **New hook** `useActivityTimeline()` — joins `deal_stage_history` (already in DB), `deal_objections`, `follow_ups` (completed/overdue) into a unified, sorted `TimelineEvent[]`. Uses existing tables only; no migrations.
+- **New components** under `src/components/dashboard/`:
+  - `WowChipStrip.tsx` — 4 mini-deltas for the hero.
+  - `TrendsCard.tsx` — range/metric controls + dual-series SVG chart (current vs prior period overlay) + 4 sparkline tiles. Reuses the SVG idiom from `EarningsLeadFlowChart`.
+  - `ActivityTimeline.tsx` — day-grouped list with filter chips and search.
+  - `ConversionRibbon.tsx` — funnel + conversion% + avg-days-in-stage.
+  - `ObjectionHeatmap.tsx` — 8-week × top-N grid.
+  - `ReportingActions.tsx` — copy summary + CSV export buttons.
+- **Dashboard.tsx** rewires sections in this order: Hero (with WoW chips) → Trends card → Conversion ribbon → Rep Economics (kept) → Activity Timeline → Objection heatmap → existing follow-up hot list. Removes the standalone `EarningsLeadFlowChart` placement (its essence is absorbed into TrendsCard).
+- **Design system**: all colors via existing semantic tokens (`primary`, `success`, `warning`, `destructive`, `muted`); reuses `card-elevated-lg`, `gradient-*`, and shared chart gradients. No new fonts.
+- **Performance**: All series computed in `useMemo`; timeline virtualized only if event count > 200 (otherwise plain render). No new dependencies.
 
-### Current pain
-- `index.css` defines tokens for both light and dark, but components still use ad‑hoc utility combos (`bg-card border border-border rounded-2xl`) repeatedly instead of the existing `card-elevated` / `metric-card` / `glass` utilities.
-- Two display fonts are declared (`Plus Jakarta Sans`, `Inter`) but several screens override with `font-display` / `font-extrabold` inline in inconsistent sizes.
-- Custom hex colors leak into a few presentation components instead of going through tokens.
-- Animations are defined in `tailwind.config.ts` but components also use raw `transition-all` strings.
+## Out of scope (for this turn)
+- No DB migrations, no auth/role changes, no edge functions.
+- Per-rep leaderboards (would require a roles table); can follow in a later turn.
+- Mobile-app-grade gestures; we'll keep responsive but not add swipe.
 
-### Tokens & typography
-- Add a small **type scale** in `tailwind.config.ts`: `text-display-xl`, `text-display-lg`, `text-eyebrow`, `text-metric` — wired to fontSize + lineHeight + letterSpacing pairs. Replace ad‑hoc `text-3xl font-extrabold tracking-tight` clusters.
-- Add semantic surface tokens to `index.css`: `--surface-1`, `--surface-2`, `--surface-raised` mapped to the existing card/muted hierarchy. Components stop hand‑rolling `bg-card/70 backdrop-blur-xl`.
-- Promote `--radius-pill`, `--radius-card`, `--radius-chip` so corner radii stop drifting.
-- Audit dark mode contrast on the Customer Presentation header and Financial Impact tiles; tune `--muted-foreground` if any field reads gray‑on‑gray.
-
-### Reusable primitives (no behavior change)
-Create `src/components/ui/primitives/`:
-- `Eyebrow.tsx` — uppercase, tracked label used across presentation pages.
-- `StatTile.tsx` already exists in pipeline; generalize and re‑use in dashboard + presentation.
-- `SectionHeader.tsx` already exists; expand to take `eyebrow`, `title`, `kicker` and adopt across CalculatorTab, PlaybookTab, CoachModeTab.
-- `MetricRow` for the repeated label/value rows in Calculator and Commission.
-
-### Refactors per area
-- `CustomerPresentationView.tsx` (252 lines) → split into `PresentationHeader`, `PresentationStageNav`, `PresentationFooterNav`. Body stays in the parent.
-- `CalculatorTab.tsx` (280 lines) → extract `PriceInputsRow`, `OptionPriceTrio`, `FinanceTermsRow`.
-- `CommissionTab.tsx` and `commission/*` → consolidate the two grid editors' shared row/cell rendering.
-- `engineHelpers.ts` + `useCloseEngine.ts` → move pure math (discount application, ROI, monthly conversion) to `src/lib/engine/math.ts` so both PDF and UI import the same functions.
-
-### Performance
-- Lazy‑load the heavy customer presentation: `const CustomerPresentationView = React.lazy(...)` in `PresentationTab.tsx` so it isn't in the initial dashboard bundle.
-- Lazy‑load `exportPdf` (`pdf/index.ts`) only when the Share dialog opens (already only imported there — confirm and keep).
-- Add `vite` manualChunks for `jspdf` so it stays out of the main chunk.
-- Wrap chart/table rows that re‑render on every state change with `React.memo` where props are stable (Commission grid cells, FinancialImpact rows).
-
-### Risk control
-- Token rename uses codemod‑style search‑and‑replace per file, never global. Spot‑check the dashboard, deals page, and presentation flow after each batch.
-- No changes to data shapes, Supabase calls, or routes.
-
----
-
-## Sequencing (suggested order across multiple turns)
-
-1. **Turn 1 — PDF refactor (structure only):** create `src/lib/pdf/` files, move helpers and pages with no logic changes, keep `src/lib/exportPdf.ts` as a thin re‑export shim. Verify with debug overlay.
-2. **Turn 2 — PDF polish + caching:** unify section/footer, font + logo caching, layout grid normalization.
-3. **Turn 3 — Design tokens:** type scale, surface tokens, radius tokens; migrate `CustomerPresentationView` + `CalculatorTab` to the new tokens as the proof‑of‑pattern.
-4. **Turn 4 — Primitives + remaining tabs:** roll the new primitives across Commission, Playbook, Coach, Objections, Closing Stack.
-5. **Turn 5 — Performance:** lazy routes, manualChunks, memoization sweep.
-
-Each turn is independently shippable and visually identical (or strictly tighter) to the previous version.
-
----
-
-## Out of scope (explicit)
-- No Supabase schema changes.
-- No new features, no auth changes, no routing changes.
-- No copy or pricing logic edits.
-- No swap of jsPDF for another library (would invalidate the just‑tuned typography work).
-
----
-
-## Technical notes (for engineers)
-- `installDebugRecorder` will be moved verbatim into `pdf/debug.ts`; the `any` casts get replaced with `jsPDF["text"]` parameter types.
-- Module‑scope caches: `let _fontsRegistered = false; let _logoDataUrl: string | null = null;` guarded by a `WeakMap<jsPDF, true>` so multiple `pdf` instances per session still register fonts on each new doc but skip the network fetch.
-- Vite `build.rollupOptions.output.manualChunks`: `{ jspdf: ['jspdf'], radix: [/@radix-ui/], charts: ['recharts'] }`.
-- Type scale entries follow `[fontSize, { lineHeight, letterSpacing, fontWeight }]` tuple form supported by Tailwind.
-
-Approve and I'll start with **Turn 1 (PDF structural refactor)** unless you want a different starting point.
+## Acceptance
+- Dashboard shows WoW deltas on the hero, a working range/metric switcher, a populated 14-day activity timeline, and the Copy Summary button puts a readable weekly recap on the clipboard.
+- No console errors; all existing data flows (deals, follow-ups, objections, stage history) continue to work.
