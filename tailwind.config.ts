@@ -71,7 +71,6 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-      },
         surface: {
           sunken: "hsl(var(--surface-sunken))",
           base: "hsl(var(--surface-base))",
