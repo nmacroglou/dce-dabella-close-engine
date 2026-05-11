@@ -5,6 +5,22 @@ import { SCOPE_ITEMS } from "@/data/scopeItems";
 import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
 import { getNames, getOptionMetrics, getOptionLabel, getProductLabel, hasProduct } from "@/lib/engineHelpers";
+import dabellaLogoUrl from "@/assets/dabella-logo.png";
+
+async function loadImageDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = () => resolve(null);
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
 
 /* ════════════════════════════════════════════════════════════════
    DABELLA CUSTOMER PROPOSAL — Editorial / Magazine-grade PDF
