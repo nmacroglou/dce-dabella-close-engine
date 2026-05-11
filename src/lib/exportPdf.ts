@@ -470,7 +470,9 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   pdf.setLineWidth(0.4);
   pdf.roundedRect(38, cy, PW - 76, 50, 4, 4, "S");
 
-  eyebrow(pdf, "Cost of Waiting", PW / 2, cy + 11, NEGATIVE, 8);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(8);
+  setColor(pdf, NEGATIVE);
   pdf.text("COST OF WAITING", PW / 2, cy + 11, { align: "center", charSpace: 2 });
   pdf.setCharSpace(0);
 
