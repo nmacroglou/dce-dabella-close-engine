@@ -5,12 +5,13 @@ import { getOptionMetrics, getProductLabel } from "@/lib/engineHelpers";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import {
   type RGB,
-  ACCENT, BORDER, CARD, CREAM, FOREST, FOREST_INK, GRAPHITE, INK,
-  LIME, LIME_DEEP, MIST, POSITIVE, PW, SLATE, WHITE,
+  ACCENT, BORDER, CARD, CREAM, FOREST_INK, GRAPHITE, INK,
+  LIME, LIME_DEEP, MIST, POSITIVE, PW, WHITE,
 } from "../theme";
+import { COL_LEFT_X, COL_RIGHT_X, CONTENT_W, HALF_W, MARGIN, RHYTHM } from "../layout";
 import {
-  eyebrow, hairline, pageBg, rounded, sectionHeader, setBodyFont, setColor,
-  setDisplayFont, setFill, shadow, trackedText, vGradient,
+  eyebrow, hairline, heroBand, pageBg, rounded, sectionHeader, setBodyFont,
+  setColor, setDisplayFont, setFill, trackedText,
 } from "../primitives";
 
 export function drawSelectedOption(
@@ -29,32 +30,28 @@ export function drawSelectedOption(
     `A complete ${getProductLabel(state.products).toLowerCase()} system, tailored to your home and built to outlast it.`,
   );
 
-  const heroY = 78;
+  const heroY = RHYTHM.sectionTop;
   const heroH = 78;
-  shadow(pdf, 22, heroY, PW - 44, heroH, 4, 0.12);
-  vGradient(pdf, 22, heroY, PW - 44, heroH, FOREST, FOREST_INK);
+  heroBand(pdf, MARGIN, heroY, CONTENT_W, heroH);
 
-  setFill(pdf, ACCENT);
-  pdf.rect(22, heroY, PW - 44, 0.7, "F");
-
-  rounded(pdf, 30, heroY + 10, 34, 6.5, 3, ACCENT);
+  rounded(pdf, MARGIN + 8, heroY + 10, 34, 6.5, 3, ACCENT);
   setDisplayFont(pdf, 6.5);
   setColor(pdf, FOREST_INK);
-  trackedText(pdf, BADGES[opt.key] || "YOUR CHOICE", 47, heroY + 14.4, { align: "center", charSpace: 0.35 });
+  trackedText(pdf, BADGES[opt.key] || "YOUR CHOICE", MARGIN + 25, heroY + 14.4, { align: "center", charSpace: 0.35 });
 
   setDisplayFont(pdf, 12);
   setColor(pdf, WHITE);
-  pdf.text(opt.name, 30, heroY + 28);
+  pdf.text(opt.name, MARGIN + 8, heroY + 28);
 
   setDisplayFont(pdf, 34);
   setColor(pdf, WHITE);
-  pdf.text(fmt(opt.price), 30, heroY + 56);
+  pdf.text(fmt(opt.price), MARGIN + 8, heroY + 56);
 
   setBodyFont(pdf, 8);
   setColor(pdf, [200, 220, 200]);
-  trackedText(pdf, "TOTAL INVESTMENT — TURNKEY", 30, heroY + 65, { charSpace: 0.4 });
+  trackedText(pdf, "TOTAL INVESTMENT — TURNKEY", MARGIN + 8, heroY + 65, { charSpace: 0.4 });
 
-  const rx = PW - 30;
+  const rx = PW - MARGIN - 8;
   hairline(pdf, rx - 60, heroY + 18, rx - 60, heroY + 70, [80, 120, 85], 0.3);
 
   setDisplayFont(pdf, 7);
@@ -69,21 +66,21 @@ export function drawSelectedOption(
   setColor(pdf, [200, 220, 200]);
   trackedText(pdf, "PER MONTH WITH FINANCING", rx, heroY + 56, { align: "right", charSpace: 0.35 });
 
-  const colY = heroY + heroH + 14;
-  const gutter = 8;
-  const colW = (PW - 44 - gutter) / 2;
-
+  const colY = heroY + heroH + RHYTHM.blockGap;
+  const colW = HALF_W;
   const featH = 100;
-  rounded(pdf, 22, colY, colW, featH, 3, CARD, BORDER);
-  setFill(pdf, LIME);
-  pdf.rect(22, colY, 1.4, featH, "F");
 
-  eyebrow(pdf, "What's Included", 30, colY + 10, LIME_DEEP, 7);
+  // LEFT — Features card
+  rounded(pdf, COL_LEFT_X, colY, colW, featH, 3, CARD, BORDER);
+  setFill(pdf, LIME);
+  pdf.rect(COL_LEFT_X, colY, 1.4, featH, "F");
+
+  eyebrow(pdf, "What's Included", COL_LEFT_X + 8, colY + 10, LIME_DEEP, 7);
   setDisplayFont(pdf, 10.5);
   setColor(pdf, FOREST_INK);
-  pdf.text("Every detail. Every guarantee.", 30, colY + 18);
+  pdf.text("Every detail. Every guarantee.", COL_LEFT_X + 8, colY + 18);
 
-  hairline(pdf, 30, colY + 22, 22 + colW - 8, colY + 22, MIST, 0.3);
+  hairline(pdf, COL_LEFT_X + 8, colY + 22, COL_LEFT_X + colW - 8, colY + 22, MIST, 0.3);
 
   const customTexts = state.customFeatures && state.customFeatures.length > 0 ? state.customFeatures : null;
   const features = customTexts
@@ -93,15 +90,16 @@ export function drawSelectedOption(
   let fy = colY + 30;
   features.slice(0, 8).forEach((f) => {
     setFill(pdf, LIME);
-    pdf.circle(31, fy - 1.2, 0.9, "F");
+    pdf.circle(COL_LEFT_X + 9, fy - 1.2, 0.9, "F");
     setBodyFont(pdf, 8.5);
     setColor(pdf, INK);
     const lines = pdf.splitTextToSize(f.text, colW - 20);
-    lines.slice(0, 2).forEach((ln: string, li: number) => pdf.text(ln, 35, fy + li * 4.2));
+    lines.slice(0, 2).forEach((ln: string, li: number) => pdf.text(ln, COL_LEFT_X + 13, fy + li * 4.2));
     fy += lines.slice(0, 2).length * 4.2 + 3.2;
   });
 
-  const rxc = 22 + colW + gutter;
+  // RIGHT — Value snapshot
+  const rxc = COL_RIGHT_X;
   rounded(pdf, rxc, colY, colW, featH, 3, CREAM, BORDER);
   setFill(pdf, ACCENT);
   pdf.rect(rxc, colY, 1.4, featH, "F");
@@ -143,5 +141,4 @@ export function drawSelectedOption(
   setDisplayFont(pdf, 12.5);
   setColor(pdf, WHITE);
   pdf.text(fmt(optComputed.netCost), rxc + colW - 12, vy + 12, { align: "right" });
-  void SLATE;
 }

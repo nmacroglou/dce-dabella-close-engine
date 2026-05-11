@@ -98,6 +98,20 @@ export function pageBg(pdf: jsPDF) {
   rect(pdf, 0, 0, PW, 297, PAPER);
 }
 
+/**
+ * Dark forest gradient panel with a brass hairline along its top edge —
+ * used for the price hero, the cost-of-waiting band, and the welcome page.
+ */
+export function heroBand(
+  pdf: jsPDF, x: number, y: number, w: number, h: number, r = 4,
+  topRgb: RGB = [27, 64, 30], bottomRgb: RGB = [12, 30, 14],
+) {
+  shadow(pdf, x, y, w, h, r, 0.12);
+  vGradient(pdf, x, y, w, h, topRgb, bottomRgb);
+  setFill(pdf, ACCENT);
+  pdf.rect(x, y, w, 0.7, "F");
+}
+
 // ─── Section header used on interior pages ────────────────────
 export function sectionHeader(
   pdf: jsPDF, eyebrowText: string, title: string, subtitle?: string,
