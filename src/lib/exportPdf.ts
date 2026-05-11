@@ -1,10 +1,26 @@
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
 import { SCOPE_ITEMS } from "@/data/scopeItems";
 import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { fmt } from "@/lib/format";
 import { getNames, getOptionMetrics, getOptionLabel, getProductLabel, hasProduct } from "@/lib/engineHelpers";
+import dabellaLogoUrl from "@/assets/dabella-logo.png";
+
+async function loadImageDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const r = new FileReader();
+      r.onloadend = () => resolve(r.result as string);
+      r.onerror = () => resolve(null);
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
 
 /* ════════════════════════════════════════════════════════════════
    DABELLA CUSTOMER PROPOSAL — Editorial / Magazine-grade PDF
@@ -84,10 +100,11 @@ function hairline(pdf: jsPDF, x1: number, y1: number, x2: number, y2: number, c:
 }
 
 function eyebrow(pdf: jsPDF, text: string, x: number, y: number, color: RGB = SLATE, size = 7.5) {
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(size);
   setColor(pdf, color);
   pdf.text(text.toUpperCase(), x, y, { charSpace: 1.6 });
+  pdf.setCharSpace(0);
 }
 
 function pageBg(pdf: jsPDF) {
@@ -124,67 +141,74 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setGState(pdf.GState({ opacity: 1 }));
 
   // Header — issue/date band
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, LIME);
   pdf.text("DABELLA", 22, 22, { charSpace: 3 });
+  pdf.setCharSpace(0);
   pdf.setFont("helvetica", "normal");
   setColor(pdf, [220, 230, 220]);
   const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   pdf.text(today.toUpperCase(), PW - 22, 22, { align: "right", charSpace: 1.4 });
+  pdf.setCharSpace(0);
 
   // Eyebrow
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(8);
   setColor(pdf, LIME);
   pdf.text("PRIVATE PROPOSAL · NO. 001", 22, 100, { charSpace: 2.2 });
+  pdf.setCharSpace(0);
 
-  // Massive editorial headline
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(54);
+  // Editorial headline — sized to fit
+  pdf.setFont("times", "bold");
+  pdf.setFontSize(46);
   setColor(pdf, WHITE);
-  pdf.text("A Home", 22, 130);
-  pdf.text("Built To", 22, 150);
-  pdf.text("Last.", 22, 170);
+  pdf.text("A Home", 22, 132);
+  pdf.text("Built To Last.", 22, 154);
 
   // Brass underscore
   setFill(pdf, ACCENT);
-  pdf.rect(22, 178, 30, 1.2, "F");
+  pdf.rect(22, 162, 30, 1.2, "F");
 
   // Subhead
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(11);
   setColor(pdf, [220, 232, 220]);
-  pdf.text(`A bespoke ${getProductLabel(state.products).toLowerCase()} proposal`, 22, 192);
-  pdf.text("crafted for your home — and your future.", 22, 199);
+  pdf.text(`A bespoke ${getProductLabel(state.products).toLowerCase()} proposal`, 22, 178);
+  pdf.text("crafted for your home — and your future.", 22, 185);
 
-  // Recipient block — bottom-left, typographic
-  const ry = 232;
-  hairline(pdf, 22, ry, 90, ry, ACCENT, 0.5);
-  pdf.setFont("helvetica", "bold");
+  // Recipient block — full-width line, name auto-sized to fit
+  const ry = 222;
+  hairline(pdf, 22, ry, PW - 22, ry, ACCENT, 0.5);
+  pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, ACCENT);
   pdf.text("PREPARED FOR", 22, ry + 7, { charSpace: 1.8 });
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(20);
-  setColor(pdf, WHITE);
-  pdf.text(names, 22, ry + 19);
+  pdf.setCharSpace(0);
 
-  // Right-side credentials (vertical type strip)
-  const credX = PW - 22;
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(7);
+  // Auto-fit name
+  pdf.setFont("times", "bold");
+  let nameSize = 22;
+  pdf.setFontSize(nameSize);
+  const maxNameW = PW - 44;
+  while (pdf.getTextWidth(names) > maxNameW && nameSize > 12) {
+    nameSize -= 1;
+    pdf.setFontSize(nameSize);
+  }
+  setColor(pdf, WHITE);
+  pdf.text(names, 22, ry + 22);
+
+  // Credentials — bottom strip (single horizontal row)
+  const credY = 256;
+  hairline(pdf, 22, credY, PW - 22, credY, [80, 120, 85], 0.3);
+  pdf.setFont("times", "bold");
+  pdf.setFontSize(6.5);
   setColor(pdf, [200, 215, 200]);
-  const creds = [
-    "LIFETIME WARRANTY",
-    "GAF MASTER ELITE",
-    "TOP-RATED CREWS",
-    "LOCALLY OWNED",
-  ];
-  let cy = 232;
-  creds.forEach((c) => {
-    pdf.text(c, credX, cy, { align: "right", charSpace: 1.4 });
-    cy += 6;
+  const creds = ["LIFETIME WARRANTY", "GAF MASTER ELITE", "TOP-RATED CREWS", "LOCALLY OWNED"];
+  const credSpacing = (PW - 44) / creds.length;
+  creds.forEach((c, i) => {
+    pdf.text(c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 1.2 });
+    pdf.setCharSpace(0);
   });
 
   // Footer
@@ -192,7 +216,9 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.setFontSize(7);
   setColor(pdf, [180, 200, 180]);
   pdf.text("DABELLA.US", 22, PH - 14, { charSpace: 2 });
+  pdf.setCharSpace(0);
   pdf.text("HOME IMPROVEMENT, EXPERTLY DONE", PW - 22, PH - 14, { align: "right", charSpace: 1.4 });
+  pdf.setCharSpace(0);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -203,12 +229,13 @@ function sectionHeader(pdf: jsPDF, eyebrowText: string, title: string, subtitle?
   setFill(pdf, ACCENT);
   pdf.rect(22, 22, 14, 0.9, "F");
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(7.5);
   setColor(pdf, LIME_DEEP);
   pdf.text(eyebrowText.toUpperCase(), 22, 30, { charSpace: 2 });
+  pdf.setCharSpace(0);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(26);
   setColor(pdf, FOREST_INK);
   pdf.text(title, 22, 45);
@@ -255,19 +282,20 @@ function drawSelectedOption(
 
   // Badge pill
   rounded(pdf, 30, heroY + 10, 34, 6.5, 3, ACCENT);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(6.5);
   setColor(pdf, FOREST_INK);
   pdf.text(BADGES[opt.key] || "YOUR CHOICE", 47, heroY + 14.4, { align: "center", charSpace: 1.2 });
+  pdf.setCharSpace(0);
 
   // Option name
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(13);
   setColor(pdf, WHITE);
   pdf.text(opt.name, 30, heroY + 28);
 
   // Big price (left aligned, oversized)
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(44);
   setColor(pdf, WHITE);
   pdf.text(fmt(opt.price), 30, heroY + 56);
@@ -276,17 +304,19 @@ function drawSelectedOption(
   pdf.setFontSize(8);
   setColor(pdf, [200, 220, 200]);
   pdf.text("TOTAL INVESTMENT — TURNKEY", 30, heroY + 65, { charSpace: 1.4 });
+  pdf.setCharSpace(0);
 
   // Right side — monthly callout
   const rx = PW - 30;
   hairline(pdf, rx - 60, heroY + 18, rx - 60, heroY + 70, [80, 120, 85], 0.3);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, LIME);
   pdf.text("AS LOW AS", rx, heroY + 26, { align: "right", charSpace: 1.6 });
+  pdf.setCharSpace(0);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(28);
   setColor(pdf, WHITE);
   pdf.text(fmt(opt.monthly), rx, heroY + 47, { align: "right" });
@@ -295,6 +325,7 @@ function drawSelectedOption(
   pdf.setFontSize(8);
   setColor(pdf, [200, 220, 200]);
   pdf.text("PER MONTH WITH FINANCING", rx, heroY + 56, { align: "right", charSpace: 1.2 });
+  pdf.setCharSpace(0);
 
   // ─── TWO COLUMN: FEATURES | VALUE SNAPSHOT ─────────────────
   const colY = heroY + heroH + 14;
@@ -308,7 +339,7 @@ function drawSelectedOption(
   pdf.rect(22, colY, 1.4, featH, "F");
 
   eyebrow(pdf, "What's Included", 30, colY + 10, LIME_DEEP, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(11);
   setColor(pdf, FOREST_INK);
   pdf.text("Every detail. Every guarantee.", 30, colY + 18);
@@ -339,7 +370,7 @@ function drawSelectedOption(
   pdf.rect(rxc, colY, 1.4, featH, "F");
 
   eyebrow(pdf, "Value Snapshot", rxc + 8, colY + 10, [150, 110, 20], 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(11);
   setColor(pdf, FOREST_INK);
   pdf.text("What this earns you back.", rxc + 8, colY + 18);
@@ -361,7 +392,7 @@ function drawSelectedOption(
     setColor(pdf, GRAPHITE);
     pdf.text(r.label, rxc + 8, vy);
 
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(10);
     setColor(pdf, r.valueColor || INK);
     pdf.text(r.value, rxc + colW - 8, vy, { align: "right" });
@@ -373,11 +404,12 @@ function drawSelectedOption(
   // Net effective cost — highlight
   vy += 2;
   rounded(pdf, rxc + 6, vy, colW - 12, 18, 2, FOREST_INK);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(6.5);
   setColor(pdf, LIME);
   pdf.text("NET EFFECTIVE COST", rxc + 12, vy + 7, { charSpace: 1.4 });
-  pdf.setFont("helvetica", "bold");
+  pdf.setCharSpace(0);
+  pdf.setFont("times", "bold");
   pdf.setFontSize(13);
   setColor(pdf, WHITE);
   pdf.text(fmt(optComputed.netCost), rxc + colW - 12, vy + 12, { align: "right" });
@@ -424,7 +456,7 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   setFill(pdf, LIME);
   pdf.rect(22, py, halfW, 1.2, "F");
   eyebrow(pdf, "Today's Price · Locked", 28, py + 11, LIME_DEEP, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(34);
   setColor(pdf, FOREST_INK);
   pdf.text(fmt(m.price), 22 + halfW / 2, py + 36, { align: "center" });
@@ -439,7 +471,7 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   setFill(pdf, NEGATIVE);
   pdf.rect(fx, py, halfW, 1.2, "F");
   eyebrow(pdf, "Same Project · 10 Years", fx + 6, py + 11, NEGATIVE, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(34);
   setColor(pdf, NEGATIVE);
   pdf.text(fmt(futurePrice), fx + halfW / 2, py + 36, { align: "center" });
@@ -456,10 +488,13 @@ function drawTClose(pdf: jsPDF, state: EngineState, computed: ComputedValues, se
   pdf.setLineWidth(0.4);
   pdf.roundedRect(38, cy, PW - 76, 50, 4, 4, "S");
 
-  eyebrow(pdf, "Cost of Waiting", PW / 2, cy + 11, NEGATIVE, 8);
+  pdf.setFont("times", "bold");
+  pdf.setFontSize(8);
+  setColor(pdf, NEGATIVE);
   pdf.text("COST OF WAITING", PW / 2, cy + 11, { align: "center", charSpace: 2 });
+  pdf.setCharSpace(0);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(40);
   setColor(pdf, NEGATIVE);
   pdf.text(`+${fmt(m.inflationPenalty)}`, PW / 2, cy + 35, { align: "center" });
@@ -485,18 +520,23 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
     `Option ${selectedKey} · ${label} — what happens if you move forward, vs. if you don't.`,
   );
 
-  // Two-column header
+  // Two-column header — full table width
   const ty = 78;
-  const colW = (PW - 44) / 2;
+  const tableW = PW - 44;
+  const colForward = 22 + tableW * 0.62;
+  const colNothing = 22 + tableW;
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, SLATE);
   pdf.text("CATEGORY", 22, ty, { charSpace: 1.4 });
+  pdf.setCharSpace(0);
   setColor(pdf, POSITIVE);
-  pdf.text("MOVE FORWARD", 22 + colW * 0.55, ty, { charSpace: 1.4 });
+  pdf.text("MOVE FORWARD", colForward, ty, { charSpace: 1.4 });
+  pdf.setCharSpace(0);
   setColor(pdf, NEGATIVE);
-  pdf.text("DO NOTHING", 22 + colW * 0.95, ty, { align: "right", charSpace: 1.4 });
+  pdf.text("DO NOTHING", colNothing, ty, { align: "right", charSpace: 1.4 });
+  pdf.setCharSpace(0);
 
   hairline(pdf, 22, ty + 3, PW - 22, ty + 3, FOREST_INK, 0.4);
 
@@ -529,7 +569,7 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
 
   let y = ty + 12;
   rows.forEach((r) => {
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(10);
     setColor(pdf, FOREST_INK);
     pdf.text(r.label, 22, y);
@@ -539,13 +579,13 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
     setColor(pdf, SLATE);
     pdf.text(r.hint, 22, y + 5);
 
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(13);
     setColor(pdf, r.forwardColor);
-    pdf.text(r.forward, 22 + colW * 0.55, y + 2);
+    pdf.text(r.forward, colForward, y + 2);
 
     setColor(pdf, r.nothingColor);
-    pdf.text(r.nothing, 22 + colW * 0.95, y + 2, { align: "right" });
+    pdf.text(r.nothing, colNothing, y + 2, { align: "right" });
 
     hairline(pdf, 22, y + 11, PW - 22, y + 11, MIST, 0.2);
     y += 18;
@@ -558,7 +598,7 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
 
   rounded(pdf, 22, y, halfW, tH, 3, POS_SOFT, [180, 220, 185]);
   eyebrow(pdf, "Move Forward", 28, y + 10, POSITIVE, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(22);
   setColor(pdf, FOREST_INK);
   pdf.text(`+${fmt(m.moveForward)}`, 22 + halfW / 2, y + 26, { align: "center" });
@@ -566,7 +606,7 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   const dx = 22 + halfW + 8;
   rounded(pdf, dx, y, halfW, tH, 3, NEG_SOFT, [240, 180, 180]);
   eyebrow(pdf, "Do Nothing", dx + 6, y + 10, NEGATIVE, 7);
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(22);
   setColor(pdf, FOREST_INK);
   pdf.text(fmt(m.doNothing), dx + halfW / 2, y + 26, { align: "center" });
@@ -578,12 +618,13 @@ function drawFinancialImpact(pdf: jsPDF, state: EngineState, computed: ComputedV
   setFill(pdf, ACCENT);
   pdf.rect(22, y, PW - 44, 0.7, "F");
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(7.5);
   setColor(pdf, LIME);
   pdf.text("NET ADVANTAGE OF MOVING FORWARD", PW / 2, y + 12, { align: "center", charSpace: 2 });
+  pdf.setCharSpace(0);
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(34);
   setColor(pdf, WHITE);
   pdf.text(`+${fmt(m.netDiff)}`, PW / 2, y + 32, { align: "center" });
@@ -623,16 +664,17 @@ function drawWindowInspection(pdf: jsPDF, state: EngineState) {
     setColor(pdf, INK);
     pdf.text(`${i + 1}. ${entry.label}`, x + 5, ry + 3.5);
 
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(7);
     setColor(pdf, STATUS_COLORS[entry.status] || SLATE);
     pdf.text(STATUS_LABELS[entry.status] || "N/A", x + colW - 5, ry + 3.5, { align: "right", charSpace: 1.2 });
+    pdf.setCharSpace(0);
   });
 
   if (state.windowItems.length > 0) {
     y += 88;
     eyebrow(pdf, "Window Schedule", 22, y, LIME_DEEP, 7.5);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(13);
     setColor(pdf, FOREST_INK);
     pdf.text(`${state.windowItems.length} Window${state.windowItems.length !== 1 ? "s" : ""}`, 22, y + 8);
@@ -643,12 +685,13 @@ function drawWindowInspection(pdf: jsPDF, state: EngineState) {
     const headers = ["#", "LEVEL", "ROOM", "STYLE", "SIZE", "GRIDS", "NOTES"];
 
     rect(pdf, 22, y, tableW, 7, FOREST_INK);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(6.5);
     setColor(pdf, LIME);
     let hx = 22 + 2;
     headers.forEach((h, ci) => {
       pdf.text(h, hx + 1, y + 4.8, { charSpace: 1 });
+      pdf.setCharSpace(0);
       hx += cols[ci];
     });
 
@@ -709,7 +752,7 @@ function drawScope(pdf: jsPDF, state: EngineState) {
     const ry = y + row * rowH;
 
     // Number
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(16);
     setColor(pdf, LIME);
     pdf.text(String(i + 1).padStart(2, "0"), x, ry + 6);
@@ -732,16 +775,17 @@ function drawScope(pdf: jsPDF, state: EngineState) {
   setColor(pdf, FOREST_INK);
   pdf.text('"Does that sound like everything we spoke about today?"', PW / 2, qy + 12, { align: "center" });
 
-  pdf.setFont("helvetica", "bold");
+  pdf.setFont("times", "bold");
   pdf.setFontSize(7);
   setColor(pdf, SLATE);
   pdf.text("YOUR DABELLA PROJECT MANAGER", PW / 2, qy + 19, { align: "center", charSpace: 1.6 });
+  pdf.setCharSpace(0);
 }
 
 // ════════════════════════════════════════════════════════════
 //  WELCOME — Closing page
 // ════════════════════════════════════════════════════════════
-function drawWelcome(pdf: jsPDF, state: EngineState) {
+function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null) {
   const names = getNames(state);
 
   // Full-bleed deep gradient
@@ -757,50 +801,58 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
   // Brass top
   rect(pdf, 0, 0, PW, 0.6, ACCENT);
 
-  // Wordmark
-  pdf.setFont("helvetica", "bold");
+  // Butterfly logo — centered hero
+  if (logoDataUrl) {
+    const logoW = 44;
+    const logoH = logoW * (120 / 192); // preserve aspect
+    pdf.addImage(logoDataUrl, "PNG", (PW - logoW) / 2, 56, logoW, logoH);
+  }
+
+  // Wordmark below logo
+  pdf.setFont("times", "bold");
   pdf.setFontSize(8);
   setColor(pdf, LIME);
-  pdf.text("DABELLA", PW / 2, 28, { align: "center", charSpace: 3 });
+  pdf.text("DABELLA", PW / 2, 92, { align: "center", charSpace: 3 });
+  pdf.setCharSpace(0);
 
   // Eyebrow
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(8);
+  pdf.setFont("times", "bold");
+  pdf.setFontSize(7.5);
   setColor(pdf, ACCENT);
-  pdf.text("CHAPTER ONE", PW / 2, 100, { align: "center", charSpace: 2.5 });
+  pdf.text("CHAPTER ONE", PW / 2, 122, { align: "center", charSpace: 2.5 });
+  pdf.setCharSpace(0);
 
-  // Massive headline
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(46);
+  // Headline — single line, tightly set
+  pdf.setFont("times", "bold");
+  pdf.setFontSize(40);
   setColor(pdf, WHITE);
-  pdf.text("Welcome", PW / 2, 132, { align: "center" });
-  pdf.text("Home.", PW / 2, 156, { align: "center" });
+  pdf.text("Welcome Home.", PW / 2, 146, { align: "center" });
 
   // Brass underscore
   setFill(pdf, ACCENT);
-  pdf.rect(PW / 2 - 14, 164, 28, 1.2, "F");
+  pdf.rect(PW / 2 - 14, 154, 28, 1.2, "F");
 
   // Personal note
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(11);
   setColor(pdf, [220, 232, 220]);
-  const note1 = pdf.splitTextToSize(
+  const note = pdf.splitTextToSize(
     `${names}, thank you for trusting us with your home.`,
     PW - 60,
   );
-  note1.forEach((ln: string, i: number) => pdf.text(ln, PW / 2, 180 + i * 6, { align: "center" }));
+  note.forEach((ln: string, i: number) => pdf.text(ln, PW / 2, 170 + i * 6, { align: "center" }));
 
   pdf.setFontSize(10);
   setColor(pdf, [190, 210, 195]);
-  pdf.text("We are honored to be part of your story.", PW / 2, 196, { align: "center" });
+  pdf.text("We are honored to be part of your story.", PW / 2, 170 + note.length * 6 + 4, { align: "center" });
 
-  // Three perks — minimal
+  // Three perks
   const perks = [
     { top: "LIFETIME", bot: "Warranty" },
     { top: "FIVE-STAR", bot: "Service" },
     { top: "EXPERT", bot: "Install" },
   ];
-  const py = 222;
+  const py = 212;
   const cardW = 46;
   const gap = 8;
   const totalW = perks.length * cardW + (perks.length - 1) * gap;
@@ -814,12 +866,13 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
     pdf.setLineWidth(0.2);
     pdf.roundedRect(cx, py, cardW, 28, 2, 2, "S");
 
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(7);
     setColor(pdf, LIME);
     pdf.text(top, cx + cardW / 2, py + 11, { align: "center", charSpace: 1.6 });
+    pdf.setCharSpace(0);
 
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(11);
     setColor(pdf, WHITE);
     pdf.text(bot, cx + cardW / 2, py + 21, { align: "center" });
@@ -831,12 +884,13 @@ function drawWelcome(pdf: jsPDF, state: EngineState) {
   pdf.setFont("times", "italic");
   pdf.setFontSize(11);
   setColor(pdf, [200, 220, 205]);
-  pdf.text('"We don\'t just build homes — we build relationships."', PW / 2, PH - 30, { align: "center" });
+  pdf.text('"We don\'t just build homes — we build relationships."', PW / 2, PH - 28, { align: "center" });
 
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(7);
   setColor(pdf, [160, 185, 165]);
   pdf.text("DABELLA.US", PW / 2, PH - 16, { align: "center", charSpace: 2.4 });
+  pdf.setCharSpace(0);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -850,6 +904,7 @@ export async function buildCustomerPdf(
 ): Promise<{ blob: Blob; doc: jsPDF }> {
   const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
   const isWindows = hasProduct(state.products, "Windows");
+  const logoDataUrl = await loadImageDataUrl(dabellaLogoUrl);
 
   drawCover(pdf, state);
 
@@ -874,19 +929,21 @@ export async function buildCustomerPdf(
   drawScope(pdf, state);
 
   pdf.addPage();
-  drawWelcome(pdf, state);
+  drawWelcome(pdf, state, logoDataUrl);
 
   // Refined editorial footer on interior pages
   const totalPages = pdf.getNumberOfPages();
   for (let p = 2; p <= totalPages - 1; p++) {
     pdf.setPage(p);
     hairline(pdf, 22, PH - 16, PW - 22, PH - 16, MIST, 0.2);
-    pdf.setFont("helvetica", "bold");
+    pdf.setFont("times", "bold");
     pdf.setFontSize(6.5);
     setColor(pdf, SLATE);
     pdf.text("DABELLA · PROPOSAL", 22, PH - 11, { charSpace: 1.6 });
+    pdf.setCharSpace(0);
     pdf.setFont("helvetica", "normal");
     pdf.text(`${String(p).padStart(2, "0")} / ${String(totalPages).padStart(2, "0")}`, PW - 22, PH - 11, { align: "right", charSpace: 1.2 });
+    pdf.setCharSpace(0);
   }
 
   return { blob: pdf.output("blob"), doc: pdf };
