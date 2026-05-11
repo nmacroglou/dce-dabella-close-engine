@@ -4,8 +4,9 @@ import { fmt } from "@/lib/format";
 import { getOptionLabel, getOptionMetrics } from "@/lib/engineHelpers";
 import {
   ACCENT, BORDER, CARD, CREAM, FOREST_INK, GRAPHITE, LIME, LIME_DEEP,
-  NEG_SOFT, NEGATIVE, PH, PW, SLATE,
+  NEG_SOFT, NEGATIVE, PW, SLATE,
 } from "../theme";
+import { COL_LEFT_X, COL_RIGHT_X, CONTENT_W, HALF_W, MARGIN, RHYTHM } from "../layout";
 import {
   eyebrow, pageBg, rounded, sectionHeader, setBodyFont, setColor,
   setDisplayFont, setDraw, setFill, shadow, trackedText, vGradient,
