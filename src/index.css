@@ -35,6 +35,24 @@
     --ring: 221 83% 53%;
 
     --radius: 0.875rem;
+    --radius-xs: 0.375rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.75rem;
+    --radius-pill: 9999px;
+
+    /* semantic surfaces — layered depth */
+    --surface-sunken: 220 20% 94%;
+    --surface-base: 220 20% 97%;
+    --surface-raised: 0 0% 100%;
+    --surface-overlay: 0 0% 100%;
+    --surface-inverse: 222 47% 11%;
+    --surface-inverse-foreground: 0 0% 100%;
+
+    --hairline: 220 13% 88%;
+    --hairline-strong: 220 13% 78%;
 
     --success: 152 69% 40%;
     --success-foreground: 0 0% 100%;
@@ -67,6 +85,14 @@
   }
 
   .dark {
+    --surface-sunken: 224 30% 6%;
+    --surface-base: 224 30% 8%;
+    --surface-raised: 224 25% 11%;
+    --surface-overlay: 224 25% 14%;
+    --surface-inverse: 210 20% 95%;
+    --surface-inverse-foreground: 224 30% 8%;
+    --hairline: 224 15% 18%;
+    --hairline-strong: 224 15% 26%;
     --background: 224 30% 8%;
     --foreground: 210 20% 95%;
 

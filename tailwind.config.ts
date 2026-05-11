@@ -72,12 +72,36 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+        surface: {
+          sunken: "hsl(var(--surface-sunken))",
+          base: "hsl(var(--surface-base))",
+          raised: "hsl(var(--surface-raised))",
+          overlay: "hsl(var(--surface-overlay))",
+          inverse: "hsl(var(--surface-inverse))",
+          "inverse-foreground": "hsl(var(--surface-inverse-foreground))",
+        },
+        hairline: {
+          DEFAULT: "hsl(var(--hairline))",
+          strong: "hsl(var(--hairline-strong))",
+        },
+      },
+      fontSize: {
+        // Tight, opinionated type scale for engine UI
+        "display-2xl": ["clamp(2.5rem, 4vw, 3.75rem)", { lineHeight: "1.05", letterSpacing: "-0.025em", fontWeight: "800" }],
+        "display-xl": ["clamp(2rem, 3vw, 3rem)", { lineHeight: "1.08", letterSpacing: "-0.02em", fontWeight: "800" }],
+        "display-lg": ["2rem", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "display-md": ["1.5rem", { lineHeight: "1.2", letterSpacing: "-0.015em", fontWeight: "700" }],
+        eyebrow: ["0.6875rem", { lineHeight: "1", letterSpacing: "0.14em", fontWeight: "700" }],
+        metric: ["1.875rem", { lineHeight: "1", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "metric-lg": ["2.5rem", { lineHeight: "1", letterSpacing: "-0.025em", fontWeight: "800" }],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
         xl: "calc(var(--radius) + 4px)",
         "2xl": "calc(var(--radius) + 8px)",
+        pill: "var(--radius-pill)",
       },
       keyframes: {
         "accordion-down": {
