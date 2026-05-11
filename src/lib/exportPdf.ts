@@ -143,54 +143,56 @@ function drawCover(pdf: jsPDF, state: EngineState) {
   pdf.text("PRIVATE PROPOSAL · NO. 001", 22, 100, { charSpace: 2.2 });
   pdf.setCharSpace(0);
 
-  // Massive editorial headline
+  // Editorial headline — sized to fit
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(54);
+  pdf.setFontSize(46);
   setColor(pdf, WHITE);
-  pdf.text("A Home", 22, 130);
-  pdf.text("Built To", 22, 150);
-  pdf.text("Last.", 22, 170);
+  pdf.text("A Home", 22, 132);
+  pdf.text("Built To Last.", 22, 154);
 
   // Brass underscore
   setFill(pdf, ACCENT);
-  pdf.rect(22, 178, 30, 1.2, "F");
+  pdf.rect(22, 162, 30, 1.2, "F");
 
   // Subhead
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(11);
   setColor(pdf, [220, 232, 220]);
-  pdf.text(`A bespoke ${getProductLabel(state.products).toLowerCase()} proposal`, 22, 192);
-  pdf.text("crafted for your home — and your future.", 22, 199);
+  pdf.text(`A bespoke ${getProductLabel(state.products).toLowerCase()} proposal`, 22, 178);
+  pdf.text("crafted for your home — and your future.", 22, 185);
 
-  // Recipient block — bottom-left, typographic
-  const ry = 232;
-  hairline(pdf, 22, ry, 90, ry, ACCENT, 0.5);
+  // Recipient block — full-width line, name auto-sized to fit
+  const ry = 222;
+  hairline(pdf, 22, ry, PW - 22, ry, ACCENT, 0.5);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(7);
   setColor(pdf, ACCENT);
   pdf.text("PREPARED FOR", 22, ry + 7, { charSpace: 1.8 });
   pdf.setCharSpace(0);
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(20);
-  setColor(pdf, WHITE);
-  pdf.text(names, 22, ry + 19);
 
-  // Right-side credentials (vertical type strip)
-  const credX = PW - 22;
+  // Auto-fit name
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(7);
+  let nameSize = 22;
+  pdf.setFontSize(nameSize);
+  const maxNameW = PW - 44;
+  while (pdf.getTextWidth(names) > maxNameW && nameSize > 12) {
+    nameSize -= 1;
+    pdf.setFontSize(nameSize);
+  }
+  setColor(pdf, WHITE);
+  pdf.text(names, 22, ry + 22);
+
+  // Credentials — bottom strip (single horizontal row)
+  const credY = 256;
+  hairline(pdf, 22, credY, PW - 22, credY, [80, 120, 85], 0.3);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(6.5);
   setColor(pdf, [200, 215, 200]);
-  const creds = [
-    "LIFETIME WARRANTY",
-    "GAF MASTER ELITE",
-    "TOP-RATED CREWS",
-    "LOCALLY OWNED",
-  ];
-  let cy = 232;
-  creds.forEach((c) => {
-    pdf.text(c, credX, cy, { align: "right", charSpace: 1.4 });
+  const creds = ["LIFETIME WARRANTY", "GAF MASTER ELITE", "TOP-RATED CREWS", "LOCALLY OWNED"];
+  const credSpacing = (PW - 44) / creds.length;
+  creds.forEach((c, i) => {
+    pdf.text(c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 1.2 });
     pdf.setCharSpace(0);
-    cy += 6;
   });
 
   // Footer
