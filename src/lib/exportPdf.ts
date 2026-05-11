@@ -49,6 +49,7 @@ const NEG_SOFT   = [253, 237, 237] as const;
 const POS_SOFT   = [233, 246, 234] as const;
 
 type RGB = readonly [number, number, number];
+type BodyFontStyle = "normal" | "bold" | "italic";
 
 const PW = 210;
 const PH = 297;
@@ -57,6 +58,17 @@ const PH = 297;
 const setColor = (pdf: jsPDF, c: RGB) => pdf.setTextColor(c[0], c[1], c[2]);
 const setFill  = (pdf: jsPDF, c: RGB) => pdf.setFillColor(c[0], c[1], c[2]);
 const setDraw  = (pdf: jsPDF, c: RGB) => pdf.setDrawColor(c[0], c[1], c[2]);
+
+function setDisplayFont(pdf: jsPDF, size: number) {
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(size);
+}
+
+function setBodyFont(pdf: jsPDF, size: number, style: BodyFontStyle = "normal") {
+  const variant = style === "italic" ? "oblique" : style;
+  pdf.setFont("helvetica", variant);
+  pdf.setFontSize(size);
+}
 
 function rect(pdf: jsPDF, x: number, y: number, w: number, h: number, fill: RGB) {
   setFill(pdf, fill);
@@ -112,8 +124,7 @@ function trackedText(
 }
 
 function eyebrow(pdf: jsPDF, text: string, x: number, y: number, color: RGB = SLATE, size = 7.5) {
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(size);
+  setDisplayFont(pdf, size);
   setColor(pdf, color);
   trackedText(pdf, text.toUpperCase(), x, y, { charSpace: 0.55 });
 }
@@ -233,20 +244,17 @@ function sectionHeader(pdf: jsPDF, eyebrowText: string, title: string, subtitle?
   setFill(pdf, ACCENT);
   pdf.rect(22, 22, 14, 0.9, "F");
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(7.5);
+  setDisplayFont(pdf, 7.5);
   setColor(pdf, LIME_DEEP);
   trackedText(pdf, eyebrowText.toUpperCase(), 22, 30, { charSpace: 0.7 });
 
-  pdf.setFont("times", "bold");
-  pdf.setFontSize(26);
+  setDisplayFont(pdf, 24);
   setColor(pdf, FOREST_INK);
   pdf.text(title, 22, 45);
 
   let dividerY = 65;
   if (subtitle) {
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
+    setBodyFont(pdf, 9.5);
     setColor(pdf, GRAPHITE);
     const lines = pdf.splitTextToSize(subtitle, PW - 44);
     lines.forEach((ln: string, i: number) => pdf.text(ln, 22, 53 + i * 5.2));
