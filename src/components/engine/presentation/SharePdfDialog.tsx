@@ -27,6 +27,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [copied, setCopied] = useState(false);
+  const [debug, setDebug] = useState(false);
 
   const customerName = state.homeowner1 || "Customer";
   const filename = `DaBella-Proposal-${customerName.replace(/\s+/g, "-")}.pdf`;
@@ -36,7 +37,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     setBusy("Generating proposal…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { blob } = await buildCustomerPdf(state, computed, options, selectedOption);
+      const { blob } = await buildCustomerPdf(state, computed, options, selectedOption, { debug });
       setBusy("Uploading secure link…");
       const url = await uploadProposalPdf(blob, filename);
       setLink(url);
@@ -53,7 +54,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     setBusy("Building PDF…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { doc } = await buildCustomerPdf(state, computed, options, selectedOption);
+      const { doc } = await buildCustomerPdf(state, computed, options, selectedOption, { debug });
       doc.save(filename);
       toast({ title: "Downloaded", description: filename });
     } finally {
@@ -65,7 +66,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     setBusy("Preparing share…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { blob } = await buildCustomerPdf(state, computed, options, selectedOption);
+      const { blob } = await buildCustomerPdf(state, computed, options, selectedOption, { debug });
       const file = new File([blob], filename, { type: "application/pdf" });
       const ok = await nativeShare({
         title: "Your DaBella Proposal",
@@ -139,6 +140,21 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
               disabled={!!busy}
             />
           </div>
+        )}
+
+        {mode === "menu" && (
+          <label className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground cursor-pointer select-none">
+            <span>
+              <span className="font-semibold text-foreground">Debug overlay</span>
+              <span className="ml-2">Draw bounding boxes around every text block (collisions in red).</span>
+            </span>
+            <input
+              type="checkbox"
+              checked={debug}
+              onChange={(e) => { setDebug(e.target.checked); setLink(null); }}
+              className="h-4 w-4 accent-primary"
+            />
+          </label>
         )}
 
         {mode === "email" && (
