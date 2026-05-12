@@ -79,7 +79,8 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   // and roof sold-for (post-discount).
   useEffect(() => {
     if (!activeDealId || !selectedOption) return;
-    const soldFor = Math.round(options.find((o) => o.key === selectedOption)?.price ?? 0);
+    // Use the discounted computed price, not state.priceX (which is the raw entry).
+    const soldFor = Math.round(discountedComputed.options[selectedOption].price);
     updateDeal.mutate({
       id: activeDealId,
       updates: { selected_option: selectedOption, closed_amount: soldFor } as never,
