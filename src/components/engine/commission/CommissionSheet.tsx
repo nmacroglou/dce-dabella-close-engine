@@ -147,6 +147,29 @@ export default memo(function CommissionSheet() {
     }
   }, [activeDealId]);
 
+  // Live-mirror selection + discount from the Presentation tab into the
+  // Roof "Worth" / "Sold For" cells. Worth = full price of the option the
+  // homeowner picked; Sold For = closed_amount (post-discount). Other
+  // trades & manual edits are preserved.
+  const lastSyncedRef = useRef<{ opt: string | null; sold: number | null }>({ opt: null, sold: null });
+  useEffect(() => {
+    if (!deal || hydratedDealId.current !== deal.id) return;
+    const opt = deal.selected_option;
+    if (!opt) return;
+    const worth =
+      opt === "B" ? Number(deal.price_b ?? 0)
+      : opt === "C" ? Number(deal.price_c ?? 0)
+      : Number(deal.price_a ?? 0);
+    const sold = Number(deal.closed_amount ?? worth);
+    if (lastSyncedRef.current.opt === opt && lastSyncedRef.current.sold === sold) return;
+    lastSyncedRef.current = { opt, sold };
+    setSheet((prev) => ({
+      ...prev,
+      project_roof: worth || prev.project_roof,
+      contract_roof: sold || prev.contract_roof,
+    }));
+  }, [deal?.selected_option, deal?.closed_amount, deal?.price_a, deal?.price_b, deal?.price_c, deal?.id]);
+
   // Debounced auto-save (only after hydration of the current deal)
   useEffect(() => {
     if (!activeDealId || hydratedDealId.current !== activeDealId) return;

@@ -1,7 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { X, ChevronLeft, Share2 } from "lucide-react";
 import { buildOptionsArray, getOptionMetrics, getProductLabel, hasProduct, applyDiscountToComputed } from "@/lib/engineHelpers";
+import { useActiveDeal } from "@/contexts/ActiveDealContext";
+import { useUpdateDeal } from "@/hooks/useDeals";
 import OptionCard from "./presentation/OptionCard";
 import OptionReveal from "./presentation/OptionReveal";
 import TrustBar from "./presentation/TrustBar";
@@ -64,10 +66,26 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
   const goNext = () => stageIndex < STAGES.length - 1 && setStage(STAGES[stageIndex + 1] as Stage);
   const goPrev = () => stageIndex > 0 && setStage(STAGES[stageIndex - 1] as Stage);
 
+  const { activeDealId } = useActiveDeal();
+  const updateDeal = useUpdateDeal();
+
   const handleAccept = (key: "A" | "B" | "C") => {
     setSelectedOption(key);
     setStage("impact");
   };
+
+  // Persist selection + discounted price ("sold for") to the active deal so the
+  // Commission Sheet auto-mirrors it as roof worth (original selected option)
+  // and roof sold-for (post-discount).
+  useEffect(() => {
+    if (!activeDealId || !selectedOption) return;
+    const soldFor = Math.round(options.find((o) => o.key === selectedOption)?.price ?? 0);
+    updateDeal.mutate({
+      id: activeDealId,
+      updates: { selected_option: selectedOption, closed_amount: soldFor } as never,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDealId, selectedOption, discountPct]);
 
 
 
