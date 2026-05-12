@@ -1,9 +1,10 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
 import { useDarkMode } from "@/hooks/useDarkMode";
+import { useIsAdmin } from "@/hooks/useUserRole";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,11 @@ export default function AppHeader() {
   const { activeDealId, setActiveDealId } = useActiveDeal();
   const { data: activeDeal } = useDeal(activeDealId);
   const { dark, toggle } = useDarkMode();
+  const { isAdmin } = useIsAdmin();
+  const navItems = [
+    ...NAV,
+    ...(isAdmin ? [{ to: "/admin", label: "Admin", icon: ShieldCheck, end: false } as const] : []),
+  ];
 
   const handleSignOut = async () => {
     setActiveDealId(null);
@@ -64,7 +70,7 @@ export default function AppHeader() {
         </Link>
 
         <nav className="flex items-center gap-1 p-1 rounded-xl bg-muted/40 border border-border/60">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
+          {navItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}
