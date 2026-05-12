@@ -1,7 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { X, ChevronLeft, Share2 } from "lucide-react";
 import { buildOptionsArray, getOptionMetrics, getProductLabel, hasProduct, applyDiscountToComputed } from "@/lib/engineHelpers";
+import { useActiveDeal } from "@/contexts/ActiveDealContext";
+import { useUpdateDeal } from "@/hooks/useDeals";
 import OptionCard from "./presentation/OptionCard";
 import OptionReveal from "./presentation/OptionReveal";
 import TrustBar from "./presentation/TrustBar";
