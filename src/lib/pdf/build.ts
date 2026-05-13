@@ -16,7 +16,8 @@ import { drawWelcome } from "./pages/welcome";
 import { drawInteriorFooters } from "./pages/footer";
 
 export type ProposalOption = { key: "A" | "B" | "C"; name: string; price: number; monthly: number };
-export type BuildOptions = { debug?: boolean };
+export type RepInfo = { name?: string; email?: string; phone?: string };
+export type BuildOptions = { debug?: boolean; rep?: RepInfo };
 
 export async function buildCustomerPdf(
   state: EngineState,
