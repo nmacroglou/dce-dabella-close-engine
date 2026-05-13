@@ -165,6 +165,11 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
               onShowNext={() => setRevealIndex((p) => Math.min(p + 1, 2))}
               onGoBack={() => setRevealIndex((p) => Math.max(p - 1, 0))}
               customFeatures={state.customFeatures}
+              perOptionFeatures={{
+                A: state.customFeaturesA,
+                B: state.customFeaturesB,
+                C: state.customFeaturesC,
+              }}
               originalOptions={originalOptions.map((o) => ({ key: o.key, price: o.price }))}
               discountPct={discountPct}
             />
@@ -180,7 +185,11 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
                 name={options.find((o) => o.key === selectedOption)?.name || ""}
                 computed={discountedComputed}
                 selected
-                customFeatures={state.customFeatures}
+                customFeatures={
+                  (selectedOption === "A" ? state.customFeaturesA :
+                   selectedOption === "B" ? state.customFeaturesB :
+                   state.customFeaturesC) ?? state.customFeatures
+                }
                 originalPrice={originalOptions.find((o) => o.key === selectedOption)?.price}
                 discountPct={discountPct}
               />

@@ -71,6 +71,16 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
         <IncludedFeaturesEditor
           value={state.customFeatures}
           onChange={(next) => update("customFeatures", next)}
+          perOption={{
+            A: state.customFeaturesA,
+            B: state.customFeaturesB,
+            C: state.customFeaturesC,
+          }}
+          onChangePerOption={(key, next) => {
+            if (key === "A") update("customFeaturesA", next);
+            else if (key === "B") update("customFeaturesB", next);
+            else update("customFeaturesC", next);
+          }}
         />
 
         <FinancialImpact state={state} computed={computed} />

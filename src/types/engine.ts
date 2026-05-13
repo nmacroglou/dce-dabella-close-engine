@@ -31,6 +31,9 @@ export interface EngineState {
   windowItems: WindowLineItem[];
   windowScopeChecks: boolean[];
   customFeatures?: string[];
+  customFeaturesA?: string[];
+  customFeaturesB?: string[];
+  customFeaturesC?: string[];
 }
 
 export interface OptionComputed {
