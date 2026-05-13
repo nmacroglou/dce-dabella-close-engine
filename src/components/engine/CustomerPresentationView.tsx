@@ -35,7 +35,7 @@ const STAGE_LABELS: Record<Stage, string> = {
   welcome: "Welcome",
 };
 
-export default function CustomerPresentationView({ state, computed, onClose }: Props) {
+export default function CustomerPresentationView({ state, computed, onClose, update }: Props) {
   const isWindows = hasProduct(state.products, "Windows");
   const productLabel = getProductLabel(state.products);
   const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
