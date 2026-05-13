@@ -12,12 +12,13 @@ interface OptionRevealProps {
   onShowNext: () => void;
   onGoBack: () => void;
   customFeatures?: string[];
+  perOptionFeatures?: Partial<Record<"A" | "B" | "C", string[] | undefined>>;
   originalOptions?: { key: "A" | "B" | "C"; price: number }[];
   discountPct?: number;
 }
 
 export default memo(function OptionReveal({
-  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures, originalOptions, discountPct,
+  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures, perOptionFeatures, originalOptions, discountPct,
 }: OptionRevealProps) {
   const currentKey = OPTION_KEYS[revealIndex];
   const currentOption = options[revealIndex];
