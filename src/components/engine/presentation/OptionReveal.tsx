@@ -54,7 +54,7 @@ export default memo(function OptionReveal({
         name={currentOption.name}
         computed={computed}
         selected={false}
-        customFeatures={customFeatures}
+        customFeatures={perOptionFeatures?.[currentKey] ?? customFeatures}
         originalPrice={originalPrice}
         discountPct={discountPct}
       />
