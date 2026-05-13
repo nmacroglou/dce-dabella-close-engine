@@ -91,10 +91,11 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
   }
 
   async function handleDownload() {
+    await persistRepIfDirty();
     setBusy("Building PDF…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { doc } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug });
+      const { doc } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep });
       doc.save(filename);
       toast({ title: "Downloaded", description: filename });
     } finally {
@@ -103,10 +104,11 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
   }
 
   async function handleNativeShare() {
+    await persistRepIfDirty();
     setBusy("Preparing share…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug });
+      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep });
       const file = new File([blob], filename, { type: "application/pdf" });
       const ok = await nativeShare({
         title: "Your DaBella Proposal",
