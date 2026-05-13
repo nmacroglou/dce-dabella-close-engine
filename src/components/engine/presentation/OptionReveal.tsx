@@ -15,10 +15,12 @@ interface OptionRevealProps {
   perOptionFeatures?: Partial<Record<"A" | "B" | "C", string[] | undefined>>;
   originalOptions?: { key: "A" | "B" | "C"; price: number }[];
   discountPct?: number;
+  monthlyOverrides?: Partial<Record<"A" | "B" | "C", number | undefined>>;
+  onMonthlyChange?: (key: "A" | "B" | "C", next: number | undefined) => void;
 }
 
 export default memo(function OptionReveal({
-  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures, perOptionFeatures, originalOptions, discountPct,
+  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures, perOptionFeatures, originalOptions, discountPct, monthlyOverrides, onMonthlyChange,
 }: OptionRevealProps) {
   const currentKey = OPTION_KEYS[revealIndex];
   const currentOption = options[revealIndex];
