@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ const loadPdfBuilder = () => import("@/lib/exportPdf").then((m) => m.buildCustom
 import { uploadProposalPdf, nativeShare, buildEmailLink, buildSmsLink } from "@/lib/sharePdf";
 import { buildOptionsArray } from "@/lib/engineHelpers";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Props {
   open: boolean;
@@ -22,6 +24,7 @@ interface Props {
 type Mode = "menu" | "email" | "sms";
 
 export default function SharePdfDialog({ open, onOpenChange, state, computed, selectedOption }: Props) {
+  const { user } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("menu");
@@ -30,15 +33,51 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
   const [copied, setCopied] = useState(false);
   const [debug, setDebug] = useState(false);
 
+  // Rep contact info (loaded from profiles, editable, persisted on save)
+  const [repName, setRepName] = useState("");
+  const [repEmail, setRepEmail] = useState("");
+  const [repPhone, setRepPhone] = useState("");
+  const [repDirty, setRepDirty] = useState(false);
+
+  useEffect(() => {
+    if (!open || !user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name, email, phone")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setRepName(data?.display_name || user.user_metadata?.full_name || "");
+      setRepEmail(data?.email || user.email || "");
+      setRepPhone((data as { phone?: string } | null)?.phone || "");
+      setRepDirty(false);
+    })();
+    return () => { cancelled = true; };
+  }, [open, user]);
+
+  async function persistRepIfDirty() {
+    if (!repDirty || !user) return;
+    await supabase
+      .from("profiles")
+      .update({ phone: repPhone || null, display_name: repName || null })
+      .eq("user_id", user.id);
+    setRepDirty(false);
+  }
+
+  const rep = { name: repName.trim(), email: repEmail.trim(), phone: repPhone.trim() };
+
   const customerName = state.homeowner1 || "Customer";
   const filename = `DaBella-Proposal-${customerName.replace(/\s+/g, "-")}.pdf`;
 
   async function ensureUpload(): Promise<string | null> {
     if (link) return link;
+    await persistRepIfDirty();
     setBusy("Generating proposal…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug });
+      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep });
       setBusy("Uploading secure link…");
       const url = await uploadProposalPdf(blob, filename);
       setLink(url);
