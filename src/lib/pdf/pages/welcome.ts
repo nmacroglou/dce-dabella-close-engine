@@ -87,10 +87,30 @@ export function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string 
 
   setBodyFont(pdf, 10.5, "italic");
   setColor(pdf, [200, 220, 205]);
-  pdf.text('"We don\'t just build homes — we build relationships."', PW / 2, PH - 28, { align: "center" });
+  pdf.text('"We don\'t just build homes — we build relationships."', PW / 2, PH - 40, { align: "center" });
 
-  setBodyFont(pdf, 7);
-  setColor(pdf, [160, 185, 165]);
-  trackedText(pdf, "DABELLA.US", PW / 2, PH - 16, { align: "center", charSpace: 0.65 });
+  // Rep contact block
+  if (rep && (rep.name || rep.email || rep.phone)) {
+    setDisplayFont(pdf, 7);
+    setColor(pdf, ACCENT);
+    trackedText(pdf, "YOUR DABELLA REPRESENTATIVE", PW / 2, PH - 30, { align: "center", charSpace: 0.55 });
+
+    if (rep.name) {
+      setDisplayFont(pdf, 11);
+      setColor(pdf, WHITE);
+      pdf.text(rep.name, PW / 2, PH - 23, { align: "center" });
+    }
+
+    const contactParts = [rep.phone, rep.email].filter(Boolean) as string[];
+    if (contactParts.length) {
+      setBodyFont(pdf, 9);
+      setColor(pdf, [220, 232, 220]);
+      pdf.text(contactParts.join("  ·  "), PW / 2, PH - 17, { align: "center" });
+    }
+  } else {
+    setBodyFont(pdf, 7);
+    setColor(pdf, [160, 185, 165]);
+    trackedText(pdf, "DABELLA.US", PW / 2, PH - 16, { align: "center", charSpace: 0.65 });
+  }
   void FOREST_INK;
 }
