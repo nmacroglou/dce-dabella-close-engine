@@ -59,6 +59,8 @@ export default memo(function OptionReveal({
         customFeatures={perOptionFeatures?.[currentKey] ?? customFeatures}
         originalPrice={originalPrice}
         discountPct={discountPct}
+        monthlyOverride={monthlyOverrides?.[currentKey]}
+        onMonthlyChange={onMonthlyChange ? (n) => onMonthlyChange(currentKey, n) : undefined}
       />
 
       {/* Action buttons */}
