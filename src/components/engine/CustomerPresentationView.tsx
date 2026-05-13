@@ -20,6 +20,7 @@ interface Props {
   state: EngineState;
   computed: ComputedValues;
   onClose: () => void;
+  update?: <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
 }
 
 const BASE_STAGES = ["options", "impact", "scope", "welcome"] as const;
