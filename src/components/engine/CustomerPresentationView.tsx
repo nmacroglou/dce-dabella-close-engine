@@ -203,6 +203,16 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
                 }
                 originalPrice={originalOptions.find((o) => o.key === selectedOption)?.price}
                 discountPct={discountPct}
+                monthlyOverride={
+                  selectedOption === "A" ? state.monthlyOverrideA :
+                  selectedOption === "B" ? state.monthlyOverrideB :
+                  state.monthlyOverrideC
+                }
+                onMonthlyChange={update ? (n) => {
+                  if (selectedOption === "A") update("monthlyOverrideA", n as never);
+                  else if (selectedOption === "B") update("monthlyOverrideB", n as never);
+                  else update("monthlyOverrideC", n as never);
+                } : undefined}
               />
               <button
                 onClick={() => { setSelectedOption(null); setStage("options"); }}
