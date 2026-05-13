@@ -57,7 +57,7 @@ export async function buildCustomerPdf(
   drawScope(pdf, state);
 
   pdf.addPage();
-  drawWelcome(pdf, state, logoDataUrl);
+  drawWelcome(pdf, state, logoDataUrl, opts?.rep);
 
   drawInteriorFooters(pdf);
 
