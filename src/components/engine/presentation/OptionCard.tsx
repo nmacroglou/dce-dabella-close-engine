@@ -25,6 +25,20 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
   const isHighlighted = optionKey === "A";
   const opt = computed.options[optionKey];
   const showStrike = !!discountPct && !!originalPrice && originalPrice > opt.price;
+  const displayMonthly = monthlyOverride ?? opt.monthly;
+  const editable = !!onMonthlyChange;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(displayMonthly));
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (!editing) setDraft(String(displayMonthly)); }, [displayMonthly, editing]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+  const commit = () => {
+    const n = Math.round(Number(draft.replace(/[^0-9.]/g, "")));
+    if (Number.isFinite(n) && n > 0) onMonthlyChange?.(n === Math.round(opt.monthly) ? undefined : n);
+    setEditing(false);
+  };
+  const cancel = () => { setDraft(String(displayMonthly)); setEditing(false); };
+  const reset = (e: React.MouseEvent) => { e.stopPropagation(); onMonthlyChange?.(undefined); };
 
   return (
     <div
