@@ -173,6 +173,16 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
               }}
               originalOptions={originalOptions.map((o) => ({ key: o.key, price: o.price }))}
               discountPct={discountPct}
+              monthlyOverrides={{
+                A: state.monthlyOverrideA,
+                B: state.monthlyOverrideB,
+                C: state.monthlyOverrideC,
+              }}
+              onMonthlyChange={update ? (key, n) => {
+                if (key === "A") update("monthlyOverrideA", n as never);
+                else if (key === "B") update("monthlyOverrideB", n as never);
+                else update("monthlyOverrideC", n as never);
+              } : undefined}
             />
             <div className="mt-8"><TrustBar /></div>
           </>
