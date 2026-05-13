@@ -185,6 +185,38 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
         )}
 
         {mode === "menu" && (
+          <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Your contact info (shown on proposal)
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder="Your name"
+                value={repName}
+                onChange={(e) => { setRepName(e.target.value); setRepDirty(true); setLink(null); }}
+                className="h-9 text-sm"
+              />
+              <Input
+                placeholder="Phone"
+                type="tel"
+                value={repPhone}
+                onChange={(e) => { setRepPhone(e.target.value); setRepDirty(true); setLink(null); }}
+                className="h-9 text-sm"
+              />
+              <Input
+                placeholder="name@dabella.us"
+                type="email"
+                value={repEmail}
+                onChange={(e) => { setRepEmail(e.target.value); setRepDirty(true); setLink(null); }}
+                className="h-9 text-sm col-span-2"
+              />
+            </div>
+          </div>
+        )}
+
+        {mode === "menu" && (
           <label className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground cursor-pointer select-none">
             <span>
               <span className="font-semibold text-foreground">Debug overlay</span>
