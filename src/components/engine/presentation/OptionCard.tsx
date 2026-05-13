@@ -1,4 +1,5 @@
-import { CheckCircle2, TrendingUp, Zap, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CheckCircle2, TrendingUp, Zap, Sparkles, Pencil, Check, X } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { OPTION_THEMES, FEATURES_BY_OPTION, featuresFromTexts } from "./constants";
 import type { ComputedValues } from "@/types/engine";
@@ -12,9 +13,11 @@ interface OptionCardProps {
   customFeatures?: string[];
   originalPrice?: number;
   discountPct?: number;
+  monthlyOverride?: number;
+  onMonthlyChange?: (next: number | undefined) => void;
 }
 
-export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, originalPrice, discountPct }: OptionCardProps) {
+export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, originalPrice, discountPct, monthlyOverride, onMonthlyChange }: OptionCardProps) {
   const theme = OPTION_THEMES[optionKey];
   const features = customFeatures && customFeatures.length > 0
     ? featuresFromTexts(customFeatures)
