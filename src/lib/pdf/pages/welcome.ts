@@ -7,7 +7,9 @@ import {
   vGradient,
 } from "../primitives";
 
-export function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null) {
+export type RepInfo = { name?: string; email?: string; phone?: string };
+
+export function drawWelcome(pdf: jsPDF, state: EngineState, logoDataUrl: string | null, rep?: RepInfo) {
   const names = getNames(state);
 
   vGradient(pdf, 0, 0, PW, PH, FOREST, FOREST_INK);
