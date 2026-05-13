@@ -185,7 +185,11 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
                 name={options.find((o) => o.key === selectedOption)?.name || ""}
                 computed={discountedComputed}
                 selected
-                customFeatures={state.customFeatures}
+                customFeatures={
+                  (selectedOption === "A" ? state.customFeaturesA :
+                   selectedOption === "B" ? state.customFeaturesB :
+                   state.customFeaturesC) ?? state.customFeatures
+                }
                 originalPrice={originalOptions.find((o) => o.key === selectedOption)?.price}
                 discountPct={discountPct}
               />
