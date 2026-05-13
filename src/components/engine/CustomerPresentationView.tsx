@@ -20,6 +20,7 @@ interface Props {
   state: EngineState;
   computed: ComputedValues;
   onClose: () => void;
+  update?: <K extends keyof EngineState>(key: K, value: EngineState[K]) => void;
 }
 
 const BASE_STAGES = ["options", "impact", "scope", "welcome"] as const;
@@ -34,7 +35,7 @@ const STAGE_LABELS: Record<Stage, string> = {
   welcome: "Welcome",
 };
 
-export default function CustomerPresentationView({ state, computed, onClose }: Props) {
+export default function CustomerPresentationView({ state, computed, onClose, update }: Props) {
   const isWindows = hasProduct(state.products, "Windows");
   const productLabel = getProductLabel(state.products);
   const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
@@ -172,6 +173,16 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
               }}
               originalOptions={originalOptions.map((o) => ({ key: o.key, price: o.price }))}
               discountPct={discountPct}
+              monthlyOverrides={{
+                A: state.monthlyOverrideA,
+                B: state.monthlyOverrideB,
+                C: state.monthlyOverrideC,
+              }}
+              onMonthlyChange={update ? (key, n) => {
+                if (key === "A") update("monthlyOverrideA", n as never);
+                else if (key === "B") update("monthlyOverrideB", n as never);
+                else update("monthlyOverrideC", n as never);
+              } : undefined}
             />
             <div className="mt-8"><TrustBar /></div>
           </>
@@ -192,6 +203,16 @@ export default function CustomerPresentationView({ state, computed, onClose }: P
                 }
                 originalPrice={originalOptions.find((o) => o.key === selectedOption)?.price}
                 discountPct={discountPct}
+                monthlyOverride={
+                  selectedOption === "A" ? state.monthlyOverrideA :
+                  selectedOption === "B" ? state.monthlyOverrideB :
+                  state.monthlyOverrideC
+                }
+                onMonthlyChange={update ? (n) => {
+                  if (selectedOption === "A") update("monthlyOverrideA", n as never);
+                  else if (selectedOption === "B") update("monthlyOverrideB", n as never);
+                  else update("monthlyOverrideC", n as never);
+                } : undefined}
               />
               <button
                 onClick={() => { setSelectedOption(null); setStage("options"); }}

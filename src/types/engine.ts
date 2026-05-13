@@ -34,6 +34,9 @@ export interface EngineState {
   customFeaturesA?: string[];
   customFeaturesB?: string[];
   customFeaturesC?: string[];
+  monthlyOverrideA?: number;
+  monthlyOverrideB?: number;
+  monthlyOverrideC?: number;
 }
 
 export interface OptionComputed {

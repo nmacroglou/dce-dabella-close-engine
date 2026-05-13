@@ -27,7 +27,7 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       }>
-        <CustomerPresentationView state={state} computed={computed} onClose={() => setShowCustomerView(false)} />
+        <CustomerPresentationView state={state} computed={computed} update={update} onClose={() => setShowCustomerView(false)} />
       </Suspense>
     );
   }

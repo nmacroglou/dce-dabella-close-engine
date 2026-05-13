@@ -1,4 +1,5 @@
-import { CheckCircle2, TrendingUp, Zap, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CheckCircle2, TrendingUp, Zap, Sparkles, Pencil, Check, X } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { OPTION_THEMES, FEATURES_BY_OPTION, featuresFromTexts } from "./constants";
 import type { ComputedValues } from "@/types/engine";
@@ -12,9 +13,11 @@ interface OptionCardProps {
   customFeatures?: string[];
   originalPrice?: number;
   discountPct?: number;
+  monthlyOverride?: number;
+  onMonthlyChange?: (next: number | undefined) => void;
 }
 
-export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, originalPrice, discountPct }: OptionCardProps) {
+export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, originalPrice, discountPct, monthlyOverride, onMonthlyChange }: OptionCardProps) {
   const theme = OPTION_THEMES[optionKey];
   const features = customFeatures && customFeatures.length > 0
     ? featuresFromTexts(customFeatures)
@@ -22,6 +25,20 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
   const isHighlighted = optionKey === "A";
   const opt = computed.options[optionKey];
   const showStrike = !!discountPct && !!originalPrice && originalPrice > opt.price;
+  const displayMonthly = monthlyOverride ?? opt.monthly;
+  const editable = !!onMonthlyChange;
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(displayMonthly));
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (!editing) setDraft(String(displayMonthly)); }, [displayMonthly, editing]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+  const commit = () => {
+    const n = Math.round(Number(draft.replace(/[^0-9.]/g, "")));
+    if (Number.isFinite(n) && n > 0) onMonthlyChange?.(n === Math.round(opt.monthly) ? undefined : n);
+    setEditing(false);
+  };
+  const cancel = () => { setDraft(String(displayMonthly)); setEditing(false); };
+  const reset = (e: React.MouseEvent) => { e.stopPropagation(); onMonthlyChange?.(undefined); };
 
   return (
     <div
@@ -65,9 +82,50 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
             </div>
           )}
           <p className={`text-4xl font-extrabold ${theme.accent} mb-1 tracking-tight`}>{fmt(opt.price)}</p>
-          <p className="text-sm text-muted-foreground">
-            as low as <span className="font-bold text-foreground">{fmt(opt.monthly)}/mo</span> with financing
-          </p>
+          <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
+            <span>as low as</span>
+            {editing ? (
+              <span className="inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <span className="font-bold text-foreground">$</span>
+                <input
+                  ref={inputRef}
+                  type="number"
+                  inputMode="decimal"
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); commit(); }
+                    if (e.key === "Escape") { e.preventDefault(); cancel(); }
+                  }}
+                  onBlur={commit}
+                  className="w-24 rounded-md border border-border bg-background px-2 py-0.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <button type="button" onClick={commit} className="p-1 rounded text-accent hover:bg-accent/10" aria-label="Save">
+                  <Check className="h-3.5 w-3.5" />
+                </button>
+                <button type="button" onClick={cancel} className="p-1 rounded text-muted-foreground hover:bg-muted" aria-label="Cancel">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); if (editable) setEditing(true); }}
+                disabled={!editable}
+                className={`font-bold text-foreground inline-flex items-center gap-1 ${editable ? "hover:bg-muted rounded px-1 -mx-1 cursor-text" : "cursor-default"}`}
+                title={editable ? "Tap to adjust monthly payment" : undefined}
+              >
+                {fmt(displayMonthly)}/mo
+                {editable && <Pencil className="h-3 w-3 opacity-50" />}
+              </button>
+            )}
+            <span>with financing</span>
+            {monthlyOverride !== undefined && editable && !editing && (
+              <button type="button" onClick={reset} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground underline underline-offset-2">
+                reset
+              </button>
+            )}
+          </div>
           {showStrike && (
             <div className="mt-3 pt-3 border-t border-accent/30 flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-accent">You save</span>
