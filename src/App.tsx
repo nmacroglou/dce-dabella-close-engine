@@ -17,6 +17,7 @@ const Deals = lazy(() => import("./pages/Deals.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
 const Pipeline = lazy(() => import("./pages/Pipeline.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
+const Ledger = lazy(() => import("./pages/Ledger.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient({
@@ -52,6 +53,7 @@ const App = () => (
                   <Route path="/deals" element={<ProtectedRoute><Deals /></ProtectedRoute>} />
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
+                  <Route path="/ledger" element={<ProtectedRoute><Ledger /></ProtectedRoute>} />
                   <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

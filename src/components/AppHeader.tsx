@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck, Wallet } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
@@ -19,6 +19,7 @@ const NAV = [
   { to: "/deals", label: "Deals", icon: Briefcase, end: false },
   { to: "/pipeline", label: "Pipeline", icon: GitBranch, end: false },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: false },
+  { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
 ] as const;
 
 export default function AppHeader() {
