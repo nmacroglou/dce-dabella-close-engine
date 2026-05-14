@@ -1,5 +1,9 @@
-import { useMemo, useState } from "react";
-import { Plus, Trash2, DollarSign, Wallet, Clock, CheckCircle2, Download, Import } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Plus, Trash2, DollarSign, Wallet, Clock, CheckCircle2, Download, Import, TrendingUp, Search } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import AppHeader from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
