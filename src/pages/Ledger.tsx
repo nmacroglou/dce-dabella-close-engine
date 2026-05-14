@@ -295,8 +295,35 @@ export default function Ledger() {
           </div>
         )}
 
-        {/* Table */}
+        {/* Filters + Table */}
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="flex flex-wrap items-center gap-2 p-3 border-b border-border">
+            <div className="relative flex-1 min-w-[180px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search customer or job #"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-8 pl-8 text-sm"
+              />
+            </div>
+            <div className="flex items-center gap-1 text-xs">
+              {(["all", "pending", "front", "paid"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`px-2.5 py-1 rounded-full font-medium capitalize transition ${
+                    statusFilter === s ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                  }`}
+                >
+                  {s === "front" ? "Front paid" : s}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {filteredRows.length} of {rows.length}
+            </span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
@@ -318,10 +345,15 @@ export default function Ledger() {
                 )}
                 {!isLoading && rows.length === 0 && (
                   <tr><td colSpan={9} className="text-center text-muted-foreground py-8">
-                    No entries yet. Add one or import your won deals.
+                    No entries yet. Add one or sync your won deals.
                   </td></tr>
                 )}
-                {rows.map((r) => {
+                {!isLoading && rows.length > 0 && filteredRows.length === 0 && (
+                  <tr><td colSpan={9} className="text-center text-muted-foreground py-8">
+                    No entries match your filters.
+                  </td></tr>
+                )}
+                {filteredRows.map((r) => {
                   const paid = Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
                   const out = Number(r.expected_total || 0) - paid;
                   const status =
