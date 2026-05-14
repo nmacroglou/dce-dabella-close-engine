@@ -220,8 +220,8 @@ export default function Ledger() {
             <p className="text-sm text-muted-foreground">Track every dollar owed, paid front-half and back-half, in real time.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={importWonDeals}>
-              <Import className="h-4 w-4 mr-1.5" /> Import won deals
+            <Button variant="outline" size="sm" onClick={() => importWonDeals()}>
+              <Import className="h-4 w-4 mr-1.5" /> Sync won deals
             </Button>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}>
               <Download className="h-4 w-4 mr-1.5" /> Export CSV
@@ -234,14 +234,36 @@ export default function Ledger() {
 
         {/* KPI tiles */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KpiTile icon={DollarSign} label="Total expected" value={fmtCurrency(totals.expected)} tone="primary" />
+          <KpiTile icon={DollarSign} label="Total expected" value={fmtCurrency(totals.expected)} tone="primary"
+            sub={`${totals.dealsCount} deal${totals.dealsCount === 1 ? "" : "s"} · avg ${fmtCurrency(totals.avgDeal)}`} />
           <KpiTile icon={CheckCircle2} label="Total paid" value={fmtCurrency(totals.totalPaid)} tone="success"
             sub={`${totals.expected ? Math.round((totals.totalPaid / totals.expected) * 100) : 0}% of expected`} />
-          <KpiTile icon={Clock} label="Outstanding" value={fmtCurrency(totals.outstanding)} tone="warning" />
-          <KpiTile icon={Wallet} label="Front / Back paid"
-            value={`${fmtCurrency(totals.frontPaid)} / ${fmtCurrency(totals.backPaid)}`} tone="muted"
-            sub={`exp ${fmtCurrency(totals.frontExp)} / ${fmtCurrency(totals.backExp)}`} />
+          <KpiTile icon={Clock} label="Outstanding" value={fmtCurrency(totals.outstanding)} tone="warning"
+            sub={`front exp ${fmtCurrency(totals.frontExp)} · back exp ${fmtCurrency(totals.backExp)}`} />
+          <KpiTile icon={TrendingUp} label="Paid this month" value={fmtCurrency(totals.paidThisMonth)} tone="muted"
+            sub={`front ${fmtCurrency(totals.frontPaid)} · back ${fmtCurrency(totals.backPaid)}`} />
         </div>
+
+        {/* Progress bar */}
+        {totals.expected > 0 && (
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+              <span className="font-semibold uppercase tracking-wide">Collection progress</span>
+              <span className="tabular-nums">{fmtCurrency(totals.totalPaid)} / {fmtCurrency(totals.expected)}</span>
+            </div>
+            <div className="h-2.5 rounded-full bg-muted overflow-hidden flex">
+              <div className="bg-primary h-full" style={{ width: `${Math.min(100, (totals.frontPaid / totals.expected) * 100)}%` }}
+                title={`Front paid ${fmtCurrency(totals.frontPaid)}`} />
+              <div className="bg-success h-full" style={{ width: `${Math.min(100, (totals.backPaid / totals.expected) * 100)}%` }}
+                title={`Back paid ${fmtCurrency(totals.backPaid)}`} />
+            </div>
+            <div className="flex items-center gap-4 mt-2 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-primary" /> Front-half paid</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-success" /> Back-half paid</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-muted-foreground/30" /> Outstanding</span>
+            </div>
+          </div>
+        )}
 
         {/* Trend */}
         {monthly.length > 0 && (
