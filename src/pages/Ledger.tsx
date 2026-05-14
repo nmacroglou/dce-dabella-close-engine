@@ -1,5 +1,9 @@
-import { useMemo, useState } from "react";
-import { Plus, Trash2, DollarSign, Wallet, Clock, CheckCircle2, Download, Import } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import AppHeader from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +36,8 @@ const empty: FormState = {
 };
 
 export default function Ledger() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const { data: rows = [], isLoading } = useCommissionLedger();
   const { data: deals = [] } = useDeals();
   const { data: grid } = useCommissionGrid();
@@ -39,6 +45,9 @@ export default function Ledger() {
   const del = useDeletePayment();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty);
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "front" | "paid">("all");
+  const [search, setSearch] = useState("");
+  const autoImportRan = useRef(false);
 
   const totals = useMemo(() => {
     const expected = rows.reduce((s, r) => s + Number(r.expected_total || 0), 0);
@@ -48,7 +57,16 @@ export default function Ledger() {
     const backPaid = rows.reduce((s, r) => s + Number(r.back_paid_amount || 0), 0);
     const totalPaid = frontPaid + backPaid;
     const outstanding = Math.max(0, expected - totalPaid);
-    return { expected, frontExp, backExp, frontPaid, backPaid, totalPaid, outstanding };
+    const nowMonth = new Date().toISOString().slice(0, 7);
+    const paidThisMonth = rows.reduce((s, r) => {
+      let v = 0;
+      if (r.front_paid_at?.startsWith(nowMonth)) v += Number(r.front_paid_amount || 0);
+      if (r.back_paid_at?.startsWith(nowMonth)) v += Number(r.back_paid_amount || 0);
+      return s + v;
+    }, 0);
+    const dealsCount = rows.length;
+    const avgDeal = dealsCount ? expected / dealsCount : 0;
+    return { expected, frontExp, backExp, frontPaid, backPaid, totalPaid, outstanding, paidThisMonth, dealsCount, avgDeal };
   }, [rows]);
 
   const monthly = useMemo(() => {
@@ -74,6 +92,23 @@ export default function Ledger() {
 
   const maxBar = Math.max(1, ...monthly.map(([, v]) => Math.max(v.expected, v.paid)));
 
+  const filteredRows = useMemo(() => {
+    return rows.filter((r) => {
+      const paid = Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
+      const out = Number(r.expected_total || 0) - paid;
+      const status = out <= 0.01 ? "paid" : Number(r.front_paid_amount || 0) > 0 ? "front" : "pending";
+      if (statusFilter !== "all" && status !== statusFilter) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        if (
+          !(r.customer_name ?? "").toLowerCase().includes(q) &&
+          !(r.job_number ?? "").toLowerCase().includes(q)
+        ) return false;
+      }
+      return true;
+    });
+  }, [rows, statusFilter, search]);
+
   function openNew() {
     setForm(empty);
     setOpen(true);
@@ -92,35 +127,63 @@ export default function Ledger() {
     });
   }
 
-  // Import won deals not yet in ledger
-  function importWonDeals() {
-    if (!grid) return;
+  // Bulk import won deals not yet in ledger (single batch insert + invalidate)
+  async function importWonDeals(opts: { silent?: boolean } = {}) {
+    if (!grid || !user) return 0;
     const existingDealIds = new Set(rows.map((r) => r.deal_id).filter(Boolean));
     const wonDeals = deals.filter(
       (d) => d.stage === "won" && d.commission_sheet && !existingDealIds.has(d.id),
     );
     if (!wonDeals.length) {
-      return;
+      if (!opts.silent) toast.info("All won deals already in the ledger");
+      return 0;
     }
-    let imported = 0;
-    wonDeals.forEach((d) => {
-      try {
-        const c = computeCommissionSheet(d.commission_sheet, grid.tiers, grid.front_end_pct);
-        upsert.mutate({
-          deal_id: d.id,
-          customer_name: [d.homeowner1, d.homeowner2].filter(Boolean).join(" & ") || "Unnamed",
-          job_number: d.commission_sheet.job_number ?? "",
-          sale_date: d.commission_sheet.date_of_sale ?? d.closed_at?.slice(0, 10) ?? null,
-          expected_total: c.rep1Commission,
-          expected_front: c.rep1Advance,
-          expected_back: c.rep1Earned,
-          front_paid_amount: 0,
-          back_paid_amount: 0,
-        });
-        imported++;
-      } catch {}
-    });
+    const payloads = wonDeals
+      .map((d) => {
+        try {
+          const c = computeCommissionSheet(d.commission_sheet, grid.tiers, grid.front_end_pct);
+          return {
+            rep_id: user.id,
+            deal_id: d.id,
+            customer_name: [d.homeowner1, d.homeowner2].filter(Boolean).join(" & ") || "Unnamed",
+            job_number: d.commission_sheet.job_number ?? "",
+            sale_date: d.commission_sheet.date_of_sale ?? d.closed_at?.slice(0, 10) ?? null,
+            expected_total: c.rep1Commission,
+            expected_front: c.rep1Advance,
+            expected_back: c.rep1Earned,
+            front_paid_amount: 0,
+            back_paid_amount: 0,
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean) as any[];
+    if (!payloads.length) return 0;
+    const { error } = await supabase.from("commission_payments").insert(payloads);
+    if (error) {
+      toast.error(`Import failed: ${error.message}`);
+      return 0;
+    }
+    qc.invalidateQueries({ queryKey: ["commission_payments", user.id] });
+    if (!opts.silent) toast.success(`Imported ${payloads.length} won deal${payloads.length === 1 ? "" : "s"}`);
+    return payloads.length;
   }
+
+  // Auto-sync won deals on first mount
+  useEffect(() => {
+    if (autoImportRan.current) return;
+    if (!user || !grid || !deals.length) return;
+    const existingDealIds = new Set(rows.map((r) => r.deal_id).filter(Boolean));
+    const missing = deals.filter(
+      (d) => d.stage === "won" && d.commission_sheet && !existingDealIds.has(d.id),
+    );
+    if (missing.length > 0) {
+      autoImportRan.current = true;
+      importWonDeals({ silent: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, grid, deals, rows]);
 
   function exportCsv() {
     const headers = [
@@ -157,8 +220,8 @@ export default function Ledger() {
             <p className="text-sm text-muted-foreground">Track every dollar owed, paid front-half and back-half, in real time.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={importWonDeals}>
-              <Import className="h-4 w-4 mr-1.5" /> Import won deals
+            <Button variant="outline" size="sm" onClick={() => importWonDeals()}>
+              <Import className="h-4 w-4 mr-1.5" /> Sync won deals
             </Button>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}>
               <Download className="h-4 w-4 mr-1.5" /> Export CSV
@@ -171,14 +234,36 @@ export default function Ledger() {
 
         {/* KPI tiles */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KpiTile icon={DollarSign} label="Total expected" value={fmtCurrency(totals.expected)} tone="primary" />
+          <KpiTile icon={DollarSign} label="Total expected" value={fmtCurrency(totals.expected)} tone="primary"
+            sub={`${totals.dealsCount} deal${totals.dealsCount === 1 ? "" : "s"} · avg ${fmtCurrency(totals.avgDeal)}`} />
           <KpiTile icon={CheckCircle2} label="Total paid" value={fmtCurrency(totals.totalPaid)} tone="success"
             sub={`${totals.expected ? Math.round((totals.totalPaid / totals.expected) * 100) : 0}% of expected`} />
-          <KpiTile icon={Clock} label="Outstanding" value={fmtCurrency(totals.outstanding)} tone="warning" />
-          <KpiTile icon={Wallet} label="Front / Back paid"
-            value={`${fmtCurrency(totals.frontPaid)} / ${fmtCurrency(totals.backPaid)}`} tone="muted"
-            sub={`exp ${fmtCurrency(totals.frontExp)} / ${fmtCurrency(totals.backExp)}`} />
+          <KpiTile icon={Clock} label="Outstanding" value={fmtCurrency(totals.outstanding)} tone="warning"
+            sub={`front exp ${fmtCurrency(totals.frontExp)} · back exp ${fmtCurrency(totals.backExp)}`} />
+          <KpiTile icon={TrendingUp} label="Paid this month" value={fmtCurrency(totals.paidThisMonth)} tone="muted"
+            sub={`front ${fmtCurrency(totals.frontPaid)} · back ${fmtCurrency(totals.backPaid)}`} />
         </div>
+
+        {/* Progress bar */}
+        {totals.expected > 0 && (
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+              <span className="font-semibold uppercase tracking-wide">Collection progress</span>
+              <span className="tabular-nums">{fmtCurrency(totals.totalPaid)} / {fmtCurrency(totals.expected)}</span>
+            </div>
+            <div className="h-2.5 rounded-full bg-muted overflow-hidden flex">
+              <div className="bg-primary h-full" style={{ width: `${Math.min(100, (totals.frontPaid / totals.expected) * 100)}%` }}
+                title={`Front paid ${fmtCurrency(totals.frontPaid)}`} />
+              <div className="bg-success h-full" style={{ width: `${Math.min(100, (totals.backPaid / totals.expected) * 100)}%` }}
+                title={`Back paid ${fmtCurrency(totals.backPaid)}`} />
+            </div>
+            <div className="flex items-center gap-4 mt-2 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-primary" /> Front-half paid</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-success" /> Back-half paid</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-muted-foreground/30" /> Outstanding</span>
+            </div>
+          </div>
+        )}
 
         {/* Trend */}
         {monthly.length > 0 && (
@@ -210,8 +295,35 @@ export default function Ledger() {
           </div>
         )}
 
-        {/* Table */}
+        {/* Filters + Table */}
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="flex flex-wrap items-center gap-2 p-3 border-b border-border">
+            <div className="relative flex-1 min-w-[180px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search customer or job #"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-8 pl-8 text-sm"
+              />
+            </div>
+            <div className="flex items-center gap-1 text-xs">
+              {(["all", "pending", "front", "paid"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`px-2.5 py-1 rounded-full font-medium capitalize transition ${
+                    statusFilter === s ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                  }`}
+                >
+                  {s === "front" ? "Front paid" : s}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-muted-foreground ml-auto">
+              {filteredRows.length} of {rows.length}
+            </span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
@@ -233,10 +345,15 @@ export default function Ledger() {
                 )}
                 {!isLoading && rows.length === 0 && (
                   <tr><td colSpan={9} className="text-center text-muted-foreground py-8">
-                    No entries yet. Add one or import your won deals.
+                    No entries yet. Add one or sync your won deals.
                   </td></tr>
                 )}
-                {rows.map((r) => {
+                {!isLoading && rows.length > 0 && filteredRows.length === 0 && (
+                  <tr><td colSpan={9} className="text-center text-muted-foreground py-8">
+                    No entries match your filters.
+                  </td></tr>
+                )}
+                {filteredRows.map((r) => {
                   const paid = Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
                   const out = Number(r.expected_total || 0) - paid;
                   const status =
