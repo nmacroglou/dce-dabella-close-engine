@@ -36,6 +36,8 @@ const empty: FormState = {
 };
 
 export default function Ledger() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const { data: rows = [], isLoading } = useCommissionLedger();
   const { data: deals = [] } = useDeals();
   const { data: grid } = useCommissionGrid();
@@ -43,6 +45,9 @@ export default function Ledger() {
   const del = useDeletePayment();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty);
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "front" | "paid">("all");
+  const [search, setSearch] = useState("");
+  const autoImportRan = useRef(false);
 
   const totals = useMemo(() => {
     const expected = rows.reduce((s, r) => s + Number(r.expected_total || 0), 0);
