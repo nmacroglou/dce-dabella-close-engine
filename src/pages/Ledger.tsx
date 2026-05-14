@@ -57,7 +57,16 @@ export default function Ledger() {
     const backPaid = rows.reduce((s, r) => s + Number(r.back_paid_amount || 0), 0);
     const totalPaid = frontPaid + backPaid;
     const outstanding = Math.max(0, expected - totalPaid);
-    return { expected, frontExp, backExp, frontPaid, backPaid, totalPaid, outstanding };
+    const nowMonth = new Date().toISOString().slice(0, 7);
+    const paidThisMonth = rows.reduce((s, r) => {
+      let v = 0;
+      if (r.front_paid_at?.startsWith(nowMonth)) v += Number(r.front_paid_amount || 0);
+      if (r.back_paid_at?.startsWith(nowMonth)) v += Number(r.back_paid_amount || 0);
+      return s + v;
+    }, 0);
+    const dealsCount = rows.length;
+    const avgDeal = dealsCount ? expected / dealsCount : 0;
+    return { expected, frontExp, backExp, frontPaid, backPaid, totalPaid, outstanding, paidThisMonth, dealsCount, avgDeal };
   }, [rows]);
 
   const monthly = useMemo(() => {
@@ -83,6 +92,23 @@ export default function Ledger() {
 
   const maxBar = Math.max(1, ...monthly.map(([, v]) => Math.max(v.expected, v.paid)));
 
+  const filteredRows = useMemo(() => {
+    return rows.filter((r) => {
+      const paid = Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
+      const out = Number(r.expected_total || 0) - paid;
+      const status = out <= 0.01 ? "paid" : Number(r.front_paid_amount || 0) > 0 ? "front" : "pending";
+      if (statusFilter !== "all" && status !== statusFilter) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        if (
+          !(r.customer_name ?? "").toLowerCase().includes(q) &&
+          !(r.job_number ?? "").toLowerCase().includes(q)
+        ) return false;
+      }
+      return true;
+    });
+  }, [rows, statusFilter, search]);
+
   function openNew() {
     setForm(empty);
     setOpen(true);
@@ -101,35 +127,63 @@ export default function Ledger() {
     });
   }
 
-  // Import won deals not yet in ledger
-  function importWonDeals() {
-    if (!grid) return;
+  // Bulk import won deals not yet in ledger (single batch insert + invalidate)
+  async function importWonDeals(opts: { silent?: boolean } = {}) {
+    if (!grid || !user) return 0;
     const existingDealIds = new Set(rows.map((r) => r.deal_id).filter(Boolean));
     const wonDeals = deals.filter(
       (d) => d.stage === "won" && d.commission_sheet && !existingDealIds.has(d.id),
     );
     if (!wonDeals.length) {
-      return;
+      if (!opts.silent) toast.info("All won deals already in the ledger");
+      return 0;
     }
-    let imported = 0;
-    wonDeals.forEach((d) => {
-      try {
-        const c = computeCommissionSheet(d.commission_sheet, grid.tiers, grid.front_end_pct);
-        upsert.mutate({
-          deal_id: d.id,
-          customer_name: [d.homeowner1, d.homeowner2].filter(Boolean).join(" & ") || "Unnamed",
-          job_number: d.commission_sheet.job_number ?? "",
-          sale_date: d.commission_sheet.date_of_sale ?? d.closed_at?.slice(0, 10) ?? null,
-          expected_total: c.rep1Commission,
-          expected_front: c.rep1Advance,
-          expected_back: c.rep1Earned,
-          front_paid_amount: 0,
-          back_paid_amount: 0,
-        });
-        imported++;
-      } catch {}
-    });
+    const payloads = wonDeals
+      .map((d) => {
+        try {
+          const c = computeCommissionSheet(d.commission_sheet, grid.tiers, grid.front_end_pct);
+          return {
+            rep_id: user.id,
+            deal_id: d.id,
+            customer_name: [d.homeowner1, d.homeowner2].filter(Boolean).join(" & ") || "Unnamed",
+            job_number: d.commission_sheet.job_number ?? "",
+            sale_date: d.commission_sheet.date_of_sale ?? d.closed_at?.slice(0, 10) ?? null,
+            expected_total: c.rep1Commission,
+            expected_front: c.rep1Advance,
+            expected_back: c.rep1Earned,
+            front_paid_amount: 0,
+            back_paid_amount: 0,
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean) as any[];
+    if (!payloads.length) return 0;
+    const { error } = await supabase.from("commission_payments").insert(payloads);
+    if (error) {
+      toast.error(`Import failed: ${error.message}`);
+      return 0;
+    }
+    qc.invalidateQueries({ queryKey: ["commission_payments", user.id] });
+    if (!opts.silent) toast.success(`Imported ${payloads.length} won deal${payloads.length === 1 ? "" : "s"}`);
+    return payloads.length;
   }
+
+  // Auto-sync won deals on first mount
+  useEffect(() => {
+    if (autoImportRan.current) return;
+    if (!user || !grid || !deals.length) return;
+    const existingDealIds = new Set(rows.map((r) => r.deal_id).filter(Boolean));
+    const missing = deals.filter(
+      (d) => d.stage === "won" && d.commission_sheet && !existingDealIds.has(d.id),
+    );
+    if (missing.length > 0) {
+      autoImportRan.current = true;
+      importWonDeals({ silent: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, grid, deals, rows]);
 
   function exportCsv() {
     const headers = [
