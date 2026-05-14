@@ -50,6 +50,63 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_payments: {
+        Row: {
+          back_paid_amount: number
+          back_paid_at: string | null
+          created_at: string
+          customer_name: string | null
+          deal_id: string | null
+          expected_back: number
+          expected_front: number
+          expected_total: number
+          front_paid_amount: number
+          front_paid_at: string | null
+          id: string
+          job_number: string | null
+          notes: string | null
+          rep_id: string
+          sale_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          back_paid_amount?: number
+          back_paid_at?: string | null
+          created_at?: string
+          customer_name?: string | null
+          deal_id?: string | null
+          expected_back?: number
+          expected_front?: number
+          expected_total?: number
+          front_paid_amount?: number
+          front_paid_at?: string | null
+          id?: string
+          job_number?: string | null
+          notes?: string | null
+          rep_id: string
+          sale_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          back_paid_amount?: number
+          back_paid_at?: string | null
+          created_at?: string
+          customer_name?: string | null
+          deal_id?: string | null
+          expected_back?: number
+          expected_front?: number
+          expected_total?: number
+          front_paid_amount?: number
+          front_paid_at?: string | null
+          id?: string
+          job_number?: string | null
+          notes?: string | null
+          rep_id?: string
+          sale_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       deal_objections: {
         Row: {
           created_at: string
