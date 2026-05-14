@@ -15,7 +15,7 @@ import {
 import { useDeals } from "@/hooks/useDeals";
 import { useCommissionGrid } from "@/hooks/useCommissionGrid";
 import { computeCommissionSheet } from "@/types/commission";
-import { fmtCurrency } from "@/lib/format";
+import { fmt as fmtCurrency } from "@/lib/format";
 
 type FormState = Partial<CommissionPayment>;
 
