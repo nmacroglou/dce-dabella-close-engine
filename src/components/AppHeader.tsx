@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck, Wallet } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,7 +27,7 @@ const NAV = [
 type NavItemProps = {
   to: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   end: boolean;
 };
 
