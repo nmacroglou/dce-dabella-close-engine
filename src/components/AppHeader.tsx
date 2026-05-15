@@ -5,6 +5,7 @@ import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useIsAdmin } from "@/hooks/useUserRole";
+import { usePrefetchOnHover } from "@/hooks/usePrefetchRoute";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,21 +73,7 @@ export default function AppHeader() {
 
         <nav className="flex items-center gap-1 p-1 rounded-xl bg-muted/40 border border-border/60">
           {navItems.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
-                  isActive
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-card/60"
-                }`
-              }
-            >
-              <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{label}</span>
-            </NavLink>
+            <NavItem key={to} to={to} label={label} icon={Icon} end={end} />
           ))}
         </nav>
 
