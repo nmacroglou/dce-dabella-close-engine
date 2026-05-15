@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sliders } from "lucide-react";
 
 export type TierKey = "newCustomer" | "efficiency" | "marketing" | "reviews";
-export type TierState = TierKey | null;
+export type TierState = TierKey | { custom: number } | null;
 
 export const TIER_DEFS: { key: TierKey; pct: number; label: string; hint: string }[] = [
   { key: "newCustomer", pct: 5,  label: "Tier 1 — New Customer", hint: "First-time homeowner welcome" },
@@ -11,8 +11,13 @@ export const TIER_DEFS: { key: TierKey; pct: number; label: string; hint: string
   { key: "reviews",     pct: 20, label: "Tier 4 — Reviews",      hint: "Public review + referral pledge" },
 ];
 
-export const tierPct = (t: TierState): number =>
-  t ? TIER_DEFS.find((d) => d.key === t)?.pct ?? 0 : 0;
+export const tierPct = (t: TierState): number => {
+  if (!t) return 0;
+  if (typeof t === "object" && "custom" in t) {
+    return Math.max(0, Math.min(100, t.custom || 0));
+  }
+  return TIER_DEFS.find((d) => d.key === t)?.pct ?? 0;
+};
 
 interface Props {
   tier: TierState;
@@ -26,6 +31,8 @@ interface Props {
 export default function PromoTrigger({ tier, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const active = tier !== null;
+  const isCustom = !!tier && typeof tier === "object" && "custom" in tier;
+  const customValue = isCustom ? (tier as { custom: number }).custom : "";
 
   return (
     <div className="relative">
@@ -51,7 +58,7 @@ export default function PromoTrigger({ tier, onChange }: Props) {
           <div className="absolute right-0 mt-2 w-72 z-50 rounded-2xl bg-card border border-border shadow-2xl p-3 animate-fade-in">
             <div className="px-2 pb-2 mb-1 border-b border-border">
               <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Adjustments</p>
-              <p className="text-[11px] text-muted-foreground/70 mt-0.5">Pick one tier</p>
+              <p className="text-[11px] text-muted-foreground/70 mt-0.5">Pick a tier or set a custom %</p>
             </div>
             <div className="space-y-1">
               <button
@@ -89,6 +96,42 @@ export default function PromoTrigger({ tier, onChange }: Props) {
                   </button>
                 );
               })}
+
+              {/* Custom % */}
+              <div
+                className={`flex items-center gap-3 p-2 rounded-xl transition-all ${
+                  isCustom ? "bg-accent/15 ring-1 ring-accent" : "hover:bg-muted"
+                }`}
+              >
+                <div
+                  className={`flex-shrink-0 h-8 w-12 rounded-lg flex items-center justify-center text-xs font-extrabold ${
+                    isCustom ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  −%
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Custom</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                      value={customValue}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "") { onChange(null); return; }
+                        const n = parseFloat(v);
+                        if (!isNaN(n)) onChange({ custom: n });
+                      }}
+                      placeholder="e.g. 25"
+                      className="w-20 rounded-md border border-input bg-background px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                    <span className="text-xs text-muted-foreground">% off</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </>
