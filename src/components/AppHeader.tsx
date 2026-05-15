@@ -23,6 +23,38 @@ const NAV = [
   { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
 ] as const;
 
+type NavItemProps = {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  end: boolean;
+};
+
+function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
+  const prefetch = usePrefetchOnHover(to);
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      {...prefetch}
+      className={({ isActive }) =>
+        `relative px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
+          isActive
+            ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+            : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <Icon className={`h-4 w-4 transition-colors ${isActive ? "text-primary" : ""}`} />
+          <span className="hidden sm:inline">{label}</span>
+        </>
+      )}
+    </NavLink>
+  );
+}
+
 export default function AppHeader() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
