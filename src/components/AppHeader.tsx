@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck, Wallet } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -5,6 +6,7 @@ import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { useIsAdmin } from "@/hooks/useUserRole";
+import { usePrefetchOnHover } from "@/hooks/usePrefetchRoute";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +23,38 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: false },
   { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
 ] as const;
+
+type NavItemProps = {
+  to: string;
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+  end: boolean;
+};
+
+function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
+  const prefetch = usePrefetchOnHover(to);
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      {...prefetch}
+      className={({ isActive }) =>
+        `relative px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
+          isActive
+            ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+            : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <Icon className={`h-4 w-4 transition-colors ${isActive ? "text-primary" : ""}`} />
+          <span className="hidden sm:inline">{label}</span>
+        </>
+      )}
+    </NavLink>
+  );
+}
 
 export default function AppHeader() {
   const navigate = useNavigate();
@@ -72,21 +106,7 @@ export default function AppHeader() {
 
         <nav className="flex items-center gap-1 p-1 rounded-xl bg-muted/40 border border-border/60">
           {navItems.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
-                  isActive
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-card/60"
-                }`
-              }
-            >
-              <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{label}</span>
-            </NavLink>
+            <NavItem key={to} to={to} label={label} icon={Icon} end={end} />
           ))}
         </nav>
 

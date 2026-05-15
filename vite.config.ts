@@ -25,6 +25,11 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           // Isolate the heavy PDF stack so it only loads when the user opens Share/Download
           pdf: ["jspdf"],
+          // Long-lived vendor chunks for better browser caching across deploys
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-query": ["@tanstack/react-query"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+          "vendor-charts": ["recharts"],
         },
       },
     },
