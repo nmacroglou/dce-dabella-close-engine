@@ -17,21 +17,23 @@
 
     --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 91% 65%;
 
-    --secondary: 220 14% 96%;
+    --secondary: 220 16% 95%;
     --secondary-foreground: 222 47% 11%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 220 16% 95%;
+    --muted-foreground: 220 9% 42%;
 
     --accent: 152 69% 40%;
     --accent-foreground: 0 0% 100%;
+    --accent-glow: 160 76% 50%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 220 16% 90%;
+    --input: 220 16% 90%;
     --ring: 221 83% 53%;
 
     --radius: 0.875rem;
@@ -44,15 +46,15 @@
     --radius-pill: 9999px;
 
     /* semantic surfaces — layered depth */
-    --surface-sunken: 220 20% 94%;
-    --surface-base: 220 20% 97%;
+    --surface-sunken: 220 22% 94%;
+    --surface-base: 220 25% 98%;
     --surface-raised: 0 0% 100%;
     --surface-overlay: 0 0% 100%;
-    --surface-inverse: 222 47% 11%;
+    --surface-inverse: 222 47% 9%;
     --surface-inverse-foreground: 0 0% 100%;
 
-    --hairline: 220 13% 88%;
-    --hairline-strong: 220 13% 78%;
+    --hairline: 220 16% 88%;
+    --hairline-strong: 220 16% 76%;
 
     --success: 152 69% 40%;
     --success-foreground: 0 0% 100%;
@@ -69,10 +71,17 @@
     --gradient-brand: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to)));
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent-from)), hsl(var(--accent-to)));
     --gradient-surface: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%);
-    --shadow-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.04);
-    --shadow-md: 0 4px 12px -2px hsl(var(--foreground) / 0.08), 0 2px 4px -2px hsl(var(--foreground) / 0.04);
-    --shadow-lg: 0 12px 32px -8px hsl(var(--foreground) / 0.12), 0 4px 12px -4px hsl(var(--foreground) / 0.06);
-    --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.15), 0 8px 24px -4px hsl(var(--primary) / 0.25);
+    --gradient-mesh:
+      radial-gradient(1000px 600px at 8% -10%, hsl(var(--primary) / 0.10), transparent 55%),
+      radial-gradient(800px 500px at 100% 0%, hsl(var(--accent) / 0.08), transparent 55%),
+      radial-gradient(700px 400px at 50% 110%, hsl(var(--brand-to) / 0.06), transparent 60%);
+    --shadow-xs: 0 1px 1px 0 hsl(var(--foreground) / 0.03);
+    --shadow-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.05), 0 1px 1px -1px hsl(var(--foreground) / 0.04);
+    --shadow-md: 0 6px 16px -4px hsl(var(--foreground) / 0.08), 0 2px 6px -2px hsl(var(--foreground) / 0.05);
+    --shadow-lg: 0 18px 40px -12px hsl(var(--foreground) / 0.14), 0 6px 16px -6px hsl(var(--foreground) / 0.08);
+    --shadow-xl: 0 30px 60px -20px hsl(var(--foreground) / 0.20), 0 10px 24px -10px hsl(var(--foreground) / 0.10);
+    --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.18), 0 10px 30px -6px hsl(var(--primary) / 0.30);
+    --shadow-glow-accent: 0 0 0 1px hsl(var(--accent) / 0.18), 0 10px 30px -6px hsl(var(--accent) / 0.30);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
