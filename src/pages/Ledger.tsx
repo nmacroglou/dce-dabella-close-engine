@@ -246,10 +246,13 @@ export default function Ledger() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `commission-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+      const filename = `commission-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success(`Exported ${filteredRows.length} row${filteredRows.length === 1 ? "" : "s"} to CSV`);
+      toast.success(`Exported ${filteredRows.length} row${filteredRows.length === 1 ? "" : "s"}`, {
+        description: filename,
+      });
     } catch (e: any) {
       toast.error(`Export failed: ${e?.message ?? "unknown error"}`);
     }
