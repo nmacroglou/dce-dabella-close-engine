@@ -19,17 +19,17 @@ function HeroKPIBase({
     destructive: "from-destructive/20 to-destructive/0 text-destructive",
   };
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 group">
-      <div className={`absolute -top-12 -right-12 h-40 w-40 rounded-full bg-gradient-to-br ${toneMap[tone]} blur-2xl opacity-70 group-hover:opacity-100 transition-opacity`} />
+    <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
+      <div className={`absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br ${toneMap[tone]} blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500`} />
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-          <div className={`h-9 w-9 rounded-xl grid place-items-center bg-background/60 backdrop-blur border border-border ${toneMap[tone].split(" ").pop()}`}>
+          <div className={`h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline ${toneMap[tone].split(" ").pop()} transition-transform group-hover:scale-110`}>
             <Icon className="h-4 w-4" />
           </div>
         </div>
         <div className="flex items-end gap-2">
-          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none">{value}</p>
+          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{value}</p>
           {trend && (
             <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded-md ${
               trend.dir === "up" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
@@ -50,12 +50,12 @@ function MiniStatBase({ icon: Icon, label, value, sub, accent = "text-primary" }
   icon: React.ElementType; label: string; value: string; sub?: string; accent?: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors">
+    <div className="rounded-xl border border-hairline bg-card p-4 hover:border-primary/40 hover:shadow-[var(--shadow-sm)] transition-all">
       <div className="flex items-center gap-2 mb-1.5">
         <Icon className={`h-3.5 w-3.5 ${accent}`} />
         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
       </div>
-      <p className="text-xl font-display font-extrabold text-foreground tracking-tight">{value}</p>
+      <p className="text-xl font-display font-extrabold text-foreground tracking-tight num-display">{value}</p>
       {sub && <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>}
     </div>
   );
@@ -110,20 +110,20 @@ function EconomicsKPIBase({
     warning: { ring: "ring-warning/20", glow: "from-warning/30", icon: "text-warning", border: "border-warning/30" },
   }[accent];
   return (
-    <div className={`relative overflow-hidden rounded-2xl border-2 ${accentMap.border} bg-card p-5 ring-1 ${accentMap.ring}`}>
+    <div className={`relative overflow-hidden rounded-2xl border ${accentMap.border} bg-card p-5 ring-1 ${accentMap.ring} shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:-translate-y-0.5`}>
       <div className={`absolute -top-16 -right-12 h-44 w-44 rounded-full bg-gradient-to-br ${accentMap.glow} to-transparent blur-3xl`} />
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className={`h-8 w-8 rounded-lg grid place-items-center bg-background/80 backdrop-blur border border-border ${accentMap.icon}`}>
+            <div className={`h-8 w-8 rounded-lg grid place-items-center bg-background/85 backdrop-blur border border-hairline ${accentMap.icon}`}>
               <Icon className="h-4 w-4" />
             </div>
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
           </div>
         </div>
-        <p className="text-4xl font-display font-extrabold tracking-tight text-foreground leading-none">{value}</p>
+        <p className="text-4xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{value}</p>
         {sub && <p className="text-xs text-muted-foreground mt-2">{sub}</p>}
-        {footer && <div className="mt-3 pt-3 border-t border-border/60">{footer}</div>}
+        {footer && <div className="mt-3 pt-3 border-t border-hairline">{footer}</div>}
       </div>
     </div>
   );

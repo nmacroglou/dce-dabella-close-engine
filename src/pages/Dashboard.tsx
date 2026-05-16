@@ -148,21 +148,22 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
         {/* ===== HERO with State of the Week ===== */}
-        <section className="relative overflow-hidden rounded-3xl border border-border bg-card">
+        <section className="relative overflow-hidden rounded-3xl border border-hairline bg-card shadow-[var(--shadow-lg)]">
           <div className="absolute inset-0 gradient-surface opacity-80" />
-          <div className="absolute -top-24 -right-16 w-[28rem] h-[28rem] rounded-full opacity-30 blur-3xl gradient-brand" />
-          <div className="absolute -bottom-32 -left-20 w-96 h-96 rounded-full opacity-20 blur-3xl gradient-accent" />
-          <div className="absolute inset-0 opacity-[0.04]" style={{
+          <div className="absolute -top-24 -right-16 w-[28rem] h-[28rem] rounded-full opacity-40 blur-3xl gradient-brand animate-pulse" style={{ animationDuration: "6s" }} />
+          <div className="absolute -bottom-32 -left-20 w-96 h-96 rounded-full opacity-25 blur-3xl gradient-accent animate-pulse" style={{ animationDuration: "8s" }} />
+          <div className="absolute inset-0 opacity-[0.05]" style={{
             backgroundImage: "radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)",
             backgroundSize: "24px 24px",
           }} />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
           <div className="relative p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-end">
             <div className="min-w-0">
               <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                  <Sparkles className="h-3 w-3 text-primary" />
-                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">DaBella Operator HUD</span>
+                <div className="chip chip-primary backdrop-blur">
+                  <Sparkles className="h-3 w-3" />
+                  <span className="uppercase tracking-[0.2em] text-[10px]">DaBella Operator HUD</span>
                 </div>
                 <ReportingActions
                   rangeLabel="Last 7 days"
@@ -179,7 +180,7 @@ export default function Dashboard() {
                 />
               </div>
 
-              <h2 className="text-3xl sm:text-5xl font-display font-extrabold text-foreground tracking-tight leading-[1.05]">
+              <h2 className="text-display-xl text-foreground">
                 Hey {greeting} —<br className="hidden sm:block" />
                 <span className="gradient-text">state of the week</span> is in.
               </h2>
@@ -187,10 +188,10 @@ export default function Dashboard() {
                 Live performance, week-over-week trends, and the next move that closes more deals.
               </p>
               <div className="flex flex-wrap items-center gap-2 mt-5">
-                <Link to="/pipeline" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
+                <Link to="/pipeline" className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl gradient-brand text-primary-foreground font-bold text-sm hover:opacity-95 transition-all pressable shadow-[var(--shadow-glow)]">
                   Open Pipeline <ArrowUpRight className="h-4 w-4" />
                 </Link>
-                <Link to="/deals" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card font-bold text-sm hover:bg-accent/10 transition-colors">
+                <Link to="/deals" className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-hairline bg-card/80 backdrop-blur font-bold text-sm hover:border-primary/40 hover:bg-card transition-all pressable">
                   My Deals
                 </Link>
               </div>

@@ -297,7 +297,7 @@ export default function Ledger() {
 
         {/* Progress bar */}
         {totals.expected > 0 && (
-          <div className="rounded-2xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-hairline bg-card p-4">
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
               <span className="font-semibold uppercase tracking-wide">Collection progress</span>
               <span className="tabular-nums">{fmtCurrency(totals.totalPaid)} / {fmtCurrency(totals.expected)}</span>
@@ -318,7 +318,7 @@ export default function Ledger() {
 
         {/* Trend */}
         {monthly.length > 0 && (
-          <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+          <div className="rounded-2xl border border-hairline bg-card p-4 sm:p-6">
             <h2 className="text-sm font-bold text-foreground mb-4">Expected vs Paid by month</h2>
             <div className="flex items-end gap-3 h-40">
               {monthly.map(([k, v]) => (
@@ -347,8 +347,8 @@ export default function Ledger() {
         )}
 
         {/* Filters + Table */}
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <div className="flex flex-wrap items-center gap-2 p-3 border-b border-border">
+        <div className="rounded-2xl border border-hairline bg-card overflow-hidden">
+          <div className="flex flex-wrap items-center gap-2 p-3 border-b border-hairline">
             <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
@@ -376,7 +376,7 @@ export default function Ledger() {
                 type="checkbox"
                 checked={exportAll}
                 onChange={(e) => setExportAll(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-border accent-primary"
+                className="h-3.5 w-3.5 rounded border-hairline accent-primary"
               />
               Export all rows
             </label>
@@ -508,7 +508,7 @@ function VirtualLedgerTable({
       >
         {/* Sticky header */}
         <div
-          className="grid bg-muted/60 backdrop-blur text-xs uppercase tracking-wide text-muted-foreground border-b border-border sticky top-0 z-10"
+          className="grid bg-muted/60 backdrop-blur text-xs uppercase tracking-wide text-muted-foreground border-b border-hairline sticky top-0 z-10"
           style={{ gridTemplateColumns: GRID_COLS }}
         >
           <SortHeader align="left" active={sort.key === "date"} dir={sort.dir} onClick={() => onToggleSort("date")}>Sale date</SortHeader>
@@ -581,7 +581,7 @@ const LedgerRow = memo(function LedgerRow({
     "bg-warning/10 text-warning";
   return (
     <div
-      className="grid items-center border-t border-border hover:bg-muted/30 cursor-pointer text-sm"
+      className="grid items-center border-t border-hairline hover:bg-muted/30 cursor-pointer text-sm"
       style={{ gridTemplateColumns: GRID_COLS, minHeight: ROW_HEIGHT }}
       onClick={() => onEdit(r)}
     >
@@ -660,7 +660,7 @@ function KpiTile({
     muted: "bg-muted text-foreground",
   };
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
+    <div className="rounded-2xl border border-hairline bg-card p-4">
       <div className="flex items-center gap-2 mb-2">
         <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg ${toneMap[tone]}`}>
           <Icon className="h-4 w-4" />
