@@ -51,7 +51,7 @@ export default function ClosingStackTab({ state, computed, update }: EngineTabPr
           <h3 className="relative text-lg font-display font-extrabold mb-4 flex items-center gap-2 tracking-tight">
             <Sparkles className="h-5 w-5 text-warning" /> Ready to close
           </h3>
-          <p className="text-base leading-relaxed opacity-90 italic">
+          <p className="relative text-base leading-relaxed opacity-90 italic">
             "Based on everything we've gone through, this gives you peace of mind, eliminates future unexpected costs, and is the most cost-effective option. So the only thing left is — <strong className="not-italic opacity-100">would you like to use a check or card?</strong>"
           </p>
         </div>
