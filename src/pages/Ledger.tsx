@@ -436,10 +436,19 @@ function VirtualLedgerTable({
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-[960px]">
-        {/* Header */}
+      <div
+        ref={parentRef}
+        className="min-w-[960px] overflow-y-auto"
+        style={{
+          maxHeight: 640,
+          // Let small lists shrink naturally; sticky header still works.
+          height: rows.length > 0 ? Math.min(rows.length * ROW_HEIGHT + 40, 640) : undefined,
+          contain: "strict",
+        }}
+      >
+        {/* Sticky header */}
         <div
-          className="grid bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground"
+          className="grid bg-muted/60 backdrop-blur text-xs uppercase tracking-wide text-muted-foreground border-b border-border sticky top-0 z-10"
           style={{ gridTemplateColumns: GRID_COLS }}
         >
           <div className="text-left px-4 py-2.5">Sale date</div>
@@ -461,43 +470,33 @@ function VirtualLedgerTable({
         )}
 
         {!isLoading && rows.length > 0 && (
-          <div
-            ref={parentRef}
-            className="overflow-auto"
-            style={{
-              // Cap height so big lists virtualize; small lists shrink naturally.
-              height: Math.min(rows.length * ROW_HEIGHT, 640),
-              contain: "strict",
-            }}
-          >
-            <div style={{ height: total, position: "relative", width: "100%" }}>
-              {items.map((vi) => {
-                const d = rows[vi.index];
-                return (
-                  <div
-                    key={vi.key}
-                    data-index={vi.index}
-                    ref={virtualizer.measureElement}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      transform: `translateY(${vi.start}px)`,
-                    }}
-                  >
-                    <LedgerRow
-                      r={d.row}
-                      paid={d.paid}
-                      out={d.out}
-                      status={d.status}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+          <div style={{ height: total, position: "relative", width: "100%" }}>
+            {items.map((vi) => {
+              const d = rows[vi.index];
+              return (
+                <div
+                  key={vi.key}
+                  data-index={vi.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    transform: `translateY(${vi.start}px)`,
+                  }}
+                >
+                  <LedgerRow
+                    r={d.row}
+                    paid={d.paid}
+                    out={d.out}
+                    status={d.status}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
