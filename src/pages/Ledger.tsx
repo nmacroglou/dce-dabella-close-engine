@@ -597,7 +597,30 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       {children}
     </div>
   );
+function SortHeader({
+  align, active, dir, onClick, children,
+}: {
+  align: "left" | "right";
+  active: boolean;
+  dir: "asc" | "desc";
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const Icon = !active ? ArrowUpDown : dir === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-1 px-4 py-2.5 select-none uppercase tracking-wide text-xs font-semibold transition hover:text-foreground active:text-foreground touch-manipulation ${
+        align === "right" ? "justify-end" : "justify-start"
+      } ${active ? "text-foreground" : ""}`}
+    >
+      <span>{children}</span>
+      <Icon className={`h-3 w-3 ${active ? "opacity-100" : "opacity-50"}`} />
+    </button>
+  );
 }
+
 
 function KpiTile({
   icon: Icon, label, value, sub, tone,
