@@ -104,7 +104,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
                     if (e.key === "Escape") { e.preventDefault(); cancel(); }
                   }}
                   onBlur={commit}
-                  className="w-24 rounded-md border border-border bg-background px-2 py-0.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-24 rounded-md border border-hairline bg-background px-2 py-0.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
                 <button type="button" onClick={commit} className="p-1 rounded text-accent hover:bg-accent/10" aria-label="Save">
                   <Check className="h-3.5 w-3.5" />
