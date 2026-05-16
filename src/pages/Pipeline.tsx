@@ -86,7 +86,7 @@ export default function Pipeline() {
               {stats.overdue.map((f) => {
                 const d = dealById.get(f.deal_id);
                 return (
-                  <div key={f.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 bg-card">
+                  <div key={f.id} className="flex items-center justify-between gap-3 rounded-lg border border-hairline p-3 bg-card hover:border-destructive/40 hover:shadow-[var(--shadow-sm)] transition-all">
                     <div className="min-w-0">
                       <p className="text-sm font-bold truncate">{d?.homeowner1 || "Untitled"}</p>
                       <p className="text-xs text-muted-foreground">
@@ -111,7 +111,7 @@ export default function Pipeline() {
           <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Pipeline</h3>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             {grouped.map(({ stage, deals: ds }) => (
-              <div key={stage} className="rounded-xl border border-border bg-card/40 p-2">
+              <div key={stage} className="rounded-xl border border-hairline bg-card/60 backdrop-blur p-2 hover:bg-card/80 transition-colors">
                 <div className="flex items-center justify-between px-2 py-1.5 mb-1">
                   <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STAGE_COLORS[stage]}`}>
                     {STAGE_LABELS[stage]}
@@ -129,7 +129,7 @@ export default function Pipeline() {
                       status === "upcoming" ? "bg-primary" : "bg-muted-foreground/30";
                     return (
                       <button key={d.id} onClick={() => openDeal(d.id)}
-                        className="w-full text-left rounded-lg border border-border bg-background p-2.5 hover:border-primary/40 transition-colors">
+                        className="w-full text-left rounded-lg border border-hairline bg-background p-2.5 hover:border-primary/50 hover:bg-card hover:shadow-[var(--shadow-sm)] transition-all pressable">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-xs font-bold text-foreground truncate">{d.homeowner1 || "Untitled"}</p>
                           {next && <span className={`h-2 w-2 rounded-full flex-shrink-0 mt-1 ${dot}`} />}
