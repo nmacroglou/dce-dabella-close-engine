@@ -367,6 +367,8 @@ export default function Ledger() {
             totalCount={rows.length}
             onEdit={openEdit}
             onDelete={(id) => del.mutate(id)}
+            sort={sort}
+            onToggleSort={toggleSort}
           />
         </div>
       </main>
