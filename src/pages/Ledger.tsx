@@ -223,27 +223,36 @@ export default function Ledger() {
   }, [user, grid, deals, rows]);
 
   function exportCsv() {
-    const headers = [
-      "sale_date","customer","job_number","expected_total","expected_front","expected_back",
-      "front_paid","front_paid_at","back_paid","back_paid_at","outstanding","notes",
-    ];
-    const lines = filteredRows.map(({ row: r, out }) => {
-      return [
-        r.sale_date ?? "", r.customer_name ?? "", r.job_number ?? "",
-        r.expected_total, r.expected_front, r.expected_back,
-        r.front_paid_amount, r.front_paid_at ?? "",
-        r.back_paid_amount, r.back_paid_at ?? "",
-        out, (r.notes ?? "").replace(/[\n,]/g, " "),
-      ].join(",");
-    });
-    const csv = [headers.join(","), ...lines].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `commission-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      if (!filteredRows.length) {
+        toast.info("Nothing to export");
+        return;
+      }
+      const headers = [
+        "sale_date","customer","job_number","expected_total","expected_front","expected_back",
+        "front_paid","front_paid_at","back_paid","back_paid_at","outstanding","notes",
+      ];
+      const lines = filteredRows.map(({ row: r, out }) => {
+        return [
+          r.sale_date ?? "", r.customer_name ?? "", r.job_number ?? "",
+          r.expected_total, r.expected_front, r.expected_back,
+          r.front_paid_amount, r.front_paid_at ?? "",
+          r.back_paid_amount, r.back_paid_at ?? "",
+          out, (r.notes ?? "").replace(/[\n,]/g, " "),
+        ].join(",");
+      });
+      const csv = [headers.join(","), ...lines].join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `commission-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${filteredRows.length} row${filteredRows.length === 1 ? "" : "s"} to CSV`);
+    } catch (e: any) {
+      toast.error(`Export failed: ${e?.message ?? "unknown error"}`);
+    }
   }
 
   return (
