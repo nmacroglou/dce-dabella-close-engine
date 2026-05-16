@@ -22,22 +22,24 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
       <div className="lg:col-span-2 space-y-4">
-        <div className="card-elevated-lg p-6">
-          <h3 className="text-lg font-bold text-foreground mb-5">Objection router</h3>
+        <div className="card-premium p-6">
+          <h3 className="text-lg font-bold font-display gradient-text mb-5">Objection router</h3>
           <div className="space-y-3">
             {OBJECTIONS.map(({ id, label, icon: Icon }) => (
               <div
                 key={id}
-                className={`card-elevated p-4 flex items-center gap-3 transition-all ${
-                  active === id ? "ring-2 ring-primary border-primary" : ""
+                className={`rounded-xl border p-4 flex items-center gap-3 transition-all pressable ${
+                  active === id
+                    ? "ring-2 ring-primary/50 border-primary bg-primary/5 shadow-[var(--shadow-glow)]"
+                    : "border-hairline bg-card hover:border-primary/30 hover:shadow-[var(--shadow-sm)]"
                 }`}
               >
                 <button
                   onClick={() => update("objectionType", id)}
-                  className="flex items-center gap-3 flex-1 text-left active:scale-[0.98]"
+                  className="flex items-center gap-3 flex-1 text-left"
                 >
-                  <div className="rounded-xl bg-primary/10 p-2.5">
-                    <Icon className="h-5 w-5 text-primary" />
+                  <div className={`rounded-xl p-2.5 ${active === id ? "gradient-brand shadow-[var(--shadow-glow)]" : "bg-primary/10"}`}>
+                    <Icon className={`h-5 w-5 ${active === id ? "text-primary-foreground" : "text-primary"}`} />
                   </div>
                   <span className="text-sm font-semibold text-foreground flex-1">{label}</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -64,7 +66,7 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
         </div>
 
         {activeDealId && logged.length > 0 && (
-          <div className="card-elevated p-5">
+          <div className="card-premium p-5">
             <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
               Logged on this deal ({logged.length})
             </h4>
@@ -91,24 +93,26 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
 
       <div className="lg:col-span-3">
         {route ? (
-          <div className="card-elevated-lg p-6 animate-fade-in">
+          <div className="card-premium p-6 animate-fade-in-up">
             <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-bold text-foreground">{route.title}</h3>
+              <div className="rounded-lg gradient-brand p-1.5 shadow-[var(--shadow-glow)]">
+                <AlertTriangle className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <h3 className="text-lg font-bold font-display gradient-text">{route.title}</h3>
             </div>
             <div className="script-block mb-5">{route.script}</div>
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Route steps</h4>
             <div className="space-y-3">
               {route.steps.map((step, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-muted/50">
-                  <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">{i + 1}</span>
+                <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-muted/40 border border-hairline">
+                  <span className="flex-shrink-0 w-7 h-7 rounded-full gradient-brand text-primary-foreground flex items-center justify-center text-sm font-bold num-display shadow-sm">{i + 1}</span>
                   <p className="text-sm font-medium text-foreground leading-relaxed">{step}</p>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div className="card-elevated-lg p-12 text-center">
+          <div className="card-premium p-12 text-center">
             <AlertTriangle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground font-medium">Select an objection to see the route</p>
           </div>
