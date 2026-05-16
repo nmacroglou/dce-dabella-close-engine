@@ -47,67 +47,70 @@ export default function Ledger() {
   const [form, setForm] = useState<FormState>(empty);
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "front" | "paid">("all");
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const autoImportRan = useRef(false);
 
-  const totals = useMemo(() => {
-    const expected = rows.reduce((s, r) => s + Number(r.expected_total || 0), 0);
-    const frontExp = rows.reduce((s, r) => s + Number(r.expected_front || 0), 0);
-    const backExp = rows.reduce((s, r) => s + Number(r.expected_back || 0), 0);
-    const frontPaid = rows.reduce((s, r) => s + Number(r.front_paid_amount || 0), 0);
-    const backPaid = rows.reduce((s, r) => s + Number(r.back_paid_amount || 0), 0);
+  // Single-pass derive: per-row metadata + totals + monthly buckets.
+  const { decorated, totals, monthly } = useMemo(() => {
+    const nowMonth = new Date().toISOString().slice(0, 7);
+    let expected = 0, frontExp = 0, backExp = 0, frontPaid = 0, backPaid = 0, paidThisMonth = 0;
+    const m = new Map<string, { paid: number; expected: number; label: string }>();
+    const decorated = rows.map((r) => {
+      const eT = +r.expected_total || 0;
+      const eF = +r.expected_front || 0;
+      const eB = +r.expected_back || 0;
+      const fP = +r.front_paid_amount || 0;
+      const bP = +r.back_paid_amount || 0;
+      expected += eT; frontExp += eF; backExp += eB; frontPaid += fP; backPaid += bP;
+      if (r.front_paid_at && r.front_paid_at.startsWith(nowMonth)) paidThisMonth += fP;
+      if (r.back_paid_at && r.back_paid_at.startsWith(nowMonth)) paidThisMonth += bP;
+      const paid = fP + bP;
+      const out = eT - paid;
+      const status: "paid" | "front" | "pending" =
+        out <= 0.01 ? "paid" : fP > 0 ? "front" : "pending";
+      const d = r.sale_date || r.created_at?.slice(0, 10);
+      if (d) {
+        const key = d.slice(0, 7);
+        let e = m.get(key);
+        if (!e) {
+          const [y, mo] = key.split("-");
+          e = {
+            paid: 0,
+            expected: 0,
+            label: new Date(+y, +mo - 1, 1).toLocaleDateString(undefined, { month: "short", year: "2-digit" }),
+          };
+          m.set(key, e);
+        }
+        e.expected += eT;
+        e.paid += paid;
+      }
+      const searchHay = `${r.customer_name ?? ""} ${r.job_number ?? ""}`.toLowerCase();
+      return { row: r, paid, out, status, searchHay };
+    });
     const totalPaid = frontPaid + backPaid;
     const outstanding = Math.max(0, expected - totalPaid);
-    const nowMonth = new Date().toISOString().slice(0, 7);
-    const paidThisMonth = rows.reduce((s, r) => {
-      let v = 0;
-      if (r.front_paid_at?.startsWith(nowMonth)) v += Number(r.front_paid_amount || 0);
-      if (r.back_paid_at?.startsWith(nowMonth)) v += Number(r.back_paid_amount || 0);
-      return s + v;
-    }, 0);
     const dealsCount = rows.length;
-    const avgDeal = dealsCount ? expected / dealsCount : 0;
-    return { expected, frontExp, backExp, frontPaid, backPaid, totalPaid, outstanding, paidThisMonth, dealsCount, avgDeal };
-  }, [rows]);
-
-  const monthly = useMemo(() => {
-    const m = new Map<string, { paid: number; expected: number; label: string }>();
-    rows.forEach((r) => {
-      const d = r.sale_date || r.created_at?.slice(0, 10);
-      if (!d) return;
-      const key = d.slice(0, 7);
-      if (!m.has(key)) {
-        const [y, mo] = key.split("-");
-        const label = new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString(undefined, {
-          month: "short",
-          year: "2-digit",
-        });
-        m.set(key, { paid: 0, expected: 0, label });
-      }
-      const e = m.get(key)!;
-      e.expected += Number(r.expected_total || 0);
-      e.paid += Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
-    });
-    return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
+    return {
+      decorated,
+      totals: {
+        expected, frontExp, backExp, frontPaid, backPaid, totalPaid, outstanding,
+        paidThisMonth, dealsCount, avgDeal: dealsCount ? expected / dealsCount : 0,
+      },
+      monthly: [...m.entries()].sort(([a], [b]) => a.localeCompare(b)),
+    };
   }, [rows]);
 
   const maxBar = Math.max(1, ...monthly.map(([, v]) => Math.max(v.expected, v.paid)));
 
   const filteredRows = useMemo(() => {
-    return rows.filter((r) => {
-      const paid = Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
-      const out = Number(r.expected_total || 0) - paid;
-      const status = out <= 0.01 ? "paid" : Number(r.front_paid_amount || 0) > 0 ? "front" : "pending";
-      if (statusFilter !== "all" && status !== statusFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (
-          !(r.customer_name ?? "").toLowerCase().includes(q) &&
-          !(r.job_number ?? "").toLowerCase().includes(q)
-        ) return false;
-      }
+    const q = deferredSearch.trim().toLowerCase();
+    if (statusFilter === "all" && !q) return decorated;
+    return decorated.filter((d) => {
+      if (statusFilter !== "all" && d.status !== statusFilter) return false;
+      if (q && !d.searchHay.includes(q)) return false;
       return true;
     });
-  }, [rows, statusFilter, search]);
+  }, [decorated, statusFilter, deferredSearch]);
 
   function openNew() {
     setForm(empty);
