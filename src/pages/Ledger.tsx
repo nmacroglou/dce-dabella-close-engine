@@ -106,13 +106,44 @@ export default function Ledger() {
 
   const filteredRows = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
-    if (statusFilter === "all" && !q) return decorated;
-    return decorated.filter((d) => {
-      if (statusFilter !== "all" && d.status !== statusFilter) return false;
-      if (q && !d.searchHay.includes(q)) return false;
-      return true;
+    const base = (statusFilter === "all" && !q)
+      ? decorated
+      : decorated.filter((d) => {
+          if (statusFilter !== "all" && d.status !== statusFilter) return false;
+          if (q && !d.searchHay.includes(q)) return false;
+          return true;
+        });
+    const mult = sort.dir === "asc" ? 1 : -1;
+    const statusRank = { pending: 0, front: 1, paid: 2 } as const;
+    const sorted = [...base].sort((a, b) => {
+      let cmp = 0;
+      switch (sort.key) {
+        case "date": {
+          const ad = a.row.sale_date ?? a.row.created_at ?? "";
+          const bd = b.row.sale_date ?? b.row.created_at ?? "";
+          cmp = ad < bd ? -1 : ad > bd ? 1 : 0;
+          break;
+        }
+        case "customer":
+          cmp = (a.row.customer_name ?? "").localeCompare(b.row.customer_name ?? "");
+          break;
+        case "status":
+          cmp = statusRank[a.status] - statusRank[b.status];
+          break;
+        case "amount":
+          cmp = (+a.row.expected_total || 0) - (+b.row.expected_total || 0);
+          break;
+      }
+      return cmp * mult;
     });
-  }, [decorated, statusFilter, deferredSearch]);
+    return sorted;
+  }, [decorated, statusFilter, deferredSearch, sort]);
+
+  function toggleSort(key: SortKey) {
+    setSort((s) => s.key === key
+      ? { key, dir: s.dir === "asc" ? "desc" : "asc" }
+      : { key, dir: key === "date" || key === "amount" ? "desc" : "asc" });
+  }
 
   function openNew() {
     setForm(empty);
