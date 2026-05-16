@@ -356,46 +356,17 @@ export default function Ledger() {
                     No entries match your filters.
                   </td></tr>
                 )}
-                {filteredRows.map((r) => {
-                  const paid = Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
-                  const out = Number(r.expected_total || 0) - paid;
-                  const status =
-                    out <= 0.01 ? "Paid" :
-                    Number(r.front_paid_amount || 0) > 0 ? "Front paid" : "Pending";
-                  const tone =
-                    status === "Paid" ? "bg-success/10 text-success" :
-                    status === "Front paid" ? "bg-primary/10 text-primary" :
-                    "bg-warning/10 text-warning";
-                  return (
-                    <tr key={r.id} className="border-t border-border hover:bg-muted/30 cursor-pointer"
-                        onClick={() => openEdit(r)}>
-                      <td className="px-4 py-2.5">{r.sale_date ?? "—"}</td>
-                      <td className="px-4 py-2.5 font-medium">{r.customer_name ?? "—"}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{r.job_number ?? "—"}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">{fmtCurrency(r.expected_total)}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">
-                        {fmtCurrency(r.front_paid_amount)}
-                        {r.front_paid_at && <div className="text-[10px] text-muted-foreground">{r.front_paid_at}</div>}
-                      </td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">
-                        {fmtCurrency(r.back_paid_amount)}
-                        {r.back_paid_at && <div className="text-[10px] text-muted-foreground">{r.back_paid_at}</div>}
-                      </td>
-                      <td className="px-4 py-2.5 text-right tabular-nums font-semibold">{fmtCurrency(out)}</td>
-                      <td className="px-4 py-2.5 text-right">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${tone}`}>{status}</span>
-                      </td>
-                      <td className="px-2 py-2.5 text-right">
-                        <button
-                          className="text-muted-foreground hover:text-destructive p-1"
-                          onClick={(e) => { e.stopPropagation(); if (confirm("Delete entry?")) del.mutate(r.id); }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {filteredRows.map((d) => (
+                  <LedgerRow
+                    key={d.row.id}
+                    r={d.row}
+                    paid={d.paid}
+                    out={d.out}
+                    status={d.status}
+                    onEdit={openEdit}
+                    onDelete={(id) => del.mutate(id)}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
