@@ -50,12 +50,12 @@ function MiniStatBase({ icon: Icon, label, value, sub, accent = "text-primary" }
   icon: React.ElementType; label: string; value: string; sub?: string; accent?: string;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 transition-colors">
+    <div className="rounded-xl border border-hairline bg-card p-4 hover:border-primary/40 hover:shadow-[var(--shadow-sm)] transition-all">
       <div className="flex items-center gap-2 mb-1.5">
         <Icon className={`h-3.5 w-3.5 ${accent}`} />
         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
       </div>
-      <p className="text-xl font-display font-extrabold text-foreground tracking-tight">{value}</p>
+      <p className="text-xl font-display font-extrabold text-foreground tracking-tight num-display">{value}</p>
       {sub && <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>}
     </div>
   );
