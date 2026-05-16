@@ -31,14 +31,14 @@ function KpiTile({
   } as const;
   const a = accentMap[accent ?? "primary"];
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 hover:border-primary/30 transition-colors">
+    <div className="card-premium p-4 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] transition-all">
       <div className="flex items-center justify-between mb-2">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${a} grid place-items-center`}>
+        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${a} grid place-items-center shadow-sm`}>
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <p className="text-2xl font-extrabold font-display text-foreground tabular-nums">{value}</p>
+      <p className="text-2xl font-extrabold font-display text-foreground num-display">{value}</p>
       {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
@@ -46,7 +46,7 @@ function KpiTile({
 
 function SectionCard({ title, icon: Icon, children, action }: { title: string; icon: any; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-5">
+    <section className="card-premium p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-primary" />
@@ -208,10 +208,10 @@ export default function Admin() {
         {/* Header */}
         <div className="flex items-end justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold text-foreground">Admin Console</h1>
+            <h1 className="text-2xl sm:text-3xl font-display font-extrabold gradient-text">Admin Console</h1>
             <p className="text-sm text-muted-foreground mt-1">DaBella · cross-rep adoption, activity & outcomes</p>
           </div>
-          <div className="flex items-center gap-1 p-1 rounded-xl border border-border bg-muted/40">
+          <div className="flex items-center gap-1 p-1 rounded-xl border border-hairline bg-muted/40 backdrop-blur">
             {([7, 30, 90] as const).map((d) => (
               <button
                 key={d}
@@ -322,7 +322,7 @@ export default function Admin() {
                 const max = m.topObjections[0][1];
                 const w = (count / max) * 100;
                 return (
-                  <div key={type} className="rounded-xl border border-border bg-muted/20 p-3">
+                  <div key={type} className="rounded-xl border border-hairline bg-muted/20 p-3 hover:border-warning/30 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-semibold text-foreground capitalize">{type.replace(/_/g, " ")}</span>
                       <span className="text-sm font-extrabold tabular-nums text-warning">{count}</span>
