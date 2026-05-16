@@ -443,13 +443,15 @@ const GRID_COLS =
 const ROW_HEIGHT = 52;
 
 function VirtualLedgerTable({
-  rows, isLoading, totalCount, onEdit, onDelete,
+  rows, isLoading, totalCount, onEdit, onDelete, sort, onToggleSort,
 }: {
   rows: DecoratedRow[];
   isLoading: boolean;
   totalCount: number;
   onEdit: (r: CommissionPayment) => void;
   onDelete: (id: string) => void;
+  sort: { key: SortKey; dir: "asc" | "desc" };
+  onToggleSort: (key: SortKey) => void;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
@@ -486,14 +488,14 @@ function VirtualLedgerTable({
           className="grid bg-muted/60 backdrop-blur text-xs uppercase tracking-wide text-muted-foreground border-b border-border sticky top-0 z-10"
           style={{ gridTemplateColumns: GRID_COLS }}
         >
-          <div className="text-left px-4 py-2.5">Sale date</div>
-          <div className="text-left px-4 py-2.5">Customer</div>
+          <SortHeader align="left" active={sort.key === "date"} dir={sort.dir} onClick={() => onToggleSort("date")}>Sale date</SortHeader>
+          <SortHeader align="left" active={sort.key === "customer"} dir={sort.dir} onClick={() => onToggleSort("customer")}>Customer</SortHeader>
           <div className="text-left px-4 py-2.5">Job #</div>
-          <div className="text-right px-4 py-2.5">Expected</div>
+          <SortHeader align="right" active={sort.key === "amount"} dir={sort.dir} onClick={() => onToggleSort("amount")}>Expected</SortHeader>
           <div className="text-right px-4 py-2.5">Front paid</div>
           <div className="text-right px-4 py-2.5">Back paid</div>
           <div className="text-right px-4 py-2.5">Outstanding</div>
-          <div className="text-right px-4 py-2.5">Status</div>
+          <SortHeader align="right" active={sort.key === "status"} dir={sort.dir} onClick={() => onToggleSort("status")}>Status</SortHeader>
           <div className="px-2 py-2.5" />
         </div>
 
