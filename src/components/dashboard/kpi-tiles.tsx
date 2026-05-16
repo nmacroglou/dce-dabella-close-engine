@@ -110,20 +110,20 @@ function EconomicsKPIBase({
     warning: { ring: "ring-warning/20", glow: "from-warning/30", icon: "text-warning", border: "border-warning/30" },
   }[accent];
   return (
-    <div className={`relative overflow-hidden rounded-2xl border-2 ${accentMap.border} bg-card p-5 ring-1 ${accentMap.ring}`}>
+    <div className={`relative overflow-hidden rounded-2xl border ${accentMap.border} bg-card p-5 ring-1 ${accentMap.ring} shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:-translate-y-0.5`}>
       <div className={`absolute -top-16 -right-12 h-44 w-44 rounded-full bg-gradient-to-br ${accentMap.glow} to-transparent blur-3xl`} />
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className={`h-8 w-8 rounded-lg grid place-items-center bg-background/80 backdrop-blur border border-border ${accentMap.icon}`}>
+            <div className={`h-8 w-8 rounded-lg grid place-items-center bg-background/85 backdrop-blur border border-hairline ${accentMap.icon}`}>
               <Icon className="h-4 w-4" />
             </div>
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
           </div>
         </div>
-        <p className="text-4xl font-display font-extrabold tracking-tight text-foreground leading-none">{value}</p>
+        <p className="text-4xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{value}</p>
         {sub && <p className="text-xs text-muted-foreground mt-2">{sub}</p>}
-        {footer && <div className="mt-3 pt-3 border-t border-border/60">{footer}</div>}
+        {footer && <div className="mt-3 pt-3 border-t border-hairline">{footer}</div>}
       </div>
     </div>
   );
