@@ -328,49 +328,13 @@ export default function Ledger() {
               {filteredRows.length} of {rows.length}
             </span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="text-left px-4 py-2.5">Sale date</th>
-                  <th className="text-left px-4 py-2.5">Customer</th>
-                  <th className="text-left px-4 py-2.5">Job #</th>
-                  <th className="text-right px-4 py-2.5">Expected</th>
-                  <th className="text-right px-4 py-2.5">Front paid</th>
-                  <th className="text-right px-4 py-2.5">Back paid</th>
-                  <th className="text-right px-4 py-2.5">Outstanding</th>
-                  <th className="text-right px-4 py-2.5">Status</th>
-                  <th className="px-4 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading && (
-                  <tr><td colSpan={9} className="text-center text-muted-foreground py-8">Loading…</td></tr>
-                )}
-                {!isLoading && rows.length === 0 && (
-                  <tr><td colSpan={9} className="text-center text-muted-foreground py-8">
-                    No entries yet. Add one or sync your won deals.
-                  </td></tr>
-                )}
-                {!isLoading && rows.length > 0 && filteredRows.length === 0 && (
-                  <tr><td colSpan={9} className="text-center text-muted-foreground py-8">
-                    No entries match your filters.
-                  </td></tr>
-                )}
-                {filteredRows.map((d) => (
-                  <LedgerRow
-                    key={d.row.id}
-                    r={d.row}
-                    paid={d.paid}
-                    out={d.out}
-                    status={d.status}
-                    onEdit={openEdit}
-                    onDelete={(id) => del.mutate(id)}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <VirtualLedgerTable
+            rows={filteredRows}
+            isLoading={isLoading}
+            totalCount={rows.length}
+            onEdit={openEdit}
+            onDelete={(id) => del.mutate(id)}
+          />
         </div>
       </main>
 
