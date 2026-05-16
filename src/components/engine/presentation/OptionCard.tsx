@@ -43,18 +43,22 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
   return (
     <div
       onClick={onClick}
-      className={`relative rounded-3xl border-2 bg-card overflow-hidden transition-all ${onClick ? "cursor-pointer" : ""} ${
+      className={`group relative rounded-3xl border bg-card overflow-hidden transition-all duration-300 ${onClick ? "cursor-pointer pressable" : ""} ${
         selected
-          ? `ring-4 ring-primary/50 ${theme.borderAccent} shadow-2xl scale-[1.03]`
+          ? `ring-4 ring-primary/40 ${theme.borderAccent} shadow-[var(--shadow-xl)] scale-[1.03]`
           : isHighlighted
-            ? `${theme.borderAccent} shadow-xl scale-[1.02]`
-            : "border-border shadow-sm hover:shadow-md"
+            ? `${theme.borderAccent} shadow-[var(--shadow-lg)] scale-[1.02] hover:-translate-y-1`
+            : "border-hairline shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:border-hairline-strong hover:-translate-y-0.5"
       }`}
     >
+      {/* Inner highlight sheen */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ background: "linear-gradient(135deg, hsl(var(--foreground) / 0.05) 0%, transparent 35%)" }} />
+
       {/* Badge */}
-      <div className="absolute top-0 left-0 right-0 flex justify-center">
+      <div className="absolute top-0 left-0 right-0 flex justify-center z-10">
         <span
-          className={`${theme.badgeColor} text-[10px] font-black uppercase tracking-[0.15em] px-5 py-1.5 rounded-b-xl`}
+          className={`${theme.badgeColor} text-[10px] font-black uppercase tracking-[0.15em] px-5 py-1.5 rounded-b-xl shadow-md`}
         >
           {theme.badge}
         </span>
@@ -63,7 +67,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
       {/* Top gradient bar */}
       <div className={`h-1.5 bg-gradient-to-r ${theme.gradient}`} />
 
-      <div className="p-7 pt-10">
+      <div className="p-7 pt-10 relative">
         <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em] mb-1">
           Option {optionKey}
         </p>
@@ -72,17 +76,19 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
         </h2>
 
         {/* Price */}
-        <div className={`rounded-2xl p-5 mb-6 ${theme.bgAccent} border ${theme.borderAccent}`}>
+        <div className={`relative rounded-2xl p-5 mb-6 ${theme.bgAccent} border ${theme.borderAccent} overflow-hidden`}>
+          <div aria-hidden className="absolute -top-10 -right-10 h-32 w-32 rounded-full blur-2xl opacity-40"
+            style={{ background: `linear-gradient(135deg, hsl(var(--primary) / 0.4), transparent)` }} />
           {showStrike && (
-            <div className="flex items-center gap-2 mb-1">
-              <p className="text-base font-bold text-muted-foreground line-through">{fmt(originalPrice!)}</p>
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-accent-foreground">
+            <div className="flex items-center gap-2 mb-1 relative">
+              <p className="text-base font-bold text-muted-foreground line-through num">{fmt(originalPrice!)}</p>
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent text-accent-foreground shadow-sm">
                 −{discountPct}%
               </span>
             </div>
           )}
-          <p className={`text-4xl font-extrabold ${theme.accent} mb-1 tracking-tight`}>{fmt(opt.price)}</p>
-          <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
+          <p className={`relative text-4xl font-extrabold ${theme.accent} mb-1 tracking-tight num-display`}>{fmt(opt.price)}</p>
+          <div className="relative text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
             <span>as low as</span>
             {editing ? (
               <span className="inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
