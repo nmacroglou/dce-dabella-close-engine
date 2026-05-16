@@ -19,17 +19,17 @@ function HeroKPIBase({
     destructive: "from-destructive/20 to-destructive/0 text-destructive",
   };
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 group">
-      <div className={`absolute -top-12 -right-12 h-40 w-40 rounded-full bg-gradient-to-br ${toneMap[tone]} blur-2xl opacity-70 group-hover:opacity-100 transition-opacity`} />
+    <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
+      <div className={`absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br ${toneMap[tone]} blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500`} />
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-          <div className={`h-9 w-9 rounded-xl grid place-items-center bg-background/60 backdrop-blur border border-border ${toneMap[tone].split(" ").pop()}`}>
+          <div className={`h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline ${toneMap[tone].split(" ").pop()} transition-transform group-hover:scale-110`}>
             <Icon className="h-4 w-4" />
           </div>
         </div>
         <div className="flex items-end gap-2">
-          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none">{value}</p>
+          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{value}</p>
           {trend && (
             <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded-md ${
               trend.dir === "up" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
