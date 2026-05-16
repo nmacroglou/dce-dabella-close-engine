@@ -50,13 +50,13 @@ function ObjectionHeatmapBase() {
   }, [data]);
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 lg:p-6">
+    <section className="card-premium p-5 lg:p-6">
       <div className="flex items-center gap-2 mb-4">
-        <div className="h-9 w-9 rounded-xl bg-warning/15 grid place-items-center border border-border">
+        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-warning/30 to-warning/5 grid place-items-center border border-hairline-strong shadow-sm">
           <Flame className="h-4 w-4 text-warning" />
         </div>
         <div>
-          <h3 className="text-base font-bold text-foreground">Objection trends — 8 weeks</h3>
+          <h3 className="text-base font-bold font-display text-foreground">Objection trends — 8 weeks</h3>
           <p className="text-[11px] text-muted-foreground">Spot which objections are heating up before they cost deals.</p>
         </div>
       </div>
