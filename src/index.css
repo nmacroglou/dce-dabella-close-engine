@@ -180,16 +180,28 @@
     font-feature-settings: "cv11", "ss01", "ss03";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    background-image: var(--gradient-mesh);
+    background-attachment: fixed;
   }
 
   h1, h2, h3, h4 {
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.018em;
   }
 
+  /* Subtle ambient hairline on hr */
+  hr { @apply border-hairline; }
+
   :focus-visible {
-    @apply outline-none ring-2 ring-primary/40 ring-offset-2 ring-offset-background;
+    @apply outline-none ring-2 ring-primary/50 ring-offset-2 ring-offset-background;
+    transition: box-shadow 0.15s ease;
   }
+
+  /* Smooth scroll for in-page nav */
+  html { scroll-behavior: smooth; }
+
+  /* Selection in brand colors */
+  ::selection { background: hsl(var(--primary) / 0.22); color: hsl(var(--foreground)); }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
