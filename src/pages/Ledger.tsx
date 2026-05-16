@@ -23,6 +23,7 @@ import { computeCommissionSheet } from "@/types/commission";
 import { fmt as fmtCurrency } from "@/lib/format";
 
 type FormState = Partial<CommissionPayment>;
+type SortKey = "date" | "customer" | "status" | "amount";
 
 const empty: FormState = {
   customer_name: "",
