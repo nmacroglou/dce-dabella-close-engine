@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,67 +47,70 @@ export default function Ledger() {
   const [form, setForm] = useState<FormState>(empty);
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "front" | "paid">("all");
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const autoImportRan = useRef(false);
 
-  const totals = useMemo(() => {
-    const expected = rows.reduce((s, r) => s + Number(r.expected_total || 0), 0);
-    const frontExp = rows.reduce((s, r) => s + Number(r.expected_front || 0), 0);
-    const backExp = rows.reduce((s, r) => s + Number(r.expected_back || 0), 0);
-    const frontPaid = rows.reduce((s, r) => s + Number(r.front_paid_amount || 0), 0);
-    const backPaid = rows.reduce((s, r) => s + Number(r.back_paid_amount || 0), 0);
+  // Single-pass derive: per-row metadata + totals + monthly buckets.
+  const { decorated, totals, monthly } = useMemo(() => {
+    const nowMonth = new Date().toISOString().slice(0, 7);
+    let expected = 0, frontExp = 0, backExp = 0, frontPaid = 0, backPaid = 0, paidThisMonth = 0;
+    const m = new Map<string, { paid: number; expected: number; label: string }>();
+    const decorated = rows.map((r) => {
+      const eT = +r.expected_total || 0;
+      const eF = +r.expected_front || 0;
+      const eB = +r.expected_back || 0;
+      const fP = +r.front_paid_amount || 0;
+      const bP = +r.back_paid_amount || 0;
+      expected += eT; frontExp += eF; backExp += eB; frontPaid += fP; backPaid += bP;
+      if (r.front_paid_at && r.front_paid_at.startsWith(nowMonth)) paidThisMonth += fP;
+      if (r.back_paid_at && r.back_paid_at.startsWith(nowMonth)) paidThisMonth += bP;
+      const paid = fP + bP;
+      const out = eT - paid;
+      const status: "paid" | "front" | "pending" =
+        out <= 0.01 ? "paid" : fP > 0 ? "front" : "pending";
+      const d = r.sale_date || r.created_at?.slice(0, 10);
+      if (d) {
+        const key = d.slice(0, 7);
+        let e = m.get(key);
+        if (!e) {
+          const [y, mo] = key.split("-");
+          e = {
+            paid: 0,
+            expected: 0,
+            label: new Date(+y, +mo - 1, 1).toLocaleDateString(undefined, { month: "short", year: "2-digit" }),
+          };
+          m.set(key, e);
+        }
+        e.expected += eT;
+        e.paid += paid;
+      }
+      const searchHay = `${r.customer_name ?? ""} ${r.job_number ?? ""}`.toLowerCase();
+      return { row: r, paid, out, status, searchHay };
+    });
     const totalPaid = frontPaid + backPaid;
     const outstanding = Math.max(0, expected - totalPaid);
-    const nowMonth = new Date().toISOString().slice(0, 7);
-    const paidThisMonth = rows.reduce((s, r) => {
-      let v = 0;
-      if (r.front_paid_at?.startsWith(nowMonth)) v += Number(r.front_paid_amount || 0);
-      if (r.back_paid_at?.startsWith(nowMonth)) v += Number(r.back_paid_amount || 0);
-      return s + v;
-    }, 0);
     const dealsCount = rows.length;
-    const avgDeal = dealsCount ? expected / dealsCount : 0;
-    return { expected, frontExp, backExp, frontPaid, backPaid, totalPaid, outstanding, paidThisMonth, dealsCount, avgDeal };
-  }, [rows]);
-
-  const monthly = useMemo(() => {
-    const m = new Map<string, { paid: number; expected: number; label: string }>();
-    rows.forEach((r) => {
-      const d = r.sale_date || r.created_at?.slice(0, 10);
-      if (!d) return;
-      const key = d.slice(0, 7);
-      if (!m.has(key)) {
-        const [y, mo] = key.split("-");
-        const label = new Date(Number(y), Number(mo) - 1, 1).toLocaleDateString(undefined, {
-          month: "short",
-          year: "2-digit",
-        });
-        m.set(key, { paid: 0, expected: 0, label });
-      }
-      const e = m.get(key)!;
-      e.expected += Number(r.expected_total || 0);
-      e.paid += Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
-    });
-    return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
+    return {
+      decorated,
+      totals: {
+        expected, frontExp, backExp, frontPaid, backPaid, totalPaid, outstanding,
+        paidThisMonth, dealsCount, avgDeal: dealsCount ? expected / dealsCount : 0,
+      },
+      monthly: [...m.entries()].sort(([a], [b]) => a.localeCompare(b)),
+    };
   }, [rows]);
 
   const maxBar = Math.max(1, ...monthly.map(([, v]) => Math.max(v.expected, v.paid)));
 
   const filteredRows = useMemo(() => {
-    return rows.filter((r) => {
-      const paid = Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
-      const out = Number(r.expected_total || 0) - paid;
-      const status = out <= 0.01 ? "paid" : Number(r.front_paid_amount || 0) > 0 ? "front" : "pending";
-      if (statusFilter !== "all" && status !== statusFilter) return false;
-      if (search) {
-        const q = search.toLowerCase();
-        if (
-          !(r.customer_name ?? "").toLowerCase().includes(q) &&
-          !(r.job_number ?? "").toLowerCase().includes(q)
-        ) return false;
-      }
+    const q = deferredSearch.trim().toLowerCase();
+    if (statusFilter === "all" && !q) return decorated;
+    return decorated.filter((d) => {
+      if (statusFilter !== "all" && d.status !== statusFilter) return false;
+      if (q && !d.searchHay.includes(q)) return false;
       return true;
     });
-  }, [rows, statusFilter, search]);
+  }, [decorated, statusFilter, deferredSearch]);
 
   function openNew() {
     setForm(empty);
@@ -353,46 +356,17 @@ export default function Ledger() {
                     No entries match your filters.
                   </td></tr>
                 )}
-                {filteredRows.map((r) => {
-                  const paid = Number(r.front_paid_amount || 0) + Number(r.back_paid_amount || 0);
-                  const out = Number(r.expected_total || 0) - paid;
-                  const status =
-                    out <= 0.01 ? "Paid" :
-                    Number(r.front_paid_amount || 0) > 0 ? "Front paid" : "Pending";
-                  const tone =
-                    status === "Paid" ? "bg-success/10 text-success" :
-                    status === "Front paid" ? "bg-primary/10 text-primary" :
-                    "bg-warning/10 text-warning";
-                  return (
-                    <tr key={r.id} className="border-t border-border hover:bg-muted/30 cursor-pointer"
-                        onClick={() => openEdit(r)}>
-                      <td className="px-4 py-2.5">{r.sale_date ?? "—"}</td>
-                      <td className="px-4 py-2.5 font-medium">{r.customer_name ?? "—"}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground">{r.job_number ?? "—"}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">{fmtCurrency(r.expected_total)}</td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">
-                        {fmtCurrency(r.front_paid_amount)}
-                        {r.front_paid_at && <div className="text-[10px] text-muted-foreground">{r.front_paid_at}</div>}
-                      </td>
-                      <td className="px-4 py-2.5 text-right tabular-nums">
-                        {fmtCurrency(r.back_paid_amount)}
-                        {r.back_paid_at && <div className="text-[10px] text-muted-foreground">{r.back_paid_at}</div>}
-                      </td>
-                      <td className="px-4 py-2.5 text-right tabular-nums font-semibold">{fmtCurrency(out)}</td>
-                      <td className="px-4 py-2.5 text-right">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${tone}`}>{status}</span>
-                      </td>
-                      <td className="px-2 py-2.5 text-right">
-                        <button
-                          className="text-muted-foreground hover:text-destructive p-1"
-                          onClick={(e) => { e.stopPropagation(); if (confirm("Delete entry?")) del.mutate(r.id); }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {filteredRows.map((d) => (
+                  <LedgerRow
+                    key={d.row.id}
+                    r={d.row}
+                    paid={d.paid}
+                    out={d.out}
+                    status={d.status}
+                    onEdit={openEdit}
+                    onDelete={(id) => del.mutate(id)}
+                  />
+                ))}
               </tbody>
             </table>
           </div>
@@ -455,6 +429,51 @@ export default function Ledger() {
     </div>
   );
 }
+
+const LedgerRow = memo(function LedgerRow({
+  r, paid, out, status, onEdit, onDelete,
+}: {
+  r: CommissionPayment;
+  paid: number;
+  out: number;
+  status: "paid" | "front" | "pending";
+  onEdit: (r: CommissionPayment) => void;
+  onDelete: (id: string) => void;
+}) {
+  const label = status === "paid" ? "Paid" : status === "front" ? "Front paid" : "Pending";
+  const tone =
+    status === "paid" ? "bg-success/10 text-success" :
+    status === "front" ? "bg-primary/10 text-primary" :
+    "bg-warning/10 text-warning";
+  return (
+    <tr className="border-t border-border hover:bg-muted/30 cursor-pointer" onClick={() => onEdit(r)}>
+      <td className="px-4 py-2.5">{r.sale_date ?? "—"}</td>
+      <td className="px-4 py-2.5 font-medium">{r.customer_name ?? "—"}</td>
+      <td className="px-4 py-2.5 text-muted-foreground">{r.job_number ?? "—"}</td>
+      <td className="px-4 py-2.5 text-right tabular-nums">{fmtCurrency(r.expected_total)}</td>
+      <td className="px-4 py-2.5 text-right tabular-nums">
+        {fmtCurrency(r.front_paid_amount)}
+        {r.front_paid_at && <div className="text-[10px] text-muted-foreground">{r.front_paid_at}</div>}
+      </td>
+      <td className="px-4 py-2.5 text-right tabular-nums">
+        {fmtCurrency(r.back_paid_amount)}
+        {r.back_paid_at && <div className="text-[10px] text-muted-foreground">{r.back_paid_at}</div>}
+      </td>
+      <td className="px-4 py-2.5 text-right tabular-nums font-semibold">{fmtCurrency(out)}</td>
+      <td className="px-4 py-2.5 text-right">
+        <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${tone}`}>{label}</span>
+      </td>
+      <td className="px-2 py-2.5 text-right">
+        <button
+          className="text-muted-foreground hover:text-destructive p-1"
+          onClick={(e) => { e.stopPropagation(); if (confirm("Delete entry?")) onDelete(r.id); }}
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </td>
+    </tr>
+  );
+});
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
