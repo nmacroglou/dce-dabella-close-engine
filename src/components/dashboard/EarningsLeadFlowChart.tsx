@@ -26,14 +26,15 @@ function EarningsLeadFlowChartBase({
     `${linePath} L ${x(n - 1).toFixed(1)} ${(PAD_T + innerH).toFixed(1)} L ${x(0).toFixed(1)} ${(PAD_T + innerH).toFixed(1)} Z`;
 
   return (
-    <section className="rounded-2xl border border-border bg-gradient-to-br from-card via-card to-primary/5 p-5 lg:p-6">
-      <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
+    <section className="card-premium p-5 lg:p-6 relative overflow-hidden">
+      <div className="absolute -top-24 -left-24 h-56 w-56 rounded-full bg-success/10 blur-3xl pointer-events-none" />
+      <div className="flex items-start justify-between flex-wrap gap-3 mb-4 relative">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-success/30 to-primary/20 grid place-items-center border border-border">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-success/40 to-primary/20 grid place-items-center border border-hairline-strong shadow-sm">
             <Activity className="h-4 w-4 text-success" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">Earnings velocity vs lead flow</h3>
+            <h3 className="text-base font-bold font-display text-foreground">Earnings velocity vs lead flow</h3>
             <p className="text-[11px] text-muted-foreground">Last 14 days — are inbound leads turning into dollars-per-hour?</p>
           </div>
         </div>

@@ -15,10 +15,10 @@ function Chip({ chip }: { chip: WowChip }) {
     : "text-muted-foreground bg-muted/40 border-border";
   const Icon = chip.delta.dir === "up" ? TrendingUp : chip.delta.dir === "down" ? TrendingDown : Minus;
   return (
-    <div className="rounded-xl border border-border bg-background/60 backdrop-blur px-3 py-2.5">
+    <div className="rounded-xl border border-hairline bg-background/60 backdrop-blur px-3 py-2.5 hover:border-primary/30 transition-colors">
       <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{chip.label}</p>
       <div className="flex items-baseline gap-2 mt-1">
-        <p className="text-base font-display font-extrabold text-foreground tabular-nums leading-none">{chip.current}</p>
+        <p className="text-base font-display font-extrabold text-foreground num-display leading-none">{chip.current}</p>
         <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded border ${tone}`}>
           <Icon className="h-3 w-3" />
           {chip.delta.dir === "flat" ? "flat" : `${chip.delta.pct.toFixed(0)}%`}
