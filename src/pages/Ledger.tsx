@@ -1,6 +1,6 @@
 import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search } from "lucide-react";
+import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
