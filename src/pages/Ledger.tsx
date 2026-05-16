@@ -225,7 +225,8 @@ export default function Ledger() {
 
   function exportCsv() {
     try {
-      if (!filteredRows.length) {
+      const source = exportAll ? decorated : filteredRows;
+      if (!source.length) {
         toast.info("Nothing to export");
         return;
       }
@@ -233,7 +234,7 @@ export default function Ledger() {
         "sale_date","customer","job_number","expected_total","expected_front","expected_back",
         "front_paid","front_paid_at","back_paid","back_paid_at","outstanding","notes",
       ];
-      const lines = filteredRows.map(({ row: r, out }) => {
+      const lines = source.map(({ row: r, out }) => {
         return [
           r.sale_date ?? "", r.customer_name ?? "", r.job_number ?? "",
           r.expected_total, r.expected_front, r.expected_back,
@@ -247,11 +248,12 @@ export default function Ledger() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const filename = `commission-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+      const scope = exportAll ? "all" : "filtered";
+      const filename = `commission-ledger-${scope}-${new Date().toISOString().slice(0, 10)}.csv`;
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success(`Exported ${filteredRows.length} row${filteredRows.length === 1 ? "" : "s"}`, {
+      toast.success(`Exported ${source.length} row${source.length === 1 ? "" : "s"}`, {
         description: filename,
       });
     } catch (e: any) {
