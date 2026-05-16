@@ -42,15 +42,15 @@ export default function CommissionTab() {
   return (
     <div className="space-y-6">
       {/* View switcher */}
-      <div className="grid grid-cols-3 gap-2 p-1.5 bg-card border border-border rounded-2xl">
+      <div className="grid grid-cols-3 gap-2 p-1.5 card-premium rounded-2xl">
         {VIEWS.map(({ key, label, icon: Icon, desc }) => (
           <button
             key={key}
             onClick={() => setView(key)}
-            className={`rounded-xl px-3 py-2.5 text-left transition-all ${
+            className={`rounded-xl px-3 py-2.5 text-left transition-all pressable ${
               view === key
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "hover:bg-muted text-muted-foreground"
+                ? "gradient-brand text-primary-foreground shadow-[var(--shadow-glow)]"
+                : "hover:bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
             <div className="flex items-center gap-2">
@@ -97,7 +97,7 @@ export default function CommissionTab() {
 
             <button
               onClick={addDeal}
-              className="w-full rounded-2xl border-2 border-dashed border-border hover:border-primary/30 p-4 flex items-center justify-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
+              className="w-full rounded-2xl border-2 border-dashed border-hairline-strong hover:border-primary/50 hover:bg-primary/5 p-4 flex items-center justify-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary transition-all pressable"
             >
               <Plus className="h-4 w-4" />
               Add Deal
