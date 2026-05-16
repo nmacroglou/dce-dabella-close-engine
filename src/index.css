@@ -224,62 +224,111 @@
 
 @layer utilities {
   .card-elevated {
-    @apply bg-card rounded-2xl border border-border transition-shadow duration-200;
+    @apply bg-card rounded-2xl border border-hairline transition-all duration-200;
     box-shadow: var(--shadow-sm);
   }
-  .card-elevated:hover { box-shadow: var(--shadow-md); }
+  .card-elevated:hover { box-shadow: var(--shadow-md); border-color: hsl(var(--hairline-strong)); }
 
   .card-elevated-lg {
-    @apply bg-card rounded-2xl border border-border transition-shadow duration-200;
+    @apply bg-card rounded-2xl border border-hairline transition-all duration-200;
     box-shadow: var(--shadow-md);
   }
-  .card-elevated-lg:hover { box-shadow: var(--shadow-lg); }
+  .card-elevated-lg:hover { box-shadow: var(--shadow-lg); border-color: hsl(var(--hairline-strong)); }
 
   .card-glow {
-    @apply bg-card rounded-2xl border border-primary/20;
+    @apply bg-card rounded-2xl border border-primary/25;
     box-shadow: var(--shadow-glow);
   }
 
+  /* Premium card with subtle inner highlight + brand-tinted edge */
+  .card-premium {
+    @apply relative rounded-2xl border border-hairline bg-card overflow-hidden;
+    box-shadow: var(--shadow-md);
+    background-image:
+      linear-gradient(180deg, hsl(var(--primary) / 0.04) 0%, transparent 40%),
+      linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card)) 100%);
+  }
+  .card-premium::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, hsl(var(--foreground) / 0.06), transparent 40%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+  }
+
   .metric-card {
-    @apply bg-card rounded-xl border border-border px-4 py-3 transition-all duration-200;
-    box-shadow: var(--shadow-sm);
+    @apply bg-card rounded-xl border border-hairline px-4 py-3 transition-all duration-200;
+    box-shadow: var(--shadow-xs);
   }
   .metric-card:hover {
-    @apply border-primary/30 -translate-y-0.5;
+    @apply border-primary/40 -translate-y-0.5;
     box-shadow: var(--shadow-md);
   }
 
   .touch-target { @apply min-h-[44px] min-w-[44px]; }
 
   .script-block {
-    @apply bg-muted/80 rounded-xl p-5 text-base leading-relaxed italic text-foreground/80 border-l-4 border-primary;
+    @apply bg-muted/70 rounded-xl p-5 text-base leading-relaxed italic text-foreground/85 border-l-4 border-primary;
   }
 
   .gradient-text {
     @apply bg-clip-text text-transparent;
     background-image: var(--gradient-brand);
   }
+  .gradient-text-accent {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-accent);
+  }
 
   .gradient-brand { background-image: var(--gradient-brand); }
   .gradient-accent { background-image: var(--gradient-accent); }
   .gradient-surface { background-image: var(--gradient-surface); }
+  .gradient-mesh { background-image: var(--gradient-mesh); }
 
   .glass {
-    @apply bg-card/70 backdrop-blur-xl border border-border;
+    @apply bg-card/65 backdrop-blur-xl backdrop-saturate-150 border border-hairline;
+  }
+  .glass-strong {
+    @apply bg-card/85 backdrop-blur-2xl backdrop-saturate-150 border border-hairline;
   }
 
   .surface-premium {
     background:
-      radial-gradient(1200px 600px at 0% -10%, hsl(var(--primary) / 0.08), transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, hsl(var(--accent) / 0.06), transparent 60%),
+      radial-gradient(1200px 600px at 0% -10%, hsl(var(--primary) / 0.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, hsl(var(--accent) / 0.07), transparent 60%),
       hsl(var(--background));
   }
 
   .ring-focus {
-    @apply ring-1 ring-border hover:ring-primary/40 transition-all;
+    @apply ring-1 ring-hairline hover:ring-primary/40 transition-all;
   }
 
+  /* Pressable button feel — for tap targets on iPad */
+  .pressable {
+    @apply transition-all duration-150 active:scale-[0.98] active:brightness-95;
+  }
+
+  /* Pill chip with semantic tone variants */
+  .chip {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-pill text-xs font-semibold border;
+  }
+  .chip-primary  { @apply bg-primary/10 text-primary border-primary/20; }
+  .chip-success  { @apply bg-success/10 text-success border-success/20; }
+  .chip-warning  { @apply bg-warning/10 text-warning border-warning/25; }
+  .chip-danger   { @apply bg-destructive/10 text-destructive border-destructive/20; }
+  .chip-muted    { @apply bg-muted text-muted-foreground border-hairline; }
+
+  /* Numeric/tabular text — for ledger, prices, metrics */
+  .num         { font-variant-numeric: tabular-nums; font-feature-settings: "tnum","cv11"; }
+  .num-display { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .mono        { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
+
   .row-zebra > *:nth-child(even) { background-color: hsl(var(--muted) / 0.35); }
+
+  .divide-hairline > * + * { border-top: 1px solid hsl(var(--hairline)); }
 
   .animate-fade-in-up { animation: fade-in 0.4s ease-out both; }
   .animate-shimmer {
