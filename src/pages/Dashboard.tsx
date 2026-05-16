@@ -25,6 +25,8 @@ import { bucketByDay, splitCurrentPrior, sumBuckets, wowDelta } from "@/lib/dash
 
 const HOURS_KEY = "dabella.hud.weeklyHours";
 const COMMISSION_KEY = "dabella.hud.commissionPct";
+const RANGE_KEY = "dabella.hud.rangeDays";
+type RangeDays = 7 | 30 | 90;
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -55,15 +57,32 @@ export default function Dashboard() {
   const [weeklyHours, setWeeklyHours] = useState<number>(40);
   const [commissionPct, setCommissionPct] = useState<number>(8);
   const [editingEcon, setEditingEcon] = useState(false);
+  const [rangeDays, setRangeDays] = useState<RangeDays>(30);
 
   useEffect(() => {
     const h = parseFloat(localStorage.getItem(HOURS_KEY) ?? "");
     const c = parseFloat(localStorage.getItem(COMMISSION_KEY) ?? "");
+    const r = parseInt(localStorage.getItem(RANGE_KEY) ?? "", 10);
     if (!Number.isNaN(h) && h > 0) setWeeklyHours(h);
     if (!Number.isNaN(c) && c > 0) setCommissionPct(c);
+    if (r === 7 || r === 30 || r === 90) setRangeDays(r);
   }, []);
   useEffect(() => { localStorage.setItem(HOURS_KEY, String(weeklyHours)); }, [weeklyHours]);
   useEffect(() => { localStorage.setItem(COMMISSION_KEY, String(commissionPct)); }, [commissionPct]);
+  useEffect(() => { localStorage.setItem(RANGE_KEY, String(rangeDays)); }, [rangeDays]);
+
+  /* ---- Windowed stats (7 / 30 / 90 days) ---- */
+  const windowed = useMemo(() => {
+    const cutoff = Date.now() - rangeDays * 864e5;
+    const inWin = deals.filter((d) => new Date(d.created_at).getTime() >= cutoff);
+    const won = inWin.filter((d) => d.stage === "won");
+    const lost = inWin.filter((d) => d.stage === "lost");
+    const revenue = won.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
+    const finished = won.length + lost.length;
+    const closeRate = finished > 0 ? won.length / finished : 0;
+    const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
+    return { dealsRun: inWin.length, won: won.length, lost: lost.length, revenue, closeRate, active };
+  }, [deals, rangeDays]);
 
   const economics = useMemo(() => {
     const now = Date.now();
@@ -228,14 +247,37 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* ===== HERO KPIs ===== */}
+        {/* ===== RANGE PICKER ===== */}
+        <section className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h3 className="text-sm font-bold font-display text-foreground uppercase tracking-wider">Performance window</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">KPIs below reflect deals created in the selected range.</p>
+          </div>
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl border border-hairline-strong bg-card/60 backdrop-blur shadow-sm">
+            {([7, 30, 90] as RangeDays[]).map((d) => (
+              <button
+                key={d}
+                onClick={() => setRangeDays(d)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all pressable ${
+                  rangeDays === d
+                    ? "gradient-brand text-primary-foreground shadow-[var(--shadow-glow)]"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Last {d}d
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* ===== HERO KPIs (windowed) ===== */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <HeroKPI icon={DollarSign} label="Revenue this month" value={fmt(stats.monthRevenue)}
-            sub={`${stats.monthClosed} closed deals`} tone="success" />
-          <HeroKPI icon={Target} label="Close rate" value={pct(stats.monthCloseRate)}
-            sub={`${stats.monthClosed} won · ${stats.monthLost} lost`} tone="brand" />
-          <HeroKPI icon={Activity} label="Active pipeline" value={String(stats.winLoss.pending)}
-            sub={`${stats.monthDealsRun} run this month`} tone="brand" />
+          <HeroKPI icon={DollarSign} label={`Revenue · last ${rangeDays}d`} value={fmt(Math.round(windowed.revenue))}
+            sub={`${windowed.won} closed deals`} tone="success" />
+          <HeroKPI icon={Target} label={`Close rate · last ${rangeDays}d`} value={pct(windowed.closeRate * 100)}
+            sub={`${windowed.won} won · ${windowed.lost} lost`} tone="brand" />
+          <HeroKPI icon={Activity} label="Active pipeline" value={String(windowed.active)}
+            sub={`${windowed.dealsRun} run in ${rangeDays}d`} tone="brand" />
           <HeroKPI icon={AlertCircle} label="Overdue follow-ups" value={String(followUpInsights.overdue)}
             sub={`${followUpInsights.today} due today`}
             tone={followUpInsights.overdue > 0 ? "destructive" : "success"} />
