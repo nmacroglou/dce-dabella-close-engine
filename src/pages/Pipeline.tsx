@@ -129,7 +129,7 @@ export default function Pipeline() {
                       status === "upcoming" ? "bg-primary" : "bg-muted-foreground/30";
                     return (
                       <button key={d.id} onClick={() => openDeal(d.id)}
-                        className="w-full text-left rounded-lg border border-border bg-background p-2.5 hover:border-primary/40 transition-colors">
+                        className="w-full text-left rounded-lg border border-hairline bg-background p-2.5 hover:border-primary/50 hover:bg-card hover:shadow-[var(--shadow-sm)] transition-all pressable">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-xs font-bold text-foreground truncate">{d.homeowner1 || "Untitled"}</p>
                           {next && <span className={`h-2 w-2 rounded-full flex-shrink-0 mt-1 ${dot}`} />}
