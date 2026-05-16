@@ -371,7 +371,16 @@ export default function Ledger() {
                 </button>
               ))}
             </div>
-            <span className="text-xs text-muted-foreground ml-auto">
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={exportAll}
+                onChange={(e) => setExportAll(e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-border accent-primary"
+              />
+              Export all rows
+            </label>
+            <span className="text-xs text-muted-foreground">
               {filteredRows.length} of {rows.length}
             </span>
           </div>
