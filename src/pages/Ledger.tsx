@@ -1,4 +1,5 @@
 import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -327,49 +328,13 @@ export default function Ledger() {
               {filteredRows.length} of {rows.length}
             </span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="text-left px-4 py-2.5">Sale date</th>
-                  <th className="text-left px-4 py-2.5">Customer</th>
-                  <th className="text-left px-4 py-2.5">Job #</th>
-                  <th className="text-right px-4 py-2.5">Expected</th>
-                  <th className="text-right px-4 py-2.5">Front paid</th>
-                  <th className="text-right px-4 py-2.5">Back paid</th>
-                  <th className="text-right px-4 py-2.5">Outstanding</th>
-                  <th className="text-right px-4 py-2.5">Status</th>
-                  <th className="px-4 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading && (
-                  <tr><td colSpan={9} className="text-center text-muted-foreground py-8">Loading…</td></tr>
-                )}
-                {!isLoading && rows.length === 0 && (
-                  <tr><td colSpan={9} className="text-center text-muted-foreground py-8">
-                    No entries yet. Add one or sync your won deals.
-                  </td></tr>
-                )}
-                {!isLoading && rows.length > 0 && filteredRows.length === 0 && (
-                  <tr><td colSpan={9} className="text-center text-muted-foreground py-8">
-                    No entries match your filters.
-                  </td></tr>
-                )}
-                {filteredRows.map((d) => (
-                  <LedgerRow
-                    key={d.row.id}
-                    r={d.row}
-                    paid={d.paid}
-                    out={d.out}
-                    status={d.status}
-                    onEdit={openEdit}
-                    onDelete={(id) => del.mutate(id)}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <VirtualLedgerTable
+            rows={filteredRows}
+            isLoading={isLoading}
+            totalCount={rows.length}
+            onEdit={openEdit}
+            onDelete={(id) => del.mutate(id)}
+          />
         </div>
       </main>
 
@@ -430,6 +395,116 @@ export default function Ledger() {
   );
 }
 
+type DecoratedRow = {
+  row: CommissionPayment;
+  paid: number;
+  out: number;
+  status: "paid" | "front" | "pending";
+  searchHay: string;
+};
+
+const GRID_COLS =
+  "110px minmax(140px,1.5fr) minmax(90px,1fr) 110px 120px 120px 120px 110px 44px";
+const ROW_HEIGHT = 52;
+
+function VirtualLedgerTable({
+  rows, isLoading, totalCount, onEdit, onDelete,
+}: {
+  rows: DecoratedRow[];
+  isLoading: boolean;
+  totalCount: number;
+  onEdit: (r: CommissionPayment) => void;
+  onDelete: (id: string) => void;
+}) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 8,
+    getItemKey: (i) => rows[i].row.id,
+  });
+
+  const items = virtualizer.getVirtualItems();
+  const total = virtualizer.getTotalSize();
+
+  const emptyState = !isLoading && totalCount === 0
+    ? "No entries yet. Add one or sync your won deals."
+    : !isLoading && rows.length === 0
+    ? "No entries match your filters."
+    : null;
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-[960px]">
+        {/* Header */}
+        <div
+          className="grid bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground"
+          style={{ gridTemplateColumns: GRID_COLS }}
+        >
+          <div className="text-left px-4 py-2.5">Sale date</div>
+          <div className="text-left px-4 py-2.5">Customer</div>
+          <div className="text-left px-4 py-2.5">Job #</div>
+          <div className="text-right px-4 py-2.5">Expected</div>
+          <div className="text-right px-4 py-2.5">Front paid</div>
+          <div className="text-right px-4 py-2.5">Back paid</div>
+          <div className="text-right px-4 py-2.5">Outstanding</div>
+          <div className="text-right px-4 py-2.5">Status</div>
+          <div className="px-2 py-2.5" />
+        </div>
+
+        {isLoading && (
+          <div className="text-center text-muted-foreground py-8 text-sm">Loading…</div>
+        )}
+        {emptyState && (
+          <div className="text-center text-muted-foreground py-8 text-sm">{emptyState}</div>
+        )}
+
+        {!isLoading && rows.length > 0 && (
+          <div
+            ref={parentRef}
+            className="overflow-auto"
+            style={{
+              // Cap height so big lists virtualize; small lists shrink naturally.
+              height: Math.min(rows.length * ROW_HEIGHT, 640),
+              contain: "strict",
+            }}
+          >
+            <div style={{ height: total, position: "relative", width: "100%" }}>
+              {items.map((vi) => {
+                const d = rows[vi.index];
+                return (
+                  <div
+                    key={vi.key}
+                    data-index={vi.index}
+                    ref={virtualizer.measureElement}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      transform: `translateY(${vi.start}px)`,
+                    }}
+                  >
+                    <LedgerRow
+                      r={d.row}
+                      paid={d.paid}
+                      out={d.out}
+                      status={d.status}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const LedgerRow = memo(function LedgerRow({
   r, paid, out, status, onEdit, onDelete,
 }: {
@@ -446,32 +521,36 @@ const LedgerRow = memo(function LedgerRow({
     status === "front" ? "bg-primary/10 text-primary" :
     "bg-warning/10 text-warning";
   return (
-    <tr className="border-t border-border hover:bg-muted/30 cursor-pointer" onClick={() => onEdit(r)}>
-      <td className="px-4 py-2.5">{r.sale_date ?? "—"}</td>
-      <td className="px-4 py-2.5 font-medium">{r.customer_name ?? "—"}</td>
-      <td className="px-4 py-2.5 text-muted-foreground">{r.job_number ?? "—"}</td>
-      <td className="px-4 py-2.5 text-right tabular-nums">{fmtCurrency(r.expected_total)}</td>
-      <td className="px-4 py-2.5 text-right tabular-nums">
+    <div
+      className="grid items-center border-t border-border hover:bg-muted/30 cursor-pointer text-sm"
+      style={{ gridTemplateColumns: GRID_COLS, minHeight: ROW_HEIGHT }}
+      onClick={() => onEdit(r)}
+    >
+      <div className="px-4 py-2.5">{r.sale_date ?? "—"}</div>
+      <div className="px-4 py-2.5 font-medium truncate">{r.customer_name ?? "—"}</div>
+      <div className="px-4 py-2.5 text-muted-foreground truncate">{r.job_number ?? "—"}</div>
+      <div className="px-4 py-2.5 text-right tabular-nums">{fmtCurrency(r.expected_total)}</div>
+      <div className="px-4 py-2.5 text-right tabular-nums">
         {fmtCurrency(r.front_paid_amount)}
         {r.front_paid_at && <div className="text-[10px] text-muted-foreground">{r.front_paid_at}</div>}
-      </td>
-      <td className="px-4 py-2.5 text-right tabular-nums">
+      </div>
+      <div className="px-4 py-2.5 text-right tabular-nums">
         {fmtCurrency(r.back_paid_amount)}
         {r.back_paid_at && <div className="text-[10px] text-muted-foreground">{r.back_paid_at}</div>}
-      </td>
-      <td className="px-4 py-2.5 text-right tabular-nums font-semibold">{fmtCurrency(out)}</td>
-      <td className="px-4 py-2.5 text-right">
+      </div>
+      <div className="px-4 py-2.5 text-right tabular-nums font-semibold">{fmtCurrency(out)}</div>
+      <div className="px-4 py-2.5 text-right">
         <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${tone}`}>{label}</span>
-      </td>
-      <td className="px-2 py-2.5 text-right">
+      </div>
+      <div className="px-2 py-2.5 text-right">
         <button
           className="text-muted-foreground hover:text-destructive p-1"
           onClick={(e) => { e.stopPropagation(); if (confirm("Delete entry?")) onDelete(r.id); }}
         >
           <Trash2 className="h-4 w-4" />
         </button>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 });
 
