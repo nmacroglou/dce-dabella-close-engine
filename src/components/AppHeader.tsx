@@ -39,15 +39,18 @@ function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
       end={end}
       {...prefetch}
       className={({ isActive }) =>
-        `relative px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
+        `relative px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 pressable ${
           isActive
-            ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
-            : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+            ? "bg-card text-foreground shadow-sm ring-1 ring-hairline-strong"
+            : "text-muted-foreground hover:text-foreground hover:bg-card/70"
         }`
       }
     >
       {({ isActive }) => (
         <>
+          {isActive && (
+            <span aria-hidden className="absolute inset-x-3 -bottom-px h-0.5 rounded-full gradient-brand opacity-80" />
+          )}
           <Icon className={`h-4 w-4 transition-colors ${isActive ? "text-primary" : ""}`} />
           <span className="hidden sm:inline">{label}</span>
         </>
@@ -82,29 +85,31 @@ export default function AppHeader() {
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 glass border-b border-border/60">
+    <header className="sticky top-0 z-40 glass-strong border-b border-hairline">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-3 min-w-0 group">
           <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 rounded-xl gradient-brand opacity-0 group-hover:opacity-30 blur-md transition-opacity" />
+            <div className="absolute -inset-1 rounded-2xl gradient-brand opacity-0 group-hover:opacity-40 blur-lg transition-opacity duration-300" />
             <img src={dabellaLogo} alt="DaBella" className="relative h-8 w-auto" />
           </div>
-          <div className="h-8 w-px bg-border hidden sm:block" />
+          <div className="h-8 w-px bg-hairline hidden sm:block" />
           <div className="hidden sm:block min-w-0">
             <h1 className="text-base font-display font-extrabold text-foreground tracking-tight leading-none truncate">
               Close <span className="gradient-text">Engine</span>
             </h1>
             {activeDeal && (
-              <p className="text-[11px] text-primary font-semibold mt-0.5 truncate flex items-center gap-1">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                {activeDeal.homeowner1 || "Untitled"}
-                {activeDeal.homeowner2 ? ` & ${activeDeal.homeowner2}` : ""}
+              <p className="text-[11px] text-primary font-semibold mt-1 truncate flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_hsl(var(--accent))]" />
+                <span className="truncate">
+                  {activeDeal.homeowner1 || "Untitled"}
+                  {activeDeal.homeowner2 ? ` & ${activeDeal.homeowner2}` : ""}
+                </span>
               </p>
             )}
           </div>
         </Link>
 
-        <nav className="flex items-center gap-1 p-1 rounded-xl bg-muted/40 border border-border/60">
+        <nav className="flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-hairline shadow-[var(--shadow-xs)]">
           {navItems.map(({ to, label, icon: Icon, end }) => (
             <NavItem key={to} to={to} label={label} icon={Icon} end={end} />
           ))}
@@ -113,7 +118,7 @@ export default function AppHeader() {
         <div className="flex items-center gap-2">
           <button
             onClick={toggle}
-            className="rounded-xl bg-muted/60 border border-border p-2 hover:bg-muted transition-colors"
+            className="rounded-xl bg-muted/60 border border-hairline p-2 hover:bg-muted hover:border-hairline-strong transition-colors pressable"
             aria-label="Toggle dark mode"
           >
             {dark ? (
@@ -125,7 +130,7 @@ export default function AppHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="h-9 w-9 rounded-full text-xs font-bold flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity gradient-brand"
+                className="h-9 w-9 rounded-full text-xs font-bold flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity gradient-brand pressable shadow-[var(--shadow-glow)]"
                 aria-label="Account"
               >
                 {initials}
