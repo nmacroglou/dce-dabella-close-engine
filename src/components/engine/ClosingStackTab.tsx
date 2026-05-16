@@ -18,12 +18,12 @@ export default function ClosingStackTab({ state, computed, update }: EngineTabPr
               <button
                 key={step.id}
                 onClick={() => setActiveStep(activeStep === step.id ? null : step.id)}
-                className={`w-full text-left card-elevated p-5 transition-all active:scale-[0.99] touch-target ${
-                  activeStep === step.id ? "ring-2 ring-primary border-primary" : ""
+                className={`w-full text-left card-elevated p-5 transition-all pressable touch-target ${
+                  activeStep === step.id ? "ring-2 ring-primary/50 border-primary shadow-[var(--shadow-glow)]" : "hover:border-primary/30"
                 }`}
               >
                 <div className="flex items-start gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full gradient-brand text-primary-foreground flex items-center justify-center text-sm font-bold num-display shadow-sm">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -45,9 +45,11 @@ export default function ClosingStackTab({ state, computed, update }: EngineTabPr
       </div>
 
       <div className="lg:col-span-2 space-y-6">
-        <div className="card-elevated-lg p-6 bg-foreground text-background">
-          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <Sparkles className="h-5 w-5" /> Ready to close
+        <div className="relative overflow-hidden rounded-2xl p-6 bg-foreground text-background shadow-[var(--shadow-xl)]">
+          <div aria-hidden className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-primary/40 blur-3xl" />
+          <div aria-hidden className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-accent/30 blur-3xl" />
+          <h3 className="relative text-lg font-display font-extrabold mb-4 flex items-center gap-2 tracking-tight">
+            <Sparkles className="h-5 w-5 text-warning" /> Ready to close
           </h3>
           <p className="text-base leading-relaxed opacity-90 italic">
             "Based on everything we've gone through, this gives you peace of mind, eliminates future unexpected costs, and is the most cost-effective option. So the only thing left is — <strong className="not-italic opacity-100">would you like to use a check or card?</strong>"

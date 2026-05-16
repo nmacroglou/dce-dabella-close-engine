@@ -22,13 +22,15 @@ const OPTION_CONFIG: { key: OptionKey; nameKey: keyof EngineState; priceKey: key
 export default function CalculatorTab({ state, computed, update, reset }: EngineTabProps) {
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="card-elevated-lg p-8">
+      <div className="card-premium p-8">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xl font-bold text-foreground">Live Deal Calculator</h3>
+          <h3 className="text-xl font-display font-extrabold tracking-tight">
+            Live <span className="gradient-text">Deal Calculator</span>
+          </h3>
           {reset && (
             <button
               onClick={reset}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive border border-border transition-colors text-sm font-semibold"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/60 text-muted-foreground hover:bg-destructive/10 hover:text-destructive border border-hairline hover:border-destructive/30 transition-colors text-sm font-semibold pressable"
             >
               <RotateCcw className="h-4 w-4" /> Clear All
             </button>
@@ -60,10 +62,10 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
                         const next = selected ? state.products.filter((x) => x !== p) : [...state.products, p];
                         update("products", next.length > 0 ? next : [p]);
                       }}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                      className={`px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all pressable ${
                         selected
-                          ? "bg-primary text-primary-foreground border-primary shadow-md"
-                          : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                          ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]"
+                          : "bg-muted/50 text-muted-foreground border-hairline hover:bg-muted hover:border-hairline-strong"
                       }`}
                     >
                       {p}

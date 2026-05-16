@@ -48,7 +48,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
           {/* Step header */}
           <div className="card-elevated-lg p-6">
             <div className="flex items-start gap-4">
-              <span className="flex-shrink-0 w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+              <span className="flex-shrink-0 w-12 h-12 rounded-2xl gradient-brand text-primary-foreground flex items-center justify-center shadow-[var(--shadow-glow)]">
                 <activeStep.icon className="h-6 w-6" />
               </span>
               <div className="flex-1">
@@ -153,10 +153,10 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
           {/* Mark complete */}
           <button
             onClick={() => completed.toggle(activeStepId)}
-            className={`w-full rounded-2xl px-5 py-4 text-sm font-bold transition-all ${
+            className={`w-full rounded-2xl px-5 py-4 text-sm font-bold transition-all pressable ${
               completed.has(activeStepId)
                 ? "bg-accent/15 text-accent border border-accent/30 hover:bg-accent/20"
-                : "bg-primary text-primary-foreground hover:opacity-90 shadow-sm"
+                : "gradient-brand text-primary-foreground hover:opacity-95 shadow-[var(--shadow-glow)]"
             }`}
           >
             {completed.has(activeStepId) ? "✓ Completed — Tap to Undo" : "Mark Step Complete"}
@@ -166,7 +166,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
           {activeStepId < 10 && (
             <button
               onClick={() => setActiveStepId(activeStepId + 1)}
-              className="w-full rounded-2xl border border-border px-5 py-4 text-sm font-semibold text-foreground hover:bg-muted/50 transition-all flex items-center justify-center gap-2"
+              className="w-full rounded-2xl border border-hairline bg-card px-5 py-4 text-sm font-semibold text-foreground hover:bg-muted/50 hover:border-primary/40 transition-all flex items-center justify-center gap-2 pressable"
             >
               Next: Step {activeStepId + 1} <ChevronRight className="h-4 w-4" />
             </button>
