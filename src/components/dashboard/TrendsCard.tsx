@@ -118,23 +118,24 @@ function TrendsCardBase({ deals, weeklyHours, commissionPct }: {
   const deltaTone = delta.dir === "up" ? "text-success" : delta.dir === "down" ? "text-destructive" : "text-muted-foreground";
 
   return (
-    <section className="rounded-2xl border border-border bg-gradient-to-br from-card via-card to-primary/5 p-5 lg:p-6">
-      <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
+    <section className="card-premium p-5 lg:p-6 relative overflow-hidden">
+      <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+      <div className="flex items-start justify-between flex-wrap gap-3 mb-4 relative">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-primary/15 grid place-items-center border border-border">
-            <LineChart className="h-4 w-4 text-primary" />
+          <div className="h-9 w-9 rounded-xl gradient-brand grid place-items-center shadow-[var(--shadow-glow)]">
+            <LineChart className="h-4 w-4 text-primary-foreground" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">Trends — period over period</h3>
+            <h3 className="text-base font-bold font-display text-foreground">Trends — period over period</h3>
             <p className="text-[11px] text-muted-foreground">Solid = current period · dashed = prior period</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="inline-flex rounded-lg border border-border bg-background/60 p-0.5">
+          <div className="inline-flex rounded-lg border border-hairline-strong bg-background/60 p-0.5">
             {RANGES.map((r) => (
               <button key={r.key} onClick={() => setRange(r.key)}
-                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors ${
-                  range === r.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${
+                  range === r.key ? "gradient-brand text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 }`}>
                 {r.label}
               </button>
@@ -147,7 +148,7 @@ function TrendsCardBase({ deals, weeklyHours, commissionPct }: {
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">{METRICS.find((m) => m.key === metric)?.label}</p>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-display font-extrabold text-foreground tabular-nums">{formatVal(cur, metric)}</p>
+            <p className="text-3xl font-display font-extrabold gradient-text num-display">{formatVal(cur, metric)}</p>
             <span className={`text-xs font-bold ${deltaTone}`}>
               {delta.dir === "flat" ? "—" : `${delta.dir === "up" ? "▲" : "▼"} ${delta.pct.toFixed(0)}%`}
             </span>
@@ -178,7 +179,7 @@ function TrendsCardBase({ deals, weeklyHours, commissionPct }: {
           const tone = d.dir === "up" ? "text-success" : d.dir === "down" ? "text-destructive" : "text-muted-foreground";
           return (
             <button key={m.key} onClick={() => setMetric(m.key)}
-              className="text-left rounded-xl border border-border bg-background/40 hover:bg-background/70 p-3 transition-colors">
+              className="text-left rounded-xl border border-hairline bg-background/40 hover:bg-background/70 hover:border-primary/30 p-3 transition-all pressable">
               <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">{m.label}</p>
               <div className="flex items-baseline justify-between gap-2">
                 <p className="text-sm font-display font-extrabold text-foreground tabular-nums">{formatVal(c, m.key)}</p>

@@ -118,7 +118,7 @@ function ActivityTimelineBase({ events, isLoading }: { events: TimelineEvent[]; 
                       <span className={`absolute -left-6 top-1.5 h-6 w-6 rounded-full grid place-items-center border ${tone}`}>
                         <Icon className="h-3 w-3" />
                       </span>
-                      <Link to="/deals" className="block rounded-lg border border-border bg-background/40 hover:bg-background/70 px-3 py-2 transition-colors">
+                      <Link to="/deals" className="block rounded-lg border border-hairline bg-background/40 hover:bg-background/70 hover:border-primary/30 px-3 py-2 transition-all pressable">
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-sm font-bold text-foreground truncate">{e.title}</p>
                           <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">{timeLabel(e.at)}</span>
