@@ -39,15 +39,18 @@ function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
       end={end}
       {...prefetch}
       className={({ isActive }) =>
-        `relative px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
+        `relative px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 pressable ${
           isActive
-            ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
-            : "text-muted-foreground hover:text-foreground hover:bg-card/60"
+            ? "bg-card text-foreground shadow-sm ring-1 ring-hairline-strong"
+            : "text-muted-foreground hover:text-foreground hover:bg-card/70"
         }`
       }
     >
       {({ isActive }) => (
         <>
+          {isActive && (
+            <span aria-hidden className="absolute inset-x-3 -bottom-px h-0.5 rounded-full gradient-brand opacity-80" />
+          )}
           <Icon className={`h-4 w-4 transition-colors ${isActive ? "text-primary" : ""}`} />
           <span className="hidden sm:inline">{label}</span>
         </>
