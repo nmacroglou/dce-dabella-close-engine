@@ -111,7 +111,7 @@ export default function Pipeline() {
           <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Pipeline</h3>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
             {grouped.map(({ stage, deals: ds }) => (
-              <div key={stage} className="rounded-xl border border-border bg-card/40 p-2">
+              <div key={stage} className="rounded-xl border border-hairline bg-card/60 backdrop-blur p-2 hover:bg-card/80 transition-colors">
                 <div className="flex items-center justify-between px-2 py-1.5 mb-1">
                   <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STAGE_COLORS[stage]}`}>
                     {STAGE_LABELS[stage]}
