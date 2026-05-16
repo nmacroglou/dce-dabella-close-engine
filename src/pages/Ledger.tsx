@@ -597,6 +597,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       {children}
     </div>
   );
+}
+
 function SortHeader({
   align, active, dir, onClick, children,
 }: {
