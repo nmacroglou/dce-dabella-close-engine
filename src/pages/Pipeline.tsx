@@ -86,7 +86,7 @@ export default function Pipeline() {
               {stats.overdue.map((f) => {
                 const d = dealById.get(f.deal_id);
                 return (
-                  <div key={f.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 bg-card">
+                  <div key={f.id} className="flex items-center justify-between gap-3 rounded-lg border border-hairline p-3 bg-card hover:border-destructive/40 hover:shadow-[var(--shadow-sm)] transition-all">
                     <div className="min-w-0">
                       <p className="text-sm font-bold truncate">{d?.homeowner1 || "Untitled"}</p>
                       <p className="text-xs text-muted-foreground">
