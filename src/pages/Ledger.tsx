@@ -51,6 +51,7 @@ export default function Ledger() {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "date", dir: "desc" });
+  const [exportAll, setExportAll] = useState(false);
   const autoImportRan = useRef(false);
 
   // Single-pass derive: per-row metadata + totals + monthly buckets.
