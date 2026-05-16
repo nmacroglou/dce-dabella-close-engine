@@ -227,8 +227,7 @@ export default function Ledger() {
       "sale_date","customer","job_number","expected_total","expected_front","expected_back",
       "front_paid","front_paid_at","back_paid","back_paid_at","outstanding","notes",
     ];
-    const lines = rows.map((r) => {
-      const out = Number(r.expected_total || 0) - Number(r.front_paid_amount || 0) - Number(r.back_paid_amount || 0);
+    const lines = filteredRows.map(({ row: r, out }) => {
       return [
         r.sale_date ?? "", r.customer_name ?? "", r.job_number ?? "",
         r.expected_total, r.expected_front, r.expected_back,
