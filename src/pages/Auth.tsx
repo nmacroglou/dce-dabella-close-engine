@@ -76,7 +76,7 @@ export default function AuthPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsl(var(--primary)/0.08),transparent_60%)]" />
       </div>
 
-      <div className="w-full max-w-md card-elevated-lg p-8 backdrop-blur-sm">
+      <div className="w-full max-w-md card-premium p-8 shadow-[var(--shadow-xl)] backdrop-blur-sm animate-fade-in-up">
         <div className="flex flex-col items-center mb-7">
           <div className="relative mb-4">
             <div className="absolute inset-0 rounded-2xl gradient-brand opacity-30 blur-xl" />
@@ -108,10 +108,10 @@ export default function AuthPage() {
 
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
+            <div className="w-full border-t border-hairline" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-card px-2 text-muted-foreground">or</span>
+            <span className="bg-card px-2 text-muted-foreground uppercase tracking-wider font-semibold">or</span>
           </div>
         </div>
 
@@ -154,7 +154,7 @@ export default function AuthPage() {
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
           </div>
-          <Button type="submit" disabled={loading} className="w-full h-11">
+          <Button type="submit" disabled={loading} className="w-full h-11 gradient-brand text-primary-foreground shadow-[var(--shadow-glow)] pressable">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {mode === "signin" ? "Sign in" : "Create account"}
           </Button>
