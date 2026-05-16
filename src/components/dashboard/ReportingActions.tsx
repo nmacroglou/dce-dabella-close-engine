@@ -39,11 +39,11 @@ function ReportingActionsBase({ summary, buckets, rangeLabel }: {
   return (
     <div className="flex items-center gap-2">
       <button onClick={copy}
-        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-xs font-bold hover:bg-accent/10 transition-colors">
+        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-hairline-strong bg-card text-xs font-bold hover:border-primary/40 hover:bg-primary/5 transition-all pressable">
         <Copy className="h-3.5 w-3.5" /> Copy summary
       </button>
       <button onClick={download}
-        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-xs font-bold hover:bg-accent/10 transition-colors">
+        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl gradient-brand text-primary-foreground text-xs font-bold shadow-[var(--shadow-glow)] hover:opacity-95 transition-all pressable">
         <Download className="h-3.5 w-3.5" /> Export CSV
       </button>
     </div>
