@@ -1,6 +1,6 @@
 import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search } from "lucide-react";
+import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +23,7 @@ import { computeCommissionSheet } from "@/types/commission";
 import { fmt as fmtCurrency } from "@/lib/format";
 
 type FormState = Partial<CommissionPayment>;
+type SortKey = "date" | "customer" | "status" | "amount";
 
 const empty: FormState = {
   customer_name: "",
@@ -49,6 +50,7 @@ export default function Ledger() {
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "front" | "paid">("all");
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
+  const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "date", dir: "desc" });
   const autoImportRan = useRef(false);
 
   // Single-pass derive: per-row metadata + totals + monthly buckets.
@@ -105,13 +107,44 @@ export default function Ledger() {
 
   const filteredRows = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
-    if (statusFilter === "all" && !q) return decorated;
-    return decorated.filter((d) => {
-      if (statusFilter !== "all" && d.status !== statusFilter) return false;
-      if (q && !d.searchHay.includes(q)) return false;
-      return true;
+    const base = (statusFilter === "all" && !q)
+      ? decorated
+      : decorated.filter((d) => {
+          if (statusFilter !== "all" && d.status !== statusFilter) return false;
+          if (q && !d.searchHay.includes(q)) return false;
+          return true;
+        });
+    const mult = sort.dir === "asc" ? 1 : -1;
+    const statusRank = { pending: 0, front: 1, paid: 2 } as const;
+    const sorted = [...base].sort((a, b) => {
+      let cmp = 0;
+      switch (sort.key) {
+        case "date": {
+          const ad = a.row.sale_date ?? a.row.created_at ?? "";
+          const bd = b.row.sale_date ?? b.row.created_at ?? "";
+          cmp = ad < bd ? -1 : ad > bd ? 1 : 0;
+          break;
+        }
+        case "customer":
+          cmp = (a.row.customer_name ?? "").localeCompare(b.row.customer_name ?? "");
+          break;
+        case "status":
+          cmp = statusRank[a.status] - statusRank[b.status];
+          break;
+        case "amount":
+          cmp = (+a.row.expected_total || 0) - (+b.row.expected_total || 0);
+          break;
+      }
+      return cmp * mult;
     });
-  }, [decorated, statusFilter, deferredSearch]);
+    return sorted;
+  }, [decorated, statusFilter, deferredSearch, sort]);
+
+  function toggleSort(key: SortKey) {
+    setSort((s) => s.key === key
+      ? { key, dir: s.dir === "asc" ? "desc" : "asc" }
+      : { key, dir: key === "date" || key === "amount" ? "desc" : "asc" });
+  }
 
   function openNew() {
     setForm(empty);
@@ -334,6 +367,8 @@ export default function Ledger() {
             totalCount={rows.length}
             onEdit={openEdit}
             onDelete={(id) => del.mutate(id)}
+            sort={sort}
+            onToggleSort={toggleSort}
           />
         </div>
       </main>
@@ -408,13 +443,15 @@ const GRID_COLS =
 const ROW_HEIGHT = 52;
 
 function VirtualLedgerTable({
-  rows, isLoading, totalCount, onEdit, onDelete,
+  rows, isLoading, totalCount, onEdit, onDelete, sort, onToggleSort,
 }: {
   rows: DecoratedRow[];
   isLoading: boolean;
   totalCount: number;
   onEdit: (r: CommissionPayment) => void;
   onDelete: (id: string) => void;
+  sort: { key: SortKey; dir: "asc" | "desc" };
+  onToggleSort: (key: SortKey) => void;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const virtualizer = useVirtualizer({
@@ -451,14 +488,14 @@ function VirtualLedgerTable({
           className="grid bg-muted/60 backdrop-blur text-xs uppercase tracking-wide text-muted-foreground border-b border-border sticky top-0 z-10"
           style={{ gridTemplateColumns: GRID_COLS }}
         >
-          <div className="text-left px-4 py-2.5">Sale date</div>
-          <div className="text-left px-4 py-2.5">Customer</div>
+          <SortHeader align="left" active={sort.key === "date"} dir={sort.dir} onClick={() => onToggleSort("date")}>Sale date</SortHeader>
+          <SortHeader align="left" active={sort.key === "customer"} dir={sort.dir} onClick={() => onToggleSort("customer")}>Customer</SortHeader>
           <div className="text-left px-4 py-2.5">Job #</div>
-          <div className="text-right px-4 py-2.5">Expected</div>
+          <SortHeader align="right" active={sort.key === "amount"} dir={sort.dir} onClick={() => onToggleSort("amount")}>Expected</SortHeader>
           <div className="text-right px-4 py-2.5">Front paid</div>
           <div className="text-right px-4 py-2.5">Back paid</div>
           <div className="text-right px-4 py-2.5">Outstanding</div>
-          <div className="text-right px-4 py-2.5">Status</div>
+          <SortHeader align="right" active={sort.key === "status"} dir={sort.dir} onClick={() => onToggleSort("status")}>Status</SortHeader>
           <div className="px-2 py-2.5" />
         </div>
 
@@ -561,6 +598,31 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
+
+function SortHeader({
+  align, active, dir, onClick, children,
+}: {
+  align: "left" | "right";
+  active: boolean;
+  dir: "asc" | "desc";
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const Icon = !active ? ArrowUpDown : dir === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-1 px-4 py-2.5 select-none uppercase tracking-wide text-xs font-semibold transition hover:text-foreground active:text-foreground touch-manipulation ${
+        align === "right" ? "justify-end" : "justify-start"
+      } ${active ? "text-foreground" : ""}`}
+    >
+      <span>{children}</span>
+      <Icon className={`h-3 w-3 ${active ? "opacity-100" : "opacity-50"}`} />
+    </button>
+  );
+}
+
 
 function KpiTile({
   icon: Icon, label, value, sub, tone,
