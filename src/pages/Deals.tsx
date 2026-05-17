@@ -16,7 +16,7 @@ import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
-import type { PreliminaryEstimateInput } from "@/data/roofingPricing";
+import { computeEstimate, type PreliminaryEstimateInput } from "@/data/roofingPricing";
 
 export default function DealsPage() {
   const { user, loading: authLoading } = useAuth();
