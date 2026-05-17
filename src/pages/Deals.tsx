@@ -172,10 +172,21 @@ export default function DealsPage() {
                     ) : deal.price_a ? (
                       <div className="font-medium text-foreground">Top option: {fmt(deal.price_a)}</div>
                     ) : hasPrelim ? (
-                      <div className="font-medium text-foreground flex items-center gap-1">
-                        <Calculator className="h-3 w-3 text-primary" />
-                        Prelim: {fmt(prelim!.squares * 0)} {/* placeholder, shown below */}
-                      </div>
+                      (() => {
+                        const b = computeEstimate({
+                          squares: prelim!.squares ?? 0,
+                          shingleId: prelim!.shingleId ?? null,
+                          accessories: prelim!.accessories ?? {},
+                          hasSolar: prelim!.hasSolar ?? false,
+                          notes: prelim!.notes ?? "",
+                        });
+                        return (
+                          <div className="font-medium text-foreground flex items-center gap-1">
+                            <Calculator className="h-3 w-3 text-primary" />
+                            Prelim: {fmt(b.low)} – {fmt(b.high)}
+                          </div>
+                        );
+                      })()
                     ) : null}
                   </div>
 
