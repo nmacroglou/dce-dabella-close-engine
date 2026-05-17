@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight } from "lucide-react";
+import { Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
+import type { PreliminaryEstimateInput } from "@/data/roofingPricing";
 
 export default function DealsPage() {
   const { user, loading: authLoading } = useAuth();
