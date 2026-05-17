@@ -142,6 +142,33 @@ export type Database = {
           },
         ]
       }
+      deal_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          deal_id: string
+          id: string
+          rep_id: string
+          storage_path: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          deal_id: string
+          id?: string
+          rep_id: string
+          storage_path: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          deal_id?: string
+          id?: string
+          rep_id?: string
+          storage_path?: string
+        }
+        Relationships: []
+      }
       deal_stage_history: {
         Row: {
           changed_at: string
@@ -193,6 +220,7 @@ export type Database = {
           id: string
           lost_reason: string | null
           notes: string | null
+          preliminary_estimate: Json
           price_a: number | null
           price_b: number | null
           price_c: number | null
@@ -215,6 +243,7 @@ export type Database = {
           id?: string
           lost_reason?: string | null
           notes?: string | null
+          preliminary_estimate?: Json
           price_a?: number | null
           price_b?: number | null
           price_c?: number | null
@@ -237,6 +266,7 @@ export type Database = {
           id?: string
           lost_reason?: string | null
           notes?: string | null
+          preliminary_estimate?: Json
           price_a?: number | null
           price_b?: number | null
           price_c?: number | null
