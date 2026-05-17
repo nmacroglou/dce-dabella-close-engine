@@ -56,7 +56,6 @@ export function useUploadDealPhoto() {
       if (upErr) throw upErr;
       const { error: insErr } = await supabase
         .from("deal_photos")
-        // @ts-expect-error - types regenerate after migration
         .insert({ deal_id: dealId, rep_id: user.id, storage_path: path, caption: caption ?? null });
       if (insErr) throw insErr;
     },
