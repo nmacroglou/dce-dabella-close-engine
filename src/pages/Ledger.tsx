@@ -21,6 +21,7 @@ import { useDeals } from "@/hooks/useDeals";
 import { useCommissionGrid } from "@/hooks/useCommissionGrid";
 import { computeCommissionSheet } from "@/types/commission";
 import { fmt as fmtCurrency } from "@/lib/format";
+import PaymentCalendar from "@/components/ledger/PaymentCalendar";
 
 type FormState = Partial<CommissionPayment>;
 type SortKey = "date" | "customer" | "status" | "amount";
@@ -345,6 +346,9 @@ export default function Ledger() {
             </div>
           </div>
         )}
+
+        {/* Payday calendar */}
+        <PaymentCalendar rows={rows} />
 
         {/* Filters + Table */}
         <div className="rounded-2xl border border-hairline bg-card overflow-hidden">
