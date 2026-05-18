@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { TrendingUp, Wallet, CalendarClock } from "lucide-react";
+import { TrendingUp, Wallet, CalendarClock, ChevronDown } from "lucide-react";
 import { fmt } from "@/lib/format";
 import type { CommissionPayment } from "@/hooks/useCommissionLedger";
 
@@ -142,34 +142,9 @@ export default function CashflowForecast({ rows }: { rows: CommissionPayment[] }
         <div className="p-6 text-center text-sm text-muted-foreground">No paydays in this window.</div>
       ) : (
         <div className="p-4 space-y-2">
-          {paydays.map((p) => {
-            const isToday = toISODate(p.date) === toISODate(today);
-            const pct = (p.amount / max) * 100;
-            return (
-              <div key={p.key} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold tabular-nums">{fmtDay(p.date)}</span>
-                    {isToday && (
-                      <span className="text-[10px] uppercase tracking-wide text-primary font-bold">Today</span>
-                    )}
-                    <span className="text-muted-foreground">
-                      {p.entries.length} source{p.entries.length === 1 ? "" : "s"}
-                    </span>
-                  </div>
-                  <span className="font-bold tabular-nums">
-                    {p.amount > 0 ? fmt(p.amount) : <span className="text-muted-foreground/60">—</span>}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={`h-full ${p.amount > 0 ? "bg-success" : "bg-muted"}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
+          {paydays.map((p) => (
+            <PaydayRow key={p.key} payday={p} max={max} isToday={toISODate(p.date) === toISODate(today)} />
+          ))}
         </div>
       )}
 
