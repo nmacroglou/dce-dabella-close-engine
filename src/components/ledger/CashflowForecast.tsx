@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { TrendingUp, Wallet, CalendarClock } from "lucide-react";
+import { TrendingUp, Wallet, CalendarClock, ChevronDown } from "lucide-react";
 import { fmt } from "@/lib/format";
 import type { CommissionPayment } from "@/hooks/useCommissionLedger";
 
@@ -142,34 +142,9 @@ export default function CashflowForecast({ rows }: { rows: CommissionPayment[] }
         <div className="p-6 text-center text-sm text-muted-foreground">No paydays in this window.</div>
       ) : (
         <div className="p-4 space-y-2">
-          {paydays.map((p) => {
-            const isToday = toISODate(p.date) === toISODate(today);
-            const pct = (p.amount / max) * 100;
-            return (
-              <div key={p.key} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold tabular-nums">{fmtDay(p.date)}</span>
-                    {isToday && (
-                      <span className="text-[10px] uppercase tracking-wide text-primary font-bold">Today</span>
-                    )}
-                    <span className="text-muted-foreground">
-                      {p.entries.length} source{p.entries.length === 1 ? "" : "s"}
-                    </span>
-                  </div>
-                  <span className="font-bold tabular-nums">
-                    {p.amount > 0 ? fmt(p.amount) : <span className="text-muted-foreground/60">—</span>}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={`h-full ${p.amount > 0 ? "bg-success" : "bg-muted"}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
+          {paydays.map((p) => (
+            <PaydayRow key={p.key} payday={p} max={max} isToday={toISODate(p.date) === toISODate(today)} />
+          ))}
         </div>
       )}
 
@@ -206,6 +181,80 @@ function Stat({
         <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</div>
         <div className="text-sm font-bold tabular-nums">{value}</div>
       </div>
+    </div>
+  );
+}
+
+type PaydayEntry = { customer: string; amount: number; kind: "front" | "back" };
+type Payday = { date: Date; key: string; amount: number; entries: PaydayEntry[] };
+
+function PaydayRow({ payday, max, isToday }: { payday: Payday; max: number; isToday: boolean }) {
+  const [open, setOpen] = useState(false);
+  const pct = (payday.amount / max) * 100;
+  const hasEntries = payday.entries.length > 0;
+  const sorted = useMemo(
+    () => [...payday.entries].sort((a, b) => b.amount - a.amount),
+    [payday.entries],
+  );
+
+  return (
+    <div className={`rounded-lg ${open ? "bg-muted/40" : ""}`}>
+      <button
+        type="button"
+        onClick={() => hasEntries && setOpen((o) => !o)}
+        disabled={!hasEntries}
+        className={`w-full text-left p-2 -m-2 rounded-lg transition ${
+          hasEntries ? "cursor-pointer hover:bg-muted/30" : "cursor-default"
+        }`}
+      >
+        <div className="flex items-center justify-between text-xs mb-1">
+          <div className="flex items-center gap-2">
+            {hasEntries && (
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? "rotate-0" : "-rotate-90"}`}
+              />
+            )}
+            <span className="font-semibold tabular-nums">{fmtDay(payday.date)}</span>
+            {isToday && (
+              <span className="text-[10px] uppercase tracking-wide text-primary font-bold">Today</span>
+            )}
+            <span className="text-muted-foreground">
+              {payday.entries.length} source{payday.entries.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          <span className="font-bold tabular-nums">
+            {payday.amount > 0 ? fmt(payday.amount) : <span className="text-muted-foreground/60">—</span>}
+          </span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div
+            className={`h-full ${payday.amount > 0 ? "bg-success" : "bg-muted"}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </button>
+
+      {open && hasEntries && (
+        <ul className="mt-2 mx-2 mb-1 border-t border-hairline divide-y divide-hairline">
+          {sorted.map((e, i) => (
+            <li key={i} className="flex items-center justify-between gap-2 py-1.5 text-xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className={`text-[9px] uppercase font-bold tracking-wide px-1.5 py-0.5 rounded ${
+                    e.kind === "front"
+                      ? "bg-primary/15 text-primary"
+                      : "bg-success/15 text-success"
+                  }`}
+                >
+                  {e.kind}
+                </span>
+                <span className="truncate font-medium">{e.customer}</span>
+              </div>
+              <span className="tabular-nums font-semibold shrink-0">{fmt(e.amount)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
