@@ -347,6 +347,9 @@ export default function Ledger() {
           </div>
         )}
 
+        {/* Payday calendar */}
+        <PaymentCalendar rows={rows} />
+
         {/* Filters + Table */}
         <div className="rounded-2xl border border-hairline bg-card overflow-hidden">
           <div className="flex flex-wrap items-center gap-2 p-3 border-b border-hairline">
