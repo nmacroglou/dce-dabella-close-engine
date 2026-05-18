@@ -268,29 +268,54 @@ function MiniBreakdown({ entries, total }: { entries: PaydayEntry[]; total: numb
   const frontPct = total > 0 ? (front / total) * 100 : 0;
   const backPct = total > 0 ? (back / total) * 100 : 0;
 
+  const pctLabel = (n: number) => `${Math.round(n)}%`;
+  // Show inline labels in the bar only if the segment is wide enough.
+  const SHOW_LABEL_MIN = 12;
+
   return (
     <div className="py-2.5 space-y-2">
       <div className="grid grid-cols-3 gap-2">
-        <Tile label="Front" value={fmt(front)} tone="primary" />
-        <Tile label="Back" value={fmt(back)} tone="success" />
-        <Tile label="Payday total" value={fmt(total)} tone="foreground" />
+        <Tile label="Front" value={fmt(front)} sub={pctLabel(frontPct)} tone="primary" />
+        <Tile label="Back" value={fmt(back)} sub={pctLabel(backPct)} tone="success" />
+        <Tile label="Payday total" value={fmt(total)} sub="100%" tone="foreground" />
       </div>
-      <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
-        <div className="bg-primary h-full" style={{ width: `${frontPct}%` }} title={`Front ${fmt(front)}`} />
-        <div className="bg-success h-full" style={{ width: `${backPct}%` }} title={`Back ${fmt(back)}`} />
+      <div className="h-4 rounded-full bg-muted overflow-hidden flex text-[9px] font-bold">
+        {frontPct > 0 && (
+          <div
+            className="bg-primary h-full flex items-center justify-center text-primary-foreground"
+            style={{ width: `${frontPct}%` }}
+            title={`Front ${fmt(front)} · ${pctLabel(frontPct)}`}
+          >
+            {frontPct >= SHOW_LABEL_MIN && pctLabel(frontPct)}
+          </div>
+        )}
+        {backPct > 0 && (
+          <div
+            className="bg-success h-full flex items-center justify-center text-success-foreground"
+            style={{ width: `${backPct}%` }}
+            title={`Back ${fmt(back)} · ${pctLabel(backPct)}`}
+          >
+            {backPct >= SHOW_LABEL_MIN && pctLabel(backPct)}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function Tile({ label, value, tone }: { label: string; value: string; tone: "primary" | "success" | "foreground" }) {
+function Tile({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: "primary" | "success" | "foreground" }) {
   const dot =
     tone === "primary" ? "bg-primary" : tone === "success" ? "bg-success" : "bg-foreground";
+  const subTone =
+    tone === "primary" ? "text-primary" : tone === "success" ? "text-success" : "text-muted-foreground";
   return (
     <div className="rounded-md border border-hairline bg-background/60 px-2 py-1.5">
-      <div className="flex items-center gap-1.5">
-        <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
-        <span className="text-[9px] uppercase tracking-wide text-muted-foreground font-bold">{label}</span>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className={`h-1.5 w-1.5 rounded-full ${dot} shrink-0`} />
+          <span className="text-[9px] uppercase tracking-wide text-muted-foreground font-bold truncate">{label}</span>
+        </div>
+        {sub && <span className={`text-[10px] font-bold tabular-nums ${subTone}`}>{sub}</span>}
       </div>
       <div className="text-xs font-bold tabular-nums mt-0.5">{value}</div>
     </div>
