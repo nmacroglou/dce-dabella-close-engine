@@ -235,26 +235,67 @@ function PaydayRow({ payday, max, isToday }: { payday: Payday; max: number; isTo
       </button>
 
       {open && hasEntries && (
-        <ul className="mt-2 mx-2 mb-1 border-t border-hairline divide-y divide-hairline">
-          {sorted.map((e, i) => (
-            <li key={i} className="flex items-center justify-between gap-2 py-1.5 text-xs">
-              <div className="flex items-center gap-2 min-w-0">
-                <span
-                  className={`text-[9px] uppercase font-bold tracking-wide px-1.5 py-0.5 rounded ${
-                    e.kind === "front"
-                      ? "bg-primary/15 text-primary"
-                      : "bg-success/15 text-success"
-                  }`}
-                >
-                  {e.kind}
-                </span>
-                <span className="truncate font-medium">{e.customer}</span>
-              </div>
-              <span className="tabular-nums font-semibold shrink-0">{fmt(e.amount)}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-2 mx-2 mb-1 border-t border-hairline">
+          <MiniBreakdown entries={sorted} total={payday.amount} />
+          <ul className="divide-y divide-hairline">
+            {sorted.map((e, i) => (
+              <li key={i} className="flex items-center justify-between gap-2 py-1.5 text-xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className={`text-[9px] uppercase font-bold tracking-wide px-1.5 py-0.5 rounded ${
+                      e.kind === "front"
+                        ? "bg-primary/15 text-primary"
+                        : "bg-success/15 text-success"
+                    }`}
+                  >
+                    {e.kind}
+                  </span>
+                  <span className="truncate font-medium">{e.customer}</span>
+                </div>
+                <span className="tabular-nums font-semibold shrink-0">{fmt(e.amount)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
+    </div>
+  );
+}
+
+function MiniBreakdown({ entries, total }: { entries: PaydayEntry[]; total: number }) {
+  const front = entries.filter((e) => e.kind === "front").reduce((s, e) => s + e.amount, 0);
+  const back = entries.filter((e) => e.kind === "back").reduce((s, e) => s + e.amount, 0);
+  const frontPct = total > 0 ? (front / total) * 100 : 0;
+  const backPct = total > 0 ? (back / total) * 100 : 0;
+
+  return (
+    <div className="py-2.5 space-y-2">
+      <div className="grid grid-cols-3 gap-2">
+        <Tile label="Front" value={fmt(front)} tone="primary" />
+        <Tile label="Back" value={fmt(back)} tone="success" />
+        <Tile label="Payday total" value={fmt(total)} tone="foreground" />
+      </div>
+      <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
+        <div className="bg-primary h-full" style={{ width: `${frontPct}%` }} title={`Front ${fmt(front)}`} />
+        <div className="bg-success h-full" style={{ width: `${backPct}%` }} title={`Back ${fmt(back)}`} />
+      </div>
+    </div>
+  );
+}
+
+function Tile({ label, value, tone }: { label: string; value: string; tone: "primary" | "success" | "foreground" }) {
+  const dot =
+    tone === "primary" ? "bg-primary" : tone === "success" ? "bg-success" : "bg-foreground";
+  return (
+    <div className="rounded-md border border-hairline bg-background/60 px-2 py-1.5">
+      <div className="flex items-center gap-1.5">
+        <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+        <span className="text-[9px] uppercase tracking-wide text-muted-foreground font-bold">{label}</span>
+      </div>
+      <div className="text-xs font-bold tabular-nums mt-0.5">{value}</div>
+    </div>
+  );
+}
     </div>
   );
 }
