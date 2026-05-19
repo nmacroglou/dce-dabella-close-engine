@@ -1,5 +1,7 @@
 /** Pure helpers for the operator dashboard: WoW deltas, day/week buckets, summary text, CSV. */
 import type { Deal } from "@/types/deal";
+import { formatCurrency } from "@/lib/format";
+
 
 export type Bucket = {
   date: Date;
