@@ -1,6 +1,6 @@
-import { memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search, ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,8 +21,16 @@ import { useDeals } from "@/hooks/useDeals";
 import { useCommissionGrid } from "@/hooks/useCommissionGrid";
 import { computeCommissionSheet } from "@/types/commission";
 import { fmt as fmtCurrency } from "@/lib/format";
-import PaymentCalendar from "@/components/ledger/PaymentCalendar";
-import CashflowForecast from "@/components/ledger/CashflowForecast";
+
+// Heavy below-the-fold widgets — deferred to speed up Ledger first paint.
+const PaymentCalendar = lazy(() => import("@/components/ledger/PaymentCalendar"));
+const CashflowForecast = lazy(() => import("@/components/ledger/CashflowForecast"));
+
+const LedgerSectionFallback = () => (
+  <div className="rounded-2xl border border-hairline bg-card/50 p-8 grid place-items-center">
+    <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+  </div>
+);
 
 type FormState = Partial<CommissionPayment>;
 type SortKey = "date" | "customer" | "status" | "amount";
