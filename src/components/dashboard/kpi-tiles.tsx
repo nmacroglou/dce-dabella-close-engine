@@ -279,7 +279,7 @@ function RevenueKPIBase({
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Revenue · {rangeDays}d</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Revenue · {rangeDays}d<FormulaHint formula={`Sum of closed_amount for deals where stage = 'won' and closed_at within last ${rangeDays}d. Pace = (current − prior window) ÷ prior.`} /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Closed-won dollars in window</p>
           </div>
           <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-success transition-transform group-hover:scale-110">
