@@ -387,8 +387,16 @@ export default function Dashboard() {
 
         {/* ===== HERO KPIs (windowed) ===== */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <HeroKPI icon={DollarSign} label={`Revenue · last ${rangeDays}d`} value={fmt(Math.round(windowed.revenue))}
-            sub={`${windowed.won} closed deals`} tone="success" />
+          <RevenueKPI
+            revenue={windowed.revenue}
+            won={windowed.won}
+            avgTicket={windowed.avgTicket}
+            bestDay={windowed.bestDay}
+            bestDayLabel={windowed.bestDayLabel}
+            priorRevenue={windowed.priorRevenue}
+            paceDelta={windowed.revPaceDelta}
+            rangeDays={rangeDays}
+          />
           <SitToCloseKPI
             rate={windowed.sitToClose}
             cohortWon={windowed.cohortWon}
@@ -399,14 +407,23 @@ export default function Dashboard() {
             confidence={windowed.confidence}
             rangeDays={rangeDays}
           />
+          <PipelineKPI
+            active={windowed.active}
+            pipelineValue={windowed.pipelineValue}
+            stageCounts={windowed.stageCounts}
+            avgAge={windowed.avgAge}
+            oldestAge={windowed.oldestAge}
+            rangeDays={rangeDays}
+            dealsRunInWindow={windowed.dealsRun}
+          />
+          <FollowUpHealthKPI
+            overdue={followUpInsights.overdue}
+            today={followUpInsights.today}
+            thisWeek={followUpInsights.thisWeek}
+            oldestOverdueDays={followUpInsights.oldestOverdueDays}
+            compliancePct={followUpInsights.compliancePct}
+          />
 
-
-
-          <HeroKPI icon={Activity} label="Active pipeline" value={String(windowed.active)}
-            sub={`${windowed.dealsRun} run in ${rangeDays}d`} tone="brand" />
-          <HeroKPI icon={AlertCircle} label="Overdue follow-ups" value={String(followUpInsights.overdue)}
-            sub={`${followUpInsights.today} due today`}
-            tone={followUpInsights.overdue > 0 ? "destructive" : "success"} />
         </section>
 
         {/* ===== TRENDS — period over period ===== */}
