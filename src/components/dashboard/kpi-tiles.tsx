@@ -129,8 +129,53 @@ function EconomicsKPIBase({
   );
 }
 
+/* ---------- Dual-metric KPI: two related numbers side by side ---------- */
+function DualKPIBase({
+  icon: Icon, label, primary, secondary, tone = "brand",
+}: {
+  icon: React.ElementType;
+  label: string;
+  primary: { value: string; caption: string; sub?: string };
+  secondary: { value: string; caption: string; sub?: string };
+  tone?: "brand" | "success" | "warning" | "destructive";
+}) {
+  const toneMap = {
+    brand: "from-primary/20 to-primary/0 text-primary",
+    success: "from-success/20 to-success/0 text-success",
+    warning: "from-warning/20 to-warning/0 text-warning",
+    destructive: "from-destructive/20 to-destructive/0 text-destructive",
+  };
+  return (
+    <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
+      <div className={`absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br ${toneMap[tone]} blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500`} />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+          <div className={`h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline ${toneMap[tone].split(" ").pop()} transition-transform group-hover:scale-110`}>
+            <Icon className="h-4 w-4" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <p className="text-2xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{primary.value}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-1.5">{primary.caption}</p>
+            {primary.sub && <p className="text-[11px] text-muted-foreground mt-0.5">{primary.sub}</p>}
+          </div>
+          <div className="border-l border-hairline pl-3">
+            <p className="text-2xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{secondary.value}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-1.5">{secondary.caption}</p>
+            {secondary.sub && <p className="text-[11px] text-muted-foreground mt-0.5">{secondary.sub}</p>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const HeroKPI = memo(HeroKPIBase);
 export const MiniStat = memo(MiniStatBase);
 export const WinRateDonut = memo(WinRateDonutBase);
 export const EconomicsKPI = memo(EconomicsKPIBase);
+export const DualKPI = memo(DualKPIBase);
+
 

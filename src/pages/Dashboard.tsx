@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { fmt, pct } from "@/lib/format";
 import { OBJECTIONS } from "@/data/objections";
-import { HeroKPI, MiniStat, EconomicsKPI } from "@/components/dashboard/kpi-tiles";
+import { HeroKPI, MiniStat, EconomicsKPI, DualKPI } from "@/components/dashboard/kpi-tiles";
 import { WowChipStrip } from "@/components/dashboard/WowChipStrip";
 import { ConversionRibbon } from "@/components/dashboard/ConversionRibbon";
 import { ReportingActions } from "@/components/dashboard/ReportingActions";
@@ -92,9 +92,19 @@ export default function Dashboard() {
     const revenue = wonInWin.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
     const finished = wonInWin.length + lostInWin.length;
     const closeRate = finished > 0 ? wonInWin.length / finished : 0;
+    // Presentations delivered in window: any deal created in window that reached presentation or beyond.
+    const presentedInWin = inWinByCreated.filter(
+      (d) => d.stage === "presented" || d.stage === "follow_up" || d.stage === "won" || d.stage === "lost"
+    );
+    const wonFromPresentedInWin = presentedInWin.filter((d) => d.stage === "won").length;
+    const presentedWinRate = presentedInWin.length > 0 ? wonFromPresentedInWin / presentedInWin.length : 0;
     const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
-    return { dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, closeRate, active };
+    return {
+      dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, closeRate, active,
+      presented: presentedInWin.length, wonFromPresented: wonFromPresentedInWin, presentedWinRate,
+    };
   }, [deals, rangeDays]);
+
 
   const economics = useMemo(() => {
     const now = Date.now();
@@ -295,8 +305,18 @@ export default function Dashboard() {
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <HeroKPI icon={DollarSign} label={`Revenue · last ${rangeDays}d`} value={fmt(Math.round(windowed.revenue))}
             sub={`${windowed.won} closed deals`} tone="success" />
-          <HeroKPI icon={Target} label={`Close rate · last ${rangeDays}d`} value={pct(windowed.closeRate * 100)}
-            sub={`${windowed.won} won · ${windowed.lost} lost`} tone="brand" />
+          <DualKPI icon={Target} label={`Close rate · last ${rangeDays}d`} tone="brand"
+            primary={{
+              value: pct(windowed.closeRate * 100),
+              caption: "Decided",
+              sub: `${windowed.won}W · ${windowed.lost}L`,
+            }}
+            secondary={{
+              value: pct(windowed.presentedWinRate * 100),
+              caption: "From presented",
+              sub: `${windowed.wonFromPresented} / ${windowed.presented}`,
+            }} />
+
           <HeroKPI icon={Activity} label="Active pipeline" value={String(windowed.active)}
             sub={`${windowed.dealsRun} run in ${rangeDays}d`} tone="brand" />
           <HeroKPI icon={AlertCircle} label="Overdue follow-ups" value={String(followUpInsights.overdue)}
