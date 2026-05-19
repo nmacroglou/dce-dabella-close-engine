@@ -1,6 +1,23 @@
 import { memo } from "react";
-import { TrendingUp, TrendingDown, Target, DollarSign, Activity, AlertCircle, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, DollarSign, Activity, AlertCircle, Minus, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
+
+/** Small (?) icon with a native tooltip explaining the formula behind a KPI. */
+function FormulaHint({ formula }: { formula: string }) {
+  return (
+    <span
+      tabIndex={0}
+      role="img"
+      aria-label={`Formula: ${formula}`}
+      title={formula}
+      className="inline-flex items-center justify-center h-4 w-4 rounded-full text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 transition-colors cursor-help ml-1 align-middle"
+    >
+      <Info className="h-3 w-3" />
+    </span>
+  );
+}
+
+
 
 
 /* ---------- Hero KPI tile (large, gradient-accent) ---------- */
