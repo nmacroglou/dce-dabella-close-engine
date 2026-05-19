@@ -14,7 +14,6 @@ type Item = {
 const ITEMS: Item[] = [
   { id: "inspection", title: "Inspection in OCC", detail: "Capture screenshot from hover for the inspection result.", icon: Search },
   { id: "pitch_gauge", title: "Pitch Gauge Photo (Low Slope)", detail: "On inspection, capture a Pitch Gauge photo of any low-slope sections.", icon: Ruler },
-  { id: "commission_sheet", title: "Commission Sheet", detail: "Fill out and submit the commission sheet for this deal.", icon: DollarSign },
   { id: "customer_checklist", title: "Customer Checklist", detail: "Complete Customer_Checklist_-_DO_THIS_BEFORE_FINANCE_APP_V1.pdf before the finance app.", icon: ClipboardList },
   { id: "cc_auth", title: "Credit Card Authorization", detail: "Have homeowner sign V1_Credit_Card_Authorization_Slip.pdf.", icon: CreditCard },
   { id: "finance_app", title: "Finance Application", detail: "Submit the finance application.", icon: Banknote },
@@ -28,6 +27,7 @@ const ITEMS: Item[] = [
   { id: "proposal", title: "Proposal", detail: "Generate and deliver the signed proposal.", icon: FileSignature },
   { id: "poi", title: "Proof of Income (POI)", detail: "Use CamScanner to scan POI and send to AZ Finance.", icon: Camera },
   { id: "rcm", title: "RCM for WhatsApp", detail: "Send RCM (Recorded Customer Message) for WhatsApp confirmation.", icon: MessageSquare },
+  { id: "commission_sheet", title: "Commission Sheet", detail: "Fill out and submit the commission sheet for this deal.", icon: DollarSign },
 ];
 
 export default memo(function PostCloseTab({ state, update }: EngineTabProps) {
