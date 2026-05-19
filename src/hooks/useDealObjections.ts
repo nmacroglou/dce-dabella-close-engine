@@ -88,5 +88,6 @@ export function useDeleteDealObjection() {
       qc.invalidateQueries({ queryKey: ["all-objections"] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to remove objection"),
   });
 }
