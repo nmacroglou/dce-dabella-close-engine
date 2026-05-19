@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DealStage } from "@/types/deal";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 
 export interface StageHistoryEntry {
   id: string;

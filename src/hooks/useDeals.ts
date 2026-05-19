@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Deal, DealStage } from "@/types/deal";
 import type { EngineState } from "@/types/engine";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 
 export function useDeals() {
   const { user } = useAuth();

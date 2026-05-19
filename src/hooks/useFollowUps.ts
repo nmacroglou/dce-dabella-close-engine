@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FollowUp } from "@/types/followUp";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 
 export function useFollowUps(dealId?: string) {
   const { user } = useAuth();

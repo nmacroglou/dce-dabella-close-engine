@@ -11,6 +11,7 @@ import {
 } from "@/types/commission";
 import { DEFAULT_FOLLOW_UP_SLA, type FollowUpSLA } from "@/types/followUp";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 import type { Json } from "@/integrations/supabase/types";
 
 export function useCommissionGrid() {

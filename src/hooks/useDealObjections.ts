@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DealObjection } from "@/types/deal";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 
 export function useDealObjections(dealId: string | null) {
   const { user } = useAuth();
