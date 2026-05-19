@@ -344,7 +344,7 @@ function PipelineKPIBase({
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Active pipeline</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Active pipeline<FormulaHint formula="Open deals with stage in (inspecting, presented, follow_up). Potential = sum of selected option price; age measured from stage_changed_at." /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Open deals not yet decided</p>
           </div>
           <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-primary transition-transform group-hover:scale-110">
