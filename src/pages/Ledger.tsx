@@ -1,5 +1,6 @@
 import { lazy, Suspense, memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import * as Recharts from "recharts";
 import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search, ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -114,7 +115,37 @@ export default function Ledger() {
     };
   }, [rows]);
 
-  const maxBar = Math.max(1, ...monthly.map(([, v]) => Math.max(v.expected, v.paid)));
+  // Build the last-12-months series for the trend chart, including collection rate
+  // and momentum vs prior 3 months. This is what powers the upgraded KPI graph.
+  const trend = useMemo(() => {
+    const now = new Date();
+    const months: { key: string; label: string; expected: number; paid: number; rate: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const hit = monthly.find(([k]) => k === key);
+      const expected = hit?.[1].expected ?? 0;
+      const paid = hit?.[1].paid ?? 0;
+      months.push({
+        key,
+        label: d.toLocaleDateString(undefined, { month: "short" }),
+        expected,
+        paid,
+        rate: expected > 0 ? Math.min(100, (paid / expected) * 100) : 0,
+      });
+    }
+    const last3 = months.slice(-3);
+    const prev3 = months.slice(-6, -3);
+    const sum = (arr: typeof months) => arr.reduce((s, m) => s + m.paid, 0);
+    const last3Paid = sum(last3);
+    const prev3Paid = sum(prev3);
+    const momentum = prev3Paid > 0 ? ((last3Paid - prev3Paid) / prev3Paid) * 100 : last3Paid > 0 ? 100 : 0;
+    const collected = months.reduce((s, m) => s + m.paid, 0);
+    const billed = months.reduce((s, m) => s + m.expected, 0);
+    const avgRate = billed > 0 ? (collected / billed) * 100 : 0;
+    const best = months.reduce((b, m) => (m.paid > b.paid ? m : b), months[0]);
+    return { months, momentum, avgRate, best, last3Paid, prev3Paid };
+  }, [monthly]);
 
   const filteredRows = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
@@ -389,32 +420,31 @@ export default function Ledger() {
           </div>
         )}
 
-        {/* Trend */}
-        {monthly.length > 0 && (
+        {/* Trend — Expected vs Paid + Collection rate */}
+        {totals.expected > 0 && (
           <div className="rounded-2xl border border-hairline bg-card p-4 sm:p-6">
-            <h2 className="text-sm font-bold text-foreground mb-4">Expected vs Paid by month</h2>
-            <div className="flex items-end gap-3 h-40">
-              {monthly.map(([k, v]) => (
-                <div key={k} className="flex-1 flex flex-col items-center gap-1.5">
-                  <div className="w-full flex items-end gap-1 h-32">
-                    <div
-                      className="flex-1 rounded-t bg-primary/30"
-                      style={{ height: `${(v.expected / maxBar) * 100}%` }}
-                      title={`Expected: ${fmtCurrency(v.expected)}`}
-                    />
-                    <div
-                      className="flex-1 rounded-t bg-success"
-                      style={{ height: `${(v.paid / maxBar) * 100}%` }}
-                      title={`Paid: ${fmtCurrency(v.paid)}`}
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">{v.label}</span>
-                </div>
-              ))}
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+              <div>
+                <h2 className="text-sm font-bold text-foreground">Collection performance · last 12 months</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Expected vs paid each month with rolling collection rate.</p>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <MiniStat label="Avg collection" value={`${trend.avgRate.toFixed(0)}%`} tone={trend.avgRate >= 80 ? "success" : trend.avgRate >= 50 ? "warning" : "danger"} />
+                <MiniStat
+                  label="Last 3 mo vs prior"
+                  value={`${trend.momentum >= 0 ? "+" : ""}${trend.momentum.toFixed(0)}%`}
+                  tone={trend.momentum >= 0 ? "success" : "danger"}
+                />
+                <MiniStat label="Best month" value={trend.best?.paid ? `${trend.best.label} · ${fmtCurrency(trend.best.paid)}` : "—"} tone="muted" />
+              </div>
+            </div>
+            <div className="h-56">
+              <LedgerTrendChart data={trend.months} />
             </div>
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-primary/30" /> Expected</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-primary/40" /> Expected</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-success" /> Paid</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-1 rounded bg-warning" /> Collection %</span>
             </div>
           </div>
         )}
@@ -753,5 +783,62 @@ function KpiTile({
       <div className="text-xl font-display font-extrabold tabular-nums">{value}</div>
       {sub && <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>}
     </div>
+  );
+}
+
+function MiniStat({ label, value, tone }: { label: string; value: string; tone: "success" | "warning" | "danger" | "muted" }) {
+  const toneCls =
+    tone === "success" ? "text-success"
+    : tone === "warning" ? "text-warning"
+    : tone === "danger" ? "text-destructive"
+    : "text-foreground";
+  return (
+    <div className="flex flex-col items-end leading-tight">
+      <span className={`text-sm font-bold tabular-nums ${toneCls}`}>{value}</span>
+      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function LedgerTrendChart({
+  data,
+}: {
+  data: { label: string; expected: number; paid: number; rate: number }[];
+}) {
+  const { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip } = Recharts;
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} tickLine={false} axisLine={false} />
+        <YAxis
+          yAxisId="left"
+          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+          tickLine={false} axisLine={false}
+          tickFormatter={(v: number) => v >= 1000 ? `$${Math.round(v / 1000)}k` : `$${v}`}
+        />
+        <YAxis
+          yAxisId="right" orientation="right" domain={[0, 100]}
+          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+          tickLine={false} axisLine={false}
+          tickFormatter={(v: number) => `${v}%`}
+        />
+        <Tooltip
+          cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+          contentStyle={{
+            background: "hsl(var(--popover))",
+            border: "1px solid hsl(var(--border))",
+            borderRadius: 8,
+            fontSize: 12,
+          }}
+          formatter={(value: number, name: string) =>
+            name === "Collection %" ? [`${value.toFixed(0)}%`, name] : [fmtCurrency(value), name]
+          }
+        />
+        <Bar yAxisId="left" dataKey="expected" name="Expected" fill="hsl(var(--primary) / 0.4)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+        <Bar yAxisId="left" dataKey="paid" name="Paid" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} maxBarSize={28} />
+        <Line yAxisId="right" type="monotone" dataKey="rate" name="Collection %" stroke="hsl(var(--warning))" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(var(--warning))" }} activeDot={{ r: 5 }} />
+      </ComposedChart>
+    </ResponsiveContainer>
   );
 }
