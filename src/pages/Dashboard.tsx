@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { fmt, pct } from "@/lib/format";
 import { OBJECTIONS } from "@/data/objections";
-import { HeroKPI, MiniStat, EconomicsKPI, DualKPI } from "@/components/dashboard/kpi-tiles";
+import { HeroKPI, MiniStat, EconomicsKPI, DualKPI, SitToCloseKPI } from "@/components/dashboard/kpi-tiles";
 import { WowChipStrip } from "@/components/dashboard/WowChipStrip";
 import { ConversionRibbon } from "@/components/dashboard/ConversionRibbon";
 import { ReportingActions } from "@/components/dashboard/ReportingActions";
