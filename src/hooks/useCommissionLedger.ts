@@ -91,7 +91,7 @@ export function useUpsertPayment() {
       qc.invalidateQueries({ queryKey: ["commission_payments", user?.id] });
       toast.success("Saved");
     },
-    onError: (e: any) => toast.error(e.message ?? "Save failed"),
+    onError: (e) => toast.error(errMsg(e, "Save failed")),
   });
 }
 
