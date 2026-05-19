@@ -9,6 +9,7 @@ export function useFollowUps(dealId?: string) {
   return useQuery({
     queryKey: ["follow-ups", user?.id, dealId ?? "all"],
     enabled: !!user,
+    staleTime: 30_000,
     queryFn: async (): Promise<FollowUp[]> => {
       let q = supabase.from("follow_ups").select("*").order("due_at", { ascending: true });
       if (dealId) q = q.eq("deal_id", dealId);
