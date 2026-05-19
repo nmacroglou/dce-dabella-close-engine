@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import FollowUpComposer from "@/components/followups/FollowUpComposer";
 import { toast } from "sonner";
 import { pct } from "@/lib/format";
-import { StatTile } from "@/components/pipeline/StatTile";
+
 import { FollowUpAdmin, type FollowUpFilter } from "@/components/pipeline/FollowUpAdmin";
 
 export default function Pipeline() {
