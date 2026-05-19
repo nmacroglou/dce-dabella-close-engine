@@ -44,22 +44,35 @@ export default function Dashboard() {
   const { data: timelineEvents = [], isLoading: timelineLoading } = useActivityTimeline(14);
 
   const followUpInsights = useMemo(() => {
+    const now = Date.now();
     const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
-    let overdue = 0, today = 0, upcoming = 0, completed = 0, totalDue = 0;
+    const weekFromNow = new Date(); weekFromNow.setDate(weekFromNow.getDate() + 7);
+    let overdue = 0, today = 0, upcoming = 0, completed = 0, totalDue = 0, thisWeek = 0;
+    let oldestOverdueDays = 0;
     const overdueList: typeof followUps = [];
     for (const f of followUps) {
       const status = followUpStatus(f);
       const due = new Date(f.due_at);
       if (status === "completed") { completed++; continue; }
       totalDue++;
-      if (status === "overdue") { overdue++; overdueList.push(f); }
-      else if (due >= todayStart && due <= todayEnd) today++;
-      else upcoming++;
+      if (status === "overdue") {
+        overdue++;
+        overdueList.push(f);
+        const ageDays = Math.floor((now - due.getTime()) / 864e5);
+        if (ageDays > oldestOverdueDays) oldestOverdueDays = ageDays;
+      } else if (due >= todayStart && due <= todayEnd) {
+        today++;
+        thisWeek++;
+      } else {
+        upcoming++;
+        if (due <= weekFromNow) thisWeek++;
+      }
     }
     const compliancePct = totalDue + completed > 0 ? Math.round((completed / (totalDue + completed)) * 100) : 0;
-    return { overdue, today, upcoming, completed, compliancePct, overdueList: overdueList.slice(0, 5) };
+    return { overdue, today, upcoming, completed, compliancePct, thisWeek, oldestOverdueDays, overdueList: overdueList.slice(0, 5) };
   }, [followUps]);
+
 
   /* ---- Rep economics inputs ---- */
   const [weeklyHours, setWeeklyHours] = useState<number>(40);
