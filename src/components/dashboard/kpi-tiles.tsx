@@ -1,5 +1,7 @@
 import { memo } from "react";
-import { TrendingUp, TrendingDown, Target } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, DollarSign, Activity, AlertCircle, Minus } from "lucide-react";
+import { fmt } from "@/lib/format";
+
 
 /* ---------- Hero KPI tile (large, gradient-accent) ---------- */
 function HeroKPIBase({
