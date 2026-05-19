@@ -286,7 +286,7 @@ function RevenueKPIBase({
         <div className="mt-3 pt-3 border-t border-hairline grid grid-cols-2 gap-2">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Avg ticket</p>
-            <p className="text-sm font-display font-bold text-foreground mt-0.5">${fmt(Math.round(avgTicket))}</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">{fmt(Math.round(avgTicket))}</p>
           </div>
           <div>
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Best day</p>
