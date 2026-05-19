@@ -79,17 +79,21 @@ export default function Dashboard() {
   useEffect(() => { localStorage.setItem(COMMISSION_KEY, String(commissionPct)); }, [commissionPct]);
   useEffect(() => { localStorage.setItem(RANGE_KEY, String(rangeDays)); }, [rangeDays]);
 
-  /* ---- Windowed stats (7 / 30 / 90 days) ---- */
+  /* ---- Windowed stats (7 / 30 / 90 days) ----
+     "Revenue" + "Close rate" use closed_at so wins/losses surface in the
+     window they were actually decided. "Deals run" still uses created_at
+     because it tracks activity started. */
   const windowed = useMemo(() => {
     const cutoff = Date.now() - rangeDays * 864e5;
-    const inWin = deals.filter((d) => new Date(d.created_at).getTime() >= cutoff);
-    const won = inWin.filter((d) => d.stage === "won");
-    const lost = inWin.filter((d) => d.stage === "lost");
-    const revenue = won.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
-    const finished = won.length + lost.length;
-    const closeRate = finished > 0 ? won.length / finished : 0;
+    const cutoffIso = new Date(cutoff).toISOString();
+    const inWinByCreated = deals.filter((d) => new Date(d.created_at).getTime() >= cutoff);
+    const wonInWin = deals.filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= cutoffIso);
+    const lostInWin = deals.filter((d) => d.stage === "lost" && d.closed_at && d.closed_at >= cutoffIso);
+    const revenue = wonInWin.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
+    const finished = wonInWin.length + lostInWin.length;
+    const closeRate = finished > 0 ? wonInWin.length / finished : 0;
     const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
-    return { dealsRun: inWin.length, won: won.length, lost: lost.length, revenue, closeRate, active };
+    return { dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, closeRate, active };
   }, [deals, rangeDays]);
 
   const economics = useMemo(() => {
