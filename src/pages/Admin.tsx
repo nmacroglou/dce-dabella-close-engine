@@ -226,8 +226,9 @@ export default function Admin() {
 
         {/* Adoption row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile icon={Users} label="Total accounts" value={fmt(m.totalUsers)} sub={`${m.newUsers} new in ${windowDays}d`} />
-          <KpiTile icon={UserPlus} label="Active reps" value={fmt(m.activeReps)} sub={`${adoptionPct}% adoption`} accent="success" />
+          <KpiTile icon={Users} label="Total accounts" value={formatCount(m.totalUsers)} sub={`${m.newUsers} new in ${windowDays}d`} />
+          <KpiTile icon={UserPlus} label="Active reps" value={formatCount(m.activeReps)} sub={`${adoptionPct}% adoption`} accent="success" />
+
           <KpiTile icon={Activity} label="DAU / WAU / MAU" value={`${m.dau} / ${m.wau} / ${m.mau}`} sub={m.wau ? `Stickiness ${pct((m.dau / m.wau) * 100)}` : "—"} />
           <KpiTile icon={ShieldCheck} label="Follow-up SLA" value={`${m.slaPct}%`} sub="Completed / due" accent={m.slaPct >= 75 ? "success" : m.slaPct >= 50 ? "warning" : "destructive"} />
         </div>
