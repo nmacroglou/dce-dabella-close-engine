@@ -357,10 +357,14 @@ export default function Ledger() {
         )}
 
         {/* Payday calendar */}
-        <PaymentCalendar rows={rows} />
+        <Suspense fallback={<LedgerSectionFallback />}>
+          <PaymentCalendar rows={rows} />
+        </Suspense>
 
         {/* Cashflow forecast */}
-        <CashflowForecast rows={rows} />
+        <Suspense fallback={<LedgerSectionFallback />}>
+          <CashflowForecast rows={rows} />
+        </Suspense>
 
         {/* Filters + Table */}
         <div className="rounded-2xl border border-hairline bg-card overflow-hidden">
