@@ -58,5 +58,6 @@ export function useDeleteFollowUp() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follow-ups"] }),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
   });
 }
