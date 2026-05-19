@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { lazy, Suspense, useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,12 +16,20 @@ import { fmt, pct } from "@/lib/format";
 import { OBJECTIONS } from "@/data/objections";
 import { HeroKPI, MiniStat, EconomicsKPI } from "@/components/dashboard/kpi-tiles";
 import { WowChipStrip } from "@/components/dashboard/WowChipStrip";
-import { TrendsCard } from "@/components/dashboard/TrendsCard";
 import { ConversionRibbon } from "@/components/dashboard/ConversionRibbon";
-import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline";
-import { ObjectionHeatmap } from "@/components/dashboard/ObjectionHeatmap";
 import { ReportingActions } from "@/components/dashboard/ReportingActions";
 import { bucketByDay, splitCurrentPrior, sumBuckets, wowDelta } from "@/lib/dashboardSeries";
+
+// Defer chart-heavy below-the-fold sections to shrink initial bundle.
+const TrendsCard = lazy(() => import("@/components/dashboard/TrendsCard").then(m => ({ default: m.TrendsCard })));
+const ActivityTimeline = lazy(() => import("@/components/dashboard/ActivityTimeline").then(m => ({ default: m.ActivityTimeline })));
+const ObjectionHeatmap = lazy(() => import("@/components/dashboard/ObjectionHeatmap").then(m => ({ default: m.ObjectionHeatmap })));
+
+const SectionFallback = () => (
+  <div className="rounded-2xl border border-hairline bg-card/50 p-8 grid place-items-center">
+    <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+  </div>
+);
 
 const HOURS_KEY = "dabella.hud.weeklyHours";
 const COMMISSION_KEY = "dabella.hud.commissionPct";
