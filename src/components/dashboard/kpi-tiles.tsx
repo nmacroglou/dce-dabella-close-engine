@@ -270,7 +270,7 @@ function RevenueKPIBase({
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">${fmt(Math.round(revenue))}</p>
+          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{fmt(Math.round(revenue))}</p>
           <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded border ${paceCls}`}>
             <PaceIcon className="h-3 w-3" />
             {dir === "flat" ? "flat" : `${Math.abs(Math.round(paceDelta * 100))}%`}
