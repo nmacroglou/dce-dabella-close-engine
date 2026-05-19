@@ -419,32 +419,31 @@ export default function Ledger() {
           </div>
         )}
 
-        {/* Trend */}
-        {monthly.length > 0 && (
+        {/* Trend — Expected vs Paid + Collection rate */}
+        {totals.expected > 0 && (
           <div className="rounded-2xl border border-hairline bg-card p-4 sm:p-6">
-            <h2 className="text-sm font-bold text-foreground mb-4">Expected vs Paid by month</h2>
-            <div className="flex items-end gap-3 h-40">
-              {monthly.map(([k, v]) => (
-                <div key={k} className="flex-1 flex flex-col items-center gap-1.5">
-                  <div className="w-full flex items-end gap-1 h-32">
-                    <div
-                      className="flex-1 rounded-t bg-primary/30"
-                      style={{ height: `${(v.expected / maxBar) * 100}%` }}
-                      title={`Expected: ${fmtCurrency(v.expected)}`}
-                    />
-                    <div
-                      className="flex-1 rounded-t bg-success"
-                      style={{ height: `${(v.paid / maxBar) * 100}%` }}
-                      title={`Paid: ${fmtCurrency(v.paid)}`}
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">{v.label}</span>
-                </div>
-              ))}
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+              <div>
+                <h2 className="text-sm font-bold text-foreground">Collection performance · last 12 months</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Expected vs paid each month with rolling collection rate.</p>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <MiniStat label="Avg collection" value={`${trend.avgRate.toFixed(0)}%`} tone={trend.avgRate >= 80 ? "success" : trend.avgRate >= 50 ? "warning" : "danger"} />
+                <MiniStat
+                  label="Last 3 mo vs prior"
+                  value={`${trend.momentum >= 0 ? "+" : ""}${trend.momentum.toFixed(0)}%`}
+                  tone={trend.momentum >= 0 ? "success" : "danger"}
+                />
+                <MiniStat label="Best month" value={trend.best?.paid ? `${trend.best.label} · ${fmtCurrency(trend.best.paid)}` : "—"} tone="muted" />
+              </div>
+            </div>
+            <div className="h-56">
+              <LedgerTrendChart data={trend.months} />
             </div>
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-primary/30" /> Expected</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-primary/40" /> Expected</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-success" /> Paid</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-1 rounded bg-warning" /> Collection %</span>
             </div>
           </div>
         )}
