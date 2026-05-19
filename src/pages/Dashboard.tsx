@@ -432,7 +432,7 @@ export default function Dashboard() {
         {/* ===== BOTTOM MINI ROW ===== */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MiniStat icon={Flame} label="7-day close rate" value={pct(stats.weeklyCloseRate)}
-            sub={`${stats.weeklyClosed} / ${stats.weeklyRun} this week`} accent="text-warning" />
+            sub={`${stats.weeklyClosed} won of ${stats.weeklyFinished} closed (7d)`} accent="text-warning" />
           <MiniStat icon={Clock} label="Avg time to close" value={`${stats.avgDaysToClose.toFixed(1)}d`}
             sub="From first inspection" accent="text-primary" />
           <MiniStat icon={Trophy} label="All-time revenue" value={fmt(stats.allTimeRevenue)}
