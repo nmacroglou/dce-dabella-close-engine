@@ -243,11 +243,25 @@ export default function Ledger() {
       }
     }
 
-    // Upsert won deals (refreshes existing + adds new)
-    if (payloads.length) {
-      const { error } = await supabase
-        .from("commission_payments")
-        .upsert(payloads, { onConflict: "rep_id,deal_id" });
+    // Split into updates (existing rows by id) and inserts (new rows)
+    const updates = payloads.filter((p) => p.id);
+    const inserts = payloads.filter((p) => !p.id);
+
+    if (updates.length) {
+      const results = await Promise.all(
+        updates.map(({ id, ...patch }) =>
+          supabase.from("commission_payments").update(patch).eq("id", id),
+        ),
+      );
+      const firstErr = results.find((r) => r.error)?.error;
+      if (firstErr) {
+        toast.error(`Sync failed: ${firstErr.message}`);
+        return 0;
+      }
+    }
+
+    if (inserts.length) {
+      const { error } = await supabase.from("commission_payments").insert(inserts);
       if (error) {
         toast.error(`Sync failed: ${error.message}`);
         return 0;
