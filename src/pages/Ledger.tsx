@@ -20,7 +20,7 @@ import {
 import { useDeals } from "@/hooks/useDeals";
 import { useCommissionGrid } from "@/hooks/useCommissionGrid";
 import { computeCommissionSheet } from "@/types/commission";
-import { fmt as fmtCurrency } from "@/lib/format";
+import { formatCurrency as fmtCurrency } from "@/lib/format";
 
 // Heavy below-the-fold widgets — deferred to speed up Ledger first paint.
 const PaymentCalendar = lazy(() => import("@/components/ledger/PaymentCalendar"));

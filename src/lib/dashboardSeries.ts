@@ -1,5 +1,7 @@
 /** Pure helpers for the operator dashboard: WoW deltas, day/week buckets, summary text, CSV. */
 import type { Deal } from "@/types/deal";
+import { formatCurrency } from "@/lib/format";
+
 
 export type Bucket = {
   date: Date;
@@ -154,8 +156,9 @@ export type SummaryInput = {
   topObjection?: string;
 };
 
-const fmtUsd = (n: number) => `$${Math.round(n).toLocaleString()}`;
+const fmtUsd = (n: number) => formatCurrency(n);
 const fmtPct = (n: number) => `${Math.round(n * 100)}%`;
+
 
 export function weeklySummaryText(s: SummaryInput): string {
   const arrow = (cur: number, prior: number) => {

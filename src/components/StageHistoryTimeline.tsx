@@ -3,7 +3,7 @@ import { useStageHistory, useUpdateStageNote, type StageHistoryEntry } from "@/h
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import type { Deal } from "@/types/deal";
 import { Clock, TrendingDown, TrendingUp, ArrowRight, Pencil, Check, X as XIcon, StickyNote } from "lucide-react";
-import { fmt as formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 

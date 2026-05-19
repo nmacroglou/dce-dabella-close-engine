@@ -6,7 +6,7 @@ import {
   Loader2, Users, UserPlus, Activity, Briefcase, DollarSign,
   TrendingUp, Trophy, AlertCircle, ShieldCheck, MessageSquareWarning, Target,
 } from "lucide-react";
-import { fmt, pct } from "@/lib/format";
+import { formatCurrency, formatCount, pct } from "@/lib/format";
 import { DEAL_STAGES, STAGE_LABELS, type DealStage } from "@/types/deal";
 
 /* ------------------------- helpers ------------------------- */
@@ -226,27 +226,29 @@ export default function Admin() {
 
         {/* Adoption row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile icon={Users} label="Total accounts" value={fmt(m.totalUsers)} sub={`${m.newUsers} new in ${windowDays}d`} />
-          <KpiTile icon={UserPlus} label="Active reps" value={fmt(m.activeReps)} sub={`${adoptionPct}% adoption`} accent="success" />
+          <KpiTile icon={Users} label="Total accounts" value={formatCount(m.totalUsers)} sub={`${m.newUsers} new in ${windowDays}d`} />
+          <KpiTile icon={UserPlus} label="Active reps" value={formatCount(m.activeReps)} sub={`${adoptionPct}% adoption`} accent="success" />
+
           <KpiTile icon={Activity} label="DAU / WAU / MAU" value={`${m.dau} / ${m.wau} / ${m.mau}`} sub={m.wau ? `Stickiness ${pct((m.dau / m.wau) * 100)}` : "—"} />
           <KpiTile icon={ShieldCheck} label="Follow-up SLA" value={`${m.slaPct}%`} sub="Completed / due" accent={m.slaPct >= 75 ? "success" : m.slaPct >= 50 ? "warning" : "destructive"} />
         </div>
 
         {/* Outcomes row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile icon={DollarSign} label="Revenue" value={fmt(Math.round(m.revenue))} sub={`${revDelta >= 0 ? "+" : ""}${revDelta.toFixed(0)}% vs prior`} accent={revDelta >= 0 ? "success" : "destructive"} />
-          <KpiTile icon={Trophy} label="Wins" value={fmt(m.wonCount)} sub={`Close rate ${pct(m.closeRate)}`} accent="success" />
-          <KpiTile icon={Target} label="Avg deal" value={fmt(Math.round(m.avgDeal))} sub="Won deals only" />
+          <KpiTile icon={DollarSign} label="Revenue" value={formatCurrency(m.revenue)} sub={`${revDelta >= 0 ? "+" : ""}${revDelta.toFixed(0)}% vs prior`} accent={revDelta >= 0 ? "success" : "destructive"} />
+          <KpiTile icon={Trophy} label="Wins" value={formatCount(m.wonCount)} sub={`Close rate ${pct(m.closeRate)}`} accent="success" />
+          <KpiTile icon={Target} label="Avg deal" value={formatCurrency(m.avgDeal)} sub="Won deals only" />
 
-          <KpiTile icon={Briefcase} label="Deals created" value={fmt(m.dealsCreated)} sub={`${dealsDelta >= 0 ? "+" : ""}${dealsDelta.toFixed(0)}% vs prior`} accent={dealsDelta >= 0 ? "primary" : "warning"} />
+          <KpiTile icon={Briefcase} label="Deals created" value={formatCount(m.dealsCreated)} sub={`${dealsDelta >= 0 ? "+" : ""}${dealsDelta.toFixed(0)}% vs prior`} accent={dealsDelta >= 0 ? "primary" : "warning"} />
         </div>
 
         {/* Activity row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile icon={Activity} label="Presentations run" value={fmt(m.presentationsRun)} accent="primary" />
-          <KpiTile icon={MessageSquareWarning} label="Objections logged" value={fmt(m.objectionsLogged)} accent="warning" />
-          <KpiTile icon={TrendingUp} label="Follow-ups created" value={fmt(m.followUpsSent)} />
-          <KpiTile icon={AlertCircle} label="Lost deals" value={fmt(m.stageCounts.lost)} accent="destructive" />
+          <KpiTile icon={Activity} label="Presentations run" value={formatCount(m.presentationsRun)} accent="primary" />
+          <KpiTile icon={MessageSquareWarning} label="Objections logged" value={formatCount(m.objectionsLogged)} accent="warning" />
+          <KpiTile icon={TrendingUp} label="Follow-ups created" value={formatCount(m.followUpsSent)} />
+          <KpiTile icon={AlertCircle} label="Lost deals" value={formatCount(m.stageCounts.lost)} accent="destructive" />
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -277,7 +279,7 @@ export default function Admin() {
                           <div className="font-semibold text-foreground truncate max-w-[180px]">{r.name}</div>
                           {r.email && <div className="text-[11px] text-muted-foreground truncate max-w-[180px]">{r.email}</div>}
                         </td>
-                        <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">{fmt(Math.round(r.revenue))}</td>
+                        <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">{formatCurrency(r.revenue)}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{r.won}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{pct(r.closeRate)}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{r.deals}</td>
