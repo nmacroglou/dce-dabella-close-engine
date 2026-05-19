@@ -26,7 +26,7 @@ export default memo(function Checklist({ items, checkedIndices, onToggle }: Chec
             >
               <span
                 className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                  checked ? "bg-accent border-accent text-white" : "border-border"
+                  checked ? "bg-accent border-accent text-accent-foreground" : "border-border"
                 }`}
               >
                 {checked && <Check className="h-3 w-3" />}
