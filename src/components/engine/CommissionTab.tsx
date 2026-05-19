@@ -1,14 +1,22 @@
-import { useState, useMemo, useCallback } from "react";
-import { DollarSign, Plus, FileText, Settings2, Calculator } from "lucide-react";
+import { lazy, Suspense, useState, useMemo, useCallback } from "react";
+import { DollarSign, Plus, FileText, Settings2, Calculator, Loader2 } from "lucide-react";
 import { getMonthlyBonus, MONTHLY_BONUS_TIERS } from "@/data/commissionData";
 import SectionHeader from "./shared/SectionHeader";
 import DealCard, { type Deal, emptyDeal, computeDeal } from "./commission/DealCard";
-import MonthlyOverview from "./commission/MonthlyOverview";
-import CommissionReferenceTables from "./commission/CommissionReferenceTables";
-import CommissionSheet from "./commission/CommissionSheet";
-import CommissionGridEditor from "./commission/CommissionGridEditor";
-import MonthlyPromosEditor from "./commission/MonthlyPromosEditor";
-import FollowUpSLAEditor from "@/components/followups/FollowUpSLAEditor";
+
+// Defer heavy sub-views so only the active one loads.
+const MonthlyOverview = lazy(() => import("./commission/MonthlyOverview"));
+const CommissionReferenceTables = lazy(() => import("./commission/CommissionReferenceTables"));
+const CommissionSheet = lazy(() => import("./commission/CommissionSheet"));
+const CommissionGridEditor = lazy(() => import("./commission/CommissionGridEditor"));
+const MonthlyPromosEditor = lazy(() => import("./commission/MonthlyPromosEditor"));
+const FollowUpSLAEditor = lazy(() => import("@/components/followups/FollowUpSLAEditor"));
+
+const ViewFallback = () => (
+  <div className="rounded-2xl border border-hairline bg-card/50 p-8 grid place-items-center">
+    <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+  </div>
+);
 
 type View = "sheet" | "estimator" | "grid";
 
