@@ -307,14 +307,15 @@ export default function Dashboard() {
           <DualKPI icon={Target} label={`Close rate · last ${rangeDays}d`} tone="brand"
             primary={{
               value: pct(windowed.closeRate * 100),
-              caption: "Decided",
-              sub: `${windowed.won}W · ${windowed.lost}L`,
+              caption: "Close rate",
+              sub: `${windowed.won}W · ${windowed.lost}L decided`,
             }}
             secondary={{
-              value: pct(windowed.presentedWinRate * 100),
-              caption: "From presented",
-              sub: `${windowed.wonFromPresented} / ${windowed.presented}`,
+              value: String(windowed.pending),
+              caption: "Pending",
+              sub: `still in flight`,
             }} />
+
 
           <HeroKPI icon={Activity} label="Active pipeline" value={String(windowed.active)}
             sub={`${windowed.dealsRun} run in ${rangeDays}d`} tone="brand" />
