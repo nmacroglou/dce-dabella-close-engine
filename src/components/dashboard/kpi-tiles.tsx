@@ -1,6 +1,23 @@
 import { memo } from "react";
-import { TrendingUp, TrendingDown, Target, DollarSign, Activity, AlertCircle, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, DollarSign, Activity, AlertCircle, Minus, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
+
+/** Small (?) icon with a native tooltip explaining the formula behind a KPI. */
+function FormulaHint({ formula }: { formula: string }) {
+  return (
+    <span
+      tabIndex={0}
+      role="img"
+      aria-label={`Formula: ${formula}`}
+      title={formula}
+      className="inline-flex items-center justify-center h-4 w-4 rounded-full text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 transition-colors cursor-help ml-1 align-middle"
+    >
+      <Info className="h-3 w-3" />
+    </span>
+  );
+}
+
+
 
 
 /* ---------- Hero KPI tile (large, gradient-accent) ---------- */
@@ -202,7 +219,7 @@ function SitToCloseKPIBase({
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sit-to-Close · {rangeDays}d</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sit-to-Close · {rangeDays}d<FormulaHint formula={`Cohort wins ÷ resolved presentations in last ${rangeDays}d. Only counts presentations old enough to decide (excludes 'still deciding'). Confidence chip reflects cohort size.`} /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Wins ÷ presentations old enough to decide</p>
           </div>
           <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-primary transition-transform group-hover:scale-110">
@@ -262,7 +279,7 @@ function RevenueKPIBase({
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Revenue · {rangeDays}d</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Revenue · {rangeDays}d<FormulaHint formula={`Sum of closed_amount for deals where stage = 'won' and closed_at within last ${rangeDays}d. Pace = (current − prior window) ÷ prior.`} /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Closed-won dollars in window</p>
           </div>
           <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-success transition-transform group-hover:scale-110">
@@ -327,7 +344,7 @@ function PipelineKPIBase({
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Active pipeline</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Active pipeline<FormulaHint formula="Open deals with stage in (inspecting, presented, follow_up). Potential = sum of selected option price; age measured from stage_changed_at." /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Open deals not yet decided</p>
           </div>
           <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-primary transition-transform group-hover:scale-110">
@@ -393,7 +410,7 @@ function FollowUpHealthKPIBase({
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Follow-up health</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Follow-up health<FormulaHint formula="Overdue = due_at < now and not completed. SLA compliance = completed ÷ (completed + due). Tone goes destructive at 5+ overdue or oldest ≥ 7d." /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Past-due, today, and SLA compliance</p>
           </div>
           <div className={`h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline ${toneMap.icon} transition-transform group-hover:scale-110`}>
