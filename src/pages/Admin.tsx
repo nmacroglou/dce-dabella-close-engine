@@ -235,19 +235,20 @@ export default function Admin() {
 
         {/* Outcomes row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile icon={DollarSign} label="Revenue" value={fmt(Math.round(m.revenue))} sub={`${revDelta >= 0 ? "+" : ""}${revDelta.toFixed(0)}% vs prior`} accent={revDelta >= 0 ? "success" : "destructive"} />
-          <KpiTile icon={Trophy} label="Wins" value={fmt(m.wonCount)} sub={`Close rate ${pct(m.closeRate)}`} accent="success" />
-          <KpiTile icon={Target} label="Avg deal" value={fmt(Math.round(m.avgDeal))} sub="Won deals only" />
+          <KpiTile icon={DollarSign} label="Revenue" value={formatCurrency(m.revenue)} sub={`${revDelta >= 0 ? "+" : ""}${revDelta.toFixed(0)}% vs prior`} accent={revDelta >= 0 ? "success" : "destructive"} />
+          <KpiTile icon={Trophy} label="Wins" value={formatCount(m.wonCount)} sub={`Close rate ${pct(m.closeRate)}`} accent="success" />
+          <KpiTile icon={Target} label="Avg deal" value={formatCurrency(m.avgDeal)} sub="Won deals only" />
 
-          <KpiTile icon={Briefcase} label="Deals created" value={fmt(m.dealsCreated)} sub={`${dealsDelta >= 0 ? "+" : ""}${dealsDelta.toFixed(0)}% vs prior`} accent={dealsDelta >= 0 ? "primary" : "warning"} />
+          <KpiTile icon={Briefcase} label="Deals created" value={formatCount(m.dealsCreated)} sub={`${dealsDelta >= 0 ? "+" : ""}${dealsDelta.toFixed(0)}% vs prior`} accent={dealsDelta >= 0 ? "primary" : "warning"} />
         </div>
 
         {/* Activity row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile icon={Activity} label="Presentations run" value={fmt(m.presentationsRun)} accent="primary" />
-          <KpiTile icon={MessageSquareWarning} label="Objections logged" value={fmt(m.objectionsLogged)} accent="warning" />
-          <KpiTile icon={TrendingUp} label="Follow-ups created" value={fmt(m.followUpsSent)} />
-          <KpiTile icon={AlertCircle} label="Lost deals" value={fmt(m.stageCounts.lost)} accent="destructive" />
+          <KpiTile icon={Activity} label="Presentations run" value={formatCount(m.presentationsRun)} accent="primary" />
+          <KpiTile icon={MessageSquareWarning} label="Objections logged" value={formatCount(m.objectionsLogged)} accent="warning" />
+          <KpiTile icon={TrendingUp} label="Follow-ups created" value={formatCount(m.followUpsSent)} />
+          <KpiTile icon={AlertCircle} label="Lost deals" value={formatCount(m.stageCounts.lost)} accent="destructive" />
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
