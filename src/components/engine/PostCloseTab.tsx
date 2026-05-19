@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { Check, ClipboardList, FileText, CreditCard, Banknote, Sun, FileSignature, Camera, MessageSquare, Search } from "lucide-react";
+import { Check, ClipboardList, FileText, CreditCard, Banknote, Sun, FileSignature, Camera, MessageSquare, Search, Ruler, DollarSign } from "lucide-react";
 import type { EngineTabProps } from "@/types/engine";
 import { hasProduct } from "@/lib/engineHelpers";
 
@@ -13,6 +13,8 @@ type Item = {
 
 const ITEMS: Item[] = [
   { id: "inspection", title: "Inspection in OCC", detail: "Capture screenshot from hover for the inspection result.", icon: Search },
+  { id: "pitch_gauge", title: "Pitch Gauge Photo (Low Slope)", detail: "On inspection, capture a Pitch Gauge photo of any low-slope sections.", icon: Ruler },
+  { id: "commission_sheet", title: "Commission Sheet", detail: "Fill out and submit the commission sheet for this deal.", icon: DollarSign },
   { id: "customer_checklist", title: "Customer Checklist", detail: "Complete Customer_Checklist_-_DO_THIS_BEFORE_FINANCE_APP_V1.pdf before the finance app.", icon: ClipboardList },
   { id: "cc_auth", title: "Credit Card Authorization", detail: "Have homeowner sign V1_Credit_Card_Authorization_Slip.pdf.", icon: CreditCard },
   { id: "finance_app", title: "Finance Application", detail: "Submit the finance application.", icon: Banknote },
