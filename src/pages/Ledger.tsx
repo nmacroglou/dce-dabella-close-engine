@@ -1,5 +1,6 @@
 import { lazy, Suspense, memo, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import * as Recharts from "recharts";
 import { Plus, Trash2, DollarSign, Clock, CheckCircle2, Download, Import, TrendingUp, Search, ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
