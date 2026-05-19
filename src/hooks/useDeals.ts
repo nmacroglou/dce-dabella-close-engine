@@ -12,6 +12,7 @@ export function useDeals() {
   return useQuery({
     queryKey: ["deals", user?.id],
     enabled: !!user,
+    staleTime: 30_000,
     queryFn: async (): Promise<Deal[]> => {
       const { data, error } = await supabase
         .from("deals")
@@ -29,6 +30,7 @@ export function useDeal(dealId: string | null) {
   return useQuery({
     queryKey: ["deal", dealId],
     enabled: !!user && !!dealId,
+    staleTime: 30_000,
     queryFn: async (): Promise<Deal | null> => {
       if (!dealId) return null;
       const { data, error } = await supabase
