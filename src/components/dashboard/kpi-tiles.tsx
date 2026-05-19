@@ -410,7 +410,7 @@ function FollowUpHealthKPIBase({
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Follow-up health</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Follow-up health<FormulaHint formula="Overdue = due_at < now and not completed. SLA compliance = completed ÷ (completed + due). Tone goes destructive at 5+ overdue or oldest ≥ 7d." /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Past-due, today, and SLA compliance</p>
           </div>
           <div className={`h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline ${toneMap.icon} transition-transform group-hover:scale-110`}>
