@@ -18,6 +18,7 @@ export function useCommissionGrid() {
   return useQuery({
     queryKey: ["commission-grid", user?.id],
     enabled: !!user,
+    staleTime: 5 * 60_000,
     queryFn: async (): Promise<CommissionGrid> => {
       if (!user) throw new Error("not authed");
       const { data, error } = await supabase

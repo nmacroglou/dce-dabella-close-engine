@@ -5,7 +5,7 @@ import type { Deal, DealStage } from "@/types/deal";
 import type { DealObjection } from "@/types/deal";
 
 export interface DashboardStats {
-  // Month
+  // Month (all "this month" metrics use closed_at; monthDealsRun uses created_at)
   monthDealsRun: number;
   monthClosed: number;
   monthLost: number;
@@ -21,9 +21,10 @@ export interface DashboardStats {
   optionMix: { A: number; B: number; C: number };
   // Objection heatmap
   objectionCounts: Record<string, { total: number; onWins: number; onLosses: number }>;
-  // Streak — last 7 days close rate
+  // Streak — last 7 days, measured by close date
   weeklyCloseRate: number;
   weeklyClosed: number;
+  weeklyFinished: number;
   weeklyRun: number;
   // Time to close
   avgDaysToClose: number;
@@ -56,6 +57,7 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard-stats", user?.id],
     enabled: !!user,
+    staleTime: 60_000,
     queryFn: async (): Promise<DashboardStats> => {
       const [dealsRes, objectionsRes] = await Promise.all([
         supabase.from("deals").select("*"),
@@ -70,12 +72,20 @@ export function useDashboardStats() {
       const monthStart = startOfMonth();
       const weekStart = daysAgo(7);
 
+      // Activity counter — how many deals you *started* this month.
       const monthDeals = deals.filter((d) => d.created_at >= monthStart);
-      const monthClosedDeals = monthDeals.filter((d) => d.stage === "won");
-      const monthLostDeals = monthDeals.filter((d) => d.stage === "lost");
-      const monthFinished = monthClosedDeals.length + monthLostDeals.length;
-      const monthCloseRate = monthFinished > 0 ? monthClosedDeals.length / monthFinished : 0;
-      const monthRevenue = monthClosedDeals.reduce((sum, d) => sum + (d.closed_amount ?? 0), 0);
+
+      // Outcome counters — based on when the deal closed, not when it was created.
+      // This is what reps expect from "revenue this month" and "close rate this month."
+      const closedThisMonthWon = deals.filter(
+        (d) => d.stage === "won" && d.closed_at && d.closed_at >= monthStart,
+      );
+      const closedThisMonthLost = deals.filter(
+        (d) => d.stage === "lost" && d.closed_at && d.closed_at >= monthStart,
+      );
+      const monthFinished = closedThisMonthWon.length + closedThisMonthLost.length;
+      const monthCloseRate = monthFinished > 0 ? closedThisMonthWon.length / monthFinished : 0;
+      const monthRevenue = closedThisMonthWon.reduce((sum, d) => sum + (d.closed_amount ?? 0), 0);
 
       // Funnel
       const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost"];
@@ -112,7 +122,7 @@ export function useDashboardStats() {
         C: wonDeals.filter((d) => d.selected_option === "C").length,
       };
 
-      // Objection heatmap — for each objection type, total occurrences + how often it appeared on wins/losses
+      // Objection heatmap
       const dealOutcome = new Map<string, DealStage>();
       deals.forEach((d) => dealOutcome.set(d.id, d.stage));
       const objectionCounts: Record<string, { total: number; onWins: number; onLosses: number }> = {};
@@ -125,11 +135,15 @@ export function useDashboardStats() {
         objectionCounts[o.objection_type] = existing;
       });
 
-      // Weekly streak
-      const weeklyDeals = deals.filter((d) => d.created_at >= weekStart);
-      const weeklyClosedCount = weeklyDeals.filter((d) => d.stage === "won").length;
-      const weeklyFinished =
-        weeklyClosedCount + weeklyDeals.filter((d) => d.stage === "lost").length;
+      // Last-7-days — by closed_at so a 60-day-old deal closed yesterday counts.
+      const weeklyWon = deals.filter(
+        (d) => d.stage === "won" && d.closed_at && d.closed_at >= weekStart,
+      ).length;
+      const weeklyLost = deals.filter(
+        (d) => d.stage === "lost" && d.closed_at && d.closed_at >= weekStart,
+      ).length;
+      const weeklyFinished = weeklyWon + weeklyLost;
+      const weeklyRunCreated = deals.filter((d) => d.created_at >= weekStart).length;
 
       // Time to close
       const closedWithDates = deals.filter((d) => d.closed_at && d.created_at);
@@ -139,7 +153,6 @@ export function useDashboardStats() {
             closedWithDates.length
           : 0;
 
-      // Next best action
       const followUpsOverdue = deals.filter(
         (d) => d.stage === "follow_up" && daysBetween(d.stage_changed_at, new Date().toISOString()) > 3
       ).length;
@@ -153,8 +166,8 @@ export function useDashboardStats() {
 
       return {
         monthDealsRun: monthDeals.length,
-        monthClosed: monthClosedDeals.length,
-        monthLost: monthLostDeals.length,
+        monthClosed: closedThisMonthWon.length,
+        monthLost: closedThisMonthLost.length,
         monthCloseRate,
         monthRevenue,
         funnel,
@@ -163,9 +176,10 @@ export function useDashboardStats() {
         winLoss,
         optionMix,
         objectionCounts,
-        weeklyCloseRate: weeklyFinished > 0 ? weeklyClosedCount / weeklyFinished : 0,
-        weeklyClosed: weeklyClosedCount,
-        weeklyRun: weeklyDeals.length,
+        weeklyCloseRate: weeklyFinished > 0 ? weeklyWon / weeklyFinished : 0,
+        weeklyClosed: weeklyWon,
+        weeklyFinished,
+        weeklyRun: weeklyRunCreated,
         avgDaysToClose,
         followUpsOverdue,
         presentedStale,

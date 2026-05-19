@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { lazy, Suspense, useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,12 +16,20 @@ import { fmt, pct } from "@/lib/format";
 import { OBJECTIONS } from "@/data/objections";
 import { HeroKPI, MiniStat, EconomicsKPI } from "@/components/dashboard/kpi-tiles";
 import { WowChipStrip } from "@/components/dashboard/WowChipStrip";
-import { TrendsCard } from "@/components/dashboard/TrendsCard";
 import { ConversionRibbon } from "@/components/dashboard/ConversionRibbon";
-import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline";
-import { ObjectionHeatmap } from "@/components/dashboard/ObjectionHeatmap";
 import { ReportingActions } from "@/components/dashboard/ReportingActions";
 import { bucketByDay, splitCurrentPrior, sumBuckets, wowDelta } from "@/lib/dashboardSeries";
+
+// Defer chart-heavy below-the-fold sections to shrink initial bundle.
+const TrendsCard = lazy(() => import("@/components/dashboard/TrendsCard").then(m => ({ default: m.TrendsCard })));
+const ActivityTimeline = lazy(() => import("@/components/dashboard/ActivityTimeline").then(m => ({ default: m.ActivityTimeline })));
+const ObjectionHeatmap = lazy(() => import("@/components/dashboard/ObjectionHeatmap").then(m => ({ default: m.ObjectionHeatmap })));
+
+const SectionFallback = () => (
+  <div className="rounded-2xl border border-hairline bg-card/50 p-8 grid place-items-center">
+    <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+  </div>
+);
 
 const HOURS_KEY = "dabella.hud.weeklyHours";
 const COMMISSION_KEY = "dabella.hud.commissionPct";
@@ -71,17 +79,21 @@ export default function Dashboard() {
   useEffect(() => { localStorage.setItem(COMMISSION_KEY, String(commissionPct)); }, [commissionPct]);
   useEffect(() => { localStorage.setItem(RANGE_KEY, String(rangeDays)); }, [rangeDays]);
 
-  /* ---- Windowed stats (7 / 30 / 90 days) ---- */
+  /* ---- Windowed stats (7 / 30 / 90 days) ----
+     "Revenue" + "Close rate" use closed_at so wins/losses surface in the
+     window they were actually decided. "Deals run" still uses created_at
+     because it tracks activity started. */
   const windowed = useMemo(() => {
     const cutoff = Date.now() - rangeDays * 864e5;
-    const inWin = deals.filter((d) => new Date(d.created_at).getTime() >= cutoff);
-    const won = inWin.filter((d) => d.stage === "won");
-    const lost = inWin.filter((d) => d.stage === "lost");
-    const revenue = won.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
-    const finished = won.length + lost.length;
-    const closeRate = finished > 0 ? won.length / finished : 0;
+    const cutoffIso = new Date(cutoff).toISOString();
+    const inWinByCreated = deals.filter((d) => new Date(d.created_at).getTime() >= cutoff);
+    const wonInWin = deals.filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= cutoffIso);
+    const lostInWin = deals.filter((d) => d.stage === "lost" && d.closed_at && d.closed_at >= cutoffIso);
+    const revenue = wonInWin.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
+    const finished = wonInWin.length + lostInWin.length;
+    const closeRate = finished > 0 ? wonInWin.length / finished : 0;
     const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
-    return { dealsRun: inWin.length, won: won.length, lost: lost.length, revenue, closeRate, active };
+    return { dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, closeRate, active };
   }, [deals, rangeDays]);
 
   const economics = useMemo(() => {
@@ -284,7 +296,9 @@ export default function Dashboard() {
         </section>
 
         {/* ===== TRENDS — period over period ===== */}
-        <TrendsCard deals={deals} weeklyHours={weeklyHours} commissionPct={commissionPct} />
+        <Suspense fallback={<SectionFallback />}>
+          <TrendsCard deals={deals} weeklyHours={weeklyHours} commissionPct={commissionPct} />
+        </Suspense>
 
         {/* ===== CONVERSION RIBBON ===== */}
         <ConversionRibbon deals={deals} />
@@ -369,9 +383,13 @@ export default function Dashboard() {
         {/* ===== ACTIVITY TIMELINE + OBJECTION HEATMAP ===== */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <ActivityTimeline events={timelineEvents} isLoading={timelineLoading} />
+            <Suspense fallback={<SectionFallback />}>
+              <ActivityTimeline events={timelineEvents} isLoading={timelineLoading} />
+            </Suspense>
           </div>
-          <ObjectionHeatmap />
+          <Suspense fallback={<SectionFallback />}>
+            <ObjectionHeatmap />
+          </Suspense>
         </div>
 
         {/* ===== FOLLOW-UP HOT LIST ===== */}
@@ -414,7 +432,7 @@ export default function Dashboard() {
         {/* ===== BOTTOM MINI ROW ===== */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MiniStat icon={Flame} label="7-day close rate" value={pct(stats.weeklyCloseRate)}
-            sub={`${stats.weeklyClosed} / ${stats.weeklyRun} this week`} accent="text-warning" />
+            sub={`${stats.weeklyClosed} won of ${stats.weeklyFinished} closed (7d)`} accent="text-warning" />
           <MiniStat icon={Clock} label="Avg time to close" value={`${stats.avgDaysToClose.toFixed(1)}d`}
             sub="From first inspection" accent="text-primary" />
           <MiniStat icon={Trophy} label="All-time revenue" value={fmt(stats.allTimeRevenue)}
