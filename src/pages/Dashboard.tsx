@@ -138,13 +138,54 @@ export default function Dashboard() {
     const confidence: "low" | "med" | "high" =
       cohort.length >= 20 ? "high" : cohort.length >= 8 ? "med" : "low";
 
+    /* ---- Revenue detail ---- */
+    const avgTicket = wonInWin.length > 0 ? revenue / wonInWin.length : 0;
+    // Best single day in window
+    const dayTotals = new Map<string, number>();
+    for (const d of wonInWin) {
+      if (!d.closed_at) continue;
+      const k = new Date(d.closed_at).toDateString();
+      dayTotals.set(k, (dayTotals.get(k) ?? 0) + (d.closed_amount ?? 0));
+    }
+    let bestDay = 0, bestDayLabel = "—";
+    for (const [k, v] of dayTotals) {
+      if (v > bestDay) {
+        bestDay = v;
+        const dt = new Date(k);
+        bestDayLabel = `${dt.getMonth() + 1}/${dt.getDate()}`;
+      }
+    }
+    // Prior period of equal length for pace delta
+    const priorCutoffIso = new Date(now - 2 * rangeDays * 864e5).toISOString();
+    const priorRevenue = deals
+      .filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= priorCutoffIso && d.closed_at < cutoffIso)
+      .reduce((s, d) => s + (d.closed_amount ?? 0), 0);
+    const revPaceDelta = priorRevenue > 0 ? (revenue - priorRevenue) / priorRevenue : (revenue > 0 ? 1 : 0);
+
+    /* ---- Active pipeline detail ---- */
+    const activeDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost");
+    const pipelineValue = activeDeals.reduce(
+      (s, d) => s + Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0), 0
+    );
+    const stageCounts = {
+      inspecting: activeDeals.filter((d) => d.stage === "inspecting").length,
+      presented: activeDeals.filter((d) => d.stage === "presented").length,
+      follow_up: activeDeals.filter((d) => d.stage === "follow_up").length,
+    };
+    const ages = activeDeals.map((d) => Math.floor((now - new Date(d.created_at).getTime()) / 864e5));
+    const avgAge = ages.length > 0 ? Math.round(ages.reduce((a, b) => a + b, 0) / ages.length) : 0;
+    const oldestAge = ages.length > 0 ? Math.max(...ages) : 0;
+
     return {
       dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, active,
       pending: pendingInWin,
       sitToClose, cohortWon, cohortSize: cohort.length, stillDeciding,
       oneCallPct, oneCallWins, confidence,
+      avgTicket, bestDay, bestDayLabel, priorRevenue, revPaceDelta,
+      pipelineValue, stageCounts, avgAge, oldestAge,
     };
   }, [deals, rangeDays]);
+
 
 
 
