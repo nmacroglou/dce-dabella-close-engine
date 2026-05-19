@@ -208,7 +208,9 @@ export default function Ledger() {
       })
       .filter(Boolean) as any[];
     if (!payloads.length) return 0;
-    const { error } = await supabase.from("commission_payments").insert(payloads);
+    const { error } = await supabase
+      .from("commission_payments")
+      .upsert(payloads, { onConflict: "rep_id,deal_id", ignoreDuplicates: true });
     if (error) {
       toast.error(`Import failed: ${error.message}`);
       return 0;
@@ -218,20 +220,21 @@ export default function Ledger() {
     return payloads.length;
   }
 
-  // Auto-sync won deals on first mount
+  // Auto-sync won deals on first mount (wait until ledger has finished loading
+  // to avoid racing the initial fetch and re-importing rows that already exist)
   useEffect(() => {
     if (autoImportRan.current) return;
-    if (!user || !grid || !deals.length) return;
+    if (!user || !grid || !deals.length || isLoading) return;
     const existingDealIds = new Set(rows.map((r) => r.deal_id).filter(Boolean));
     const missing = deals.filter(
       (d) => d.stage === "won" && d.commission_sheet && !existingDealIds.has(d.id),
     );
+    autoImportRan.current = true;
     if (missing.length > 0) {
-      autoImportRan.current = true;
       importWonDeals({ silent: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, grid, deals, rows]);
+  }, [user, grid, deals, rows, isLoading]);
 
   function exportCsv() {
     try {
