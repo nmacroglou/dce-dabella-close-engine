@@ -330,8 +330,8 @@ export default function Ledger() {
             <p className="text-sm text-muted-foreground">Track every dollar owed, paid front-half and back-half, in real time.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => importWonDeals()}>
-              <Import className="h-4 w-4 mr-1.5" /> Sync won deals
+            <Button variant="outline" size="sm" onClick={() => importWonDeals()} title="Pull in newly-won deals, refresh amounts, and remove entries for deals no longer marked won (only if no payments are recorded)">
+              <Import className="h-4 w-4 mr-1.5" /> Resync deals
             </Button>
             <Button variant="outline" size="sm" onClick={exportCsv} disabled={!rows.length}>
               <Download className="h-4 w-4 mr-1.5" /> Export CSV
