@@ -296,7 +296,9 @@ export default function Dashboard() {
         </section>
 
         {/* ===== TRENDS — period over period ===== */}
-        <TrendsCard deals={deals} weeklyHours={weeklyHours} commissionPct={commissionPct} />
+        <Suspense fallback={<SectionFallback />}>
+          <TrendsCard deals={deals} weeklyHours={weeklyHours} commissionPct={commissionPct} />
+        </Suspense>
 
         {/* ===== CONVERSION RIBBON ===== */}
         <ConversionRibbon deals={deals} />
