@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 
 export interface DealPhoto {
   id: string;
@@ -63,7 +64,7 @@ export function useUploadDealPhoto() {
       qc.invalidateQueries({ queryKey: ["deal-photos", vars.dealId] });
       toast.success("Photo uploaded");
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Upload failed"),
+    onError: (err) => toast.error(errMsg(err, "Upload failed")),
   });
 }
 
@@ -78,6 +79,6 @@ export function useDeleteDealPhoto() {
     onSuccess: (_d, photo) => {
       qc.invalidateQueries({ queryKey: ["deal-photos", photo.deal_id] });
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Delete failed"),
+    onError: (err) => toast.error(errMsg(err, "Delete failed")),
   });
 }

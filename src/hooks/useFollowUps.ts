@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { FollowUp } from "@/types/followUp";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 
 export function useFollowUps(dealId?: string) {
   const { user } = useAuth();
@@ -35,7 +36,7 @@ export function useCreateFollowUp() {
       return data as unknown as FollowUp;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follow-ups"] }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(errMsg(e, "Failed")),
   });
 }
 
@@ -47,7 +48,7 @@ export function useUpdateFollowUp() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follow-ups"] }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(errMsg(e, "Failed")),
   });
 }
 
@@ -59,6 +60,6 @@ export function useDeleteFollowUp() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follow-ups"] }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
+    onError: (e) => toast.error(errMsg(e, "Delete failed")),
   });
 }

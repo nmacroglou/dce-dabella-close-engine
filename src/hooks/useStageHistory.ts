@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { DealStage } from "@/types/deal";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 
 export interface StageHistoryEntry {
   id: string;
@@ -50,7 +51,7 @@ export function useUpdateStageNote() {
       qc.invalidateQueries({ queryKey: ["stage-history"] });
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to save note");
+      toast.error(errMsg(err, "Failed to save note"));
     },
   });
 }

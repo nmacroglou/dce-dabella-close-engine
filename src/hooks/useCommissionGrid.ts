@@ -11,6 +11,7 @@ import {
 } from "@/types/commission";
 import { DEFAULT_FOLLOW_UP_SLA, type FollowUpSLA } from "@/types/followUp";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 import type { Json } from "@/integrations/supabase/types";
 
 export function useCommissionGrid() {
@@ -89,6 +90,6 @@ export function useSaveCommissionGrid() {
       qc.invalidateQueries({ queryKey: ["commission-grid"] });
       toast.success("Saved");
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(errMsg(err, "Save failed")),
   });
 }

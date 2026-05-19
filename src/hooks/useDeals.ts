@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Deal, DealStage } from "@/types/deal";
 import type { EngineState } from "@/types/engine";
 import { toast } from "sonner";
+import { errMsg } from "@/lib/errors";
 
 export function useDeals() {
   const { user } = useAuth();
@@ -75,7 +76,7 @@ export function useCreateDeal() {
       qc.invalidateQueries({ queryKey: ["deals"] });
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to create deal");
+      toast.error(errMsg(err, "Failed to create deal"));
     },
   });
 }
@@ -104,7 +105,7 @@ export function useUpdateDeal() {
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to update deal");
+      toast.error(errMsg(err, "Failed to update deal"));
     },
   });
 }
@@ -123,7 +124,7 @@ export function useDeleteDeal() {
       toast.success("Deal deleted");
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to delete deal");
+      toast.error(errMsg(err, "Failed to delete deal"));
     },
   });
 }
@@ -160,7 +161,7 @@ export function useUpdateDealStage() {
       qc.invalidateQueries({ queryKey: ["stage-history"] });
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to update stage");
+      toast.error(errMsg(err, "Failed to update stage"));
     },
   });
 }
