@@ -279,7 +279,7 @@ export default function Admin() {
                           <div className="font-semibold text-foreground truncate max-w-[180px]">{r.name}</div>
                           {r.email && <div className="text-[11px] text-muted-foreground truncate max-w-[180px]">{r.email}</div>}
                         </td>
-                        <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">{fmt(Math.round(r.revenue))}</td>
+                        <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">{formatCurrency(r.revenue)}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{r.won}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{pct(r.closeRate)}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{r.deals}</td>
