@@ -144,7 +144,16 @@ export default function Dashboard() {
     const priRate = priWon + priLost > 0 ? priWon / (priWon + priLost) : 0;
     return {
       revenue: { current: curRev, prior: priRev, delta: wowDelta(curRev, priRev) },
-      closeRate: { current: curRate, prior: priRate, delta: wowDelta(curRate * 100, priRate * 100) },
+      closeRate: {
+        current: curRate,
+        prior: priRate,
+        // Rate metrics: compare in percentage POINTS, not relative %.
+        delta: {
+          pct: Math.abs((curRate - priRate) * 100),
+          dir: curRate - priRate > 0.005 ? "up" as const : curRate - priRate < -0.005 ? "down" as const : "flat" as const,
+          absolute: (curRate - priRate) * 100,
+        },
+      },
       dealsRun: { current: curRun, prior: priRun, delta: wowDelta(curRun, priRun) },
       dollarsPerHour: { current: curDph, prior: priDph, delta: wowDelta(curDph, priDph) },
       closedDeals: { current: curWon, prior: priWon },
