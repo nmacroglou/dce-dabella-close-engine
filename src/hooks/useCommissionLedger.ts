@@ -30,6 +30,7 @@ export function useCommissionLedger() {
   const query = useQuery({
     queryKey: ["commission_payments", user?.id],
     enabled: !!user,
+    staleTime: 60_000, // realtime channel invalidates on changes; safe to keep cached longer
     queryFn: async (): Promise<CommissionPayment[]> => {
       const { data, error } = await supabase
         .from("commission_payments")
