@@ -291,7 +291,7 @@ function RevenueKPIBase({
           <div>
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Best day</p>
             <p className="text-sm font-display font-bold text-foreground mt-0.5">
-              ${fmt(Math.round(bestDay))}
+              {fmt(Math.round(bestDay))}
               <span className="text-[10px] font-medium text-muted-foreground ml-1">{bestDayLabel}</span>
             </p>
           </div>
