@@ -784,3 +784,64 @@ function KpiTile({
     </div>
   );
 }
+
+function MiniStat({ label, value, tone }: { label: string; value: string; tone: "success" | "warning" | "danger" | "muted" }) {
+  const toneCls =
+    tone === "success" ? "text-success"
+    : tone === "warning" ? "text-warning"
+    : tone === "danger" ? "text-destructive"
+    : "text-foreground";
+  return (
+    <div className="flex flex-col items-end leading-tight">
+      <span className={`text-sm font-bold tabular-nums ${toneCls}`}>{value}</span>
+      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function LedgerTrendChart({
+  data,
+}: {
+  data: { label: string; expected: number; paid: number; rate: number }[];
+}) {
+  // Lazy-load recharts pieces locally so the bundle stays slim on first paint.
+  const {
+    ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
+    CartesianGrid, Tooltip,
+  } = require("recharts");
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} tickLine={false} axisLine={false} />
+        <YAxis
+          yAxisId="left"
+          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+          tickLine={false} axisLine={false}
+          tickFormatter={(v: number) => v >= 1000 ? `$${Math.round(v / 1000)}k` : `$${v}`}
+        />
+        <YAxis
+          yAxisId="right" orientation="right" domain={[0, 100]}
+          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+          tickLine={false} axisLine={false}
+          tickFormatter={(v: number) => `${v}%`}
+        />
+        <Tooltip
+          cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
+          contentStyle={{
+            background: "hsl(var(--popover))",
+            border: "1px solid hsl(var(--border))",
+            borderRadius: 8,
+            fontSize: 12,
+          }}
+          formatter={(value: number, name: string) =>
+            name === "Collection %" ? [`${value.toFixed(0)}%`, name] : [fmtCurrency(value), name]
+          }
+        />
+        <Bar yAxisId="left" dataKey="expected" name="Expected" fill="hsl(var(--primary) / 0.4)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+        <Bar yAxisId="left" dataKey="paid" name="Paid" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} maxBarSize={28} />
+        <Line yAxisId="right" type="monotone" dataKey="rate" name="Collection %" stroke="hsl(var(--warning))" strokeWidth={2.5} dot={{ r: 3, fill: "hsl(var(--warning))" }} activeDot={{ r: 5 }} />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
