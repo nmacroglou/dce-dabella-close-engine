@@ -37,6 +37,7 @@ export interface EngineState {
   monthlyOverrideA?: number;
   monthlyOverrideB?: number;
   monthlyOverrideC?: number;
+  postCloseChecks?: Record<string, boolean>;
 }
 
 export interface OptionComputed {
