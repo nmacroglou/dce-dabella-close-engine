@@ -804,10 +804,7 @@ function LedgerTrendChart({
 }: {
   data: { label: string; expected: number; paid: number; rate: number }[];
 }) {
-  // Local import keeps recharts out of the critical path until trend renders.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const R = require("recharts");
-  const { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip } = R;
+  const { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip } = Recharts;
   return (
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
