@@ -219,7 +219,7 @@ function SitToCloseKPIBase({
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sit-to-Close · {rangeDays}d</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sit-to-Close · {rangeDays}d<FormulaHint formula={`Cohort wins ÷ resolved presentations in last ${rangeDays}d. Only counts presentations old enough to decide (excludes 'still deciding'). Confidence chip reflects cohort size.`} /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Wins ÷ presentations old enough to decide</p>
           </div>
           <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-primary transition-transform group-hover:scale-110">
