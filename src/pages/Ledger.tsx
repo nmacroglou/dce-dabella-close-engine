@@ -804,11 +804,10 @@ function LedgerTrendChart({
 }: {
   data: { label: string; expected: number; paid: number; rate: number }[];
 }) {
-  // Lazy-load recharts pieces locally so the bundle stays slim on first paint.
-  const {
-    ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis,
-    CartesianGrid, Tooltip,
-  } = require("recharts");
+  // Local import keeps recharts out of the critical path until trend renders.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const R = require("recharts");
+  const { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip } = R;
   return (
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
