@@ -123,10 +123,10 @@ export default function Dashboard() {
     };
   }, [deals, weeklyHours, commissionPct, stats]);
 
-  /* ---- WoW chip strip & report payload (last 14d split into 7/7) ---- */
+  /* ---- WoW chip strip & report payload (current window vs prior of equal length) ---- */
   const dayBuckets14 = useMemo(
-    () => bucketByDay(deals, 14, weeklyHours, commissionPct),
-    [deals, weeklyHours, commissionPct],
+    () => bucketByDay(deals, rangeDays * 2, weeklyHours, commissionPct),
+    [deals, weeklyHours, commissionPct, rangeDays],
   );
   const wow = useMemo(() => {
     const { current, prior } = splitCurrentPrior(dayBuckets14);
