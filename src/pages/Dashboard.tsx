@@ -84,24 +84,55 @@ export default function Dashboard() {
      window they were actually decided. "Deals run" still uses created_at
      because it tracks activity started. */
   const windowed = useMemo(() => {
-    const cutoff = Date.now() - rangeDays * 864e5;
+    const now = Date.now();
+    const cutoff = now - rangeDays * 864e5;
     const cutoffIso = new Date(cutoff).toISOString();
     const inWinByCreated = deals.filter((d) => new Date(d.created_at).getTime() >= cutoff);
     const wonInWin = deals.filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= cutoffIso);
     const lostInWin = deals.filter((d) => d.stage === "lost" && d.closed_at && d.closed_at >= cutoffIso);
     const revenue = wonInWin.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
-    const finished = wonInWin.length + lostInWin.length;
-    const closeRate = finished > 0 ? wonInWin.length / finished : 0;
-    // Pipeline still in flight from deals started in this window (not yet decided).
+    const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
     const pendingInWin = inWinByCreated.filter(
       (d) => d.stage === "presented" || d.stage === "follow_up" || d.stage === "inspecting"
     ).length;
-    const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
+
+    /* ---- Sit-to-Close (industry standard) ----
+       Cohort = every presentation delivered in this window that has had a fair
+       shot to resolve. A deal counts when it's already won/lost, OR it's been
+       sitting in follow_up/presented for ≥ 14 days (treated as a soft "no").
+       This stops a hot 2-1 week from showing 67% on 3 datapoints. */
+    const RESOLVE_DAYS = 14;
+    const resolveCutoff = now - RESOLVE_DAYS * 864e5;
+    const presentationsInWin = deals.filter((d) => {
+      if (new Date(d.created_at).getTime() < cutoff) return false;
+      return d.stage === "presented" || d.stage === "follow_up" || d.stage === "won" || d.stage === "lost";
+    });
+    const cohort = presentationsInWin.filter((d) => {
+      if (d.stage === "won" || d.stage === "lost") return true;
+      return new Date(d.stage_changed_at).getTime() <= resolveCutoff;
+    });
+    const cohortWon = cohort.filter((d) => d.stage === "won").length;
+    const sitToClose = cohort.length > 0 ? cohortWon / cohort.length : 0;
+    const stillDeciding = presentationsInWin.length - cohort.length;
+
+    /* One-call close: wins where presentation → won happened the same day. */
+    const oneCallWins = wonInWin.filter(
+      (d) => d.closed_at && new Date(d.closed_at).toDateString() === new Date(d.created_at).toDateString()
+    ).length;
+    const oneCallPct = wonInWin.length > 0 ? oneCallWins / wonInWin.length : 0;
+
+    /* Confidence tier based on cohort size — keeps reps honest about small N. */
+    const confidence: "low" | "med" | "high" =
+      cohort.length >= 20 ? "high" : cohort.length >= 8 ? "med" : "low";
+
     return {
-      dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, closeRate, active,
+      dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, active,
       pending: pendingInWin,
+      sitToClose, cohortWon, cohortSize: cohort.length, stillDeciding,
+      oneCallPct, oneCallWins, confidence,
     };
   }, [deals, rangeDays]);
+
 
 
 
