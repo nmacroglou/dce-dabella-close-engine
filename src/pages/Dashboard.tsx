@@ -383,9 +383,13 @@ export default function Dashboard() {
         {/* ===== ACTIVITY TIMELINE + OBJECTION HEATMAP ===== */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <ActivityTimeline events={timelineEvents} isLoading={timelineLoading} />
+            <Suspense fallback={<SectionFallback />}>
+              <ActivityTimeline events={timelineEvents} isLoading={timelineLoading} />
+            </Suspense>
           </div>
-          <ObjectionHeatmap />
+          <Suspense fallback={<SectionFallback />}>
+            <ObjectionHeatmap />
+          </Suspense>
         </div>
 
         {/* ===== FOLLOW-UP HOT LIST ===== */}
