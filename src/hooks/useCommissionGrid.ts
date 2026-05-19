@@ -90,6 +90,6 @@ export function useSaveCommissionGrid() {
       qc.invalidateQueries({ queryKey: ["commission-grid"] });
       toast.success("Saved");
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
+    onError: (err) => toast.error(errMsg(err, "Save failed")),
   });
 }

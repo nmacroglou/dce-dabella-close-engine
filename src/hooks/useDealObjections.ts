@@ -71,7 +71,7 @@ export function useLogObjection() {
       toast.success("Objection logged");
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to log objection");
+      toast.error(errMsg(err, "Failed to log objection"));
     },
   });
 }
@@ -89,6 +89,6 @@ export function useDeleteDealObjection() {
       qc.invalidateQueries({ queryKey: ["all-objections"] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to remove objection"),
+    onError: (err) => toast.error(errMsg(err, "Failed to remove objection")),
   });
 }

@@ -51,7 +51,7 @@ export function useUpdateStageNote() {
       qc.invalidateQueries({ queryKey: ["stage-history"] });
     },
     onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to save note");
+      toast.error(errMsg(err, "Failed to save note"));
     },
   });
 }

@@ -36,7 +36,7 @@ export function useCreateFollowUp() {
       return data as unknown as FollowUp;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follow-ups"] }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(errMsg(e, "Failed")),
   });
 }
 
@@ -48,7 +48,7 @@ export function useUpdateFollowUp() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follow-ups"] }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+    onError: (e) => toast.error(errMsg(e, "Failed")),
   });
 }
 
@@ -60,6 +60,6 @@ export function useDeleteFollowUp() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["follow-ups"] }),
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
+    onError: (e) => toast.error(errMsg(e, "Delete failed")),
   });
 }
