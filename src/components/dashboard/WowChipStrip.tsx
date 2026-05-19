@@ -22,7 +22,7 @@ function Chip({ chip }: { chip: WowChip }) {
         <p className="text-base font-display font-extrabold text-foreground num-display leading-none">{chip.current}</p>
         <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded border ${tone}`}>
           <Icon className="h-3 w-3" />
-          {chip.delta.dir === "flat" ? "flat" : `${chip.delta.pct.toFixed(0)}%`}
+          {chip.delta.dir === "flat" ? "flat" : `${chip.delta.pct.toFixed(0)}${chip.deltaSuffix ?? "%"}`}
         </span>
       </div>
       <p className="text-[10px] text-muted-foreground mt-0.5">vs prior period</p>
