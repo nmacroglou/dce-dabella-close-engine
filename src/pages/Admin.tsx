@@ -234,9 +234,10 @@ export default function Admin() {
 
         {/* Outcomes row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile icon={DollarSign} label="Revenue" value={`$${fmt(Math.round(m.revenue))}`} sub={`${revDelta >= 0 ? "+" : ""}${revDelta.toFixed(0)}% vs prior`} accent={revDelta >= 0 ? "success" : "destructive"} />
+          <KpiTile icon={DollarSign} label="Revenue" value={fmt(Math.round(m.revenue))} sub={`${revDelta >= 0 ? "+" : ""}${revDelta.toFixed(0)}% vs prior`} accent={revDelta >= 0 ? "success" : "destructive"} />
           <KpiTile icon={Trophy} label="Wins" value={fmt(m.wonCount)} sub={`Close rate ${pct(m.closeRate)}`} accent="success" />
-          <KpiTile icon={Target} label="Avg deal" value={`$${fmt(Math.round(m.avgDeal))}`} sub="Won deals only" />
+          <KpiTile icon={Target} label="Avg deal" value={fmt(Math.round(m.avgDeal))} sub="Won deals only" />
+
           <KpiTile icon={Briefcase} label="Deals created" value={fmt(m.dealsCreated)} sub={`${dealsDelta >= 0 ? "+" : ""}${dealsDelta.toFixed(0)}% vs prior`} accent={dealsDelta >= 0 ? "primary" : "warning"} />
         </div>
 
