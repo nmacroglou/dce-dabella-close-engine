@@ -277,7 +277,7 @@ function RevenueKPIBase({
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          {won} deals · prior {rangeDays}d ${fmt(Math.round(priorRevenue))}
+          {won} deals · prior {rangeDays}d {fmt(Math.round(priorRevenue))}
         </p>
         {/* Best-day share bar */}
         <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden" title={`Best day ${bestDayLabel} = ${bestPct}% of window`}>
