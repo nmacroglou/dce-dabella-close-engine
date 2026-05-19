@@ -123,10 +123,10 @@ export default function Dashboard() {
     };
   }, [deals, weeklyHours, commissionPct, stats]);
 
-  /* ---- WoW chip strip & report payload (last 14d split into 7/7) ---- */
+  /* ---- WoW chip strip & report payload (current window vs prior of equal length) ---- */
   const dayBuckets14 = useMemo(
-    () => bucketByDay(deals, 14, weeklyHours, commissionPct),
-    [deals, weeklyHours, commissionPct],
+    () => bucketByDay(deals, rangeDays * 2, weeklyHours, commissionPct),
+    [deals, weeklyHours, commissionPct, rangeDays],
   );
   const wow = useMemo(() => {
     const { current, prior } = splitCurrentPrior(dayBuckets14);
@@ -197,10 +197,10 @@ export default function Dashboard() {
                   <span className="uppercase tracking-[0.2em] text-[10px]">DaBella Operator HUD</span>
                 </div>
                 <ReportingActions
-                  rangeLabel="Last 7 days"
+                  rangeLabel={`Last ${rangeDays} days`}
                   buckets={dayBuckets14}
                   summary={{
-                    rangeLabel: "Last 7 days",
+                    rangeLabel: `Last ${rangeDays} days`,
                     revenue: { current: wow.revenue.current, prior: wow.revenue.prior },
                     closedDeals: wow.closedDeals,
                     closeRate: { current: wow.closeRate.current, prior: wow.closeRate.prior },
@@ -229,10 +229,10 @@ export default function Dashboard() {
 
               <div className="mt-6">
                 <WowChipStrip chips={[
-                  { label: "Revenue (7d)", current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
-                  { label: "Close rate", current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta },
-                  { label: "Deals run", current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
-                  { label: "$/Hour", current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
+                  { label: `Revenue (${rangeDays}d)`, current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
+                  { label: `Close rate (${rangeDays}d)`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta },
+                  { label: `Deals run (${rangeDays}d)`, current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
+                  { label: `$/Hour (${rangeDays}d)`, current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
                 ]} />
               </div>
             </div>
