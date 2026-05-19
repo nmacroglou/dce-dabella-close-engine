@@ -114,7 +114,37 @@ export default function Ledger() {
     };
   }, [rows]);
 
-  const maxBar = Math.max(1, ...monthly.map(([, v]) => Math.max(v.expected, v.paid)));
+  // Build the last-12-months series for the trend chart, including collection rate
+  // and momentum vs prior 3 months. This is what powers the upgraded KPI graph.
+  const trend = useMemo(() => {
+    const now = new Date();
+    const months: { key: string; label: string; expected: number; paid: number; rate: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const hit = monthly.find(([k]) => k === key);
+      const expected = hit?.[1].expected ?? 0;
+      const paid = hit?.[1].paid ?? 0;
+      months.push({
+        key,
+        label: d.toLocaleDateString(undefined, { month: "short" }),
+        expected,
+        paid,
+        rate: expected > 0 ? Math.min(100, (paid / expected) * 100) : 0,
+      });
+    }
+    const last3 = months.slice(-3);
+    const prev3 = months.slice(-6, -3);
+    const sum = (arr: typeof months) => arr.reduce((s, m) => s + m.paid, 0);
+    const last3Paid = sum(last3);
+    const prev3Paid = sum(prev3);
+    const momentum = prev3Paid > 0 ? ((last3Paid - prev3Paid) / prev3Paid) * 100 : last3Paid > 0 ? 100 : 0;
+    const collected = months.reduce((s, m) => s + m.paid, 0);
+    const billed = months.reduce((s, m) => s + m.expected, 0);
+    const avgRate = billed > 0 ? (collected / billed) * 100 : 0;
+    const best = months.reduce((b, m) => (m.paid > b.paid ? m : b), months[0]);
+    return { months, momentum, avgRate, best, last3Paid, prev3Paid };
+  }, [monthly]);
 
   const filteredRows = useMemo(() => {
     const q = deferredSearch.trim().toLowerCase();
