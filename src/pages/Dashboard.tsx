@@ -144,7 +144,16 @@ export default function Dashboard() {
     const priRate = priWon + priLost > 0 ? priWon / (priWon + priLost) : 0;
     return {
       revenue: { current: curRev, prior: priRev, delta: wowDelta(curRev, priRev) },
-      closeRate: { current: curRate, prior: priRate, delta: wowDelta(curRate * 100, priRate * 100) },
+      closeRate: {
+        current: curRate,
+        prior: priRate,
+        // Rate metrics: compare in percentage POINTS, not relative %.
+        delta: {
+          pct: Math.abs((curRate - priRate) * 100),
+          dir: curRate - priRate > 0.005 ? "up" as const : curRate - priRate < -0.005 ? "down" as const : "flat" as const,
+          absolute: (curRate - priRate) * 100,
+        },
+      },
       dealsRun: { current: curRun, prior: priRun, delta: wowDelta(curRun, priRun) },
       dollarsPerHour: { current: curDph, prior: priDph, delta: wowDelta(curDph, priDph) },
       closedDeals: { current: curWon, prior: priWon },
@@ -230,7 +239,7 @@ export default function Dashboard() {
               <div className="mt-6">
                 <WowChipStrip chips={[
                   { label: `Revenue (${rangeDays}d)`, current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
-                  { label: `Close rate (${rangeDays}d)`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta },
+                  { label: `Close rate (${rangeDays}d)`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta, deltaSuffix: "pp" },
                   { label: `Deals run (${rangeDays}d)`, current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
                   { label: `$/Hour (${rangeDays}d)`, current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
                 ]} />
