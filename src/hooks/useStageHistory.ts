@@ -20,6 +20,7 @@ export function useStageHistory(dealId: string | null) {
   return useQuery({
     queryKey: ["stage-history", dealId],
     enabled: !!user && !!dealId,
+    staleTime: 60_000,
     queryFn: async (): Promise<StageHistoryEntry[]> => {
       if (!dealId) return [];
       const { data, error } = await supabase
