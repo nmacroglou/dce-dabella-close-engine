@@ -234,9 +234,10 @@ export default function Admin() {
 
         {/* Outcomes row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiTile icon={DollarSign} label="Revenue" value={`$${fmt(Math.round(m.revenue))}`} sub={`${revDelta >= 0 ? "+" : ""}${revDelta.toFixed(0)}% vs prior`} accent={revDelta >= 0 ? "success" : "destructive"} />
+          <KpiTile icon={DollarSign} label="Revenue" value={fmt(Math.round(m.revenue))} sub={`${revDelta >= 0 ? "+" : ""}${revDelta.toFixed(0)}% vs prior`} accent={revDelta >= 0 ? "success" : "destructive"} />
           <KpiTile icon={Trophy} label="Wins" value={fmt(m.wonCount)} sub={`Close rate ${pct(m.closeRate)}`} accent="success" />
-          <KpiTile icon={Target} label="Avg deal" value={`$${fmt(Math.round(m.avgDeal))}`} sub="Won deals only" />
+          <KpiTile icon={Target} label="Avg deal" value={fmt(Math.round(m.avgDeal))} sub="Won deals only" />
+
           <KpiTile icon={Briefcase} label="Deals created" value={fmt(m.dealsCreated)} sub={`${dealsDelta >= 0 ? "+" : ""}${dealsDelta.toFixed(0)}% vs prior`} accent={dealsDelta >= 0 ? "primary" : "warning"} />
         </div>
 
@@ -276,7 +277,7 @@ export default function Admin() {
                           <div className="font-semibold text-foreground truncate max-w-[180px]">{r.name}</div>
                           {r.email && <div className="text-[11px] text-muted-foreground truncate max-w-[180px]">{r.email}</div>}
                         </td>
-                        <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">${fmt(Math.round(r.revenue))}</td>
+                        <td className="px-2 py-2 text-right tabular-nums font-semibold text-success">{fmt(Math.round(r.revenue))}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{r.won}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{pct(r.closeRate)}</td>
                         <td className="px-2 py-2 text-right tabular-nums">{r.deals}</td>

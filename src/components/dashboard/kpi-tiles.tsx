@@ -270,14 +270,14 @@ function RevenueKPIBase({
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">${fmt(Math.round(revenue))}</p>
+          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{fmt(Math.round(revenue))}</p>
           <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded border ${paceCls}`}>
             <PaceIcon className="h-3 w-3" />
             {dir === "flat" ? "flat" : `${Math.abs(Math.round(paceDelta * 100))}%`}
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          {won} deals · prior {rangeDays}d ${fmt(Math.round(priorRevenue))}
+          {won} deals · prior {rangeDays}d {fmt(Math.round(priorRevenue))}
         </p>
         {/* Best-day share bar */}
         <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden" title={`Best day ${bestDayLabel} = ${bestPct}% of window`}>
@@ -286,12 +286,12 @@ function RevenueKPIBase({
         <div className="mt-3 pt-3 border-t border-hairline grid grid-cols-2 gap-2">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Avg ticket</p>
-            <p className="text-sm font-display font-bold text-foreground mt-0.5">${fmt(Math.round(avgTicket))}</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">{fmt(Math.round(avgTicket))}</p>
           </div>
           <div>
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Best day</p>
             <p className="text-sm font-display font-bold text-foreground mt-0.5">
-              ${fmt(Math.round(bestDay))}
+              {fmt(Math.round(bestDay))}
               <span className="text-[10px] font-medium text-muted-foreground ml-1">{bestDayLabel}</span>
             </p>
           </div>
@@ -341,7 +341,7 @@ function PipelineKPIBase({
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          ${fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeDays}d
+          {fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeDays}d
         </p>
         {/* Stage mix bar: inspecting / presented / follow_up */}
         <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden flex" title={`${stageCounts.inspecting} inspecting · ${stageCounts.presented} presented · ${stageCounts.follow_up} follow-up`}>
