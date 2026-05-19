@@ -92,9 +92,19 @@ export default function Dashboard() {
     const revenue = wonInWin.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
     const finished = wonInWin.length + lostInWin.length;
     const closeRate = finished > 0 ? wonInWin.length / finished : 0;
+    // Presentations delivered in window: any deal created in window that reached presentation or beyond.
+    const presentedInWin = inWinByCreated.filter(
+      (d) => d.stage === "presented" || d.stage === "follow_up" || d.stage === "won" || d.stage === "lost"
+    );
+    const wonFromPresentedInWin = presentedInWin.filter((d) => d.stage === "won").length;
+    const presentedWinRate = presentedInWin.length > 0 ? wonFromPresentedInWin / presentedInWin.length : 0;
     const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
-    return { dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, closeRate, active };
+    return {
+      dealsRun: inWinByCreated.length, won: wonInWin.length, lost: lostInWin.length, revenue, closeRate, active,
+      presented: presentedInWin.length, wonFromPresented: wonFromPresentedInWin, presentedWinRate,
+    };
   }, [deals, rangeDays]);
+
 
   const economics = useMemo(() => {
     const now = Date.now();
