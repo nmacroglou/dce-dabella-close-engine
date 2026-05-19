@@ -6,7 +6,7 @@ import {
   Loader2, Users, UserPlus, Activity, Briefcase, DollarSign,
   TrendingUp, Trophy, AlertCircle, ShieldCheck, MessageSquareWarning, Target,
 } from "lucide-react";
-import { fmt, pct } from "@/lib/format";
+import { formatCurrency, formatCount, pct } from "@/lib/format";
 import { DEAL_STAGES, STAGE_LABELS, type DealStage } from "@/types/deal";
 
 /* ------------------------- helpers ------------------------- */
