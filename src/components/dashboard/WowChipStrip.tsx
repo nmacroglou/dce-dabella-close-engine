@@ -6,6 +6,7 @@ export interface WowChip {
   label: string;
   current: string;
   delta: WowDelta;
+  deltaSuffix?: string;
 }
 
 function Chip({ chip }: { chip: WowChip }) {
