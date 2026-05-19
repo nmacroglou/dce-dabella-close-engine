@@ -72,18 +72,22 @@ export default function CommissionTab() {
         ))}
       </div>
 
-      {view === "sheet" && <CommissionSheet />}
+      {view === "sheet" && (
+        <Suspense fallback={<ViewFallback />}><CommissionSheet /></Suspense>
+      )}
 
       {view === "grid" && (
-        <div className="space-y-5">
-          <CommissionGridEditor />
-          <MonthlyPromosEditor />
-          <FollowUpSLAEditor />
-        </div>
+        <Suspense fallback={<ViewFallback />}>
+          <div className="space-y-5">
+            <CommissionGridEditor />
+            <MonthlyPromosEditor />
+            <FollowUpSLAEditor />
+          </div>
+        </Suspense>
       )}
 
       {view === "estimator" && (
-        <>
+        <Suspense fallback={<ViewFallback />}>
           <MonthlyOverview {...monthly} />
 
           <div className="space-y-3">
@@ -113,7 +117,7 @@ export default function CommissionTab() {
           </div>
 
           <CommissionReferenceTables />
-        </>
+        </Suspense>
       )}
     </div>
   );
