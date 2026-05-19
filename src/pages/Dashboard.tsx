@@ -197,10 +197,10 @@ export default function Dashboard() {
                   <span className="uppercase tracking-[0.2em] text-[10px]">DaBella Operator HUD</span>
                 </div>
                 <ReportingActions
-                  rangeLabel="Last 7 days"
+                  rangeLabel={`Last ${rangeDays} days`}
                   buckets={dayBuckets14}
                   summary={{
-                    rangeLabel: "Last 7 days",
+                    rangeLabel: `Last ${rangeDays} days`,
                     revenue: { current: wow.revenue.current, prior: wow.revenue.prior },
                     closedDeals: wow.closedDeals,
                     closeRate: { current: wow.closeRate.current, prior: wow.closeRate.prior },
