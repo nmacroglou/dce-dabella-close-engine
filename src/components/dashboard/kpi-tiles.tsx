@@ -242,12 +242,203 @@ function SitToCloseKPIBase({
   );
 }
 
+/* ---------- Revenue KPI (windowed, with pace + best day + avg ticket) ---------- */
+function RevenueKPIBase({
+  revenue, won, avgTicket, bestDay, bestDayLabel, priorRevenue, paceDelta, rangeDays,
+}: {
+  revenue: number; won: number; avgTicket: number; bestDay: number; bestDayLabel: string;
+  priorRevenue: number; paceDelta: number; rangeDays: number;
+}) {
+  const dir = paceDelta > 0.01 ? "up" : paceDelta < -0.01 ? "down" : "flat";
+  const PaceIcon = dir === "up" ? TrendingUp : dir === "down" ? TrendingDown : Minus;
+  const paceCls =
+    dir === "up" ? "bg-success/15 text-success border-success/30"
+    : dir === "down" ? "bg-destructive/15 text-destructive border-destructive/30"
+    : "bg-muted/40 text-muted-foreground border-border";
+  const bestPct = revenue > 0 ? Math.min(100, Math.round((bestDay / revenue) * 100)) : 0;
+  return (
+    <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
+      <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-success/25 to-success/0 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Revenue · {rangeDays}d</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">Closed-won dollars in window</p>
+          </div>
+          <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-success transition-transform group-hover:scale-110">
+            <DollarSign className="h-4 w-4" />
+          </div>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">${fmt(Math.round(revenue))}</p>
+          <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded border ${paceCls}`}>
+            <PaceIcon className="h-3 w-3" />
+            {dir === "flat" ? "flat" : `${Math.abs(Math.round(paceDelta * 100))}%`}
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          {won} deals · prior {rangeDays}d ${fmt(Math.round(priorRevenue))}
+        </p>
+        {/* Best-day share bar */}
+        <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden" title={`Best day ${bestDayLabel} = ${bestPct}% of window`}>
+          <div className="h-full bg-gradient-to-r from-success to-primary transition-all" style={{ width: `${bestPct}%` }} />
+        </div>
+        <div className="mt-3 pt-3 border-t border-hairline grid grid-cols-2 gap-2">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Avg ticket</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">${fmt(Math.round(avgTicket))}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Best day</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">
+              ${fmt(Math.round(bestDay))}
+              <span className="text-[10px] font-medium text-muted-foreground ml-1">{bestDayLabel}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Active Pipeline KPI (stage mix + value + aging) ---------- */
+function PipelineKPIBase({
+  active, pipelineValue, stageCounts, avgAge, oldestAge, rangeDays, dealsRunInWindow,
+}: {
+  active: number;
+  pipelineValue: number;
+  stageCounts: { inspecting: number; presented: number; follow_up: number };
+  avgAge: number;
+  oldestAge: number;
+  rangeDays: number;
+  dealsRunInWindow: number;
+}) {
+  const total = Math.max(active, 1);
+  const insp = (stageCounts.inspecting / total) * 100;
+  const pres = (stageCounts.presented / total) * 100;
+  const fu = (stageCounts.follow_up / total) * 100;
+  const ageTone =
+    oldestAge >= 21 ? "bg-destructive/15 text-destructive border-destructive/30"
+    : oldestAge >= 10 ? "bg-warning/15 text-warning border-warning/30"
+    : "bg-success/15 text-success border-success/30";
+  return (
+    <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
+      <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-primary/25 to-primary/0 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Active pipeline</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">Open deals not yet decided</p>
+          </div>
+          <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-primary transition-transform group-hover:scale-110">
+            <Activity className="h-4 w-4" />
+          </div>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{active}</p>
+          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border ${ageTone}`}>
+            oldest {oldestAge}d
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          ${fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeDays}d
+        </p>
+        {/* Stage mix bar: inspecting / presented / follow_up */}
+        <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden flex" title={`${stageCounts.inspecting} inspecting · ${stageCounts.presented} presented · ${stageCounts.follow_up} follow-up`}>
+          <div className="h-full bg-muted-foreground/60" style={{ width: `${insp}%` }} />
+          <div className="h-full bg-primary" style={{ width: `${pres}%` }} />
+          <div className="h-full bg-warning" style={{ width: `${fu}%` }} />
+        </div>
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />Insp {stageCounts.inspecting}</span>
+          <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Pres {stageCounts.presented}</span>
+          <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-warning" />F-up {stageCounts.follow_up}</span>
+        </div>
+        <div className="mt-3 pt-3 border-t border-hairline grid grid-cols-2 gap-2">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Avg age</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">{avgAge}d</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Stale risk</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">
+              {stageCounts.follow_up}
+              <span className="text-[10px] font-medium text-muted-foreground ml-1">in follow-up</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Follow-up Health KPI (overdue + due today + compliance) ---------- */
+function FollowUpHealthKPIBase({
+  overdue, today, thisWeek, oldestOverdueDays, compliancePct,
+}: {
+  overdue: number; today: number; thisWeek: number; oldestOverdueDays: number; compliancePct: number;
+}) {
+  const tone =
+    overdue >= 5 || oldestOverdueDays >= 7 ? "destructive"
+    : overdue > 0 ? "warning"
+    : "success";
+  const toneMap = {
+    destructive: { glow: "from-destructive/25", icon: "text-destructive", chip: "bg-destructive/15 text-destructive border-destructive/30", label: oldestOverdueDays >= 7 ? "Critical" : "Action needed" },
+    warning: { glow: "from-warning/25", icon: "text-warning", chip: "bg-warning/15 text-warning border-warning/30", label: "Watch list" },
+    success: { glow: "from-success/25", icon: "text-success", chip: "bg-success/15 text-success border-success/30", label: "All clear" },
+  }[tone];
+  return (
+    <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
+      <div className={`absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br ${toneMap.glow} to-transparent blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500`} />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Follow-up health</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">Past-due, today, and SLA compliance</p>
+          </div>
+          <div className={`h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline ${toneMap.icon} transition-transform group-hover:scale-110`}>
+            <AlertCircle className="h-4 w-4" />
+          </div>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{overdue}</p>
+          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border ${toneMap.chip}`}>
+            {toneMap.label}
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          {overdue === 0 ? "No past-due touchpoints" : `Oldest overdue ${oldestOverdueDays}d`}
+        </p>
+        {/* Compliance bar */}
+        <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden" title={`${compliancePct}% completed on time`}>
+          <div className={`h-full transition-all ${compliancePct >= 80 ? "bg-success" : compliancePct >= 50 ? "bg-warning" : "bg-destructive"}`} style={{ width: `${compliancePct}%` }} />
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1">{compliancePct}% SLA compliance</p>
+        <div className="mt-3 pt-3 border-t border-hairline grid grid-cols-2 gap-2">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Due today</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">{today}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Next 7 days</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">{thisWeek}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const HeroKPI = memo(HeroKPIBase);
 export const MiniStat = memo(MiniStatBase);
 export const WinRateDonut = memo(WinRateDonutBase);
 export const EconomicsKPI = memo(EconomicsKPIBase);
 export const DualKPI = memo(DualKPIBase);
 export const SitToCloseKPI = memo(SitToCloseKPIBase);
+export const RevenueKPI = memo(RevenueKPIBase);
+export const PipelineKPI = memo(PipelineKPIBase);
+export const FollowUpHealthKPI = memo(FollowUpHealthKPIBase);
+
 
 
 
