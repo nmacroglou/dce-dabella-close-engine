@@ -335,17 +335,17 @@ export default function Dashboard() {
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <HeroKPI icon={DollarSign} label={`Revenue · last ${rangeDays}d`} value={fmt(Math.round(windowed.revenue))}
             sub={`${windowed.won} closed deals`} tone="success" />
-          <DualKPI icon={Target} label={`Close rate · last ${rangeDays}d`} tone="brand"
-            primary={{
-              value: pct(windowed.closeRate * 100),
-              caption: "Close rate",
-              sub: `${windowed.won}W · ${windowed.lost}L decided`,
-            }}
-            secondary={{
-              value: String(windowed.pending),
-              caption: "Pending",
-              sub: `still in flight`,
-            }} />
+          <SitToCloseKPI
+            rate={windowed.sitToClose}
+            cohortWon={windowed.cohortWon}
+            cohortSize={windowed.cohortSize}
+            stillDeciding={windowed.stillDeciding}
+            oneCallPct={windowed.oneCallPct}
+            oneCallWins={windowed.oneCallWins}
+            confidence={windowed.confidence}
+            rangeDays={rangeDays}
+          />
+
 
 
           <HeroKPI icon={Activity} label="Active pipeline" value={String(windowed.active)}
