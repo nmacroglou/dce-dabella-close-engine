@@ -208,7 +208,9 @@ export default function Ledger() {
       })
       .filter(Boolean) as any[];
     if (!payloads.length) return 0;
-    const { error } = await supabase.from("commission_payments").insert(payloads);
+    const { error } = await supabase
+      .from("commission_payments")
+      .upsert(payloads, { onConflict: "rep_id,deal_id", ignoreDuplicates: true });
     if (error) {
       toast.error(`Import failed: ${error.message}`);
       return 0;
