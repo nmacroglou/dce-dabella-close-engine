@@ -341,7 +341,7 @@ function PipelineKPIBase({
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          ${fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeDays}d
+          {fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeDays}d
         </p>
         {/* Stage mix bar: inspecting / presented / follow_up */}
         <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden flex" title={`${stageCounts.inspecting} inspecting · ${stageCounts.presented} presented · ${stageCounts.follow_up} follow-up`}>
