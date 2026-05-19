@@ -107,6 +107,6 @@ export function useDeletePayment() {
       qc.invalidateQueries({ queryKey: ["commission_payments", user?.id] });
       toast.success("Deleted");
     },
-    onError: (e: any) => toast.error(e?.message ?? "Delete failed"),
+    onError: (e) => toast.error(errMsg(e, "Delete failed")),
   });
 }
