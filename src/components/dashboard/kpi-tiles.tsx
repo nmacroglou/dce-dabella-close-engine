@@ -172,10 +172,80 @@ function DualKPIBase({
   );
 }
 
+/* ---------- Sit-to-Close KPI (the one that matters) ----------
+   Industry-standard in-home sales metric. Cohort-based: only counts
+   presentations that have had time to resolve, so small samples don't
+   show wild swings. Includes confidence chip + a "still deciding" hint. */
+function SitToCloseKPIBase({
+  rate, cohortWon, cohortSize, stillDeciding, oneCallPct, oneCallWins, confidence, rangeDays,
+}: {
+  rate: number;
+  cohortWon: number;
+  cohortSize: number;
+  stillDeciding: number;
+  oneCallPct: number;
+  oneCallWins: number;
+  confidence: "low" | "med" | "high";
+  rangeDays: number;
+}) {
+  const confMap = {
+    low: { label: "Low confidence", cls: "bg-warning/15 text-warning border-warning/30" },
+    med: { label: "Medium confidence", cls: "bg-primary/15 text-primary border-primary/30" },
+    high: { label: "High confidence", cls: "bg-success/15 text-success border-success/30" },
+  }[confidence];
+  const pctNum = Math.round(rate * 100);
+  return (
+    <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
+      <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-primary/25 to-primary/0 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sit-to-Close · {rangeDays}d</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">Wins ÷ presentations old enough to decide</p>
+          </div>
+          <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-primary transition-transform group-hover:scale-110">
+            <Target className="h-4 w-4" />
+          </div>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <p className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none num-display">{pctNum}%</p>
+          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border ${confMap.cls}`}>
+            {confMap.label}
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          {cohortWon} wins of {cohortSize} resolved presentations
+        </p>
+        <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-primary to-success transition-all" style={{ width: `${pctNum}%` }} />
+        </div>
+        <div className="mt-3 pt-3 border-t border-hairline grid grid-cols-2 gap-2">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">One-call close</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">
+              {Math.round(oneCallPct * 100)}%
+              <span className="text-[10px] font-medium text-muted-foreground ml-1">({oneCallWins})</span>
+            </p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Still deciding</p>
+            <p className="text-sm font-display font-bold text-foreground mt-0.5">
+              {stillDeciding}
+              <span className="text-[10px] font-medium text-muted-foreground ml-1">pending</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const HeroKPI = memo(HeroKPIBase);
 export const MiniStat = memo(MiniStatBase);
 export const WinRateDonut = memo(WinRateDonutBase);
 export const EconomicsKPI = memo(EconomicsKPIBase);
 export const DualKPI = memo(DualKPIBase);
+export const SitToCloseKPI = memo(SitToCloseKPIBase);
+
 
 
