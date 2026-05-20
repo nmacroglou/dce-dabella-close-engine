@@ -218,6 +218,23 @@ export default function WindowEstimateSection({ state, update }: Props) {
           </div>
         )}
 
+        {windowItems.length > 0 && (
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Windows</div>
+              <div className="text-xl font-extrabold tabular-nums">{totalWindows}</div>
+            </div>
+            <div className="rounded-xl border border-primary/30 bg-primary/10 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-primary font-bold">Total United Inches</div>
+              <div className="text-xl font-extrabold tabular-nums text-primary">{totalUI}</div>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Avg UI / Window</div>
+              <div className="text-xl font-extrabold tabular-nums">{avgUI}</div>
+            </div>
+          </div>
+        )}
+
         <button
           onClick={addWindowItem}
           className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-colors text-sm font-semibold"
