@@ -50,6 +50,16 @@ export default function WindowEstimateSection({ state, update }: Props) {
     );
   };
 
+  // --- United Inches helpers ---
+  const parseInches = (v: string): number => {
+    const n = parseFloat(String(v).replace(/[^0-9.]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const unitedInches = (w: WindowLineItem) => parseInches(w.width) + parseInches(w.height);
+  const totalUI = windowItems.reduce((sum, w) => sum + unitedInches(w), 0);
+  const totalWindows = windowItems.length;
+  const avgUI = totalWindows ? Math.round(totalUI / totalWindows) : 0;
+
   // --- Scope helpers ---
   const toggleScope = (index: number) => {
     const next = [...windowScopeChecks];
