@@ -180,7 +180,11 @@ export default function WindowEstimateSection({ state, update }: Props) {
                       />
                     </td>
                     <td className="p-2">
-                      <select
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-bold tabular-nums">
+                        {unitedInches(item) || "—"}
+                      </span>
+                    </td>
+                    <td className="p-2">
                         value={item.gridPattern}
                         onChange={(e) => updateWindowItem(item.id, "gridPattern", e.target.value)}
                         className="bg-transparent border-b border-border/50 focus:border-primary outline-none text-sm px-1 py-0.5"
