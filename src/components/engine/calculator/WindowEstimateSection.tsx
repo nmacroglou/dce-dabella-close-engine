@@ -50,6 +50,16 @@ export default function WindowEstimateSection({ state, update }: Props) {
     );
   };
 
+  // --- United Inches helpers ---
+  const parseInches = (v: string): number => {
+    const n = parseFloat(String(v).replace(/[^0-9.]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const unitedInches = (w: WindowLineItem) => parseInches(w.width) + parseInches(w.height);
+  const totalUI = windowItems.reduce((sum, w) => sum + unitedInches(w), 0);
+  const totalWindows = windowItems.length;
+  const avgUI = totalWindows ? Math.round(totalUI / totalWindows) : 0;
+
   // --- Scope helpers ---
   const toggleScope = (index: number) => {
     const next = [...windowScopeChecks];
@@ -116,6 +126,7 @@ export default function WindowEstimateSection({ state, update }: Props) {
                   <th className="p-2 text-left">Style</th>
                   <th className="p-2 text-left">W</th>
                   <th className="p-2 text-left">H</th>
+                  <th className="p-2 text-left">UI</th>
                   <th className="p-2 text-left">Grids</th>
                   <th className="p-2 text-left">Notes</th>
                   <th className="p-2 w-10"></th>
@@ -169,6 +180,11 @@ export default function WindowEstimateSection({ state, update }: Props) {
                       />
                     </td>
                     <td className="p-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-bold tabular-nums">
+                        {unitedInches(item) || "—"}
+                      </span>
+                    </td>
+                    <td className="p-2">
                       <select
                         value={item.gridPattern}
                         onChange={(e) => updateWindowItem(item.id, "gridPattern", e.target.value)}
@@ -199,6 +215,23 @@ export default function WindowEstimateSection({ state, update }: Props) {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {windowItems.length > 0 && (
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Windows</div>
+              <div className="text-xl font-extrabold tabular-nums">{totalWindows}</div>
+            </div>
+            <div className="rounded-xl border border-primary/30 bg-primary/10 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-primary font-bold">Total United Inches</div>
+              <div className="text-xl font-extrabold tabular-nums text-primary">{totalUI}</div>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Avg UI / Window</div>
+              <div className="text-xl font-extrabold tabular-nums">{avgUI}</div>
+            </div>
           </div>
         )}
 
