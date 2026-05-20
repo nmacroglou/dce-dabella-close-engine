@@ -126,6 +126,7 @@ export default function WindowEstimateSection({ state, update }: Props) {
                   <th className="p-2 text-left">Style</th>
                   <th className="p-2 text-left">W</th>
                   <th className="p-2 text-left">H</th>
+                  <th className="p-2 text-left">UI</th>
                   <th className="p-2 text-left">Grids</th>
                   <th className="p-2 text-left">Notes</th>
                   <th className="p-2 w-10"></th>
