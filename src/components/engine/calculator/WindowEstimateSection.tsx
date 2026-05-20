@@ -185,6 +185,7 @@ export default function WindowEstimateSection({ state, update }: Props) {
                       </span>
                     </td>
                     <td className="p-2">
+                      <select
                         value={item.gridPattern}
                         onChange={(e) => updateWindowItem(item.id, "gridPattern", e.target.value)}
                         className="bg-transparent border-b border-border/50 focus:border-primary outline-none text-sm px-1 py-0.5"
