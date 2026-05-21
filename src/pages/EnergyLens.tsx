@@ -350,7 +350,7 @@ export default function EnergyLens() {
                 <StatTile icon={Shield} label={`Lifetime value (${horizon}y)`} value={formatCurrencyShort(result.cumulativeEnergyValue)} accent="text-primary" />
               </div>
 
-              {/* Chart */}
+              {/* Chart: Utility spend over time */}
               <div className="rounded-2xl border border-hairline bg-muted/30 p-4">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Utility spend over time</h4>
                 <div className="h-64">
@@ -380,8 +380,12 @@ export default function EnergyLens() {
                     </Recharts.AreaChart>
                   </Recharts.ResponsiveContainer>
                 </div>
+                <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                  <span className="font-semibold text-foreground">What you are seeing:</span> The red area shows how much your annual utility bill grows if you do nothing — bills rise every year as rates go up. The green area shows your remaining utility spend after the Energy Roof offsets part of your usage. The gap between the two is money you keep in your pocket.
+                </p>
               </div>
 
+              {/* Chart: Cumulative savings */}
               <div className="rounded-2xl border border-hairline bg-muted/30 p-4">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Cumulative savings vs. doing nothing</h4>
                 <div className="h-48">
@@ -399,6 +403,9 @@ export default function EnergyLens() {
                     </Recharts.LineChart>
                   </Recharts.ResponsiveContainer>
                 </div>
+                <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                  <span className="font-semibold text-foreground">What you are seeing:</span> This line shows the total value the Energy Roof has created since day one — every year it adds the savings from self-used power plus any export credits. As utility rates rise, each kilowatt-hour you produce becomes more valuable, so the curve steepens over time. That upward bend is your hedge against inflation working.
+                </p>
               </div>
             </div>
           </div>
