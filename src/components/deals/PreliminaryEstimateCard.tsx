@@ -14,6 +14,7 @@ import {
   computeEstimate,
   unitLabel,
   type PreliminaryEstimateInput,
+  type RoofType,
 } from "@/data/roofingPricing";
 import { useUpdateDeal } from "@/hooks/useDeals";
 import { useDealPhotos, useUploadDealPhoto, useDeleteDealPhoto } from "@/hooks/useDealPhotos";
