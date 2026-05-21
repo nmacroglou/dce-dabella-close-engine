@@ -141,6 +141,33 @@ export default function PreliminaryEstimateCard({ dealId, initial }: Props) {
         </div>
       </div>
 
+      {/* Roof type toggle */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold uppercase tracking-wider">Roof type</Label>
+        <div className="inline-flex rounded-xl border border-hairline bg-muted/30 p-1">
+          {(["shingle", "tile"] as RoofType[]).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => {
+                setRoofType(t);
+                const current = SHINGLE_LINES.find((s) => s.id === state.shingleId);
+                if (current && (current.roofType ?? "shingle") !== t) {
+                  patch({ shingleId: null });
+                }
+              }}
+              className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                roofType === t
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t === "shingle" ? "Shingle" : "Tile"}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
@@ -155,18 +182,20 @@ export default function PreliminaryEstimateCard({ dealId, initial }: Props) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs font-semibold uppercase tracking-wider">Shingle product</Label>
+          <Label className="text-xs font-semibold uppercase tracking-wider">
+            {roofType === "tile" ? "Tile product" : "Shingle product"}
+          </Label>
           <Select
             value={state.shingleId ?? ""}
             onValueChange={(v) => patch({ shingleId: v || null })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Pick a shingle line" />
+              <SelectValue placeholder={roofType === "tile" ? "Pick a tile line" : "Pick a shingle line"} />
             </SelectTrigger>
             <SelectContent>
-              {SHINGLE_LINES.map((s) => (
+              {filteredLines.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
-                  {s.label} — {fmt(s.pricePerSq)}/SQ
+                  {s.label} — {fmt(s.pricePerSq)}/SQ{s.note ? ` · ${s.note}` : ""}
                 </SelectItem>
               ))}
             </SelectContent>
