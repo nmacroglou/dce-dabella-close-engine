@@ -255,20 +255,38 @@ export default function EnergyLens() {
             <div className="space-y-4 lg:col-span-1">
               <div>
                 <Label className="text-xs uppercase tracking-wider font-semibold">System size</Label>
-                <div className="flex gap-1.5 mt-2">
-                  {[2, 3, 4].map((kw) => (
-                    <button key={kw} onClick={() => setSystemKw(kw)}
-                      className={`flex-1 px-2 py-3 rounded-xl text-sm font-bold border ${systemKw === kw ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]" : "bg-muted/50 border-hairline"}`}>
-                      {kw}kW
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-3">
-                  <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-                    <span>Variable size</span><span className="font-bold text-foreground">{systemKw.toFixed(1)} kW</span>
-                  </div>
-                  <Slider min={1} max={10} step={0.5} value={[systemKw]} onValueChange={(v) => setSystemKw(v[0])} />
-                </div>
+                {(() => {
+                  const maxFitKw = utility.productionFactor > 0
+                    ? Math.round((result.annualKwhUsage / utility.productionFactor) * 2) / 2
+                    : 0;
+                  const isMaxFit = maxFitKw > 0 && Math.abs(systemKw - maxFitKw) < 0.05;
+                  return (
+                    <>
+                      <div className="flex gap-1.5 mt-2">
+                        {[2, 3, 4].map((kw) => (
+                          <button key={kw} onClick={() => setSystemKw(kw)}
+                            className={`flex-1 px-2 py-3 rounded-xl text-sm font-bold border ${systemKw === kw ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]" : "bg-muted/50 border-hairline"}`}>
+                            {kw}kW
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => maxFitKw > 0 && setSystemKw(maxFitKw)}
+                          disabled={maxFitKw <= 0}
+                          title="Sizes the system to roughly match your annual usage"
+                          className={`flex-1 px-2 py-3 rounded-xl text-sm font-bold border ${isMaxFit ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]" : "bg-muted/50 border-hairline"} disabled:opacity-40`}>
+                          Max Fit
+                          {maxFitKw > 0 && <div className="text-[10px] font-semibold opacity-80">{maxFitKw}kW</div>}
+                        </button>
+                      </div>
+                      <div className="mt-3">
+                        <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+                          <span>Variable size (1–20 kW)</span><span className="font-bold text-foreground">{systemKw.toFixed(1)} kW</span>
+                        </div>
+                        <Slider min={1} max={20} step={0.5} value={[systemKw]} onValueChange={(v) => setSystemKw(v[0])} />
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               <div>
