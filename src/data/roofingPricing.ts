@@ -4,22 +4,31 @@
  * Used by the preliminary estimate widget on the Deals page.
  */
 
+export type RoofType = "shingle" | "tile";
+
 export interface ShingleLine {
   id: string;
   label: string;
   pricePerSq: number;
   note?: string;
+  roofType?: RoofType; // defaults to shingle for back-compat
 }
 
 export const SHINGLE_LINES: ShingleLine[] = [
-  { id: "american_harvest", label: "American Harvest", pricePerSq: 1320 },
-  { id: "timberline_hd", label: "Timberline HD", pricePerSq: 1390 },
-  { id: "timberline_ultra_hd", label: "Timberline Ultra HD", pricePerSq: 1560, note: "Not stocked" },
-  { id: "woodland", label: "Woodland", pricePerSq: 1740 },
-  { id: "camelot_ii", label: "Camelot II", pricePerSq: 1740 },
-  { id: "grand_sequoia", label: "Grand Sequoia", pricePerSq: 1740, note: "Not stocked" },
-  { id: "grand_canyon", label: "Grand Canyon", pricePerSq: 1900 },
-  { id: "liberty_low_slope", label: "Liberty Low Slope (3-layer system)", pricePerSq: 1265 },
+  { id: "american_harvest", label: "American Harvest", pricePerSq: 1320, roofType: "shingle" },
+  { id: "timberline_hd", label: "Timberline HD", pricePerSq: 1390, roofType: "shingle" },
+  { id: "timberline_ultra_hd", label: "Timberline Ultra HD", pricePerSq: 1560, note: "Not stocked", roofType: "shingle" },
+  { id: "woodland", label: "Woodland", pricePerSq: 1740, roofType: "shingle" },
+  { id: "camelot_ii", label: "Camelot II", pricePerSq: 1740, roofType: "shingle" },
+  { id: "grand_sequoia", label: "Grand Sequoia", pricePerSq: 1740, note: "Not stocked", roofType: "shingle" },
+  { id: "grand_canyon", label: "Grand Canyon", pricePerSq: 1900, roofType: "shingle" },
+  { id: "liberty_low_slope", label: "Liberty Low Slope (3-layer system)", pricePerSq: 1265, roofType: "shingle" },
+  // Tile roofing lines
+  { id: "tile_standard", label: "Standard Tile System", pricePerSq: 1100, roofType: "tile" },
+  { id: "tile_cool_series", label: "Cool Series", pricePerSq: 1310, roofType: "tile" },
+  { id: "tile_cool_therma", label: "Cool Series w/ Therma", pricePerSq: 1475, roofType: "tile" },
+  { id: "tile_walk_pad", label: "Walk Pad", pricePerSq: 2000, roofType: "tile" },
+  { id: "tile_california", label: "California Markets", pricePerSq: 300, note: "Upcharge / specialty market", roofType: "tile" },
 ];
 
 export interface Accessory {
