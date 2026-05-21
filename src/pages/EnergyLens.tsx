@@ -284,6 +284,21 @@ export default function EnergyLens() {
                         </div>
                         <Slider min={1} max={20} step={0.5} value={[systemKw]} onValueChange={(v) => setSystemKw(v[0])} />
                       </div>
+                      <div className="mt-3 flex items-center gap-2">
+                        <Label className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground whitespace-nowrap">Exact kW</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min={0.5}
+                          max={30}
+                          value={systemKw}
+                          onChange={(e) => {
+                            const v = Number(e.target.value);
+                            if (!Number.isNaN(v) && v > 0) setSystemKw(v);
+                          }}
+                          className="h-8 text-sm"
+                        />
+                      </div>
                     </>
                   );
                 })()}
