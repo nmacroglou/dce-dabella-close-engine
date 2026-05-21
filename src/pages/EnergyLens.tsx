@@ -205,7 +205,10 @@ export default function EnergyLens() {
           <SectionCard title="Inflation Timeline" subtitle="Step 2 — what happens if nothing changes" icon={TrendingUp}>
             <div className="space-y-4">
               <div>
-                <Label className="text-xs uppercase tracking-wider font-semibold">Time horizon</Label>
+                <div className="flex justify-between items-baseline">
+                  <Label className="text-xs uppercase tracking-wider font-semibold">Time horizon</Label>
+                  <span className="text-lg font-extrabold text-primary">{horizon}y</span>
+                </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {TIME_HORIZONS.map((y) => (
                     <button key={y} onClick={() => setHorizon(y)}
@@ -213,6 +216,12 @@ export default function EnergyLens() {
                       {y}y
                     </button>
                   ))}
+                </div>
+                <div className="mt-3">
+                  <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+                    <span>Custom range (1–40y)</span><span className="font-bold text-foreground">{horizon} years</span>
+                  </div>
+                  <Slider min={1} max={40} step={1} value={[horizon]} onValueChange={(v) => setHorizon(v[0])} />
                 </div>
               </div>
               <div>
