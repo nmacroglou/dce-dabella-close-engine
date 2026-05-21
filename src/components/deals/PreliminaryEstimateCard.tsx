@@ -36,6 +36,10 @@ const empty: PreliminaryEstimateInput = {
 export default function PreliminaryEstimateCard({ dealId, initial }: Props) {
   const [state, setState] = useState<PreliminaryEstimateInput>({ ...empty, ...(initial ?? {}) });
   const [dirty, setDirty] = useState(false);
+  const [roofType, setRoofType] = useState<RoofType>(() => {
+    const initShingle = SHINGLE_LINES.find((s) => s.id === (initial?.shingleId ?? null));
+    return (initShingle?.roofType ?? "shingle") as RoofType;
+  });
   const update = useUpdateDeal();
   const { data: photos = [] } = useDealPhotos(dealId);
   const upload = useUploadDealPhoto();
@@ -45,7 +49,14 @@ export default function PreliminaryEstimateCard({ dealId, initial }: Props) {
   useEffect(() => {
     setState({ ...empty, ...(initial ?? {}) });
     setDirty(false);
+    const initShingle = SHINGLE_LINES.find((s) => s.id === (initial?.shingleId ?? null));
+    setRoofType((initShingle?.roofType ?? "shingle") as RoofType);
   }, [dealId, initial]);
+
+  const filteredLines = useMemo(
+    () => SHINGLE_LINES.filter((s) => (s.roofType ?? "shingle") === roofType),
+    [roofType]
+  );
 
   const breakdown = useMemo(() => computeEstimate(state), [state]);
 
