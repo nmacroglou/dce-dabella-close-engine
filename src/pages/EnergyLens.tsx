@@ -153,32 +153,47 @@ export default function EnergyLens() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">
-              Energy Roof <span className="gradient-text">Inflation Lens</span>
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              A homeowner-friendly view of utility inflation and how a GAF Energy Roof gives you a lever to reduce exposure.
-            </p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-7">
+        {/* Hero header */}
+        <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-card via-card to-primary/5 p-5 sm:p-7 shadow-[var(--shadow-sm)]">
+          <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
+          <div className="relative flex items-start justify-between gap-4 flex-wrap">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
+                <Sparkles className="h-3 w-3" />
+                Homeowner inflation lens
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-display font-extrabold tracking-tight leading-[1.05]">
+                Energy Roof <span className="gradient-text">Inflation Lens</span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                A homeowner-friendly view of utility inflation and how a GAF Energy Roof gives you a lever to reduce exposure.
+              </p>
+            </div>
+            <Button onClick={handlePrint} variant="outline" className="gap-2 shrink-0">
+              <Printer className="h-4 w-4" /> Print summary
+            </Button>
           </div>
-          <Button onClick={handlePrint} variant="outline" className="gap-2">
-            <Printer className="h-4 w-4" /> Print / Export Summary
-          </Button>
-        </div>
+        </section>
 
         {/* Guided steps strip */}
-        <div className="rounded-2xl border border-hairline bg-muted/40 p-3 flex items-center gap-4 text-xs font-semibold text-muted-foreground overflow-x-auto">
-          <span className="flex items-center gap-1.5"><span className="h-5 w-5 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px]">1</span> Utility</span>
-          <span className="text-hairline-strong">→</span>
-          <span className="flex items-center gap-1.5"><span className="h-5 w-5 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px]">2</span> Inflation</span>
-          <span className="text-hairline-strong">→</span>
-          <span className="flex items-center gap-1.5"><span className="h-5 w-5 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px]">3</span> System Size</span>
-          <span className="text-hairline-strong">→</span>
-          <span className="flex items-center gap-1.5"><span className="h-5 w-5 rounded-full bg-accent text-accent-foreground grid place-items-center text-[10px]">4</span> Choose Option</span>
-        </div>
+        <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-2.5 sm:p-3 flex items-center gap-1.5 sm:gap-2 text-xs font-semibold overflow-x-auto">
+          {[
+            { n: 1, label: "Utility", tone: "primary" as const },
+            { n: 2, label: "Inflation", tone: "primary" as const },
+            { n: 3, label: "System size", tone: "primary" as const },
+            { n: 4, label: "Choose option", tone: "accent" as const },
+          ].map((s, i, arr) => (
+            <div key={s.n} className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <span className="flex items-center gap-1.5 rounded-xl bg-muted/50 border border-hairline px-2.5 py-1.5">
+                <span className={`h-5 w-5 rounded-full grid place-items-center text-[10px] font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground" : "gradient-brand text-primary-foreground"}`}>{s.n}</span>
+                <span className="text-foreground whitespace-nowrap">{s.label}</span>
+              </span>
+              {i < arr.length - 1 && <span className="text-hairline-strong">→</span>}
+            </div>
+          ))}
+        </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* 1) Your Utility Reality */}
