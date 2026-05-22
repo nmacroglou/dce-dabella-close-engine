@@ -21,7 +21,7 @@ function StatTileBase({ icon: Icon, label, value, accent, sub, trend }: StatTile
       <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-current opacity-[0.06] blur-2xl transition-opacity group-hover:opacity-[0.10]" style={{ color: "currentColor" }} />
       <div className="relative flex items-center justify-between mb-1.5">
         <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
-        <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg bg-current/10", accent)}>
+        <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg bg-muted/70", accent)}>
           <Icon className={cn("h-3.5 w-3.5", accent)} />
         </span>
       </div>
