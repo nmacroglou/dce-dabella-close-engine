@@ -37,35 +37,61 @@ function StatTile({ icon: Icon, label, value, sub, accent = "text-primary", larg
   icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string; accent?: string; large?: boolean;
 }) {
   return (
-    <div className={`rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] ${large ? "p-5" : "p-4"}`}>
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        <Icon className={`h-3.5 w-3.5 ${accent}`} />
-        {label}
+    <div className={`group relative overflow-hidden rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] transition-all hover:border-hairline-strong hover:shadow-[var(--shadow-sm)] ${large ? "p-5" : "p-4"}`}>
+      <div className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+        <span className={`flex h-6 w-6 items-center justify-center rounded-lg bg-muted/60 ${accent}`}>
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <span className="truncate">{label}</span>
       </div>
-      <div className={`${large ? "text-3xl sm:text-4xl" : "text-2xl"} font-extrabold mt-1 ${accent}`}>{value}</div>
-      {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
+      <div className={`relative ${large ? "text-3xl sm:text-4xl" : "text-2xl"} font-display font-extrabold tracking-tight mt-2 ${accent} tabular-nums leading-none`}>{value}</div>
+      {sub && <div className="relative text-[11px] text-muted-foreground mt-1.5">{sub}</div>}
     </div>
   );
 }
 
-function SectionCard({ title, subtitle, icon: Icon, children }: {
-  title: string; subtitle?: string; icon?: React.ComponentType<{ className?: string }>; children: React.ReactNode;
+function SectionCard({ title, subtitle, icon: Icon, eyebrow, children }: {
+  title: string; subtitle?: string; icon?: React.ComponentType<{ className?: string }>; eyebrow?: string; children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-hairline bg-card p-5 shadow-[var(--shadow-xs)]">
-      <div className="flex items-start gap-3 mb-4">
+    <section className="relative overflow-hidden rounded-3xl border border-hairline bg-card p-5 sm:p-6 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-[var(--shadow-sm)]">
+      <div className="flex items-start gap-3 mb-5">
         {Icon && (
-          <div className="h-9 w-9 rounded-xl gradient-brand grid place-items-center text-primary-foreground flex-shrink-0">
+          <div className="h-10 w-10 rounded-2xl gradient-brand grid place-items-center text-primary-foreground flex-shrink-0 shadow-[var(--shadow-glow)]">
             <Icon className="h-4 w-4" />
           </div>
         )}
-        <div>
-          <h3 className="text-base font-display font-extrabold tracking-tight">{title}</h3>
-          {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+        <div className="min-w-0">
+          {eyebrow && (
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80 mb-0.5">{eyebrow}</p>
+          )}
+          <h3 className="text-base sm:text-lg font-display font-extrabold tracking-tight leading-tight">{title}</h3>
+          {subtitle && <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
         </div>
       </div>
       {children}
     </section>
+  );
+}
+
+/** Unified pill button used for option chips throughout the page */
+function Pill({ active, onClick, children, className = "", disabled = false, title }: {
+  active: boolean; onClick?: () => void; children: React.ReactNode; className?: string; disabled?: boolean; title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`relative rounded-xl border font-semibold transition-all active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none ${
+        active
+          ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]"
+          : "bg-muted/50 text-foreground border-hairline hover:bg-muted hover:border-hairline-strong"
+      } ${className}`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -127,36 +153,51 @@ export default function EnergyLens() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight">
-              Energy Roof <span className="gradient-text">Inflation Lens</span>
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-              A homeowner-friendly view of utility inflation and how a GAF Energy Roof gives you a lever to reduce exposure.
-            </p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-7">
+        {/* Hero header */}
+        <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-card via-card to-primary/5 p-5 sm:p-7 shadow-[var(--shadow-sm)]">
+          <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
+          <div className="relative flex items-start justify-between gap-4 flex-wrap">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
+                <Sparkles className="h-3 w-3" />
+                Homeowner inflation lens
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-display font-extrabold tracking-tight leading-[1.05]">
+                Energy Roof <span className="gradient-text">Inflation Lens</span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                A homeowner-friendly view of utility inflation and how a GAF Energy Roof gives you a lever to reduce exposure.
+              </p>
+            </div>
+            <Button onClick={handlePrint} variant="outline" className="gap-2 shrink-0">
+              <Printer className="h-4 w-4" /> Print summary
+            </Button>
           </div>
-          <Button onClick={handlePrint} variant="outline" className="gap-2">
-            <Printer className="h-4 w-4" /> Print / Export Summary
-          </Button>
-        </div>
+        </section>
 
         {/* Guided steps strip */}
-        <div className="rounded-2xl border border-hairline bg-muted/40 p-3 flex items-center gap-4 text-xs font-semibold text-muted-foreground overflow-x-auto">
-          <span className="flex items-center gap-1.5"><span className="h-5 w-5 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px]">1</span> Utility</span>
-          <span className="text-hairline-strong">→</span>
-          <span className="flex items-center gap-1.5"><span className="h-5 w-5 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px]">2</span> Inflation</span>
-          <span className="text-hairline-strong">→</span>
-          <span className="flex items-center gap-1.5"><span className="h-5 w-5 rounded-full bg-primary text-primary-foreground grid place-items-center text-[10px]">3</span> System Size</span>
-          <span className="text-hairline-strong">→</span>
-          <span className="flex items-center gap-1.5"><span className="h-5 w-5 rounded-full bg-accent text-accent-foreground grid place-items-center text-[10px]">4</span> Choose Option</span>
-        </div>
+        <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-2.5 sm:p-3 flex items-center gap-1.5 sm:gap-2 text-xs font-semibold overflow-x-auto">
+          {[
+            { n: 1, label: "Utility", tone: "primary" as const },
+            { n: 2, label: "Inflation", tone: "primary" as const },
+            { n: 3, label: "System size", tone: "primary" as const },
+            { n: 4, label: "Choose option", tone: "accent" as const },
+          ].map((s, i, arr) => (
+            <div key={s.n} className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <span className="flex items-center gap-1.5 rounded-xl bg-muted/50 border border-hairline px-2.5 py-1.5">
+                <span className={`h-5 w-5 rounded-full grid place-items-center text-[10px] font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground" : "gradient-brand text-primary-foreground"}`}>{s.n}</span>
+                <span className="text-foreground whitespace-nowrap">{s.label}</span>
+              </span>
+              {i < arr.length - 1 && <span className="text-hairline-strong">→</span>}
+            </div>
+          ))}
+        </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* 1) Your Utility Reality */}
-          <SectionCard title="Your Utility Reality" subtitle="Step 1 — where you are today" icon={Zap}>
+          <SectionCard eyebrow="Step 1" title="Your Utility Reality" subtitle="Where you are today" icon={Zap}>
             <div className="space-y-4">
               <div>
                 <Label className="text-xs uppercase tracking-wider font-semibold">Utility provider</Label>
@@ -204,7 +245,7 @@ export default function EnergyLens() {
           </SectionCard>
 
           {/* 2) Inflation Timeline */}
-          <SectionCard title="Inflation Timeline" subtitle="Step 2 — what happens if nothing changes" icon={TrendingUp}>
+          <SectionCard eyebrow="Step 2" title="Inflation Timeline" subtitle="What happens if nothing changes" icon={TrendingUp}>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between items-baseline">
@@ -252,7 +293,7 @@ export default function EnergyLens() {
         </div>
 
         {/* 3) Energy Roof Impact Simulator */}
-        <SectionCard title="Energy Roof Impact Simulator" subtitle="Step 3 — size your lever" icon={Sun}>
+        <SectionCard eyebrow="Step 3" title="Energy Roof Impact Simulator" subtitle="Size your lever" icon={Sun}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="space-y-4 lg:col-span-1">
               <div>
@@ -417,33 +458,57 @@ export default function EnergyLens() {
         </SectionCard>
 
         {/* Options panel */}
-        <SectionCard title="Choose Your Lever" subtitle="Step 4 — pick the option that fits the home" icon={Sparkles}>
+        <SectionCard eyebrow="Step 4" title="Choose Your Lever" subtitle="Pick the option that fits the home" icon={Sparkles}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {options.map((opt) => {
               const active = systemKw === opt.kw;
               return (
-                <button key={opt.key} onClick={() => setSystemKw(opt.kw)}
-                  className={`text-left rounded-2xl border p-5 transition-all pressable ${active ? "border-primary bg-primary/5 shadow-[var(--shadow-glow)]" : "border-hairline bg-card hover:border-hairline-strong"}`}>
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <p className={`text-[11px] font-bold uppercase tracking-wider ${opt.accent}`}>Option {opt.key} — {opt.kw}kW</p>
-                      <h4 className="text-lg font-display font-extrabold mt-0.5">{opt.title}</h4>
+                <button
+                  key={opt.key}
+                  onClick={() => setSystemKw(opt.kw)}
+                  className={`group relative overflow-hidden text-left rounded-2xl border p-5 transition-all active:scale-[0.99] ${
+                    active
+                      ? "border-primary bg-gradient-to-br from-primary/10 via-card to-card shadow-[var(--shadow-glow)]"
+                      : "border-hairline bg-card hover:border-hairline-strong hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
+                  }`}
+                >
+                  {active && (
+                    <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/15 blur-2xl" />
+                  )}
+                  <div className="relative flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${opt.accent}`}>Option {opt.key} · {opt.kw}kW</p>
+                      <h4 className="text-lg font-display font-extrabold mt-1 leading-tight">{opt.title}</h4>
                     </div>
-                    {active && <span className="text-[10px] font-bold text-primary uppercase">Selected</span>}
+                    {active && (
+                      <span className="flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        Selected
+                      </span>
+                    )}
                   </div>
-                  <div className="mt-4 space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Year 1 value</span><span className="font-bold">{formatCurrency(opt.y1)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">10-year value</span><span className="font-bold">{formatCurrencyShort(opt.y10)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">25-year value</span><span className={`font-extrabold ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</span></div>
+                  <div className="relative mt-4 space-y-2 text-sm">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-muted-foreground text-xs">Year 1</span>
+                      <span className="font-bold tabular-nums">{formatCurrency(opt.y1)}</span>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-muted-foreground text-xs">10-year</span>
+                      <span className="font-bold tabular-nums">{formatCurrencyShort(opt.y10)}</span>
+                    </div>
+                    <div className="flex justify-between items-baseline pt-2 mt-1 border-t border-hairline">
+                      <span className="text-muted-foreground text-xs uppercase tracking-wider">25-year</span>
+                      <span className={`font-display font-extrabold text-xl tabular-nums ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-3 italic">{opt.tag}</p>
+                  <p className="relative text-[11px] text-muted-foreground mt-4 italic leading-snug">{opt.tag}</p>
                 </button>
               );
             })}
           </div>
-          <div className="mt-4 rounded-xl bg-muted/40 border border-hairline p-3 text-sm">
-            <p className="font-semibold mb-0.5">Financing language</p>
-            <p className="text-muted-foreground">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
+          <div className="mt-5 rounded-2xl bg-gradient-to-r from-muted/60 to-muted/30 border border-hairline p-4 text-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80 mb-1">Financing language</p>
+            <p className="text-muted-foreground leading-relaxed">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
           </div>
         </SectionCard>
 
