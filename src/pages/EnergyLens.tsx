@@ -5,6 +5,7 @@ import {
   ChevronDown, ChevronUp, Sparkles, Shield, Target, Gauge,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
+import UtilityNewsFeed from "@/components/energy/UtilityNewsFeed";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
