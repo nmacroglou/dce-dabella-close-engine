@@ -458,7 +458,7 @@ export default function EnergyLens() {
         </SectionCard>
 
         {/* Options panel */}
-        <SectionCard title="Choose Your Lever" subtitle="Step 4 — pick the option that fits the home" icon={Sparkles}>
+        <SectionCard eyebrow="Step 4" title="Choose Your Lever" subtitle="Pick the option that fits the home" icon={Sparkles}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {options.map((opt) => {
               const active = systemKw === opt.kw;
