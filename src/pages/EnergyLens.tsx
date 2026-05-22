@@ -342,18 +342,68 @@ export default function EnergyLens() {
               </div>
             </div>
 
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-5">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatTile icon={Sun} label="Year 1 production" value={`${formatCount(result.prodYear1)} kWh`} accent="text-warning" />
-                <StatTile icon={Zap} label="Year 1 value" value={formatCurrency(result.valueYear1)} sub={`${formatCurrency(result.valueYear1Monthly)} / mo`} accent="text-accent" />
-                <StatTile icon={Target} label="% of bill offset" value={pct(result.offsetPct)} accent="text-primary" />
-                <StatTile icon={Shield} label={`Lifetime value (${horizon}y)`} value={formatCurrencyShort(result.cumulativeEnergyValue)} accent="text-primary" />
+                <StatTile large icon={Sun} label="Year 1 production" value={`${formatCount(result.prodYear1)} kWh`} accent="text-warning" />
+                <StatTile large icon={Zap} label="Year 1 value" value={formatCurrency(result.valueYear1)} sub={`${formatCurrency(result.valueYear1Monthly)} / mo`} accent="text-accent" />
+                <StatTile large icon={Target} label="% of bill offset" value={pct(result.offsetPct)} sub="year 1" accent="text-primary" />
+                <StatTile large icon={Shield} label={`Lifetime value (${horizon}y)`} value={formatCurrencyShort(result.cumulativeEnergyValue)} accent="text-primary" />
               </div>
 
+              {/* Year-by-year savings breakdown */}
+              {(() => {
+                const milestones = [1, 5, 10, 15, 20, 25, 30, 35, 40].filter((y) => y <= horizon);
+                if (!milestones.includes(horizon)) milestones.push(horizon);
+                const rows = milestones
+                  .map((y) => result.series[y - 1])
+                  .filter(Boolean);
+                return (
+                  <div className="rounded-2xl border border-hairline bg-gradient-to-br from-accent/5 to-primary/5 p-5">
+                    <div className="flex items-baseline justify-between mb-3">
+                      <h4 className="text-sm font-display font-extrabold tracking-tight">Yearly power savings</h4>
+                      <span className="text-[11px] text-muted-foreground">% of bill offset · hard dollars saved</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-hairline">
+                            <th className="text-left py-2 px-2">Year</th>
+                            <th className="text-right py-2 px-2">Bill (do nothing)</th>
+                            <th className="text-right py-2 px-2">% offset</th>
+                            <th className="text-right py-2 px-2">$ saved that yr</th>
+                            <th className="text-right py-2 px-2">$ saved cumulative</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((r) => {
+                            const offset = r.doNothingAnnual > 0 ? r.energyValueAnnual / r.doNothingAnnual : 0;
+                            const cumSaved = r.doNothingCumulative - r.withRoofCumulative;
+                            return (
+                              <tr key={r.year} className="border-b border-hairline/60 last:border-0">
+                                <td className="py-2.5 px-2 font-bold text-foreground">Y{r.year}</td>
+                                <td className="py-2.5 px-2 text-right font-mono text-destructive">{formatCurrency(r.doNothingAnnual)}</td>
+                                <td className="py-2.5 px-2 text-right">
+                                  <span className="inline-block px-2 py-0.5 rounded-md bg-primary/10 text-primary font-extrabold">{pct(offset)}</span>
+                                </td>
+                                <td className="py-2.5 px-2 text-right font-extrabold text-accent">{formatCurrency(r.energyValueAnnual)}</td>
+                                <td className="py-2.5 px-2 text-right font-extrabold text-primary">{formatCurrencyShort(cumSaved)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                      <span className="font-semibold text-foreground">Reading this:</span> "% offset" is how much of that year's utility bill the Energy Roof covers. "$ saved that year" is the hard-dollar value created — it grows over time as rates rise. The cumulative column is your running total kept in pocket.
+                    </p>
+                  </div>
+                );
+              })()}
+
               {/* Chart: Utility spend over time */}
-              <div className="rounded-2xl border border-hairline bg-muted/30 p-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Utility spend over time</h4>
-                <div className="h-64">
+              <div className="rounded-2xl border border-hairline bg-muted/30 p-5">
+                <h4 className="text-sm font-display font-extrabold tracking-tight mb-3">Utility spend over time</h4>
+                <div className="h-80">
                   <Recharts.ResponsiveContainer width="100%" height="100%">
                     <Recharts.AreaChart data={result.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                       <defs>
@@ -386,9 +436,9 @@ export default function EnergyLens() {
               </div>
 
               {/* Chart: Cumulative savings */}
-              <div className="rounded-2xl border border-hairline bg-muted/30 p-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Cumulative savings vs. doing nothing</h4>
-                <div className="h-48">
+              <div className="rounded-2xl border border-hairline bg-muted/30 p-5">
+                <h4 className="text-sm font-display font-extrabold tracking-tight mb-3">Cumulative savings vs. doing nothing</h4>
+                <div className="h-64">
                   <Recharts.ResponsiveContainer width="100%" height="100%">
                     <Recharts.LineChart data={result.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                       <Recharts.CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
