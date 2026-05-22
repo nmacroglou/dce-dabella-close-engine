@@ -293,7 +293,7 @@ export default function EnergyLens() {
         </div>
 
         {/* 3) Energy Roof Impact Simulator */}
-        <SectionCard title="Energy Roof Impact Simulator" subtitle="Step 3 — size your lever" icon={Sun}>
+        <SectionCard eyebrow="Step 3" title="Energy Roof Impact Simulator" subtitle="Size your lever" icon={Sun}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="space-y-4 lg:col-span-1">
               <div>
