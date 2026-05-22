@@ -115,4 +115,4 @@ export const SELF_CONSUMPTION_PRESETS: SelfConsumptionPreset[] = [
   { id: "high", label: "Full battery", pct: 0.85 },
 ];
 
-export const TIME_HORIZONS = [5, 10, 15, 20, 25, 30] as const;
+export const TIME_HORIZONS = [5, 10, 15, 20, 25, 30, 35, 40, 50] as const;
