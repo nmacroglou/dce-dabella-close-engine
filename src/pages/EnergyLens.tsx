@@ -493,6 +493,9 @@ export default function EnergyLens() {
           </div>
         </SectionCard>
 
+        {/* Live utility watch — auto-refreshed daily from SRP/APS/TEP/AZCC */}
+        <UtilityNewsFeed activeUtility={(utility.id.toUpperCase() as "SRP" | "APS" | "TEP")} />
+
         {/* Rules & Reality + Driver + Script */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <SectionCard title="Rules & Reality Overlay" subtitle="Local utility constraints" icon={MapPin}>
