@@ -37,35 +37,61 @@ function StatTile({ icon: Icon, label, value, sub, accent = "text-primary", larg
   icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string; accent?: string; large?: boolean;
 }) {
   return (
-    <div className={`rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] ${large ? "p-5" : "p-4"}`}>
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        <Icon className={`h-3.5 w-3.5 ${accent}`} />
-        {label}
+    <div className={`group relative overflow-hidden rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] transition-all hover:border-hairline-strong hover:shadow-[var(--shadow-sm)] ${large ? "p-5" : "p-4"}`}>
+      <div className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+        <span className={`flex h-6 w-6 items-center justify-center rounded-lg bg-muted/60 ${accent}`}>
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <span className="truncate">{label}</span>
       </div>
-      <div className={`${large ? "text-3xl sm:text-4xl" : "text-2xl"} font-extrabold mt-1 ${accent}`}>{value}</div>
-      {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
+      <div className={`relative ${large ? "text-3xl sm:text-4xl" : "text-2xl"} font-display font-extrabold tracking-tight mt-2 ${accent} tabular-nums leading-none`}>{value}</div>
+      {sub && <div className="relative text-[11px] text-muted-foreground mt-1.5">{sub}</div>}
     </div>
   );
 }
 
-function SectionCard({ title, subtitle, icon: Icon, children }: {
-  title: string; subtitle?: string; icon?: React.ComponentType<{ className?: string }>; children: React.ReactNode;
+function SectionCard({ title, subtitle, icon: Icon, eyebrow, children }: {
+  title: string; subtitle?: string; icon?: React.ComponentType<{ className?: string }>; eyebrow?: string; children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-hairline bg-card p-5 shadow-[var(--shadow-xs)]">
-      <div className="flex items-start gap-3 mb-4">
+    <section className="relative overflow-hidden rounded-3xl border border-hairline bg-card p-5 sm:p-6 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-[var(--shadow-sm)]">
+      <div className="flex items-start gap-3 mb-5">
         {Icon && (
-          <div className="h-9 w-9 rounded-xl gradient-brand grid place-items-center text-primary-foreground flex-shrink-0">
+          <div className="h-10 w-10 rounded-2xl gradient-brand grid place-items-center text-primary-foreground flex-shrink-0 shadow-[var(--shadow-glow)]">
             <Icon className="h-4 w-4" />
           </div>
         )}
-        <div>
-          <h3 className="text-base font-display font-extrabold tracking-tight">{title}</h3>
-          {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+        <div className="min-w-0">
+          {eyebrow && (
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80 mb-0.5">{eyebrow}</p>
+          )}
+          <h3 className="text-base sm:text-lg font-display font-extrabold tracking-tight leading-tight">{title}</h3>
+          {subtitle && <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
         </div>
       </div>
       {children}
     </section>
+  );
+}
+
+/** Unified pill button used for option chips throughout the page */
+function Pill({ active, onClick, children, className = "", disabled = false, title }: {
+  active: boolean; onClick?: () => void; children: React.ReactNode; className?: string; disabled?: boolean; title?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className={`relative rounded-xl border font-semibold transition-all active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none ${
+        active
+          ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]"
+          : "bg-muted/50 text-foreground border-hairline hover:bg-muted hover:border-hairline-strong"
+      } ${className}`}
+    >
+      {children}
+    </button>
   );
 }
 
