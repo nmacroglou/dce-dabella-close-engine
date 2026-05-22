@@ -384,6 +384,81 @@ export type Database = {
         }
         Relationships: []
       }
+      utility_refresh_runs: {
+        Row: {
+          error: string | null
+          finished_at: string | null
+          id: string
+          items_added: number
+          items_total: number
+          started_at: string
+          status: string
+        }
+        Insert: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          items_added?: number
+          items_total?: number
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          items_added?: number
+          items_total?: number
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      utility_updates: {
+        Row: {
+          category: string
+          content_hash: string
+          created_at: string
+          fetched_at: string
+          id: string
+          impact: string | null
+          published_at: string | null
+          source_name: string | null
+          source_url: string
+          summary: string | null
+          title: string
+          utility: string
+        }
+        Insert: {
+          category?: string
+          content_hash: string
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          impact?: string | null
+          published_at?: string | null
+          source_name?: string | null
+          source_url: string
+          summary?: string | null
+          title: string
+          utility: string
+        }
+        Update: {
+          category?: string
+          content_hash?: string
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          impact?: string | null
+          published_at?: string | null
+          source_name?: string | null
+          source_url?: string
+          summary?: string | null
+          title?: string
+          utility?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
