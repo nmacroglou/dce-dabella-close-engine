@@ -31,16 +31,16 @@ const OPTION_CONFIG = [
   { key: "A" as const, kw: 4, title: "Stronger Shield", tag: "Best for: heavy usage / future EV", accent: "text-primary" },
 ];
 
-function StatTile({ icon: Icon, label, value, sub, accent = "text-primary" }: {
-  icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string; accent?: string;
+function StatTile({ icon: Icon, label, value, sub, accent = "text-primary", large = false }: {
+  icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string; accent?: string; large?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-hairline bg-card p-4 shadow-[var(--shadow-xs)]">
+    <div className={`rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] ${large ? "p-5" : "p-4"}`}>
       <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
         <Icon className={`h-3.5 w-3.5 ${accent}`} />
         {label}
       </div>
-      <div className={`text-2xl font-extrabold mt-1 ${accent}`}>{value}</div>
+      <div className={`${large ? "text-3xl sm:text-4xl" : "text-2xl"} font-extrabold mt-1 ${accent}`}>{value}</div>
       {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
     </div>
   );
