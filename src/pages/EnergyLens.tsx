@@ -219,9 +219,9 @@ export default function EnergyLens() {
                 </div>
                 <div className="mt-3">
                   <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-                    <span>Custom range (1–40y)</span><span className="font-bold text-foreground">{horizon} years</span>
+                    <span>Custom range (1–50y)</span><span className="font-bold text-foreground">{horizon} years</span>
                   </div>
-                  <Slider min={1} max={40} step={1} value={[horizon]} onValueChange={(v) => setHorizon(v[0])} />
+                  <Slider min={1} max={50} step={1} value={[horizon]} onValueChange={(v) => setHorizon(v[0])} />
                 </div>
               </div>
               <div>
