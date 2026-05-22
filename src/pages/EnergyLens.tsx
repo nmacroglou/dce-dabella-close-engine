@@ -245,7 +245,7 @@ export default function EnergyLens() {
           </SectionCard>
 
           {/* 2) Inflation Timeline */}
-          <SectionCard title="Inflation Timeline" subtitle="Step 2 — what happens if nothing changes" icon={TrendingUp}>
+          <SectionCard eyebrow="Step 2" title="Inflation Timeline" subtitle="What happens if nothing changes" icon={TrendingUp}>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between items-baseline">
