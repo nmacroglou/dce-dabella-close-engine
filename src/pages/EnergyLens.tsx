@@ -5,6 +5,7 @@ import {
   ChevronDown, ChevronUp, Sparkles, Shield, Target, Gauge,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
+import UtilityNewsFeed from "@/components/energy/UtilityNewsFeed";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -491,6 +492,9 @@ export default function EnergyLens() {
             <p className="text-muted-foreground">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
           </div>
         </SectionCard>
+
+        {/* Live utility watch — auto-refreshed daily from SRP/APS/TEP/AZCC */}
+        <UtilityNewsFeed activeUtility={(utility.id.toUpperCase() as "SRP" | "APS" | "TEP")} />
 
         {/* Rules & Reality + Driver + Script */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
