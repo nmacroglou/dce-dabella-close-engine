@@ -463,28 +463,52 @@ export default function EnergyLens() {
             {options.map((opt) => {
               const active = systemKw === opt.kw;
               return (
-                <button key={opt.key} onClick={() => setSystemKw(opt.kw)}
-                  className={`text-left rounded-2xl border p-5 transition-all pressable ${active ? "border-primary bg-primary/5 shadow-[var(--shadow-glow)]" : "border-hairline bg-card hover:border-hairline-strong"}`}>
-                  <div className="flex items-baseline justify-between">
-                    <div>
-                      <p className={`text-[11px] font-bold uppercase tracking-wider ${opt.accent}`}>Option {opt.key} — {opt.kw}kW</p>
-                      <h4 className="text-lg font-display font-extrabold mt-0.5">{opt.title}</h4>
+                <button
+                  key={opt.key}
+                  onClick={() => setSystemKw(opt.kw)}
+                  className={`group relative overflow-hidden text-left rounded-2xl border p-5 transition-all active:scale-[0.99] ${
+                    active
+                      ? "border-primary bg-gradient-to-br from-primary/10 via-card to-card shadow-[var(--shadow-glow)]"
+                      : "border-hairline bg-card hover:border-hairline-strong hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
+                  }`}
+                >
+                  {active && (
+                    <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/15 blur-2xl" />
+                  )}
+                  <div className="relative flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${opt.accent}`}>Option {opt.key} · {opt.kw}kW</p>
+                      <h4 className="text-lg font-display font-extrabold mt-1 leading-tight">{opt.title}</h4>
                     </div>
-                    {active && <span className="text-[10px] font-bold text-primary uppercase">Selected</span>}
+                    {active && (
+                      <span className="flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        Selected
+                      </span>
+                    )}
                   </div>
-                  <div className="mt-4 space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Year 1 value</span><span className="font-bold">{formatCurrency(opt.y1)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">10-year value</span><span className="font-bold">{formatCurrencyShort(opt.y10)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">25-year value</span><span className={`font-extrabold ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</span></div>
+                  <div className="relative mt-4 space-y-2 text-sm">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-muted-foreground text-xs">Year 1</span>
+                      <span className="font-bold tabular-nums">{formatCurrency(opt.y1)}</span>
+                    </div>
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-muted-foreground text-xs">10-year</span>
+                      <span className="font-bold tabular-nums">{formatCurrencyShort(opt.y10)}</span>
+                    </div>
+                    <div className="flex justify-between items-baseline pt-2 mt-1 border-t border-hairline">
+                      <span className="text-muted-foreground text-xs uppercase tracking-wider">25-year</span>
+                      <span className={`font-display font-extrabold text-xl tabular-nums ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-3 italic">{opt.tag}</p>
+                  <p className="relative text-[11px] text-muted-foreground mt-4 italic leading-snug">{opt.tag}</p>
                 </button>
               );
             })}
           </div>
-          <div className="mt-4 rounded-xl bg-muted/40 border border-hairline p-3 text-sm">
-            <p className="font-semibold mb-0.5">Financing language</p>
-            <p className="text-muted-foreground">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
+          <div className="mt-5 rounded-2xl bg-gradient-to-r from-muted/60 to-muted/30 border border-hairline p-4 text-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80 mb-1">Financing language</p>
+            <p className="text-muted-foreground leading-relaxed">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
           </div>
         </SectionCard>
 
