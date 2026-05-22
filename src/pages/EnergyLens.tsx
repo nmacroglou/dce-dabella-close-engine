@@ -197,7 +197,7 @@ export default function EnergyLens() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* 1) Your Utility Reality */}
-          <SectionCard title="Your Utility Reality" subtitle="Step 1 — where you are today" icon={Zap}>
+          <SectionCard eyebrow="Step 1" title="Your Utility Reality" subtitle="Where you are today" icon={Zap}>
             <div className="space-y-4">
               <div>
                 <Label className="text-xs uppercase tracking-wider font-semibold">Utility provider</Label>
