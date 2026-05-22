@@ -352,65 +352,7 @@ export default function EnergyLens() {
               </div>
 
               {/* Year-by-year savings breakdown */}
-              {(() => {
-                const milestones = [1, 5, 10, 15, 20, 25, 30, 35, 40].filter((y) => y <= horizon);
-                if (!milestones.includes(horizon)) milestones.push(horizon);
-                const rows = milestones
-                  .map((y) => result.series[y - 1])
-                  .filter(Boolean);
-                return (
-                  <div className="rounded-2xl border border-hairline bg-gradient-to-br from-accent/5 to-primary/5 p-5">
-                    <div className="flex items-baseline justify-between mb-3">
-                      <h4 className="text-sm font-display font-extrabold tracking-tight">Yearly power savings</h4>
-                      <span className="text-[11px] text-muted-foreground">each row shows the math</span>
-                    </div>
-
-                    <div className="rounded-xl bg-background/60 border border-hairline px-4 py-3 mb-3 text-[11px] leading-relaxed">
-                      <div className="font-bold text-foreground uppercase tracking-wider text-[10px] mb-1.5">How each row adds up</div>
-                      <div className="font-mono text-foreground/80 space-y-0.5">
-                        <div><span className="text-accent font-bold">Solar value</span> = energy your roof produced × that year's rate</div>
-                        <div><span className="text-muted-foreground font-bold">Bill after solar</span> = max( $0 , Bill − Solar value )</div>
-                        <div><span className="text-primary font-bold">Saved that yr</span> = Bill − Bill after solar</div>
-                        <div className="text-muted-foreground">Cumulative = running total of "Saved that yr"</div>
-                      </div>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border-b border-hairline">
-                            <th className="text-left py-2 px-2">Year</th>
-                            <th className="text-right py-2 px-2">Bill</th>
-                            <th className="text-right py-2 px-2">Solar value</th>
-                            <th className="text-right py-2 px-2">Bill after solar</th>
-                            <th className="text-right py-2 px-2">Saved that yr</th>
-                            <th className="text-right py-2 px-2">Cumulative</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {rows.map((r) => {
-                            const savedThisYr = r.doNothingAnnual - r.withRoofAnnual;
-                            const cumSaved = r.doNothingCumulative - r.withRoofCumulative;
-                            return (
-                              <tr key={r.year} className="border-b border-hairline/60 last:border-0">
-                                <td className="py-2.5 px-2 font-bold text-foreground">Y{r.year}</td>
-                                <td className="py-2.5 px-2 text-right font-mono text-destructive">{formatCurrency(r.doNothingAnnual)}</td>
-                                <td className="py-2.5 px-2 text-right font-mono text-accent">{formatCurrency(r.energyValueAnnual)}</td>
-                                <td className="py-2.5 px-2 text-right font-mono text-muted-foreground">{formatCurrency(r.withRoofAnnual)}</td>
-                                <td className="py-2.5 px-2 text-right font-extrabold text-primary">{formatCurrency(savedThisYr)}</td>
-                                <td className="py-2.5 px-2 text-right font-extrabold text-primary">{formatCurrencyShort(cumSaved)}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
-                      <span className="font-semibold text-foreground">Why "Saved" can be less than "Solar value":</span> if the roof produces more power than the bill in a year, the extra is exported at a lower credit rate — the bill can only drop to $0, not below. Add up "Saved that yr" and you get the Cumulative total exactly.
-                    </p>
-                  </div>
-                );
-              })()}
+              <YearlySavingsBreakdown series={result.series} horizon={horizon} />
 
               {/* Chart: Utility spend over time */}
               <div className="rounded-2xl border border-hairline bg-muted/30 p-5">
