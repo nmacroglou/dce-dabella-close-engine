@@ -65,6 +65,31 @@ export default function Ledger() {
   const [exportAll, setExportAll] = useState(false);
   const autoImportRan = useRef(false);
 
+  // Build a quick lookup of deal-side metadata (address, closed amount, commission %)
+  // so the ledger table can surface fields that live on the deal/commission sheet.
+  const dealMetaById = useMemo(() => {
+    const map = new Map<string, { address: string; closedAmount: number; commissionPct: number }>();
+    const tiers = grid?.tiers ?? [];
+    const frontPct = grid?.front_end_pct ?? 50;
+    for (const d of deals) {
+      let commissionPct = 0;
+      let closedAmount = Number(d.closed_amount ?? 0);
+      try {
+        if (d.commission_sheet) {
+          const c = computeCommissionSheet(d.commission_sheet, tiers, frontPct);
+          commissionPct = c.commissionPct;
+          if (!closedAmount) closedAmount = c.contractTotal;
+        }
+      } catch { /* ignore */ }
+      map.set(d.id, {
+        address: d.address ?? "",
+        closedAmount,
+        commissionPct,
+      });
+    }
+    return map;
+  }, [deals, grid]);
+
   // Single-pass derive: per-row metadata + totals + monthly buckets.
   const { decorated, totals, monthly } = useMemo(() => {
     const nowMonth = new Date().toISOString().slice(0, 7);
@@ -99,8 +124,12 @@ export default function Ledger() {
         e.expected += eT;
         e.paid += paid;
       }
-      const searchHay = `${r.customer_name ?? ""} ${r.job_number ?? ""}`.toLowerCase();
-      return { row: r, paid, out, status, searchHay };
+      const meta = r.deal_id ? dealMetaById.get(r.deal_id) : undefined;
+      const address = meta?.address ?? "";
+      const closedAmount = meta?.closedAmount ?? 0;
+      const commissionPct = meta?.commissionPct ?? 0;
+      const searchHay = `${r.customer_name ?? ""} ${r.job_number ?? ""} ${address}`.toLowerCase();
+      return { row: r, paid, out, status, searchHay, address, closedAmount, commissionPct };
     });
     const totalPaid = frontPaid + backPaid;
     const outstanding = Math.max(0, expected - totalPaid);
@@ -113,7 +142,7 @@ export default function Ledger() {
       },
       monthly: [...m.entries()].sort(([a], [b]) => a.localeCompare(b)),
     };
-  }, [rows]);
+  }, [rows, dealMetaById]);
 
   // Build the last-12-months series for the trend chart, including collection rate
   // and momentum vs prior 3 months. This is what powers the upgraded KPI graph.
