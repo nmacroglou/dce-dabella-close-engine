@@ -598,13 +598,6 @@ export default function Ledger() {
   );
 }
 
-type DecoratedRow = {
-  row: CommissionPayment;
-  paid: number;
-  out: number;
-  status: "paid" | "front" | "pending";
-  searchHay: string;
-};
 
 type DecoratedRow = {
   row: CommissionPayment;
