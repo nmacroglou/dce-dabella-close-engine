@@ -647,7 +647,7 @@ function VirtualLedgerTable({
     <div className="overflow-x-auto">
       <div
         ref={parentRef}
-        className="min-w-[960px] overflow-y-auto"
+        className="min-w-[1280px] overflow-y-auto"
         style={{
           maxHeight: 640,
           // Let small lists shrink naturally; sticky header still works.
