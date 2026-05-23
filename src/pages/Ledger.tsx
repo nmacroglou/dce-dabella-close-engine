@@ -65,6 +65,31 @@ export default function Ledger() {
   const [exportAll, setExportAll] = useState(false);
   const autoImportRan = useRef(false);
 
+  // Build a quick lookup of deal-side metadata (address, closed amount, commission %)
+  // so the ledger table can surface fields that live on the deal/commission sheet.
+  const dealMetaById = useMemo(() => {
+    const map = new Map<string, { address: string; closedAmount: number; commissionPct: number }>();
+    const tiers = grid?.tiers ?? [];
+    const frontPct = grid?.front_end_pct ?? 50;
+    for (const d of deals) {
+      let commissionPct = 0;
+      let closedAmount = Number(d.closed_amount ?? 0);
+      try {
+        if (d.commission_sheet) {
+          const c = computeCommissionSheet(d.commission_sheet, tiers, frontPct);
+          commissionPct = c.commissionPct;
+          if (!closedAmount) closedAmount = c.contractTotal;
+        }
+      } catch { /* ignore */ }
+      map.set(d.id, {
+        address: d.address ?? "",
+        closedAmount,
+        commissionPct,
+      });
+    }
+    return map;
+  }, [deals, grid]);
+
   // Single-pass derive: per-row metadata + totals + monthly buckets.
   const { decorated, totals, monthly } = useMemo(() => {
     const nowMonth = new Date().toISOString().slice(0, 7);
@@ -99,8 +124,12 @@ export default function Ledger() {
         e.expected += eT;
         e.paid += paid;
       }
-      const searchHay = `${r.customer_name ?? ""} ${r.job_number ?? ""}`.toLowerCase();
-      return { row: r, paid, out, status, searchHay };
+      const meta = r.deal_id ? dealMetaById.get(r.deal_id) : undefined;
+      const address = meta?.address ?? "";
+      const closedAmount = meta?.closedAmount ?? 0;
+      const commissionPct = meta?.commissionPct ?? 0;
+      const searchHay = `${r.customer_name ?? ""} ${r.job_number ?? ""} ${address}`.toLowerCase();
+      return { row: r, paid, out, status, searchHay, address, closedAmount, commissionPct };
     });
     const totalPaid = frontPaid + backPaid;
     const outstanding = Math.max(0, expected - totalPaid);
@@ -113,7 +142,7 @@ export default function Ledger() {
       },
       monthly: [...m.entries()].sort(([a], [b]) => a.localeCompare(b)),
     };
-  }, [rows]);
+  }, [rows, dealMetaById]);
 
   // Build the last-12-months series for the trend chart, including collection rate
   // and momentum vs prior 3 months. This is what powers the upgraded KPI graph.
@@ -335,16 +364,19 @@ export default function Ledger() {
         return;
       }
       const headers = [
-        "sale_date","customer","job_number","expected_total","expected_front","expected_back",
+        "sale_date","customer","address","job_number","closed_amount","commission_pct",
+        "expected_total","expected_front","expected_back",
         "front_paid","front_paid_at","back_paid","back_paid_at","outstanding","notes",
       ];
-      const lines = source.map(({ row: r, out }) => {
+      const lines = source.map(({ row: r, out, address, closedAmount, commissionPct }) => {
+        const safe = (v: string) => `"${(v ?? "").replace(/"/g, '""')}"`;
         return [
-          r.sale_date ?? "", r.customer_name ?? "", r.job_number ?? "",
+          r.sale_date ?? "", safe(r.customer_name ?? ""), safe(address), safe(r.job_number ?? ""),
+          closedAmount, commissionPct,
           r.expected_total, r.expected_front, r.expected_back,
           r.front_paid_amount, r.front_paid_at ?? "",
           r.back_paid_amount, r.back_paid_at ?? "",
-          out, (r.notes ?? "").replace(/[\n,]/g, " "),
+          out, safe((r.notes ?? "").replace(/\n/g, " ")),
         ].join(",");
       });
       const csv = [headers.join(","), ...lines].join("\n");
@@ -566,17 +598,21 @@ export default function Ledger() {
   );
 }
 
+
 type DecoratedRow = {
   row: CommissionPayment;
   paid: number;
   out: number;
   status: "paid" | "front" | "pending";
   searchHay: string;
+  address: string;
+  closedAmount: number;
+  commissionPct: number;
 };
 
 const GRID_COLS =
-  "110px minmax(140px,1.5fr) minmax(90px,1fr) 110px 120px 120px 120px 110px 44px";
-const ROW_HEIGHT = 52;
+  "110px minmax(140px,1.4fr) minmax(160px,1.6fr) minmax(90px,0.9fr) 110px 80px 110px 110px 110px 110px 110px 44px";
+const ROW_HEIGHT = 56;
 
 function VirtualLedgerTable({
   rows, isLoading, totalCount, onEdit, onDelete, sort, onToggleSort,
@@ -611,7 +647,7 @@ function VirtualLedgerTable({
     <div className="overflow-x-auto">
       <div
         ref={parentRef}
-        className="min-w-[960px] overflow-y-auto"
+        className="min-w-[1280px] overflow-y-auto"
         style={{
           maxHeight: 640,
           // Let small lists shrink naturally; sticky header still works.
@@ -626,7 +662,10 @@ function VirtualLedgerTable({
         >
           <SortHeader align="left" active={sort.key === "date"} dir={sort.dir} onClick={() => onToggleSort("date")}>Sale date</SortHeader>
           <SortHeader align="left" active={sort.key === "customer"} dir={sort.dir} onClick={() => onToggleSort("customer")}>Customer</SortHeader>
+          <div className="text-left px-4 py-2.5">Address</div>
           <div className="text-left px-4 py-2.5">Job #</div>
+          <div className="text-right px-4 py-2.5">Closed</div>
+          <div className="text-right px-4 py-2.5">Comm %</div>
           <SortHeader align="right" active={sort.key === "amount"} dir={sort.dir} onClick={() => onToggleSort("amount")}>Expected</SortHeader>
           <div className="text-right px-4 py-2.5">Front paid</div>
           <div className="text-right px-4 py-2.5">Back paid</div>
@@ -664,6 +703,9 @@ function VirtualLedgerTable({
                     paid={d.paid}
                     out={d.out}
                     status={d.status}
+                    address={d.address}
+                    closedAmount={d.closedAmount}
+                    commissionPct={d.commissionPct}
                     onEdit={onEdit}
                     onDelete={onDelete}
                   />
@@ -678,12 +720,15 @@ function VirtualLedgerTable({
 }
 
 const LedgerRow = memo(function LedgerRow({
-  r, paid, out, status, onEdit, onDelete,
+  r, paid, out, status, address, closedAmount, commissionPct, onEdit, onDelete,
 }: {
   r: CommissionPayment;
   paid: number;
   out: number;
   status: "paid" | "front" | "pending";
+  address: string;
+  closedAmount: number;
+  commissionPct: number;
   onEdit: (r: CommissionPayment) => void;
   onDelete: (id: string) => void;
 }) {
@@ -700,7 +745,18 @@ const LedgerRow = memo(function LedgerRow({
     >
       <div className="px-4 py-2.5">{r.sale_date ?? "—"}</div>
       <div className="px-4 py-2.5 font-medium truncate">{r.customer_name ?? "—"}</div>
+      <div className="px-4 py-2.5 text-muted-foreground truncate" title={address || undefined}>
+        {address || "—"}
+      </div>
       <div className="px-4 py-2.5 text-muted-foreground truncate">{r.job_number ?? "—"}</div>
+      <div className="px-4 py-2.5 text-right tabular-nums">
+        {closedAmount > 0 ? fmtCurrency(closedAmount) : "—"}
+      </div>
+      <div className="px-4 py-2.5 text-right tabular-nums">
+        {commissionPct > 0
+          ? <span className="font-semibold text-accent">{commissionPct}%</span>
+          : <span className="text-muted-foreground">—</span>}
+      </div>
       <div className="px-4 py-2.5 text-right tabular-nums">{fmtCurrency(r.expected_total)}</div>
       <div className="px-4 py-2.5 text-right tabular-nums">
         {fmtCurrency(r.front_paid_amount)}
