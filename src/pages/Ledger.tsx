@@ -662,7 +662,10 @@ function VirtualLedgerTable({
         >
           <SortHeader align="left" active={sort.key === "date"} dir={sort.dir} onClick={() => onToggleSort("date")}>Sale date</SortHeader>
           <SortHeader align="left" active={sort.key === "customer"} dir={sort.dir} onClick={() => onToggleSort("customer")}>Customer</SortHeader>
+          <div className="text-left px-4 py-2.5">Address</div>
           <div className="text-left px-4 py-2.5">Job #</div>
+          <div className="text-right px-4 py-2.5">Closed</div>
+          <div className="text-right px-4 py-2.5">Comm %</div>
           <SortHeader align="right" active={sort.key === "amount"} dir={sort.dir} onClick={() => onToggleSort("amount")}>Expected</SortHeader>
           <div className="text-right px-4 py-2.5">Front paid</div>
           <div className="text-right px-4 py-2.5">Back paid</div>
