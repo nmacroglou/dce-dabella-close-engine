@@ -606,9 +606,20 @@ type DecoratedRow = {
   searchHay: string;
 };
 
+type DecoratedRow = {
+  row: CommissionPayment;
+  paid: number;
+  out: number;
+  status: "paid" | "front" | "pending";
+  searchHay: string;
+  address: string;
+  closedAmount: number;
+  commissionPct: number;
+};
+
 const GRID_COLS =
-  "110px minmax(140px,1.5fr) minmax(90px,1fr) 110px 120px 120px 120px 110px 44px";
-const ROW_HEIGHT = 52;
+  "110px minmax(140px,1.4fr) minmax(160px,1.6fr) minmax(90px,0.9fr) 110px 80px 110px 110px 110px 110px 110px 44px";
+const ROW_HEIGHT = 56;
 
 function VirtualLedgerTable({
   rows, isLoading, totalCount, onEdit, onDelete, sort, onToggleSort,
