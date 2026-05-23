@@ -364,16 +364,19 @@ export default function Ledger() {
         return;
       }
       const headers = [
-        "sale_date","customer","job_number","expected_total","expected_front","expected_back",
+        "sale_date","customer","address","job_number","closed_amount","commission_pct",
+        "expected_total","expected_front","expected_back",
         "front_paid","front_paid_at","back_paid","back_paid_at","outstanding","notes",
       ];
-      const lines = source.map(({ row: r, out }) => {
+      const lines = source.map(({ row: r, out, address, closedAmount, commissionPct }) => {
+        const safe = (v: string) => `"${(v ?? "").replace(/"/g, '""')}"`;
         return [
-          r.sale_date ?? "", r.customer_name ?? "", r.job_number ?? "",
+          r.sale_date ?? "", safe(r.customer_name ?? ""), safe(address), safe(r.job_number ?? ""),
+          closedAmount, commissionPct,
           r.expected_total, r.expected_front, r.expected_back,
           r.front_paid_amount, r.front_paid_at ?? "",
           r.back_paid_amount, r.back_paid_at ?? "",
-          out, (r.notes ?? "").replace(/[\n,]/g, " "),
+          out, safe((r.notes ?? "").replace(/\n/g, " ")),
         ].join(",");
       });
       const csv = [headers.join(","), ...lines].join("\n");
