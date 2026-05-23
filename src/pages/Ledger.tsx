@@ -720,12 +720,15 @@ function VirtualLedgerTable({
 }
 
 const LedgerRow = memo(function LedgerRow({
-  r, paid, out, status, onEdit, onDelete,
+  r, paid, out, status, address, closedAmount, commissionPct, onEdit, onDelete,
 }: {
   r: CommissionPayment;
   paid: number;
   out: number;
   status: "paid" | "front" | "pending";
+  address: string;
+  closedAmount: number;
+  commissionPct: number;
   onEdit: (r: CommissionPayment) => void;
   onDelete: (id: string) => void;
 }) {
@@ -742,7 +745,18 @@ const LedgerRow = memo(function LedgerRow({
     >
       <div className="px-4 py-2.5">{r.sale_date ?? "—"}</div>
       <div className="px-4 py-2.5 font-medium truncate">{r.customer_name ?? "—"}</div>
+      <div className="px-4 py-2.5 text-muted-foreground truncate" title={address || undefined}>
+        {address || "—"}
+      </div>
       <div className="px-4 py-2.5 text-muted-foreground truncate">{r.job_number ?? "—"}</div>
+      <div className="px-4 py-2.5 text-right tabular-nums">
+        {closedAmount > 0 ? fmtCurrency(closedAmount) : "—"}
+      </div>
+      <div className="px-4 py-2.5 text-right tabular-nums">
+        {commissionPct > 0
+          ? <span className="font-semibold text-accent">{commissionPct}%</span>
+          : <span className="text-muted-foreground">—</span>}
+      </div>
       <div className="px-4 py-2.5 text-right tabular-nums">{fmtCurrency(r.expected_total)}</div>
       <div className="px-4 py-2.5 text-right tabular-nums">
         {fmtCurrency(r.front_paid_amount)}
