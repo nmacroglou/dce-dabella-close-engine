@@ -703,6 +703,9 @@ function VirtualLedgerTable({
                     paid={d.paid}
                     out={d.out}
                     status={d.status}
+                    address={d.address}
+                    closedAmount={d.closedAmount}
+                    commissionPct={d.commissionPct}
                     onEdit={onEdit}
                     onDelete={onDelete}
                   />
