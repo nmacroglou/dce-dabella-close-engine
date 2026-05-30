@@ -24,6 +24,7 @@ import { bucketByDay, splitCurrentPrior, sumBuckets, wowDelta } from "@/lib/dash
 const TrendsCard = lazy(() => import("@/components/dashboard/TrendsCard").then(m => ({ default: m.TrendsCard })));
 const ActivityTimeline = lazy(() => import("@/components/dashboard/ActivityTimeline").then(m => ({ default: m.ActivityTimeline })));
 const ObjectionHeatmap = lazy(() => import("@/components/dashboard/ObjectionHeatmap").then(m => ({ default: m.ObjectionHeatmap })));
+const IncidentHealthSection = lazy(() => import("@/components/dashboard/IncidentHealthSection"));
 
 const SectionFallback = () => (
   <div className="rounded-2xl border border-hairline bg-card/50 p-8 grid place-items-center">
@@ -433,6 +434,11 @@ export default function Dashboard() {
 
         {/* ===== CONVERSION RIBBON ===== */}
         <ConversionRibbon deals={deals} />
+
+        {/* ===== INCIDENT HEALTH ===== */}
+        <Suspense fallback={<SectionFallback />}>
+          <IncidentHealthSection />
+        </Suspense>
 
         {/* ===== REP ECONOMICS ===== */}
         <section>
