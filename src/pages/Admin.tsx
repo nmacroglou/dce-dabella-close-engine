@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import AppHeader from "@/components/AppHeader";
+import RoleManager from "@/components/admin/RoleManager";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import {
   Loader2, Users, UserPlus, Activity, Briefcase, DollarSign,
   TrendingUp, Trophy, AlertCircle, ShieldCheck, MessageSquareWarning, Target,
+  UserCog,
 } from "lucide-react";
 import { formatCurrency, formatCount, pct } from "@/lib/format";
 import { DEAL_STAGES, STAGE_LABELS, type DealStage } from "@/types/deal";
@@ -338,6 +340,11 @@ export default function Admin() {
               })}
             </div>
           )}
+        </SectionCard>
+
+        {/* Role management */}
+        <SectionCard title="User Roles" icon={UserCog}>
+          <RoleManager />
         </SectionCard>
       </main>
     </div>
