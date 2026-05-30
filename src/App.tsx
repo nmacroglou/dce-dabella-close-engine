@@ -57,6 +57,7 @@ const App = () => (
                   <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
                   <Route path="/ledger" element={<ProtectedRoute><Ledger /></ProtectedRoute>} />
                   <Route path="/energy-lens" element={<ProtectedRoute><EnergyLens /></ProtectedRoute>} />
+                  <Route path="/incidents" element={<ProtectedRoute><Incidents /></ProtectedRoute>} />
                   <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
