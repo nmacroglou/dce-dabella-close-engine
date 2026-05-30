@@ -416,6 +416,125 @@ export default function LiveImpactDashboard({
             : "Without a battery, more shifts into the amber export band — worth less per kWh."}
           {" "}The dashed red line is the bill you'd be paying with no roof at all.
         </p>
+
+        {/* === Exports explained === */}
+        {(() => {
+          const retailRate = baseInputs.rate;
+          const exportRate = baseInputs.exportRate;
+          const selfUsedKwh = result.selfUsedYear1;
+          const exportedKwh = result.exportedYear1;
+          const selfUsedValue = selfUsedKwh * retailRate;
+          const exportValue = exportedKwh * exportRate;
+          const totalKwh = selfUsedKwh + exportedKwh;
+          const totalValue = selfUsedValue + exportValue;
+          const selfUsedShare = totalKwh > 0 ? selfUsedKwh / totalKwh : 0;
+          const exportShare = totalKwh > 0 ? exportedKwh / totalKwh : 0;
+          const blendedRate = totalKwh > 0 ? totalValue / totalKwh : 0;
+          const rateGap = retailRate - exportRate;
+          const rateGapPct = retailRate > 0 ? (rateGap / retailRate) : 0;
+
+          return (
+            <div className="mt-4 rounded-2xl border border-hairline bg-card/60 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-warning/15 text-warning">
+                  <Sparkles className="h-3.5 w-3.5" />
+                </span>
+                <h5 className="text-[12px] font-bold uppercase tracking-[0.12em] text-foreground">
+                  Exports, explained
+                </h5>
+              </div>
+
+              <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                When your roof produces more power than the home is using in that moment, the extra flows back to{" "}
+                <span className="font-semibold text-foreground">the grid</span> — that's an <span className="font-semibold text-foreground">export</span>.
+                The utility credits you for it, but at a <span className="font-semibold text-warning">lower rate</span> than what they charge you to buy power back.
+              </p>
+
+              {/* Rate gap visualization */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="rounded-xl border border-accent/20 bg-accent/5 p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-accent">You buy power at</p>
+                  <div className="text-xl font-display font-extrabold text-accent tabular-nums mt-1">
+                    ${retailRate.toFixed(2)}<span className="text-xs font-bold">/kWh</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">retail rate · what self-used kWh saves</p>
+                </div>
+                <div className="rounded-xl border border-warning/30 bg-warning/5 p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-warning">Utility pays you at</p>
+                  <div className="text-xl font-display font-extrabold text-warning tabular-nums mt-1">
+                    ${exportRate.toFixed(2)}<span className="text-xs font-bold">/kWh</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    export credit · {Math.round(rateGapPct * 100)}% less per kWh
+                  </p>
+                </div>
+              </div>
+
+              {/* Year 1 breakdown */}
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Your Year-1 production split
+              </p>
+              <div className="h-6 rounded-full bg-muted overflow-hidden flex mb-2">
+                <div
+                  className="h-full bg-accent flex items-center justify-center text-[10px] font-bold text-accent-foreground transition-all duration-500"
+                  style={{ width: `${selfUsedShare * 100}%` }}
+                  title={`Self-used: ${Math.round(selfUsedShare * 100)}%`}
+                >
+                  {selfUsedShare > 0.12 ? `${Math.round(selfUsedShare * 100)}%` : ""}
+                </div>
+                <div
+                  className="h-full bg-warning flex items-center justify-center text-[10px] font-bold text-warning-foreground transition-all duration-500"
+                  style={{ width: `${exportShare * 100}%` }}
+                  title={`Exported: ${Math.round(exportShare * 100)}%`}
+                >
+                  {exportShare > 0.12 ? `${Math.round(exportShare * 100)}%` : ""}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-[11px]">
+                <div className="flex items-start gap-2">
+                  <span className="h-2.5 w-2.5 rounded-sm bg-accent mt-1 shrink-0" />
+                  <div>
+                    <div className="font-bold text-foreground">Self-used in home</div>
+                    <div className="text-muted-foreground">
+                      {formatCount(selfUsedKwh)} kWh → <span className="font-bold text-accent">{formatCurrency(selfUsedValue)}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="h-2.5 w-2.5 rounded-sm bg-warning mt-1 shrink-0" />
+                  <div>
+                    <div className="font-bold text-foreground">Exported to grid</div>
+                    <div className="text-muted-foreground">
+                      {formatCount(exportedKwh)} kWh → <span className="font-bold text-warning">{formatCurrency(exportValue)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-xl bg-gradient-to-r from-primary/10 to-transparent border border-primary/20 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-[11px] font-semibold text-foreground">
+                    Blended value per kWh you produce
+                  </span>
+                  <span className="font-display font-extrabold text-primary tabular-nums">
+                    ${blendedRate.toFixed(3)}/kWh
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                  {hasBattery ? (
+                    <>
+                      <span className="font-semibold text-accent">Battery is doing its job:</span> it shifts production into the home so most kWh earn the higher retail rate instead of the lower export credit. Lose the battery and the blended rate drops toward <span className="font-semibold">${exportRate.toFixed(2)}</span>.
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold text-warning">Heads-up:</span> without a battery, more production exports during the day while the home is empty — earning the lower credit. A battery stores those kWh so the home uses them at the higher retail rate later.
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* === Cumulative savings line === */}
