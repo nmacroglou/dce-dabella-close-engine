@@ -24,6 +24,7 @@ const NAV = [
   { to: "/pipeline", label: "Pipeline", icon: GitBranch, end: false },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: false },
   { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
+  { to: "/incidents", label: "Incidents", icon: ShieldAlert, end: false },
   { to: "/energy-lens", label: "Energy Lens", icon: SunIcon, end: false },
 ] as const;
 
