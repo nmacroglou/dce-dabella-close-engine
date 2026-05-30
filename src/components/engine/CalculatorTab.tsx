@@ -142,6 +142,7 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
             accent={OPTION_ACCENTS[key]}
             financingFactor={state.financingFactor2}
             downPayment={state.downPayment}
+            creditScore={state.creditScore}
           />
         ))}
       </div>
