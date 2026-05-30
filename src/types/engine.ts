@@ -15,6 +15,7 @@ export interface EngineState {
   priceC: number;
   financingFactor1: number;
   financingFactor2: number;
+  creditScore: number | null;
   efficiencyDiscount: number;
   standbyDiscount: number;
   deferred6Pct: number;
