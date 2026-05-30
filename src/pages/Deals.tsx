@@ -16,6 +16,7 @@ import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
+import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
 import type { Incident } from "@/types/incident";
 import { computeEstimate, type PreliminaryEstimateInput } from "@/data/roofingPricing";
@@ -171,7 +172,15 @@ export default function DealsPage() {
                       <span>Updated {new Date(deal.updated_at).toLocaleDateString()}</span>
                     </div>
                     {deal.stage === "won" && deal.closed_amount ? (
-                      <div className="text-success font-semibold pt-1">Won {fmt(deal.closed_amount)}</div>
+                      <div className="flex items-center justify-between gap-2 pt-1">
+                        <span className="text-success font-semibold">Won {fmt(deal.closed_amount)}</span>
+                        <ClosedAtEditor dealId={deal.id} closedAt={deal.closed_at} label="Closed" />
+                      </div>
+                    ) : deal.stage === "lost" ? (
+                      <div className="flex items-center justify-between gap-2 pt-1">
+                        <span className="text-destructive font-semibold">Lost</span>
+                        <ClosedAtEditor dealId={deal.id} closedAt={deal.closed_at} label="On" />
+                      </div>
                     ) : deal.price_a ? (
                       <div className="font-medium text-foreground">Top option: {fmt(deal.price_a)}</div>
                     ) : hasPrelim ? (
