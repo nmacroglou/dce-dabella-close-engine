@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as Recharts from "recharts";
 import {
   Sun, Zap, Shield, Target, Battery, TrendingUp, TrendingDown,
-  Sparkles, ArrowRight, Wallet, Flame,
+  Sparkles, ArrowRight, Wallet, Flame, Wand2, Check,
 } from "lucide-react";
 import { computeLens, type LensInputs, type LensResult } from "@/lib/energyLensCalc";
 import { formatCurrency, formatCurrencyShort, formatCount, pct } from "@/lib/format";
