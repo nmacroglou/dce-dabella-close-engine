@@ -218,6 +218,18 @@ export default function DealsPage() {
                     <Button
                       size="sm"
                       variant="ghost"
+                      title="Log an incident for this deal"
+                      onClick={() => setIncidentPrefill({
+                        deal_id: deal.id,
+                        customer_name: [deal.homeowner1, deal.homeowner2].filter(Boolean).join(" & ") || null,
+                        title: `Incident — ${deal.homeowner1 || "deal"}`,
+                      })}
+                    >
+                      <ShieldAlert className="h-4 w-4 text-warning" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       onClick={() => {
                         if (confirm(`Delete deal for ${deal.homeowner1 || "this homeowner"}?`)) {
                           del.mutate(deal.id);
