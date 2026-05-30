@@ -10,12 +10,14 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown } from "lucide-react";
+import { Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown, ShieldAlert } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
+import IncidentDialog from "@/components/incidents/IncidentDialog";
+import type { Incident } from "@/types/incident";
 import { computeEstimate, type PreliminaryEstimateInput } from "@/data/roofingPricing";
 
 export default function DealsPage() {
@@ -31,6 +33,7 @@ export default function DealsPage() {
   const [newAddress, setNewAddress] = useState("");
   const [stageFilter, setStageFilter] = useState<DealStage | "all">("all");
   const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
+  const [incidentPrefill, setIncidentPrefill] = useState<Partial<Incident> | null>(null);
 
   if (authLoading) return null;
   if (!user) {
@@ -215,6 +218,18 @@ export default function DealsPage() {
                     <Button
                       size="sm"
                       variant="ghost"
+                      title="Log an incident for this deal"
+                      onClick={() => setIncidentPrefill({
+                        deal_id: deal.id,
+                        customer_name: [deal.homeowner1, deal.homeowner2].filter(Boolean).join(" & ") || null,
+                        title: `Incident — ${deal.homeowner1 || "deal"}`,
+                      })}
+                    >
+                      <ShieldAlert className="h-4 w-4 text-warning" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       onClick={() => {
                         if (confirm(`Delete deal for ${deal.homeowner1 || "this homeowner"}?`)) {
                           del.mutate(deal.id);
@@ -230,6 +245,11 @@ export default function DealsPage() {
           </div>
         )}
       </main>
+      <IncidentDialog
+        open={!!incidentPrefill}
+        onClose={() => setIncidentPrefill(null)}
+        prefill={incidentPrefill}
+      />
     </div>
   );
 }
