@@ -33,6 +33,7 @@ export default function DealsPage() {
   const [newAddress, setNewAddress] = useState("");
   const [stageFilter, setStageFilter] = useState<DealStage | "all">("all");
   const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
+  const [incidentPrefill, setIncidentPrefill] = useState<Partial<Incident> | null>(null);
 
   if (authLoading) return null;
   if (!user) {
