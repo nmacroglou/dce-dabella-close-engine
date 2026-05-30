@@ -37,6 +37,7 @@ interface OptionOutputCardProps {
   accent: string;
   financingFactor?: number;
   downPayment?: number;
+  creditScore?: number | null;
 }
 
 const DISCOUNT_TIERS = [5, 10, 15, 20] as const;
@@ -52,19 +53,14 @@ function ValueLine({ icon: Icon, label, value, color }: { icon: typeof BarChart3
   );
 }
 
-export default memo(function OptionOutputCard({ label, name, opt, energySavings, accent, financingFactor, downPayment = 0 }: OptionOutputCardProps) {
-  const [scoreInput, setScoreInput] = useState<string>("");
-  const [manualTier, setManualTier] = useState<CreditTierId | null>("great");
+export default memo(function OptionOutputCard({ label, name, opt, energySavings, accent, financingFactor, downPayment = 0, creditScore = null }: OptionOutputCardProps) {
+  const scoreFromProp = creditScore != null && creditScore >= 300 && creditScore <= 850 ? creditScore : null;
+  const [manualTier, setManualTier] = useState<CreditTierId | null>(null);
   const [term, setTerm] = useState<number>(180);
   const [dpOverride, setDpOverride] = useState<string>("");
 
-  const parsedScore = useMemo(() => {
-    const n = parseInt(scoreInput, 10);
-    return Number.isFinite(n) && n >= 300 && n <= 850 ? n : null;
-  }, [scoreInput]);
-
-  // If a valid score is entered, it drives the tier; otherwise use the chip selection.
-  const creditTier: CreditTierId = parsedScore != null ? tierFromScore(parsedScore) : (manualTier ?? "great");
+  // Score-derived tier takes precedence unless the user manually picked a chip on this card.
+  const creditTier: CreditTierId = manualTier ?? (scoreFromProp != null ? tierFromScore(scoreFromProp) : "great");
   const ratePct = CREDIT_TIERS.find((t) => t.id === creditTier)!.ratePct;
   const tierFactor = useMemo(() => lookupFactor(ratePct, term), [ratePct, term]);
   const effDown = useMemo(() => {
