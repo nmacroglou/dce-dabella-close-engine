@@ -124,17 +124,91 @@ export default memo(function OptionOutputCard({ label, name, opt, energySavings,
         })()}
       </div>
 
-      {/* Discount tiers — quick what-if */}
-      <div className="space-y-2">
-        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
-          <Percent className="h-4 w-4 text-warning" /> Discount Range Preview
-        </p>
+      {/* Discount tiers — dialed-in payment estimator */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+            <Percent className="h-4 w-4 text-warning" /> Discount Range Preview
+          </p>
+          {tierFactor != null && (
+            <span className="text-[10px] font-mono text-muted-foreground">
+              factor {tierFactor.toFixed(5)}
+            </span>
+          )}
+        </div>
+
+        {/* Estimator controls — credit tier · term · down payment */}
+        <div className="rounded-xl border border-hairline bg-muted/30 p-3 space-y-2.5">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            <CreditCard className="h-3.5 w-3.5 text-primary" /> Payment Assumptions
+          </div>
+
+          {/* Credit tier chips */}
+          <div className="flex flex-wrap gap-1.5">
+            {CREDIT_TIERS.map((t) => {
+              const active = t.id === creditTier;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setCreditTier(t.id)}
+                  className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors border ${
+                    active
+                      ? "bg-primary text-primary-foreground border-transparent"
+                      : "bg-background/60 text-muted-foreground border-hairline hover:text-foreground"
+                  }`}
+                  title={`Credit score ${t.range} → ${t.ratePct}% APR`}
+                >
+                  {t.label}
+                  <span className="ml-1 opacity-70 font-mono">{t.ratePct}%</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Term + Down payment */}
+          <div className="grid grid-cols-2 gap-2">
+            <label className="space-y-1">
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Term</span>
+              <select
+                value={term}
+                onChange={(e) => setTerm(parseInt(e.target.value, 10))}
+                className="w-full px-2 py-1.5 rounded-lg text-xs font-semibold bg-background border border-hairline focus:border-primary focus:outline-none"
+              >
+                {PAYMENT_TERMS.map((t) => (
+                  <option key={t} value={t} disabled={lookupFactor(ratePct, t) == null}>
+                    {t} mo {lookupFactor(ratePct, t) == null ? "(n/a)" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-1">
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Down Payment
+              </span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={dpOverride}
+                onChange={(e) => setDpOverride(e.target.value)}
+                placeholder={fmt(downPayment)}
+                className="w-full px-2 py-1.5 rounded-lg text-xs font-semibold bg-background border border-hairline focus:border-primary focus:outline-none"
+              />
+            </label>
+          </div>
+          {tierFactor == null && (
+            <p className="text-[10px] text-destructive">
+              No published factor for {ratePct}% @ {term}mo — pick another term.
+            </p>
+          )}
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           {DISCOUNT_TIERS.map((tier) => {
             const discounted = opt.price * (1 - tier / 100);
-            const monthly = financingFactor && financingFactor > 0
-              ? Math.round((discounted - downPayment) * financingFactor)
-              : null;
+            const financed = Math.max(0, discounted - effDown);
+            const monthly = tierFactor != null ? Math.round(financed * tierFactor) : null;
             const savings = opt.price - discounted;
             return (
               <div key={tier} className="rounded-xl border border-warning/20 bg-warning/5 p-3">
@@ -143,14 +217,25 @@ export default memo(function OptionOutputCard({ label, name, opt, energySavings,
                   <span className="text-[10px] text-muted-foreground">−{fmt(savings)}</span>
                 </div>
                 <p className="text-base font-extrabold text-foreground tracking-tight">{fmt(discounted)}</p>
-                {monthly !== null && (
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{fmt(monthly)}/mo</p>
+                {monthly !== null ? (
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {fmt(monthly)}/mo
+                    {effDown > 0 && (
+                      <span className="opacity-70"> · after {fmt(effDown)} down</span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground/70 mt-0.5">—</p>
                 )}
               </div>
             );
           })}
         </div>
+        <p className="text-[10px] text-muted-foreground/80 px-1 leading-relaxed">
+          Monthly = (Discounted Price − Down Payment) × Factor. Factor pulled from the published rate table for the selected credit tier &amp; term.
+        </p>
       </div>
+
 
       {/* Value stack */}
       <div className="space-y-2">
