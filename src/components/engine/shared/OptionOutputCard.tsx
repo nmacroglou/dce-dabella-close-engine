@@ -1,8 +1,25 @@
-import { memo } from "react";
-import { DollarSign, Zap, TrendingUp, BarChart3, Sparkles, Percent, Info } from "lucide-react";
+import { memo, useMemo, useState } from "react";
+import { DollarSign, Zap, TrendingUp, BarChart3, Sparkles, Percent, Info, CreditCard } from "lucide-react";
 import { fmt } from "@/lib/format";
 import type { OptionComputed } from "@/types/engine";
+import { PAYMENT_FACTORS, PAYMENT_TERMS } from "@/data/paymentFactors";
 import PromoRow from "./PromoRow";
+
+// Credit score → typical lender rate band (best-fit rows in PAYMENT_FACTORS)
+const CREDIT_TIERS = [
+  { id: "excellent", label: "Excellent", range: "740+",     ratePct: 9.99 },
+  { id: "great",     label: "Great",     range: "700–739",  ratePct: 10.99 },
+  { id: "good",      label: "Good",      range: "660–699",  ratePct: 12.99 },
+  { id: "fair",      label: "Fair",      range: "620–659",  ratePct: 14.99 },
+  { id: "rebuilding",label: "Rebuilding",range: "<620",     ratePct: 17.99 },
+] as const;
+
+type CreditTierId = (typeof CREDIT_TIERS)[number]["id"];
+
+function lookupFactor(ratePct: number, term: number): number | null {
+  const row = PAYMENT_FACTORS.find((r) => r.ratePct === ratePct);
+  return row?.factors[term] ?? null;
+}
 
 interface OptionOutputCardProps {
   label: string;
