@@ -159,7 +159,27 @@ export default memo(function OptionOutputCard({ label, name, opt, energySavings,
             <CreditCard className="h-3.5 w-3.5 text-primary" /> Payment Assumptions
           </div>
 
-          {/* Credit tier chips */}
+          {/* Credit score input */}
+          <label className="space-y-1 block">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              Credit Score <span className="opacity-60">(optional · 300–850)</span>
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={300}
+              max={850}
+              value={scoreInput}
+              onChange={(e) => setScoreInput(e.target.value)}
+              placeholder="e.g. 720"
+              className="w-full px-2 py-1.5 rounded-lg text-xs font-semibold bg-background border border-hairline focus:border-primary focus:outline-none"
+            />
+            {scoreInput && parsedScore == null && (
+              <span className="text-[10px] text-destructive">Enter a score between 300–850.</span>
+            )}
+          </label>
+
+          {/* Credit tier chips — auto-selected from score, or manually pick */}
           <div className="flex flex-wrap gap-1.5">
             {CREDIT_TIERS.map((t) => {
               const active = t.id === creditTier;
@@ -167,7 +187,10 @@ export default memo(function OptionOutputCard({ label, name, opt, energySavings,
                 <button
                   key={t.id}
                   type="button"
-                  onClick={() => setCreditTier(t.id)}
+                  onClick={() => {
+                    setManualTier(t.id);
+                    setScoreInput("");
+                  }}
                   className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors border ${
                     active
                       ? "bg-primary text-primary-foreground border-transparent"
@@ -181,6 +204,11 @@ export default memo(function OptionOutputCard({ label, name, opt, energySavings,
               );
             })}
           </div>
+          {parsedScore != null && (
+            <p className="text-[10px] text-muted-foreground">
+              Score <span className="font-bold text-foreground">{parsedScore}</span> → <span className="font-bold text-primary">{CREDIT_TIERS.find(t=>t.id===creditTier)!.label}</span> tier @ {ratePct}% APR.
+            </p>
+          )}
 
           {/* Term + Down payment */}
           <div className="grid grid-cols-2 gap-2">
