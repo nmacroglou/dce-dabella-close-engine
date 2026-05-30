@@ -341,6 +341,11 @@ export default function Admin() {
             </div>
           )}
         </SectionCard>
+
+        {/* Role management */}
+        <SectionCard title="User Roles" icon={UserCog}>
+          <RoleManager />
+        </SectionCard>
       </main>
     </div>
   );
