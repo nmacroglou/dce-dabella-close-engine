@@ -88,9 +88,19 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
         </FormSection>
 
         <FormSection icon="💰" title="Financing Factors" quote='"Here&apos;s the great news — you don&apos;t have to pay this all at once. We work with top lenders to break this into an affordable monthly investment."'>
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
             <InputField label="Factor 1" description="The lender's rate that converts your total into a monthly payment — a lower factor means a lower monthly cost" value={state.financingFactor1} onChange={(v) => update("financingFactor1", parseNum(v))} type="number" />
             <InputField label="Factor 2" description="An alternate financing rate — we'll show you which one gives you the best monthly payment" value={state.financingFactor2} onChange={(v) => update("financingFactor2", parseNum(v))} type="number" />
+            <InputField
+              label="Credit Score"
+              description="Optional (300–850). When provided, the discount range previews auto-pick the lender APR tier that matches this score."
+              value={state.creditScore ?? ""}
+              onChange={(v) => {
+                const n = parseInt(v, 10);
+                update("creditScore", Number.isFinite(n) ? n : null);
+              }}
+              type="number"
+            />
           </div>
         </FormSection>
 
