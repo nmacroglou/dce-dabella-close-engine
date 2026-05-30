@@ -27,6 +27,7 @@ const initialState: EngineState = {
   priceC: 0,
   financingFactor1: 0.01074,
   financingFactor2: 0.015,
+  creditScore: null,
   efficiencyDiscount: 2170,
   standbyDiscount: 2170,
   deferred6Pct: 5,
