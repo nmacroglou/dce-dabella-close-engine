@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import * as Recharts from "recharts";
+
 import {
   Zap, Sun, Battery, TrendingUp, Info, Printer, Cpu, MapPin,
   ChevronDown, ChevronUp, Sparkles, Shield, Target, Gauge,
@@ -7,6 +7,7 @@ import {
 import AppHeader from "@/components/AppHeader";
 import UtilityNewsFeed from "@/components/energy/UtilityNewsFeed";
 import YearlySavingsBreakdown from "@/components/energy/YearlySavingsBreakdown";
+import LiveImpactDashboard from "@/components/energy/LiveImpactDashboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -385,73 +386,32 @@ export default function EnergyLens() {
               </div>
             </div>
 
-            <div className="lg:col-span-2 space-y-5">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatTile large icon={Sun} label="Year 1 production" value={`${formatCount(result.prodYear1)} kWh`} accent="text-warning" />
-                <StatTile large icon={Zap} label="Year 1 value" value={formatCurrency(result.valueYear1)} sub={`${formatCurrency(result.valueYear1Monthly)} / mo`} accent="text-accent" />
-                <StatTile large icon={Target} label="% of bill offset" value={pct(result.offsetPct)} sub="year 1" accent="text-primary" />
-                <StatTile large icon={Shield} label={`Lifetime value (${horizon}y)`} value={formatCurrencyShort(result.cumulativeEnergyValue)} accent="text-primary" />
-              </div>
+            <div className="lg:col-span-2">
+              <LiveImpactDashboard
+                baseInputs={{
+                  monthlyBill,
+                  rate: effectiveRate,
+                  systemKw,
+                  productionFactor: utility.productionFactor,
+                  selfConsumptionPct: selfConsumption,
+                  exportRate,
+                  inflationPct,
+                  horizonYears: horizon,
+                  degradationPct: degradationOn ? 0.005 : 0,
+                  hasBattery,
+                }}
+                result={result}
+                horizon={horizon}
+                systemKw={systemKw}
+                hasBattery={hasBattery}
+                onSetSystemKw={setSystemKw}
+                onSetHasBattery={setHasBattery}
+                onSetSelfConsumption={setSelfConsumption}
+              />
 
               {/* Year-by-year savings breakdown */}
-              <YearlySavingsBreakdown series={result.series} horizon={horizon} />
-
-              {/* Chart: Utility spend over time */}
-              <div className="rounded-2xl border border-hairline bg-muted/30 p-5">
-                <h4 className="text-sm font-display font-extrabold tracking-tight mb-3">Utility spend over time</h4>
-                <div className="h-80">
-                  <Recharts.ResponsiveContainer width="100%" height="100%">
-                    <Recharts.AreaChart data={result.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="doNothingFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.35} />
-                          <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
-                        </linearGradient>
-                        <linearGradient id="withRoofFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.35} />
-                          <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <Recharts.CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <Recharts.XAxis dataKey="year" tickFormatter={(y) => `Y${y}`} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                      <Recharts.YAxis tickFormatter={(v) => formatCurrencyShort(v)} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                      <Recharts.Tooltip
-                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12 }}
-                        formatter={(v: number) => formatCurrency(v)}
-                        labelFormatter={(l) => `Year ${l}`}
-                      />
-                      <Recharts.Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Recharts.Area type="monotone" dataKey="doNothingAnnual" name="Do nothing" stroke="hsl(var(--destructive))" fill="url(#doNothingFill)" strokeWidth={2} />
-                      <Recharts.Area type="monotone" dataKey="withRoofAnnual" name="With Energy Roof" stroke="hsl(var(--accent))" fill="url(#withRoofFill)" strokeWidth={2} />
-                    </Recharts.AreaChart>
-                  </Recharts.ResponsiveContainer>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
-                  <span className="font-semibold text-foreground">What you are seeing:</span> The red area shows how much your annual utility bill grows if you do nothing — bills rise every year as rates go up. The green area shows your remaining utility spend after the Energy Roof offsets part of your usage. The gap between the two is money you keep in your pocket.
-                </p>
-              </div>
-
-              {/* Chart: Cumulative savings */}
-              <div className="rounded-2xl border border-hairline bg-muted/30 p-5">
-                <h4 className="text-sm font-display font-extrabold tracking-tight mb-3">Cumulative savings vs. doing nothing</h4>
-                <div className="h-64">
-                  <Recharts.ResponsiveContainer width="100%" height="100%">
-                    <Recharts.LineChart data={result.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                      <Recharts.CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <Recharts.XAxis dataKey="year" tickFormatter={(y) => `Y${y}`} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                      <Recharts.YAxis tickFormatter={(v) => formatCurrencyShort(v)} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                      <Recharts.Tooltip
-                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12 }}
-                        formatter={(v: number) => formatCurrency(v)}
-                        labelFormatter={(l) => `Year ${l}`}
-                      />
-                      <Recharts.Line type="monotone" dataKey="energyValueCumulative" name="Cumulative value created" stroke="hsl(var(--primary))" strokeWidth={3} dot={false} />
-                    </Recharts.LineChart>
-                  </Recharts.ResponsiveContainer>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
-                  <span className="font-semibold text-foreground">What you are seeing:</span> This line shows the total value the Energy Roof has created since day one — every year it adds the savings from self-used power plus any export credits. As utility rates rise, each kilowatt-hour you produce becomes more valuable, so the curve steepens over time. That upward bend is your hedge against inflation working.
-                </p>
+              <div className="mt-5">
+                <YearlySavingsBreakdown series={result.series} horizon={horizon} />
               </div>
             </div>
           </div>
