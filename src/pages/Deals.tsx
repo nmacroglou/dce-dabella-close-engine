@@ -16,6 +16,7 @@ import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
+import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
 import type { Incident } from "@/types/incident";
 import { computeEstimate, type PreliminaryEstimateInput } from "@/data/roofingPricing";
