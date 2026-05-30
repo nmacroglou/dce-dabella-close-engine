@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as Recharts from "recharts";
 import {
   Sun, Zap, Shield, Target, Battery, TrendingUp, TrendingDown,
-  Sparkles, ArrowRight, Wallet, Flame,
+  Sparkles, ArrowRight, Wallet, Flame, Wand2, Check,
 } from "lucide-react";
 import { computeLens, type LensInputs, type LensResult } from "@/lib/energyLensCalc";
 import { formatCurrency, formatCurrencyShort, formatCount, pct } from "@/lib/format";
@@ -195,8 +195,114 @@ export default function LiveImpactDashboard({
         </div>
       </div>
 
+      {/* === PERFECT SCENARIO recommender === */}
+      {(() => {
+        // Estimate annual usage from bill/rate
+        const annualUsage = baseInputs.rate > 0 ? (baseInputs.monthlyBill / baseInputs.rate) * 12 : 0;
+        // Rate gap drives battery value: bigger gap = more reason to store
+        const rateGapPct = baseInputs.rate > 0 ? (baseInputs.rate - baseInputs.exportRate) / baseInputs.rate : 0;
+        // Battery recommended when the gap is meaningful OR usage is high enough that storage pays off
+        const recBattery = rateGapPct >= 0.4 || baseInputs.monthlyBill >= 180;
+        const recSelfCons = recBattery ? 0.85 : 0.35;
+
+        // Search 2..10 kW for the size whose Year-1 value most closely covers the bill without massive over-export
+        const candidates = [2, 3, 4, 5, 6, 7, 8, 9, 10].map((kw) => {
+          const r = computeLens({ ...baseInputs, systemKw: kw, hasBattery: recBattery, selfConsumptionPct: recSelfCons });
+          // Score: prefer offset close to 100%, penalize going way over (waste of exports)
+          const offset = r.offsetPct;
+          const overshoot = Math.max(0, offset - 1.05);
+          const undershoot = Math.max(0, 1 - offset);
+          const score = -(undershoot * 1.2 + overshoot * 0.8);
+          return { kw, r, score, offset };
+        });
+        const best = candidates.reduce((a, b) => (b.score > a.score ? b : a));
+        const recKw = best.kw;
+        const recResult = best.r;
+
+        const isApplied = systemKw === recKw && hasBattery === recBattery;
+        const monthlyOffset = recResult.valueYear1Monthly;
+        const remaining = Math.max(0, baseInputs.monthlyBill - monthlyOffset);
+
+        const apply = () => {
+          onSetSystemKw(recKw);
+          onSetHasBattery(recBattery);
+          onSetSelfConsumption(recSelfCons);
+        };
+
+        return (
+          <div className="relative overflow-hidden rounded-3xl border-2 border-primary/40 bg-gradient-to-br from-primary/15 via-card to-warning/5 p-5 sm:p-6 shadow-[var(--shadow-sm)]">
+            <div className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full bg-warning/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
+
+            <div className="relative flex items-start justify-between flex-wrap gap-3 mb-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-warning text-primary-foreground shadow-[var(--shadow-sm)]">
+                  <Wand2 className="h-4.5 w-4.5" />
+                </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-base font-display font-extrabold tracking-tight">Perfect scenario for this homeowner</h4>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-warning/20 border border-warning/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-warning">
+                      <Sparkles className="h-2.5 w-2.5" /> Recommended
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Sized to their {formatCount(annualUsage)} kWh/yr usage at ${baseInputs.rate.toFixed(2)}/kWh
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={apply}
+                disabled={isApplied}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
+                  isApplied
+                    ? "bg-accent/20 text-accent border border-accent/40 cursor-default"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5"
+                }`}
+              >
+                {isApplied ? (<><Check className="h-3.5 w-3.5" /> Applied</>) : (<>Apply scenario <ArrowRight className="h-3.5 w-3.5" /></>)}
+              </button>
+            </div>
+
+            {/* Recommendation chips */}
+            <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
+              <div className="rounded-xl border border-primary/30 bg-primary/10 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-primary">System size</p>
+                <div className="text-2xl font-display font-extrabold text-primary tabular-nums leading-none mt-1">{recKw}<span className="text-sm">kW</span></div>
+              </div>
+              <div className={`rounded-xl border p-3 ${recBattery ? "border-accent/30 bg-accent/10" : "border-hairline bg-muted/40"}`}>
+                <p className={`text-[9px] font-bold uppercase tracking-wider ${recBattery ? "text-accent" : "text-muted-foreground"}`}>Battery</p>
+                <div className={`text-2xl font-display font-extrabold tabular-nums leading-none mt-1 ${recBattery ? "text-accent" : "text-foreground"}`}>
+                  {recBattery ? "Yes" : "No"}
+                </div>
+              </div>
+              <div className="rounded-xl border border-warning/30 bg-warning/10 p-3">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-warning">Bill offset</p>
+                <div className="text-2xl font-display font-extrabold text-warning tabular-nums leading-none mt-1">{Math.round(recResult.offsetPct * 100)}%</div>
+              </div>
+              <div className="rounded-xl border border-hairline bg-card p-3">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">New monthly</p>
+                <div className="text-2xl font-display font-extrabold tabular-nums leading-none mt-1">{formatCurrency(remaining)}</div>
+                <p className="text-[10px] text-muted-foreground mt-0.5">was {formatCurrency(baseInputs.monthlyBill)}</p>
+              </div>
+            </div>
+
+            {/* Reasoning */}
+            <div className="relative rounded-xl bg-card/70 border border-hairline px-3.5 py-3 text-[12px] text-foreground/90 leading-relaxed">
+              <span className="font-bold text-primary">Why this fits: </span>
+              A <span className="font-bold">{recKw}kW</span> array produces roughly {formatCount(recResult.prodYear1)} kWh/yr — about {Math.round(recResult.offsetPct * 100)}% of their bill.
+              {recBattery
+                ? <> With a battery, ~85% of that power is used in the home at the full <span className="font-bold">${baseInputs.rate.toFixed(2)}/kWh</span> retail rate — the export gap of {Math.round(rateGapPct * 100)}% would otherwise leak value.</>
+                : <> The export gap is modest ({Math.round(rateGapPct * 100)}%) and their usage is low enough that exports still pay reasonably — a battery's lift wouldn't justify the cost here.</>}
+              {" "}Lifetime value over {horizon}y: <span className="font-bold text-primary">{formatCurrencyShort(recResult.cumulativeEnergyValue)}</span>.
+            </div>
+          </div>
+        );
+      })()}
+
       {/* === Live KPI grid (4 tiles, animated) === */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+
         <ImpactTile
           icon={Sun}
           label="Year 1 production"
