@@ -8,6 +8,7 @@ import Checklist from "./playbook/Checklist";
 import ReferencePanel from "./playbook/ReferencePanel";
 import PaymentFactorsPanel from "./playbook/PaymentFactorsPanel";
 import CollapsibleCard from "./shared/CollapsibleCard";
+import BattleCardPanel from "./playbook/BattleCardPanel";
 
 const TAB_LABELS: Record<string, string> = {
   calculator: "Calculator",
@@ -112,6 +113,9 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
 
         {/* Sidebar */}
         <div className="lg:col-span-2 space-y-5">
+          {/* Battle Card */}
+          <BattleCardPanel />
+
           {/* Tips */}
           <div className="card-elevated-lg p-6">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
