@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-/** Upload a PDF blob to public storage and return its public URL. */
+/** Upload a PDF blob to private storage and return a 7-day signed URL. */
 export async function uploadProposalPdf(blob: Blob, filename: string): Promise<string> {
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user?.id;
@@ -18,8 +18,11 @@ export async function uploadProposalPdf(blob: Blob, filename: string): Promise<s
     });
   if (error) throw error;
 
-  const { data } = supabase.storage.from("followup-attachments").getPublicUrl(path);
-  return data.publicUrl;
+  const { data, error: signErr } = await supabase.storage
+    .from("followup-attachments")
+    .createSignedUrl(path, 60 * 60 * 24 * 7);
+  if (signErr || !data?.signedUrl) throw signErr ?? new Error("Failed to create signed URL");
+  return data.signedUrl;
 }
 
 /** Try the native Web Share API with a file. Falls back to URL-only share. */
