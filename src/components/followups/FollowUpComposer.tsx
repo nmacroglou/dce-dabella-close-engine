@@ -91,9 +91,11 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
           upsert: false,
         });
         if (error) { toast.error(error.message); continue; }
-        const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
+        const { data: signed } = await supabase.storage
+          .from(BUCKET)
+          .createSignedUrl(path, 60 * 60 * 24 * 7);
         added.push({
-          url: pub.publicUrl, path, name: file.name,
+          url: signed?.signedUrl ?? "", path, name: file.name,
           type: file.type, size: file.size, caption: "",
         });
       }
