@@ -107,6 +107,110 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_incident_notes: {
+        Row: {
+          attachments: Json
+          body: string
+          created_at: string
+          id: string
+          incident_id: string
+          rep_id: string
+        }
+        Insert: {
+          attachments?: Json
+          body: string
+          created_at?: string
+          id?: string
+          incident_id: string
+          rep_id: string
+        }
+        Update: {
+          attachments?: Json
+          body?: string
+          created_at?: string
+          id?: string
+          incident_id?: string
+          rep_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_incident_notes_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "deal_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_incidents: {
+        Row: {
+          assignee: string | null
+          attachments: Json
+          created_at: string
+          customer_name: string | null
+          deal_id: string | null
+          details: string | null
+          due_at: string | null
+          email_link: string | null
+          email_subject: string | null
+          id: string
+          incident_type: Database["public"]["Enums"]["incident_type"]
+          job_number: string | null
+          rep_id: string
+          resolved_at: string | null
+          severity: Database["public"]["Enums"]["incident_severity"]
+          source: Database["public"]["Enums"]["incident_source"]
+          status: Database["public"]["Enums"]["incident_status"]
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee?: string | null
+          attachments?: Json
+          created_at?: string
+          customer_name?: string | null
+          deal_id?: string | null
+          details?: string | null
+          due_at?: string | null
+          email_link?: string | null
+          email_subject?: string | null
+          id?: string
+          incident_type?: Database["public"]["Enums"]["incident_type"]
+          job_number?: string | null
+          rep_id: string
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          source?: Database["public"]["Enums"]["incident_source"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee?: string | null
+          attachments?: Json
+          created_at?: string
+          customer_name?: string | null
+          deal_id?: string | null
+          details?: string | null
+          due_at?: string | null
+          email_link?: string | null
+          email_subject?: string | null
+          id?: string
+          incident_type?: Database["public"]["Enums"]["incident_type"]
+          job_number?: string | null
+          rep_id?: string
+          resolved_at?: string | null
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          source?: Database["public"]["Enums"]["incident_source"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       deal_objections: {
         Row: {
           created_at: string
@@ -475,6 +579,35 @@ export type Database = {
     Enums: {
       app_role: "admin" | "rep"
       deal_stage: "inspecting" | "presented" | "follow_up" | "won" | "lost"
+      incident_severity: "low" | "medium" | "high" | "critical"
+      incident_source:
+        | "email"
+        | "phone"
+        | "text"
+        | "portal"
+        | "in_person"
+        | "other"
+      incident_status:
+        | "open"
+        | "in_progress"
+        | "waiting_external"
+        | "blocked"
+        | "resolved"
+      incident_type:
+        | "incomplete_paperwork"
+        | "audit_item"
+        | "change_order"
+        | "addendum"
+        | "refund"
+        | "deposit_issue"
+        | "missing_poi"
+        | "fraud_alert"
+        | "cancel_decline"
+        | "approval_pending"
+        | "ownership_stip"
+        | "roof_packet"
+        | "deal_update"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -604,6 +737,38 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "rep"],
       deal_stage: ["inspecting", "presented", "follow_up", "won", "lost"],
+      incident_severity: ["low", "medium", "high", "critical"],
+      incident_source: [
+        "email",
+        "phone",
+        "text",
+        "portal",
+        "in_person",
+        "other",
+      ],
+      incident_status: [
+        "open",
+        "in_progress",
+        "waiting_external",
+        "blocked",
+        "resolved",
+      ],
+      incident_type: [
+        "incomplete_paperwork",
+        "audit_item",
+        "change_order",
+        "addendum",
+        "refund",
+        "deposit_issue",
+        "missing_poi",
+        "fraud_alert",
+        "cancel_decline",
+        "approval_pending",
+        "ownership_stip",
+        "roof_packet",
+        "deal_update",
+        "other",
+      ],
     },
   },
 } as const
