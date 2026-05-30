@@ -245,6 +245,11 @@ export default function DealsPage() {
           </div>
         )}
       </main>
+      <IncidentDialog
+        open={!!incidentPrefill}
+        onClose={() => setIncidentPrefill(null)}
+        prefill={incidentPrefill}
+      />
     </div>
   );
 }
