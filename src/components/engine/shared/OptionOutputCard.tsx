@@ -45,6 +45,16 @@ function ValueLine({ icon: Icon, label, value, color }: { icon: typeof BarChart3
 }
 
 export default memo(function OptionOutputCard({ label, name, opt, energySavings, accent, financingFactor, downPayment = 0 }: OptionOutputCardProps) {
+  const [creditTier, setCreditTier] = useState<CreditTierId>("great");
+  const [term, setTerm] = useState<number>(180);
+  const [dpOverride, setDpOverride] = useState<string>("");
+
+  const ratePct = CREDIT_TIERS.find((t) => t.id === creditTier)!.ratePct;
+  const tierFactor = useMemo(() => lookupFactor(ratePct, term), [ratePct, term]);
+  const effDown = useMemo(() => {
+    const n = parseFloat(dpOverride);
+    return Number.isFinite(n) && n >= 0 ? n : downPayment;
+  }, [dpOverride, downPayment]);
   return (
     <div className="card-elevated-lg p-6 space-y-5">
       <div className="flex items-center justify-between">
