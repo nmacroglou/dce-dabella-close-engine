@@ -53,10 +53,18 @@ function ValueLine({ icon: Icon, label, value, color }: { icon: typeof BarChart3
 }
 
 export default memo(function OptionOutputCard({ label, name, opt, energySavings, accent, financingFactor, downPayment = 0 }: OptionOutputCardProps) {
-  const [creditTier, setCreditTier] = useState<CreditTierId>("great");
+  const [scoreInput, setScoreInput] = useState<string>("");
+  const [manualTier, setManualTier] = useState<CreditTierId | null>("great");
   const [term, setTerm] = useState<number>(180);
   const [dpOverride, setDpOverride] = useState<string>("");
 
+  const parsedScore = useMemo(() => {
+    const n = parseInt(scoreInput, 10);
+    return Number.isFinite(n) && n >= 300 && n <= 850 ? n : null;
+  }, [scoreInput]);
+
+  // If a valid score is entered, it drives the tier; otherwise use the chip selection.
+  const creditTier: CreditTierId = parsedScore != null ? tierFromScore(parsedScore) : (manualTier ?? "great");
   const ratePct = CREDIT_TIERS.find((t) => t.id === creditTier)!.ratePct;
   const tierFactor = useMemo(() => lookupFactor(ratePct, term), [ratePct, term]);
   const effDown = useMemo(() => {
