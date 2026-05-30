@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import * as Recharts from "recharts";
+
 import {
   Zap, Sun, Battery, TrendingUp, Info, Printer, Cpu, MapPin,
   ChevronDown, ChevronUp, Sparkles, Shield, Target, Gauge,
