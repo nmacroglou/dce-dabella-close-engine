@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, Save, Trash2 } from "lucide-react";
+import { X, Save, Trash2, Wand2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useUpsertIncident, useDeleteIncident } from "@/hooks/useIncidents";
+import { parseIncidentSubject } from "@/lib/parseIncidentSubject";
+import IncidentAttachments from "./IncidentAttachments";
 import {
   INCIDENT_TYPES, INCIDENT_TYPE_LABELS,
   INCIDENT_STATUSES, INCIDENT_STATUS_LABELS,
@@ -13,6 +15,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   incident?: Incident | null;
+  prefill?: Partial<Incident> | null;
 }
 
 const blank: Partial<Incident> = {
@@ -23,15 +26,25 @@ const blank: Partial<Incident> = {
   source: "email",
 };
 
-export default function IncidentDialog({ open, onClose, incident }: Props) {
+export default function IncidentDialog({ open, onClose, incident, prefill }: Props) {
   const upsert = useUpsertIncident();
   const del = useDeleteIncident();
-  const [form, setForm] = useState<Partial<Incident>>(incident ?? blank);
+  const [form, setForm] = useState<Partial<Incident>>(incident ?? { ...blank, ...(prefill ?? {}) });
+  const [quickPaste, setQuickPaste] = useState("");
 
-  useEffect(() => { setForm(incident ?? blank); }, [incident, open]);
+  useEffect(() => {
+    setForm(incident ?? { ...blank, ...(prefill ?? {}) });
+    setQuickPaste("");
+  }, [incident, prefill, open]);
 
   const set = <K extends keyof Incident>(k: K, v: Incident[K] | null) =>
     setForm((p) => ({ ...p, [k]: v }));
+
+  const applyQuickPaste = () => {
+    if (!quickPaste.trim()) return;
+    const parsed = parseIncidentSubject(quickPaste);
+    setForm((p) => ({ ...p, ...parsed }));
+  };
 
   const save = async () => {
     if (!form.title?.trim()) return;
@@ -48,7 +61,7 @@ export default function IncidentDialog({ open, onClose, incident }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-xl">
             {incident ? "Edit incident" : "New incident"}
@@ -56,6 +69,33 @@ export default function IncidentDialog({ open, onClose, incident }: Props) {
         </DialogHeader>
 
         <div className="space-y-3 pt-2">
+          {!incident && (
+            <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-2.5 space-y-1.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-primary">
+                <Wand2 className="h-3 w-3" /> Quick paste email subject
+              </div>
+              <div className="flex gap-1.5">
+                <input
+                  value={quickPaste}
+                  onChange={(e) => setQuickPaste(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyQuickPaste(); } }}
+                  placeholder="e.g. Incomplete paperwork 166354 Lackey"
+                  className="flex-1 px-3 py-1.5 rounded-md border border-border bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <button
+                  type="button"
+                  onClick={applyQuickPaste}
+                  className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90"
+                >
+                  Parse
+                </button>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Auto-fills type, job number, customer & title from a subject line.
+              </p>
+            </div>
+          )}
+
           <Field label="Title">
             <input
               value={form.title ?? ""}
@@ -128,6 +168,12 @@ export default function IncidentDialog({ open, onClose, incident }: Props) {
               placeholder="What's missing, who owns it, what's blocking…"
             />
           </Field>
+
+          {incident?.id && (
+            <div className="pt-2 border-t border-border">
+              <IncidentAttachments incident={incident} />
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between gap-2 pt-3 border-t border-border">
