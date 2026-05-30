@@ -16,6 +16,14 @@ const CREDIT_TIERS = [
 
 type CreditTierId = (typeof CREDIT_TIERS)[number]["id"];
 
+function tierFromScore(score: number): CreditTierId {
+  if (score >= 740) return "excellent";
+  if (score >= 700) return "great";
+  if (score >= 660) return "good";
+  if (score >= 620) return "fair";
+  return "rebuilding";
+}
+
 function lookupFactor(ratePct: number, term: number): number | null {
   const row = PAYMENT_FACTORS.find((r) => r.ratePct === ratePct);
   return row?.factors[term] ?? null;
