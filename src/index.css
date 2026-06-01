@@ -355,30 +355,59 @@
     height: auto !important;
     overflow: visible !important;
   }
-  /* Hide app chrome via the wrapper class instead of visibility tricks
-     (visibility:hidden + position:absolute prevents multi-page printing in Chrome). */
   .print\:hidden { display: none !important; }
   .print\:block { display: block !important; }
 
   .print-summary {
     color: #0f1711;
-    width: 100%;
+    width: 210mm;
+    margin: 0 auto;
   }
   .print-summary, .print-summary * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
+  /* Every top-level section is exactly one A4 sheet. */
+  .print-summary .report-page {
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .print-summary .report-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
   .print-summary .cover-band {
     background: linear-gradient(180deg, #1b401e 0%, #0c1e0e 100%);
     color: #fff;
-    min-height: 297mm;          /* full A4 cover */
-    page-break-after: always;
-    break-after: page;
   }
   .print-summary .cover-accent {
-    position: absolute; inset: 0 0 auto 0; height: 3px; background: #daa520;
+    position: absolute; inset: 0 0 auto 0; height: 3px; background: #daa520; z-index: 2;
   }
-  .print-summary section { page-break-inside: avoid; break-inside: avoid; }
+}
+
+/* Screen preview of the print view: visually frame each page like A4 sheets */
+.print-summary .report-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.12);
+}
+.print-summary .cover-band {
+  background: linear-gradient(180deg, #1b401e 0%, #0c1e0e 100%);
+  color: #fff;
+}
+.print-summary .cover-accent {
+  position: absolute; inset: 0 0 auto 0; height: 3px; background: #daa520; z-index: 2;
 }
 
 
