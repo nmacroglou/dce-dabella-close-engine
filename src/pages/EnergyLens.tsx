@@ -8,6 +8,7 @@ import AppHeader from "@/components/AppHeader";
 import UtilityNewsFeed from "@/components/energy/UtilityNewsFeed";
 import YearlySavingsBreakdown from "@/components/energy/YearlySavingsBreakdown";
 import LiveImpactDashboard from "@/components/energy/LiveImpactDashboard";
+import EnergySummaryPrintView from "@/components/energy/EnergySummaryPrintView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
