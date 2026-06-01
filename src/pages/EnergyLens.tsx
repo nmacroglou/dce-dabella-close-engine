@@ -566,6 +566,24 @@ export default function EnergyLens() {
           </CollapsibleContent>
         </Collapsible>
       </main>
+
+      {/* Print-only proposal-style summary */}
+      <div className="hidden print:block">
+        <EnergySummaryPrintView
+          utility={utility}
+          monthlyBill={monthlyBill}
+          rate={effectiveRate}
+          exportRate={exportRate}
+          inflationPct={inflationPct}
+          horizon={horizon}
+          systemKw={systemKw}
+          hasBattery={hasBattery}
+          selfConsumption={selfConsumption}
+          result={result}
+          options={options}
+        />
+      </div>
     </div>
   );
 }
+
