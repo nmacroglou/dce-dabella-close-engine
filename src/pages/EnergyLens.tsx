@@ -154,8 +154,11 @@ export default function EnergyLens() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-7">
+      <div className="print:hidden">
+        <AppHeader />
+      </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-7 print:hidden">
+
         {/* Hero header */}
         <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-card via-card to-primary/5 p-5 sm:p-7 shadow-[var(--shadow-sm)]">
           <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
