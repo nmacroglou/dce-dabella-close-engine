@@ -345,3 +345,28 @@
   }
 }
 
+/* ============ PRINT: Energy Lens summary ============ */
+@media print {
+  @page { size: A4; margin: 0; }
+  html, body { background: #fff !important; }
+  body * { visibility: hidden !important; }
+  .print-summary, .print-summary * { visibility: visible !important; }
+  .print-summary {
+    position: absolute; left: 0; top: 0; width: 100%;
+    color: #0f1711;
+  }
+  .print-summary .cover-band {
+    background: linear-gradient(180deg, #1b401e 0%, #0c1e0e 100%);
+    color: #fff;
+    page-break-after: avoid;
+  }
+  .print-summary .cover-accent {
+    position: absolute; inset: 0 0 auto 0; height: 3px; background: #daa520;
+  }
+  .print-summary, .print-summary * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+
