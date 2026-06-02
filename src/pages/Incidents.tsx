@@ -178,6 +178,14 @@ export default function Incidents() {
           </div>
         ) : incidents.length === 0 ? (
           <EmptyState onNew={onNew} />
+        ) : viewMode === "tile" ? (
+          <TileView
+            incidents={filtered}
+            onEdit={onEdit}
+            onMove={onMove}
+            onToggleDetail={(id) => setActiveDetail((cur) => (cur === id ? null : id))}
+            activeDetail={activeDetail}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
             {INCIDENT_STATUSES.map((status) => (
