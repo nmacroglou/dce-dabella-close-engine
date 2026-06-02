@@ -137,6 +137,19 @@ export default function Incidents() {
               className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(v) => v && setViewMode(v as "kanban" | "tile")}
+            className="hidden sm:flex"
+          >
+            <ToggleGroupItem value="kanban" aria-label="Kanban view">
+              <LayoutList className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="tile" aria-label="Tile view">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
           <div className="flex items-center gap-1.5 p-1 rounded-xl border border-border bg-muted/40">
             {(["all","critical","high","medium","low"] as const).map((s) => (
               <button key={s} onClick={() => setSevFilter(s)}
