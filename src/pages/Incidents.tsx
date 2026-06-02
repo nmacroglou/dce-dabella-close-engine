@@ -385,6 +385,41 @@ function DetailPanel({ incident, onEdit, onMove }: { incident: Incident; onEdit:
   );
 }
 
+/* ---------- Tile view ---------- */
+function TileView({
+  incidents, onEdit, onMove, activeDetail, onToggleDetail,
+}: {
+  incidents: Incident[];
+  onEdit: (i: Incident) => void;
+  onMove: (id: string, s: IncidentStatus) => void;
+  activeDetail: string | null;
+  onToggleDetail: (id: string) => void;
+}) {
+  if (incidents.length === 0) {
+    return (
+      <div className="card-elevated-lg p-12 text-center">
+        <ShieldAlert className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+        <h3 className="text-lg font-bold text-foreground mb-1">No incidents match</h3>
+        <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      {incidents.map((i) => (
+        <IncidentCard
+          key={i.id}
+          incident={i}
+          onEdit={() => onEdit(i)}
+          onMove={(s) => onMove(i.id, s)}
+          expanded={activeDetail === i.id}
+          onToggle={() => onToggleDetail(i.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ---------- Empty state ---------- */
 function EmptyState({ onNew }: { onNew: () => void }) {
   return (
