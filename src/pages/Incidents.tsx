@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangle, Plus, Search, ShieldAlert, Clock, CheckCircle2,
   Loader2, Briefcase, ExternalLink, MessageSquareText, Filter, Flame,
+  LayoutGrid, LayoutList,
 } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import AppHeader from "@/components/AppHeader";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
 import { useIncidents, useUpdateIncidentStatus, useIncidentNotes, useAddIncidentNote } from "@/hooks/useIncidents";
