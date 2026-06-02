@@ -93,55 +93,80 @@ export default function DealsPage() {
     <div className="min-h-screen surface-premium">
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-display font-extrabold tracking-tight">
-              Your <span className="gradient-text">Deals</span>
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Every homeowner you've worked, all in one place.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Select value={stageFilter} onValueChange={(v) => setStageFilter(v as DealStage | "all")}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All stages</SelectItem>
-                {(Object.keys(STAGE_LABELS) as DealStage[]).map((s) => (
-                  <SelectItem key={s} value={s}>{STAGE_LABELS[s]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" /> New Deal
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Start a new deal</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-2">
-                  <div className="space-y-1.5">
-                    <Label>Homeowner name</Label>
-                    <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="John Smith" autoFocus />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Address (optional)</Label>
-                    <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St" />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleCreate} disabled={create.isPending}>
-                    {create.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Create & open
+        <div class="flex flex-col gap-4 mb-6">
+          <div class="flex items-end justify-between flex-wrap gap-4">
+            <div>
+              <h2 class="text-2xl font-display font-extrabold tracking-tight">
+                Your <span class="gradient-text">Deals</span>
+              </h2>
+              <p class="text-sm text-muted-foreground mt-1">
+                Every homeowner you've worked, all in one place.
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <ToggleGroup
+                type="single"
+                value={viewMode}
+                onValueChange={(v) => v && setViewMode(v as ViewMode)}
+                class="hidden sm:flex"
+              >
+                <ToggleGroupItem value="comfortable" aria-label="Comfortable view">
+                  <LayoutList class="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="compact" aria-label="Compact view">
+                  <LayoutGrid class="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+              <Select value={stageFilter} onValueChange={(v) => setStageFilter(v as DealStage | "all")}>
+                <SelectTrigger class="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All stages</SelectItem>
+                  {(Object.keys(STAGE_LABELS) as DealStage[]).map((s) => (
+                    <SelectItem key={s} value={s}>{STAGE_LABELS[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus class="h-4 w-4 mr-2" /> New Deal
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Start a new deal</DialogTitle>
+                  </DialogHeader>
+                  <div class="space-y-4 py-2">
+                    <div class="space-y-1.5">
+                      <Label>Homeowner name</Label>
+                      <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="John Smith" autoFocus />
+                    </div>
+                    <div class="space-y-1.5">
+                      <Label>Address (optional)</Label>
+                      <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={handleCreate} disabled={create.isPending}>
+                      {create.isPending && <Loader2 class="h-4 w-4 mr-2 animate-spin" />}
+                      Create & open
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+
+          <div class="relative max-w-md">
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search deals by name, address, product, stage..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              class="pl-9"
+            />
           </div>
         </div>
 
