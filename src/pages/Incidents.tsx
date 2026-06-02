@@ -2,7 +2,9 @@ import { useMemo, useState } from "react";
 import {
   AlertTriangle, Plus, Search, ShieldAlert, Clock, CheckCircle2,
   Loader2, Briefcase, ExternalLink, MessageSquareText, Filter, Flame,
+  LayoutGrid, LayoutList,
 } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import AppHeader from "@/components/AppHeader";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
 import { useIncidents, useUpdateIncidentStatus, useIncidentNotes, useAddIncidentNote } from "@/hooks/useIncidents";
@@ -52,6 +54,7 @@ export default function Incidents() {
   const [sevFilter, setSevFilter] = useState<IncidentSeverity | "all">("all");
   const [typeFilter, setTypeFilter] = useState<IncidentType | "all">("all");
   const [activeDetail, setActiveDetail] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"kanban" | "tile">("kanban");
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -134,6 +137,19 @@ export default function Incidents() {
               className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(v) => v && setViewMode(v as "kanban" | "tile")}
+            className="hidden sm:flex"
+          >
+            <ToggleGroupItem value="kanban" aria-label="Kanban view">
+              <LayoutList className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="tile" aria-label="Tile view">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
           <div className="flex items-center gap-1.5 p-1 rounded-xl border border-border bg-muted/40">
             {(["all","critical","high","medium","low"] as const).map((s) => (
               <button key={s} onClick={() => setSevFilter(s)}
@@ -162,6 +178,14 @@ export default function Incidents() {
           </div>
         ) : incidents.length === 0 ? (
           <EmptyState onNew={onNew} />
+        ) : viewMode === "tile" ? (
+          <TileView
+            incidents={filtered}
+            onEdit={onEdit}
+            onMove={onMove}
+            onToggleDetail={(id) => setActiveDetail((cur) => (cur === id ? null : id))}
+            activeDetail={activeDetail}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
             {INCIDENT_STATUSES.map((status) => (
@@ -357,6 +381,41 @@ function DetailPanel({ incident, onEdit, onMove }: { incident: Incident; onEdit:
           >Add</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------- Tile view ---------- */
+function TileView({
+  incidents, onEdit, onMove, activeDetail, onToggleDetail,
+}: {
+  incidents: Incident[];
+  onEdit: (i: Incident) => void;
+  onMove: (id: string, s: IncidentStatus) => void;
+  activeDetail: string | null;
+  onToggleDetail: (id: string) => void;
+}) {
+  if (incidents.length === 0) {
+    return (
+      <div className="card-elevated-lg p-12 text-center">
+        <ShieldAlert className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+        <h3 className="text-lg font-bold text-foreground mb-1">No incidents match</h3>
+        <p className="text-sm text-muted-foreground">Try adjusting your search or filters.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      {incidents.map((i) => (
+        <IncidentCard
+          key={i.id}
+          incident={i}
+          onEdit={() => onEdit(i)}
+          onMove={(s) => onMove(i.id, s)}
+          expanded={activeDetail === i.id}
+          onToggle={() => onToggleDetail(i.id)}
+        />
+      ))}
     </div>
   );
 }
