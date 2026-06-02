@@ -10,7 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown, ShieldAlert } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
+  ShieldAlert, Search, LayoutGrid, LayoutList,
+} from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
 import { fmt } from "@/lib/format";
 import { toast } from "sonner";
@@ -20,6 +24,8 @@ import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
 import type { Incident } from "@/types/incident";
 import { computeEstimate, type PreliminaryEstimateInput } from "@/data/roofingPricing";
+
+type ViewMode = "comfortable" | "compact";
 
 export default function DealsPage() {
   const { user, loading: authLoading } = useAuth();
