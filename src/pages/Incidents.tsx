@@ -54,6 +54,7 @@ export default function Incidents() {
   const [sevFilter, setSevFilter] = useState<IncidentSeverity | "all">("all");
   const [typeFilter, setTypeFilter] = useState<IncidentType | "all">("all");
   const [activeDetail, setActiveDetail] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"kanban" | "tile">("kanban");
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
