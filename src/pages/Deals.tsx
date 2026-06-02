@@ -50,7 +50,22 @@ export default function DealsPage() {
     return null;
   }
 
-  const filtered = deals.filter((d) => stageFilter === "all" || d.stage === stageFilter);
+  const q = search.trim().toLowerCase();
+  const filtered = deals.filter((d) => {
+    const stageOk = stageFilter === "all" || d.stage === stageFilter;
+    if (!q) return stageOk;
+    const hay = [
+      d.homeowner1,
+      d.homeowner2,
+      d.address,
+      STAGE_LABELS[d.stage],
+      ...d.products,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return stageOk && hay.includes(q);
+  });
 
   const handleCreate = async () => {
     if (!newName.trim()) {
