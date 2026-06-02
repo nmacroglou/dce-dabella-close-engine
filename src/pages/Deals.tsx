@@ -183,11 +183,97 @@ export default function DealsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className={`grid gap-4 ${viewMode === "compact" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 lg:grid-cols-2"}`}>
             {filtered.map((deal) => {
               const isExpanded = expandedEstimate === deal.id;
               const prelim = ((deal as unknown as { preliminary_estimate?: PreliminaryEstimateInput }).preliminary_estimate) ?? undefined;
               const hasPrelim = prelim && (prelim.squares || prelim.shingleId);
+              const isCompact = viewMode === "compact";
+
+              if (isCompact) {
+                return (
+                  <div key={deal.id} className="card-premium p-3 flex flex-col group">
+                    <div className="flex items-start justify-between mb-2 gap-2">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-bold text-foreground truncate">
+                          {deal.homeowner1 || "Untitled deal"}
+                          {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
+                        </h3>
+                        {deal.address && (
+                          <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
+                            <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
+                            {deal.address}
+                          </p>
+                        )}
+                      </div>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${STAGE_COLORS[deal.stage]}`}>
+                        {STAGE_LABELS[deal.stage]}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1 text-[11px] text-muted-foreground mb-3">
+                      {deal.products.length > 0 && (
+                        <div className="truncate">{deal.products.join(", ")}</div>
+                      )}
+                      {deal.stage === "won" && deal.closed_amount ? (
+                        <div className="text-success font-semibold">Won {fmt(deal.closed_amount)}</div>
+                      ) : deal.stage === "lost" ? (
+                        <div className="text-destructive font-semibold">Lost</div>
+                      ) : deal.price_a ? (
+                        <div className="font-medium text-foreground">Top option: {fmt(deal.price_a)}</div>
+                      ) : hasPrelim ? (
+                        (() => {
+                          const b = computeEstimate({
+                            squares: prelim!.squares ?? 0,
+                            shingleId: prelim!.shingleId ?? null,
+                            accessories: prelim!.accessories ?? {},
+                            hasSolar: prelim!.hasSolar ?? false,
+                            notes: prelim!.notes ?? "",
+                          });
+                          return (
+                            <div className="font-medium text-foreground flex items-center gap-1">
+                              <Calculator className="h-2.5 w-2.5 text-primary" />
+                              Prelim: {fmt(b.low)} – {fmt(b.high)}
+                            </div>
+                          );
+                        })()
+                      ) : null}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-hairline">
+                      <Button size="sm" className="flex-1 pressable h-7 text-[11px]" onClick={() => openDeal(deal.id)}>
+                        Open <ArrowRight className="h-2.5 w-2.5 ml-1" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        title="Log an incident for this deal"
+                        onClick={() => setIncidentPrefill({
+                          deal_id: deal.id,
+                          customer_name: [deal.homeowner1, deal.homeowner2].filter(Boolean).join(" & ") || null,
+                          title: `Incident — ${deal.homeowner1 || "deal"}`,
+                        })}
+                      >
+                        <ShieldAlert className="h-3.5 w-3.5 text-warning" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
+                        onClick={() => {
+                          if (confirm(`Delete deal for ${deal.homeowner1 || "this homeowner"}?`)) {
+                            del.mutate(deal.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div key={deal.id} className="card-premium p-5 flex flex-col group">
                   <div className="flex items-start justify-between mb-3">
