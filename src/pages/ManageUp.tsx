@@ -5,7 +5,6 @@ import { useDeals } from "@/hooks/useDeals";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency, formatCount, pctNum } from "@/lib/format";
 import {
-  ALL_RUBRICS,
   CLOSE_RATE_RUBRIC,
   DPL_RUBRIC,
   NIS_RUBRIC,
