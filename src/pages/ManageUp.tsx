@@ -451,7 +451,7 @@ export default function ManageUp() {
           <KpiRubricCard rubric={CLOSE_RATE_RUBRIC} value={closeRate} hint={inputs.closeRateOverride ? "Using your override" : `From ${derived.wonCount + derived.lostCount} finished deals`} />
           <KpiRubricCard rubric={NIS_RUBRIC} value={nis} hint={inputs.nisOverride ? "Using your override" : `${derived.wonCount} won deals`} />
           <KpiRubricCard rubric={DPL_RUBRIC} value={dpl} hint={leads > 0 ? `${formatCurrency(nis)} ÷ ${leads} leads` : "Enter Total Leads to calculate"} />
-          <KpiRubricCard rubric={PITCH_RATE_RUBRIC} value={pitchRate} hint={leads > 0 ? `${derived.presentedInMonth} pitched ÷ ${leads} leads` : "Enter Total Leads to calculate"} />
+          <KpiRubricCard rubric={PITCH_RATE_RUBRIC} value={pitchRate} hint={leads > 0 ? `${derived.pitchedAuto} pitched ÷ ${leads} leads` : "Enter Total Leads to calculate"} />
           <KpiRubricCard rubric={RETENTION_RUBRIC} value={retention} hint="Manual entry — adjust above" />
         </div>
 
