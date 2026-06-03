@@ -206,23 +206,26 @@ export default function ManageUp() {
   }, [user, month, inputs]);
 
   // derive metrics from deals for the selected month
+  // Rule (per rep): every deal CREATED in the month = 1 lead.
+  //                every deal whose stage is presented/follow_up/won/lost = pitched.
   const derived = useMemo(() => {
     const [y, m] = month.split("-").map(Number);
     const start = new Date(y, m - 1, 1).toISOString();
     const end = new Date(y, m, 1).toISOString();
+
+    const createdInMonth = deals.filter(
+      (d) => d.created_at >= start && d.created_at < end,
+    );
+    const leadsAuto = createdInMonth.length;
+    const pitchedAuto = createdInMonth.filter((d) =>
+      ["presented", "follow_up", "won", "lost"].includes(d.stage),
+    ).length;
 
     const closedInMonth = deals.filter(
       (d) => d.closed_at && d.closed_at >= start && d.closed_at < end,
     );
     const won = closedInMonth.filter((d) => d.stage === "won");
     const lost = closedInMonth.filter((d) => d.stage === "lost");
-    const presentedInMonth = deals.filter((d) => {
-      // Approximate "pitched" = ever reached presented/follow_up/won/lost during this month window.
-      // Use stage_changed_at as the proxy for activity in the period.
-      const t = d.stage_changed_at;
-      if (!t || t < start || t >= end) return false;
-      return ["presented", "follow_up", "won", "lost"].includes(d.stage);
-    }).length;
 
     const finished = won.length + lost.length;
     const closeRate = finished > 0 ? (won.length / finished) * 100 : 0;
@@ -233,18 +236,20 @@ export default function ManageUp() {
       nis,
       wonCount: won.length,
       lostCount: lost.length,
-      presentedInMonth,
+      leadsAuto,
+      pitchedAuto,
     };
   }, [deals, month]);
 
   // resolved values (override > derived > input)
   const closeRate = inputs.closeRateOverride ?? derived.closeRate;
   const nis = inputs.nisOverride ?? derived.nis;
-  const leads = Math.max(0, inputs.totalLeads);
+  // Total Leads: prefer user-entered (>0) else auto from deals created this month.
+  const leads = inputs.totalLeads > 0 ? inputs.totalLeads : derived.leadsAuto;
   const dpl = leads > 0 ? nis / leads : 0;
   const pitchRate =
     inputs.pitchRateOverride ??
-    (leads > 0 ? Math.min(100, (derived.presentedInMonth / leads) * 100) : 0);
+    (leads > 0 ? Math.min(100, (derived.pitchedAuto / leads) * 100) : 0);
   const retention = inputs.retentionPct;
 
   const scores = [
