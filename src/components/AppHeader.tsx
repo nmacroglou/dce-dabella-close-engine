@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck, ShieldAlert, Wallet, Sun as SunIcon, Menu } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck, ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
@@ -26,6 +26,7 @@ const NAV = [
   { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
   { to: "/incidents", label: "Incidents", icon: ShieldAlert, end: false },
   { to: "/energy-lens", label: "Energy Lens", icon: SunIcon, end: false },
+  { to: "/manage-up", label: "Manage Up", icon: Trophy, end: false },
 ] as const;
 
 type NavItemProps = {
