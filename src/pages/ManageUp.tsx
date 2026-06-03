@@ -217,8 +217,9 @@ export default function ManageUp() {
       (d) => d.created_at >= start && d.created_at < end,
     );
     const leadsAuto = createdInMonth.length;
-    const pitchedAuto = createdInMonth.filter((d) =>
-      ["presented", "follow_up", "won", "lost"].includes(d.stage),
+    // "Pitched" = any deal that has a calculated price on Option A/B/C.
+    const pitchedAuto = createdInMonth.filter(
+      (d) => (d.price_a ?? 0) > 0 || (d.price_b ?? 0) > 0 || (d.price_c ?? 0) > 0,
     ).length;
 
     const closedInMonth = deals.filter(
