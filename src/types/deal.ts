@@ -21,6 +21,16 @@ export const STAGE_COLORS: Record<DealStage, string> = {
   lost: "bg-destructive/10 text-destructive",
 };
 
+export type LeadSource = "internet" | "canvass" | "self_gen" | "referral" | "other";
+
+export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
+  internet: "Internet",
+  canvass: "Canvass",
+  self_gen: "Self-Gen",
+  referral: "Referral",
+  other: "Other",
+};
+
 export interface Deal {
   id: string;
   rep_id: string;
@@ -40,6 +50,9 @@ export interface Deal {
   price_b: number | null;
   price_c: number | null;
   commission_sheet: CommissionSheetInputs;
+  lead_source: LeadSource | null;
+  was_presented: boolean;
+  was_demoed: boolean;
   created_at: string;
   updated_at: string;
 }
