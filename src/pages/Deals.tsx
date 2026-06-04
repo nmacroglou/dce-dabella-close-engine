@@ -61,6 +61,7 @@ export default function DealsPage() {
       d.homeowner2,
       d.address,
       STAGE_LABELS[d.stage],
+      d.lead_source ? LEAD_SOURCE_LABELS[d.lead_source] : "",
       ...d.products,
     ]
       .filter(Boolean)
