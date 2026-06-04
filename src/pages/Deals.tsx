@@ -359,6 +359,10 @@ export default function DealsPage() {
                     ) : null}
                   </div>
 
+                  <div className="mb-3">
+                    <DealTagsEditor deal={deal} />
+                  </div>
+
                   <button
                     onClick={() => setExpandedEstimate(isExpanded ? null : deal.id)}
                     className="flex items-center justify-between gap-2 rounded-lg border border-hairline bg-muted/30 px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/40 transition-colors mb-3 pressable"
