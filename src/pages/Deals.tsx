@@ -152,6 +152,20 @@ export default function DealsPage() {
                       <Label>Address (optional)</Label>
                       <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St" />
                     </div>
+                    <div className="space-y-1.5">
+                      <Label>Lead source</Label>
+                      <Select value={newLeadSource} onValueChange={(v) => setNewLeadSource(v as LeadSource | "unset")}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="How did this lead come in?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unset">Not set</SelectItem>
+                          {(Object.keys(LEAD_SOURCE_LABELS) as LeadSource[]).map((k) => (
+                            <SelectItem key={k} value={k}>{LEAD_SOURCE_LABELS[k]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button onClick={handleCreate} disabled={create.isPending}>
