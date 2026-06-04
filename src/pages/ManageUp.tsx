@@ -340,7 +340,7 @@ export default function ManageUp() {
       `Total Leads Run: ${inputs.totalLeads}`,
     ];
     return lines.join("\n");
-  }, [month, scores, avgPoints, totalPoints, inputs.selfGens, inputs.totalLeads]);
+  }, [period, scores, avgPoints, totalPoints, inputs.selfGens, inputs.totalLeads]);
 
   const copyAll = async () => {
     await navigator.clipboard.writeText(summaryText);
