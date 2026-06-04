@@ -68,17 +68,25 @@ export default function IncludedFeaturesEditor({
           <TabsTrigger value="shared">Shared default</TabsTrigger>
         </TabsList>
 
-        {(["A", "B", "C"] as OptKey[]).map((k) => (
-          <TabsContent key={k} value={k}>
-            <FeatureList
-              features={perOption[k] ?? sharedDefault}
-              onChange={(next) => onChangePerOption(k, next)}
-              onResetToShared={() => onChangePerOption(k, [...computedDefault])}
-              onCopyFromShared={() => onChangePerOption(k, [...sharedDefault])}
-              optionLabel={`Option ${k}`}
-            />
-          </TabsContent>
-        ))}
+        {(["A", "B", "C"] as OptKey[]).map((k) => {
+          const others = (["A", "B", "C"] as OptKey[]).filter((o) => o !== k);
+          return (
+            <TabsContent key={k} value={k}>
+              <FeatureList
+                features={perOption[k] ?? sharedDefault}
+                onChange={(next) => onChangePerOption(k, next)}
+                onResetToShared={() => onChangePerOption(k, [...computedDefault])}
+                onCopyFromShared={() => onChangePerOption(k, [...sharedDefault])}
+                onCopyToOthers={() => {
+                  const src = perOption[k] ?? sharedDefault;
+                  others.forEach((o) => onChangePerOption(o, [...src]));
+                }}
+                copyToOthersLabel={`Copy to ${others.join(" & ")}`}
+                optionLabel={`Option ${k}`}
+              />
+            </TabsContent>
+          );
+        })}
 
         <TabsContent value="shared">
           <FeatureList
@@ -94,12 +102,14 @@ export default function IncludedFeaturesEditor({
 }
 
 function FeatureList({
-  features, onChange, onResetToShared, onCopyFromShared, optionLabel,
+  features, onChange, onResetToShared, onCopyFromShared, onCopyToOthers, copyToOthersLabel, optionLabel,
 }: {
   features: string[];
   onChange: (next: string[]) => void;
   onResetToShared: () => void;
   onCopyFromShared?: () => void;
+  onCopyToOthers?: () => void;
+  copyToOthersLabel?: string;
   optionLabel: string;
 }) {
   const [draft, setDraft] = useState("");
@@ -120,7 +130,16 @@ function FeatureList({
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {optionLabel} · {features.length} item{features.length === 1 ? "" : "s"}
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {onCopyToOthers && (
+            <button
+              type="button"
+              onClick={onCopyToOthers}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-foreground hover:bg-primary transition-colors px-2 py-1 rounded-md border border-primary/30"
+            >
+              <Copy className="h-3.5 w-3.5" /> {copyToOthersLabel ?? "Copy to others"}
+            </button>
+          )}
           {onCopyFromShared && (
             <button
               type="button"
