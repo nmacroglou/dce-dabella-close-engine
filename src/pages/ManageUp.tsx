@@ -257,6 +257,7 @@ export default function ManageUp() {
     periods.find((p) => p.kind === "month")?.key ?? periods[0].key,
   );
   const period = periods.find((p) => p.key === periodKey) ?? periods[0];
+  const isFuturePeriod = new Date() < period.start;
   const [inputs, setInputs] = useState<ManualInputs>(DEFAULTS);
   const [copied, setCopied] = useState(false);
 
