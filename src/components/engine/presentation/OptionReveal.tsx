@@ -60,6 +60,8 @@ export default memo(function OptionReveal({
         computed={computed}
         selected={false}
         customFeatures={perOptionFeatures?.[currentKey] ?? customFeatures}
+        products={products}
+        roofMaterial={roofMaterial}
         originalPrice={originalPrice}
         discountPct={discountPct}
         monthlyOverride={monthlyOverrides?.[currentKey]}
