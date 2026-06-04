@@ -2,7 +2,7 @@ import type { jsPDF } from "jspdf";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { fmt } from "@/lib/format";
 import { getOptionMetrics, getProductLabel } from "@/lib/engineHelpers";
-import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
+import { getDefaultFeatureTexts } from "@/components/engine/presentation/constants";
 import {
   type RGB,
   ACCENT, BORDER, CARD, CREAM, FOREST_INK, GRAPHITE, INK,
