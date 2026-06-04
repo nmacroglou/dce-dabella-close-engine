@@ -66,6 +66,9 @@ export function useCreateDeal() {
           price_a: initial.price_a ?? null,
           price_b: initial.price_b ?? null,
           price_c: initial.price_c ?? null,
+          lead_source: initial.lead_source ?? null,
+          was_presented: initial.was_presented ?? false,
+          was_demoed: initial.was_demoed ?? false,
         })
         .select()
         .single();
