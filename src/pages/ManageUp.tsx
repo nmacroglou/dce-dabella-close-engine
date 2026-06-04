@@ -500,23 +500,23 @@ export default function ManageUp() {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2 border-t border-hairline">
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Leads (auto)</p>
-              <p className="text-lg font-display font-bold text-foreground">{derived.leadsAuto}</p>
+              <p className="text-lg font-display font-bold text-foreground">{isFuturePeriod ? "—" : derived.leadsAuto}</p>
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Pitched (auto)</p>
-              <p className="text-lg font-display font-bold text-primary">{derived.pitchedAuto}</p>
+              <p className="text-lg font-display font-bold text-primary">{isFuturePeriod ? "—" : derived.pitchedAuto}</p>
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Won</p>
-              <p className="text-lg font-display font-bold text-accent">{derived.wonCount}</p>
+              <p className="text-lg font-display font-bold text-accent">{isFuturePeriod ? "—" : derived.wonCount}</p>
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Lost</p>
-              <p className="text-lg font-display font-bold text-destructive">{derived.lostCount}</p>
+              <p className="text-lg font-display font-bold text-destructive">{isFuturePeriod ? "—" : derived.lostCount}</p>
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">NIS (auto)</p>
-              <p className="text-lg font-display font-bold text-foreground">{formatCurrency(derived.nis)}</p>
+              <p className="text-lg font-display font-bold text-foreground">{isFuturePeriod ? "—" : formatCurrency(derived.nis)}</p>
             </div>
           </div>
         </section>
