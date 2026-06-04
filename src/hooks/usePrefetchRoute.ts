@@ -8,6 +8,9 @@ const PREFETCH: Record<string, () => Promise<unknown>> = {
   "/ledger": () => import("@/pages/Ledger.tsx"),
   "/admin": () => import("@/pages/Admin.tsx"),
   "/auth": () => import("@/pages/Auth.tsx"),
+  "/energy-lens": () => import("@/pages/EnergyLens.tsx"),
+  "/incidents": () => import("@/pages/Incidents.tsx"),
+  "/manage-up": () => import("@/pages/ManageUp.tsx"),
 };
 
 const warmed = new Set<string>();
