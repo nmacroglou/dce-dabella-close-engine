@@ -15,10 +15,11 @@ import {
   Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
   ShieldAlert, Search, LayoutGrid, LayoutList,
 } from "lucide-react";
-import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
+import { STAGE_LABELS, STAGE_COLORS, LEAD_SOURCE_LABELS, type DealStage, type LeadSource } from "@/types/deal";
 import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import DealTagsEditor from "@/components/deals/DealTagsEditor";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
 import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
@@ -38,6 +39,7 @@ export default function DealsPage() {
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
+  const [newLeadSource, setNewLeadSource] = useState<LeadSource | "unset">("unset");
   const [stageFilter, setStageFilter] = useState<DealStage | "all">("all");
   const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -59,6 +61,7 @@ export default function DealsPage() {
       d.homeowner2,
       d.address,
       STAGE_LABELS[d.stage],
+      d.lead_source ? LEAD_SOURCE_LABELS[d.lead_source] : "",
       ...d.products,
     ]
       .filter(Boolean)
@@ -75,11 +78,13 @@ export default function DealsPage() {
     const deal = await create.mutateAsync({
       homeowner1: newName.trim(),
       address: newAddress.trim(),
+      lead_source: newLeadSource === "unset" ? null : newLeadSource,
     });
     setActiveDealId(deal.id);
     setOpen(false);
     setNewName("");
     setNewAddress("");
+    setNewLeadSource("unset");
     toast.success("Deal created — let's go close it");
     navigate("/");
   };
@@ -146,6 +151,20 @@ export default function DealsPage() {
                     <div className="space-y-1.5">
                       <Label>Address (optional)</Label>
                       <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Lead source</Label>
+                      <Select value={newLeadSource} onValueChange={(v) => setNewLeadSource(v as LeadSource | "unset")}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="How did this lead come in?" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unset">Not set</SelectItem>
+                          {(Object.keys(LEAD_SOURCE_LABELS) as LeadSource[]).map((k) => (
+                            <SelectItem key={k} value={k}>{LEAD_SOURCE_LABELS[k]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <DialogFooter>
@@ -238,6 +257,10 @@ export default function DealsPage() {
                           );
                         })()
                       ) : null}
+                    </div>
+
+                    <div className="mb-3">
+                      <DealTagsEditor deal={deal} size="sm" />
                     </div>
 
                     <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-hairline">
@@ -334,6 +357,10 @@ export default function DealsPage() {
                         );
                       })()
                     ) : null}
+                  </div>
+
+                  <div className="mb-3">
+                    <DealTagsEditor deal={deal} />
                   </div>
 
                   <button
