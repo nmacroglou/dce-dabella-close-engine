@@ -15,10 +15,11 @@ import {
   Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
   ShieldAlert, Search, LayoutGrid, LayoutList,
 } from "lucide-react";
-import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
+import { STAGE_LABELS, STAGE_COLORS, LEAD_SOURCE_LABELS, type DealStage, type LeadSource } from "@/types/deal";
 import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import DealTagsEditor from "@/components/deals/DealTagsEditor";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
 import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
