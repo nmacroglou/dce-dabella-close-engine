@@ -252,44 +252,43 @@ function NumberField({
 export default function ManageUp() {
   const { user } = useAuth();
   const { data: deals = [] } = useDeals();
-  const months = useMemo(() => recentMonths(6), []);
-  const [month, setMonth] = useState(months[0]);
+  const periods = useMemo(() => buildPeriods(), []);
+  const [periodKey, setPeriodKey] = useState(
+    periods.find((p) => p.kind === "month")?.key ?? periods[0].key,
+  );
+  const period = periods.find((p) => p.key === periodKey) ?? periods[0];
   const [inputs, setInputs] = useState<ManualInputs>(DEFAULTS);
   const [copied, setCopied] = useState(false);
 
-  // load + persist per-month inputs
+  // load + persist per-period inputs
   useEffect(() => {
     if (!user) return;
-    setInputs(loadInputs(user.id, month));
-  }, [user, month]);
+    setInputs(loadInputs(user.id, periodKey));
+  }, [user, periodKey]);
 
   useEffect(() => {
     if (!user) return;
-    localStorage.setItem(storageKey(user.id, month), JSON.stringify(inputs));
-  }, [user, month, inputs]);
+    localStorage.setItem(storageKey(user.id, periodKey), JSON.stringify(inputs));
+  }, [user, periodKey, inputs]);
 
-  // derive metrics from deals for the selected month
-  // Rule (per rep): every deal CREATED in the month = 1 lead.
-  //                every deal whose stage is presented/follow_up/won/lost = pitched.
+  // derive metrics from deals for the selected period
   const derived = useMemo(() => {
-    const [y, m] = month.split("-").map(Number);
-    const start = new Date(y, m - 1, 1).toISOString();
-    const end = new Date(y, m, 1).toISOString();
+    const start = period.start.toISOString();
+    const end = period.end.toISOString();
 
-    const createdInMonth = deals.filter(
+    const createdInPeriod = deals.filter(
       (d) => d.created_at >= start && d.created_at < end,
     );
-    const leadsAuto = createdInMonth.length;
-    // "Pitched" = any deal that has a calculated price on Option A/B/C.
-    const pitchedAuto = createdInMonth.filter(
+    const leadsAuto = createdInPeriod.length;
+    const pitchedAuto = createdInPeriod.filter(
       (d) => (d.price_a ?? 0) > 0 || (d.price_b ?? 0) > 0 || (d.price_c ?? 0) > 0,
     ).length;
 
-    const closedInMonth = deals.filter(
+    const closedInPeriod = deals.filter(
       (d) => d.closed_at && d.closed_at >= start && d.closed_at < end,
     );
-    const won = closedInMonth.filter((d) => d.stage === "won");
-    const lost = closedInMonth.filter((d) => d.stage === "lost");
+    const won = closedInPeriod.filter((d) => d.stage === "won");
+    const lost = closedInPeriod.filter((d) => d.stage === "lost");
 
     const finished = won.length + lost.length;
     const closeRate = finished > 0 ? (won.length / finished) * 100 : 0;
@@ -303,7 +302,7 @@ export default function ManageUp() {
       leadsAuto,
       pitchedAuto,
     };
-  }, [deals, month]);
+  }, [deals, period]);
 
   // resolved values (override > derived > input)
   const closeRate = inputs.closeRateOverride ?? derived.closeRate;
