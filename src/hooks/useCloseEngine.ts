@@ -43,6 +43,7 @@ const initialState: EngineState = {
   windowInspection: WINDOW_INSPECTION_ITEMS.map((label) => ({ label, status: "na" as const })),
   windowItems: [],
   windowScopeChecks: new Array(WINDOW_SCOPE_ITEMS.length).fill(false),
+  roofMaterial: "shingle",
 };
 
 export function useCloseEngine() {
