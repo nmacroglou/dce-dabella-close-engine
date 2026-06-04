@@ -381,15 +381,20 @@ export default function ManageUp() {
             <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <select
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
-                className="bg-transparent text-sm font-semibold text-foreground outline-none"
+                value={periodKey}
+                onChange={(e) => setPeriodKey(e.target.value)}
+                className="bg-transparent text-sm font-semibold text-foreground outline-none max-w-[240px]"
               >
-                {months.map((m) => (
-                  <option key={m} value={m}>
-                    {monthLabel(m)}
-                  </option>
-                ))}
+                <optgroup label="Quarters">
+                  {periods.filter((p) => p.kind === "quarter").map((p) => (
+                    <option key={p.key} value={p.key}>{p.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Months">
+                  {periods.filter((p) => p.kind === "month").map((p) => (
+                    <option key={p.key} value={p.key}>{p.label}</option>
+                  ))}
+                </optgroup>
               </select>
             </label>
             <button
