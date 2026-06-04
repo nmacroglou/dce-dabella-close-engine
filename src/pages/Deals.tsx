@@ -259,6 +259,10 @@ export default function DealsPage() {
                       ) : null}
                     </div>
 
+                    <div className="mb-3">
+                      <DealTagsEditor deal={deal} size="sm" />
+                    </div>
+
                     <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-hairline">
                       <Button size="sm" className="flex-1 pressable h-7 text-[11px]" onClick={() => openDeal(deal.id)}>
                         Open <ArrowRight className="h-2.5 w-2.5 ml-1" />
