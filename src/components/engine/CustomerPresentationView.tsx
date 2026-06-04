@@ -203,6 +203,8 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
                    selectedOption === "B" ? state.customFeaturesB :
                    state.customFeaturesC) ?? state.customFeatures
                 }
+                products={state.products}
+                roofMaterial={state.roofMaterial}
                 originalPrice={originalOptions.find((o) => o.key === selectedOption)?.price}
                 discountPct={discountPct}
                 monthlyOverride={
