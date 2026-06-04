@@ -416,11 +416,17 @@ export default function ManageUp() {
                 {period.label} · Overall Proficiency
               </p>
               <p className="mt-1 text-5xl font-display font-extrabold gradient-text tabular-nums">
-                {avgPoints.toFixed(1)}
-                <span className="text-2xl text-muted-foreground"> / 10</span>
+                {isFuturePeriod ? (
+                  <span className="text-muted-foreground">—</span>
+                ) : (
+                  <>
+                    {avgPoints.toFixed(1)}
+                    <span className="text-2xl text-muted-foreground"> / 10</span>
+                  </>
+                )}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {totalPoints} of 50 points across 5 competencies
+                {isFuturePeriod ? "No data — this period hasn't started yet" : `${totalPoints} of 50 points across 5 competencies`}
               </p>
             </div>
             <div className="grid grid-cols-5 gap-2 flex-1 sm:max-w-md">
