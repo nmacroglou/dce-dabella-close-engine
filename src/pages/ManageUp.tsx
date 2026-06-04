@@ -328,6 +328,9 @@ export default function ManageUp() {
   const avgPoints = totalPoints / scores.length;
 
   const summaryText = useMemo(() => {
+    if (isFuturePeriod) {
+      return `Self-Evaluation — ${period.label}\n\nNo data available — this period hasn't started yet.`;
+    }
     const lines = [
       `Self-Evaluation — ${period.label}`,
       `Average proficiency: ${avgPoints.toFixed(1)} / 10  (total ${totalPoints} / 50)`,
@@ -341,7 +344,7 @@ export default function ManageUp() {
       `Total Leads Run: ${inputs.totalLeads}`,
     ];
     return lines.join("\n");
-  }, [period, scores, avgPoints, totalPoints, inputs.selfGens, inputs.totalLeads]);
+  }, [period, scores, avgPoints, totalPoints, inputs.selfGens, inputs.totalLeads, isFuturePeriod]);
 
   const copyAll = async () => {
     await navigator.clipboard.writeText(summaryText);
@@ -522,13 +525,35 @@ export default function ManageUp() {
         </section>
 
         {/* KPI cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <KpiRubricCard rubric={CLOSE_RATE_RUBRIC} value={closeRate} hint={inputs.closeRateOverride ? "Using your override" : `From ${derived.wonCount + derived.lostCount} finished deals`} />
-          <KpiRubricCard rubric={NIS_RUBRIC} value={nis} hint={inputs.nisOverride ? "Using your override" : `${derived.wonCount} won deals`} />
-          <KpiRubricCard rubric={DPL_RUBRIC} value={dpl} hint={leads > 0 ? `${formatCurrency(nis)} ÷ ${leads} leads` : "Enter Total Leads to calculate"} />
-          <KpiRubricCard rubric={PITCH_RATE_RUBRIC} value={pitchRate} hint={leads > 0 ? `${derived.pitchedAuto} pitched ÷ ${leads} leads` : "Enter Total Leads to calculate"} />
-          <KpiRubricCard rubric={RETENTION_RUBRIC} value={retention} hint="Manual entry — adjust above" />
-        </div>
+        {isFuturePeriod ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {[CLOSE_RATE_RUBRIC, NIS_RUBRIC, DPL_RUBRIC, PITCH_RATE_RUBRIC, RETENTION_RUBRIC].map((r) => (
+              <div key={r.id} className="card-elevated-lg p-5 space-y-4 opacity-50">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{r.name}</p>
+                    <p className="mt-1 text-3xl font-display font-extrabold text-foreground tabular-nums">—</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{r.description}</p>
+                  </div>
+                  <div className="flex-shrink-0 text-center">
+                    <div className="px-3 py-2 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/10 border border-primary/30">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Score</p>
+                      <p className="text-2xl font-display font-extrabold text-primary tabular-nums leading-tight">—</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <KpiRubricCard rubric={CLOSE_RATE_RUBRIC} value={closeRate} hint={inputs.closeRateOverride ? "Using your override" : `From ${derived.wonCount + derived.lostCount} finished deals`} />
+            <KpiRubricCard rubric={NIS_RUBRIC} value={nis} hint={inputs.nisOverride ? "Using your override" : `${derived.wonCount} won deals`} />
+            <KpiRubricCard rubric={DPL_RUBRIC} value={dpl} hint={leads > 0 ? `${formatCurrency(nis)} ÷ ${leads} leads` : "Enter Total Leads to calculate"} />
+            <KpiRubricCard rubric={PITCH_RATE_RUBRIC} value={pitchRate} hint={leads > 0 ? `${derived.pitchedAuto} pitched ÷ ${leads} leads` : "Enter Total Leads to calculate"} />
+            <KpiRubricCard rubric={RETENTION_RUBRIC} value={retention} hint="Manual entry — adjust above" />
+          </div>
+        )}
 
         {/* Workday Questions section */}
         <section className="card-elevated-lg p-5 space-y-4">
