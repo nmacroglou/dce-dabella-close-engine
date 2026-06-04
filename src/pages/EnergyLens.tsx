@@ -383,27 +383,29 @@ export default function EnergyLens() {
           </div>
 
           {/* Dashboard flows full-width below — every graph driven by the deck above */}
-          <LiveImpactDashboard
-            baseInputs={{
-              monthlyBill,
-              rate: effectiveRate,
-              systemKw,
-              productionFactor: utility.productionFactor,
-              selfConsumptionPct: selfConsumption,
-              exportRate,
-              inflationPct,
-              horizonYears: horizon,
-              degradationPct: degradationOn ? 0.005 : 0,
-              hasBattery,
-            }}
-            result={result}
-            horizon={horizon}
-            systemKw={systemKw}
-            hasBattery={hasBattery}
-            onSetSystemKw={setSystemKw}
-            onSetHasBattery={setHasBattery}
-            onSetSelfConsumption={setSelfConsumption}
-          />
+          <Suspense fallback={<div className="h-96 grid place-items-center rounded-2xl border border-border bg-card"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
+            <LiveImpactDashboard
+              baseInputs={{
+                monthlyBill,
+                rate: effectiveRate,
+                systemKw,
+                productionFactor: utility.productionFactor,
+                selfConsumptionPct: selfConsumption,
+                exportRate,
+                inflationPct,
+                horizonYears: horizon,
+                degradationPct: degradationOn ? 0.005 : 0,
+                hasBattery,
+              }}
+              result={result}
+              horizon={horizon}
+              systemKw={systemKw}
+              hasBattery={hasBattery}
+              onSetSystemKw={setSystemKw}
+              onSetHasBattery={setHasBattery}
+              onSetSelfConsumption={setSelfConsumption}
+            />
+          </Suspense>
 
           {/* Year-by-year savings breakdown */}
           <div className="mt-5">
