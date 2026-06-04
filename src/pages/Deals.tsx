@@ -78,11 +78,13 @@ export default function DealsPage() {
     const deal = await create.mutateAsync({
       homeowner1: newName.trim(),
       address: newAddress.trim(),
+      lead_source: newLeadSource === "unset" ? null : newLeadSource,
     });
     setActiveDealId(deal.id);
     setOpen(false);
     setNewName("");
     setNewAddress("");
+    setNewLeadSource("unset");
     toast.success("Deal created — let's go close it");
     navigate("/");
   };
