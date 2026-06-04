@@ -328,7 +328,7 @@ export default function ManageUp() {
 
   const summaryText = useMemo(() => {
     const lines = [
-      `Monthly Self-Evaluation — ${monthLabel(month)}`,
+      `Self-Evaluation — ${period.label}`,
       `Average proficiency: ${avgPoints.toFixed(1)} / 10  (total ${totalPoints} / 50)`,
       "",
       ...scores.map(
