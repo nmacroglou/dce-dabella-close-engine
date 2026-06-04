@@ -68,17 +68,25 @@ export default function IncludedFeaturesEditor({
           <TabsTrigger value="shared">Shared default</TabsTrigger>
         </TabsList>
 
-        {(["A", "B", "C"] as OptKey[]).map((k) => (
-          <TabsContent key={k} value={k}>
-            <FeatureList
-              features={perOption[k] ?? sharedDefault}
-              onChange={(next) => onChangePerOption(k, next)}
-              onResetToShared={() => onChangePerOption(k, [...computedDefault])}
-              onCopyFromShared={() => onChangePerOption(k, [...sharedDefault])}
-              optionLabel={`Option ${k}`}
-            />
-          </TabsContent>
-        ))}
+        {(["A", "B", "C"] as OptKey[]).map((k) => {
+          const others = (["A", "B", "C"] as OptKey[]).filter((o) => o !== k);
+          return (
+            <TabsContent key={k} value={k}>
+              <FeatureList
+                features={perOption[k] ?? sharedDefault}
+                onChange={(next) => onChangePerOption(k, next)}
+                onResetToShared={() => onChangePerOption(k, [...computedDefault])}
+                onCopyFromShared={() => onChangePerOption(k, [...sharedDefault])}
+                onCopyToOthers={() => {
+                  const src = perOption[k] ?? sharedDefault;
+                  others.forEach((o) => onChangePerOption(o, [...src]));
+                }}
+                copyToOthersLabel={`Copy to ${others.join(" & ")}`}
+                optionLabel={`Option ${k}`}
+              />
+            </TabsContent>
+          );
+        })}
 
         <TabsContent value="shared">
           <FeatureList
