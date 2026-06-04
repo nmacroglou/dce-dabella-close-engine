@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
-import { useDeals } from "@/hooks/useDeals";
+import { useDeals, useUpdateDealStage } from "@/hooks/useDeals";
 import { useFollowUps, useUpdateFollowUp, useDeleteFollowUp } from "@/hooks/useFollowUps";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { followUpStatus } from "@/types/followUp";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
-import { AlertCircle, Calendar, CheckCircle2, Clock, Sparkles, TrendingUp } from "lucide-react";
+import { AlertCircle, Calendar, CheckCircle2, Clock, GripVertical, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FollowUpComposer from "@/components/followups/FollowUpComposer";
 import { toast } from "sonner";
@@ -14,15 +14,22 @@ import { pct } from "@/lib/format";
 
 import { FollowUpAdmin, type FollowUpFilter } from "@/components/pipeline/FollowUpAdmin";
 
+// Stages we allow drag-and-drop into. Won/lost are excluded because they
+// require additional info (closed_amount / lost_reason) collected elsewhere.
+const DRAGGABLE_TARGETS: DealStage[] = ["inspecting", "presented", "follow_up"];
+
 export default function Pipeline() {
   const { data: deals = [] } = useDeals();
   const { data: followUps = [] } = useFollowUps();
   const updateFollowUp = useUpdateFollowUp();
   const deleteFollowUp = useDeleteFollowUp();
+  const updateStage = useUpdateDealStage();
   const { setActiveDealId } = useActiveDeal();
   const navigate = useNavigate();
   const [composer, setComposer] = useState<{ dealId: string; followUpId?: string } | null>(null);
   const [filter, setFilter] = useState<FollowUpFilter>("open");
+  const [dragging, setDragging] = useState<{ id: string; from: DealStage } | null>(null);
+  const [dropTarget, setDropTarget] = useState<DealStage | null>(null);
 
   const stats = useMemo(() => {
     const open = followUps.filter((f) => !f.completed_at);
@@ -44,7 +51,6 @@ export default function Pipeline() {
 
   const dealById = useMemo(() => new Map(deals.map((d) => [d.id, d])), [deals]);
 
-  // Pipeline grouped by stage
   const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost"];
   const grouped = stages.map((s) => ({
     stage: s,
@@ -55,6 +61,24 @@ export default function Pipeline() {
     setActiveDealId(id);
     navigate("/");
   };
+
+  function handleDrop(target: DealStage) {
+    const dragged = dragging;
+    setDropTarget(null);
+    setDragging(null);
+    if (!dragged) return;
+    if (dragged.from === target) return;
+    if (!DRAGGABLE_TARGETS.includes(target)) {
+      toast.info(`Move to ${STAGE_LABELS[target]} from the deal page`, {
+        description: "Closing a deal needs a sold amount or lost reason.",
+      });
+      return;
+    }
+    updateStage.mutate(
+      { id: dragged.id, stage: target },
+      { onSuccess: () => toast.success(`Moved to ${STAGE_LABELS[target]}`) },
+    );
+  }
 
   const StatChip = ({ icon: Icon, label, value, accent }: { icon: React.ElementType; label: string; value: string; accent: string }) => (
     <div className="flex items-center gap-2 rounded-full border border-hairline bg-card/70 backdrop-blur px-3 py-1.5">
@@ -68,12 +92,11 @@ export default function Pipeline() {
     <div className="min-h-screen surface-premium">
       <AppHeader />
       <main className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 space-y-5">
-        {/* Title + inline KPIs */}
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
             <h2 className="text-2xl font-display font-extrabold text-foreground">My Pipeline</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Every deal, every follow-up, every SLA you owe — at a glance.
+              Drag any deal between Inspecting, Presented, and Follow-up.
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -85,60 +108,115 @@ export default function Pipeline() {
           </div>
         </div>
 
-        {/* Main: Pipeline kanban (wide) + Action queue (side) */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
-          {/* Pipeline columns */}
           <section className="card-elevated-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Pipeline</h3>
               <span className="text-[11px] text-muted-foreground">{deals.length} deals</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {grouped.map(({ stage, deals: ds }) => (
-                <div key={stage} className="rounded-xl border border-hairline bg-background/40 p-2">
-                  <div className="flex items-center justify-between px-2 py-1.5 mb-1">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STAGE_COLORS[stage]}`}>
-                      {STAGE_LABELS[stage]}
-                    </span>
-                    <span className="text-xs font-bold text-muted-foreground">{ds.length}</span>
-                  </div>
-                  <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
-                    {ds.map((d) => {
-                      const open = followUps.filter((f) => f.deal_id === d.id && !f.completed_at);
-                      const next = open.sort((a, b) => +new Date(a.due_at) - +new Date(b.due_at))[0];
-                      const status = next ? followUpStatus(next) : null;
-                      const dot =
-                        status === "overdue" ? "bg-destructive" :
-                        status === "due_today" ? "bg-warning" :
-                        status === "upcoming" ? "bg-primary" : "bg-muted-foreground/30";
-                      return (
-                        <button key={d.id} onClick={() => openDeal(d.id)}
-                          className="w-full text-left rounded-lg border border-hairline bg-card p-2.5 hover:border-primary/50 hover:shadow-[var(--shadow-sm)] transition-all pressable">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-xs font-bold text-foreground truncate">{d.homeowner1 || "Untitled"}</p>
-                            {next && <span className={`h-2 w-2 rounded-full flex-shrink-0 mt-1 ${dot}`} />}
+              {grouped.map(({ stage, deals: ds }) => {
+                const canDrop = DRAGGABLE_TARGETS.includes(stage);
+                const isDropTarget = dropTarget === stage;
+                const isDragSource = dragging?.from === stage;
+                return (
+                  <div
+                    key={stage}
+                    onDragOver={(e) => {
+                      if (!dragging) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = canDrop && stage !== dragging.from ? "move" : "none";
+                      if (dropTarget !== stage) setDropTarget(stage);
+                    }}
+                    onDragLeave={(e) => {
+                      if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                      if (dropTarget === stage) setDropTarget(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      handleDrop(stage);
+                    }}
+                    className={`rounded-xl border bg-background/40 p-2 transition-all duration-200 ${
+                      isDropTarget && canDrop && !isDragSource
+                        ? "border-primary/60 bg-primary/5 ring-2 ring-primary/40 scale-[1.01]"
+                        : isDropTarget && !canDrop
+                        ? "border-destructive/40 bg-destructive/5"
+                        : isDragSource
+                        ? "border-dashed border-muted-foreground/30 opacity-70"
+                        : "border-hairline"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between px-2 py-1.5 mb-1">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${STAGE_COLORS[stage]}`}>
+                        {STAGE_LABELS[stage]}
+                      </span>
+                      <span className="text-xs font-bold text-muted-foreground">{ds.length}</span>
+                    </div>
+                    <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
+                      {ds.map((d) => {
+                        const open = followUps.filter((f) => f.deal_id === d.id && !f.completed_at);
+                        const next = open.sort((a, b) => +new Date(a.due_at) - +new Date(b.due_at))[0];
+                        const status = next ? followUpStatus(next) : null;
+                        const dot =
+                          status === "overdue" ? "bg-destructive" :
+                          status === "due_today" ? "bg-warning" :
+                          status === "upcoming" ? "bg-primary" : "bg-muted-foreground/30";
+                        const beingDragged = dragging?.id === d.id;
+                        return (
+                          <div
+                            key={d.id}
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.effectAllowed = "move";
+                              e.dataTransfer.setData("text/plain", d.id);
+                              setDragging({ id: d.id, from: stage });
+                            }}
+                            onDragEnd={() => {
+                              setDragging(null);
+                              setDropTarget(null);
+                            }}
+                            className={`group relative w-full rounded-lg border border-hairline bg-card transition-all ${
+                              beingDragged ? "opacity-40 scale-95" : "hover:border-primary/50 hover:shadow-[var(--shadow-sm)]"
+                            }`}
+                          >
+                            <button
+                              onClick={() => openDeal(d.id)}
+                              className="w-full text-left p-2.5 pl-7 pressable"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-xs font-bold text-foreground truncate">{d.homeowner1 || "Untitled"}</p>
+                                {next && <span className={`h-2 w-2 rounded-full flex-shrink-0 mt-1 ${dot}`} />}
+                              </div>
+                              {next ? (
+                                <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                                  <Clock className="h-2.5 w-2.5" />
+                                  #{next.touchpoint_number} · {new Date(next.due_at).toLocaleDateString()}
+                                </p>
+                              ) : d.products.length > 0 ? (
+                                <p className="text-[10px] text-muted-foreground mt-1 truncate">{d.products.join(", ")}</p>
+                              ) : null}
+                            </button>
+                            <span
+                              aria-hidden
+                              className="absolute left-1 top-1/2 -translate-y-1/2 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                            >
+                              <GripVertical className="h-3.5 w-3.5" />
+                            </span>
                           </div>
-                          {next ? (
-                            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                              <Clock className="h-2.5 w-2.5" />
-                              #{next.touchpoint_number} · {new Date(next.due_at).toLocaleDateString()}
-                            </p>
-                          ) : d.products.length > 0 ? (
-                            <p className="text-[10px] text-muted-foreground mt-1 truncate">{d.products.join(", ")}</p>
-                          ) : null}
-                        </button>
-                      );
-                    })}
-                    {ds.length === 0 && (
-                      <p className="text-[11px] text-muted-foreground italic px-2 py-3 text-center">Empty</p>
-                    )}
+                        );
+                      })}
+                      {ds.length === 0 && (
+                        <p className="text-[11px] text-muted-foreground italic px-2 py-3 text-center">
+                          {dragging && canDrop ? "Drop here" : "Empty"}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
-          {/* Action queue — overdue first, then due today */}
           <aside className="card-elevated-lg p-4 xl:sticky xl:top-4">
             <h3 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5 text-foreground">
               <AlertCircle className="h-4 w-4 text-destructive" /> Action queue
@@ -181,7 +259,6 @@ export default function Pipeline() {
           </aside>
         </div>
 
-        {/* Follow-up administration: every scheduled touchpoint with its draft */}
         <FollowUpAdmin
           followUps={followUps}
           dealById={dealById}
@@ -210,5 +287,3 @@ export default function Pipeline() {
     </div>
   );
 }
-/* StatTile and FollowUpAdmin moved to src/components/pipeline/* */
-

@@ -43,14 +43,27 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
   return (
     <div
       onClick={onClick}
-      className={`group relative rounded-3xl border bg-card overflow-hidden transition-all duration-300 ${onClick ? "cursor-pointer pressable" : ""} ${
+      className={`group relative rounded-3xl border bg-card overflow-hidden transition-all duration-500 ${onClick ? "cursor-pointer pressable" : ""} ${
         selected
-          ? `ring-4 ring-primary/40 ${theme.borderAccent} shadow-[var(--shadow-xl)] scale-[1.03]`
+          ? `ring-4 ring-primary/40 ${theme.borderAccent} shadow-[var(--shadow-xl)] scale-[1.03] animate-scale-in`
           : isHighlighted
             ? `${theme.borderAccent} shadow-[var(--shadow-lg)] scale-[1.02] hover:-translate-y-1`
             : "border-hairline shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] hover:border-hairline-strong hover:-translate-y-0.5"
       }`}
     >
+      {/* Selected — premium ambient glow */}
+      {selected && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-px rounded-3xl"
+          style={{
+            background:
+              "radial-gradient(60% 80% at 50% 0%, hsl(var(--primary) / 0.18), transparent 60%), radial-gradient(60% 80% at 50% 100%, hsl(var(--accent) / 0.14), transparent 60%)",
+            mixBlendMode: "screen",
+          }}
+        />
+      )}
+
       {/* Inner highlight sheen */}
       <div aria-hidden className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{ background: "linear-gradient(135deg, hsl(var(--foreground) / 0.05) 0%, transparent 35%)" }} />
