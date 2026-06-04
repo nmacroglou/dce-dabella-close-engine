@@ -572,19 +572,21 @@ export default function EnergyLens() {
 
       {/* Print-only proposal-style summary */}
       <div className="hidden print:block">
-        <EnergySummaryPrintView
-          utility={utility}
-          monthlyBill={monthlyBill}
-          rate={effectiveRate}
-          exportRate={exportRate}
-          inflationPct={inflationPct}
-          horizon={horizon}
-          systemKw={systemKw}
-          hasBattery={hasBattery}
-          selfConsumption={selfConsumption}
-          result={result}
-          options={options}
-        />
+        <Suspense fallback={null}>
+          <EnergySummaryPrintView
+            utility={utility}
+            monthlyBill={monthlyBill}
+            rate={effectiveRate}
+            exportRate={exportRate}
+            inflationPct={inflationPct}
+            horizon={horizon}
+            systemKw={systemKw}
+            hasBattery={hasBattery}
+            selfConsumption={selfConsumption}
+            result={result}
+            options={options}
+          />
+        </Suspense>
       </div>
     </div>
   );
