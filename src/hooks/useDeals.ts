@@ -102,13 +102,36 @@ export function useUpdateDeal() {
       if (error) throw error;
       return data as unknown as Deal;
     },
-    onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ["deals"] });
-      qc.invalidateQueries({ queryKey: ["deal", data.id] });
-      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    // Optimistic update: patch caches immediately so toggles (lead source,
+    // presented/demoed tags, inline edits) feel instant on iPad.
+    onMutate: async ({ id, updates }) => {
+      await Promise.all([
+        qc.cancelQueries({ queryKey: ["deal", id] }),
+        qc.cancelQueries({ queryKey: ["deals"] }),
+      ]);
+      const prevDeal = qc.getQueryData<Deal>(["deal", id]);
+      const prevLists = qc.getQueriesData<Deal[]>({ queryKey: ["deals"] });
+
+      if (prevDeal) {
+        qc.setQueryData<Deal>(["deal", id], { ...prevDeal, ...updates } as Deal);
+      }
+      prevLists.forEach(([key, list]) => {
+        if (!list) return;
+        qc.setQueryData<Deal[]>(key, list.map((d) => (d.id === id ? { ...d, ...updates } as Deal : d)));
+      });
+
+      return { prevDeal, prevLists };
     },
-    onError: (err) => {
+    onError: (err, _vars, ctx) => {
+      // Roll back optimistic patches on failure.
+      if (ctx?.prevDeal) qc.setQueryData(["deal", ctx.prevDeal.id], ctx.prevDeal);
+      ctx?.prevLists?.forEach(([key, list]) => qc.setQueryData(key, list));
       toast.error(errMsg(err, "Failed to update deal"));
+    },
+    onSettled: (data) => {
+      qc.invalidateQueries({ queryKey: ["deals"] });
+      if (data) qc.invalidateQueries({ queryKey: ["deal", data.id] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
   });
 }
@@ -121,13 +144,25 @@ export function useDeleteDeal() {
       const { error } = await supabase.from("deals").delete().eq("id", id);
       if (error) throw error;
     },
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ["deals"] });
+      const prevLists = qc.getQueriesData<Deal[]>({ queryKey: ["deals"] });
+      prevLists.forEach(([key, list]) => {
+        if (!list) return;
+        qc.setQueryData<Deal[]>(key, list.filter((d) => d.id !== id));
+      });
+      return { prevLists };
+    },
+    onError: (err, _id, ctx) => {
+      ctx?.prevLists?.forEach(([key, list]) => qc.setQueryData(key, list));
+      toast.error(errMsg(err, "Failed to delete deal"));
+    },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["deals"] });
-      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
       toast.success("Deal deleted");
     },
-    onError: (err) => {
-      toast.error(errMsg(err, "Failed to delete deal"));
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["deals"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
   });
 }
@@ -157,14 +192,41 @@ export function useUpdateDealStage() {
       const { error } = await supabase.from("deals").update(updates as never).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onMutate: async (vars) => {
+      await Promise.all([
+        qc.cancelQueries({ queryKey: ["deal", vars.id] }),
+        qc.cancelQueries({ queryKey: ["deals"] }),
+      ]);
+      const patch: Partial<Deal> = {
+        stage: vars.stage,
+        stage_changed_at: new Date().toISOString(),
+      };
+      if (vars.selected_option !== undefined) patch.selected_option = vars.selected_option;
+      if (vars.closed_amount !== undefined) patch.closed_amount = vars.closed_amount;
+      if (vars.lost_reason !== undefined) patch.lost_reason = vars.lost_reason;
+      if (vars.stage === "won" || vars.stage === "lost") patch.closed_at = new Date().toISOString();
+
+      const prevDeal = qc.getQueryData<Deal>(["deal", vars.id]);
+      const prevLists = qc.getQueriesData<Deal[]>({ queryKey: ["deals"] });
+
+      if (prevDeal) qc.setQueryData<Deal>(["deal", vars.id], { ...prevDeal, ...patch } as Deal);
+      prevLists.forEach(([key, list]) => {
+        if (!list) return;
+        qc.setQueryData<Deal[]>(key, list.map((d) => (d.id === vars.id ? { ...d, ...patch } as Deal : d)));
+      });
+      return { prevDeal, prevLists };
+    },
+    onError: (err, _vars, ctx) => {
+      if (ctx?.prevDeal) qc.setQueryData(["deal", ctx.prevDeal.id], ctx.prevDeal);
+      ctx?.prevLists?.forEach(([key, list]) => qc.setQueryData(key, list));
+      toast.error(errMsg(err, "Failed to update stage"));
+    },
+    onSettled: (_data, _err, vars) => {
       qc.invalidateQueries({ queryKey: ["deals"] });
-      qc.invalidateQueries({ queryKey: ["deal"] });
+      qc.invalidateQueries({ queryKey: ["deal", vars.id] });
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
       qc.invalidateQueries({ queryKey: ["stage-history"] });
     },
-    onError: (err) => {
-      toast.error(errMsg(err, "Failed to update stage"));
-    },
   });
 }
+

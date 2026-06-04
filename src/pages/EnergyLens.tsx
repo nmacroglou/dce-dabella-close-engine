@@ -1,14 +1,15 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, lazy, Suspense } from "react";
 
 import {
   Zap, Sun, Battery, TrendingUp, Info, Printer, Cpu, MapPin,
-  ChevronDown, ChevronUp, Sparkles, Shield, Target, Gauge,
+  ChevronDown, ChevronUp, Sparkles, Shield, Target, Gauge, Loader2,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import UtilityNewsFeed from "@/components/energy/UtilityNewsFeed";
 import YearlySavingsBreakdown from "@/components/energy/YearlySavingsBreakdown";
-import LiveImpactDashboard from "@/components/energy/LiveImpactDashboard";
-import EnergySummaryPrintView from "@/components/energy/EnergySummaryPrintView";
+// Chart-heavy + print components pull recharts/large markup — defer until needed.
+const LiveImpactDashboard = lazy(() => import("@/components/energy/LiveImpactDashboard"));
+const EnergySummaryPrintView = lazy(() => import("@/components/energy/EnergySummaryPrintView"));
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -382,27 +383,29 @@ export default function EnergyLens() {
           </div>
 
           {/* Dashboard flows full-width below — every graph driven by the deck above */}
-          <LiveImpactDashboard
-            baseInputs={{
-              monthlyBill,
-              rate: effectiveRate,
-              systemKw,
-              productionFactor: utility.productionFactor,
-              selfConsumptionPct: selfConsumption,
-              exportRate,
-              inflationPct,
-              horizonYears: horizon,
-              degradationPct: degradationOn ? 0.005 : 0,
-              hasBattery,
-            }}
-            result={result}
-            horizon={horizon}
-            systemKw={systemKw}
-            hasBattery={hasBattery}
-            onSetSystemKw={setSystemKw}
-            onSetHasBattery={setHasBattery}
-            onSetSelfConsumption={setSelfConsumption}
-          />
+          <Suspense fallback={<div className="h-96 grid place-items-center rounded-2xl border border-border bg-card"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
+            <LiveImpactDashboard
+              baseInputs={{
+                monthlyBill,
+                rate: effectiveRate,
+                systemKw,
+                productionFactor: utility.productionFactor,
+                selfConsumptionPct: selfConsumption,
+                exportRate,
+                inflationPct,
+                horizonYears: horizon,
+                degradationPct: degradationOn ? 0.005 : 0,
+                hasBattery,
+              }}
+              result={result}
+              horizon={horizon}
+              systemKw={systemKw}
+              hasBattery={hasBattery}
+              onSetSystemKw={setSystemKw}
+              onSetHasBattery={setHasBattery}
+              onSetSelfConsumption={setSelfConsumption}
+            />
+          </Suspense>
 
           {/* Year-by-year savings breakdown */}
           <div className="mt-5">
@@ -569,19 +572,21 @@ export default function EnergyLens() {
 
       {/* Print-only proposal-style summary */}
       <div className="hidden print:block">
-        <EnergySummaryPrintView
-          utility={utility}
-          monthlyBill={monthlyBill}
-          rate={effectiveRate}
-          exportRate={exportRate}
-          inflationPct={inflationPct}
-          horizon={horizon}
-          systemKw={systemKw}
-          hasBattery={hasBattery}
-          selfConsumption={selfConsumption}
-          result={result}
-          options={options}
-        />
+        <Suspense fallback={null}>
+          <EnergySummaryPrintView
+            utility={utility}
+            monthlyBill={monthlyBill}
+            rate={effectiveRate}
+            exportRate={exportRate}
+            inflationPct={inflationPct}
+            horizon={horizon}
+            systemKw={systemKw}
+            hasBattery={hasBattery}
+            selfConsumption={selfConsumption}
+            result={result}
+            options={options}
+          />
+        </Suspense>
       </div>
     </div>
   );
