@@ -16,6 +16,15 @@ import {
 import { toast } from "sonner";
 
 // ───────────────────────── helpers ─────────────────────────
+type PeriodKind = "month" | "quarter";
+interface Period {
+  key: string;
+  label: string;
+  kind: PeriodKind;
+  start: Date;
+  end: Date; // exclusive
+}
+
 const monthKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
@@ -24,13 +33,67 @@ const monthLabel = (key: string) => {
   return new Date(y, m - 1, 1).toLocaleString("en-US", { month: "long", year: "numeric" });
 };
 
-const recentMonths = (n = 6): string[] => {
-  const out: string[] = [];
-  const d = new Date();
-  for (let i = 0; i < n; i++) {
-    out.push(monthKey(new Date(d.getFullYear(), d.getMonth() - i, 1)));
+const quarterOf = (d: Date) => Math.floor(d.getMonth() / 3);
+
+const buildPeriods = (): Period[] => {
+  const now = new Date();
+  const periods: Period[] = [];
+
+  const cqIdx = quarterOf(now);
+  const cqStart = new Date(now.getFullYear(), cqIdx * 3, 1);
+  const cqEnd = new Date(now.getFullYear(), cqIdx * 3 + 3, 1);
+  periods.push({
+    key: `Q-${now.getFullYear()}-${cqIdx + 1}`,
+    label: `Current Quarter (Q${cqIdx + 1} ${now.getFullYear()})`,
+    kind: "quarter",
+    start: cqStart,
+    end: cqEnd,
+  });
+
+  const pqStart = new Date(cqStart);
+  pqStart.setMonth(pqStart.getMonth() - 3);
+  const pqEnd = new Date(cqStart);
+  const pqIdx = quarterOf(pqStart);
+  periods.push({
+    key: `Q-${pqStart.getFullYear()}-${pqIdx + 1}`,
+    label: `Previous Quarter (Q${pqIdx + 1} ${pqStart.getFullYear()})`,
+    kind: "quarter",
+    start: pqStart,
+    end: pqEnd,
+  });
+
+  const monthsSet = new Set<string>();
+  const monthEntries: Period[] = [];
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const k = monthKey(d);
+    if (!monthsSet.has(k)) {
+      monthsSet.add(k);
+      monthEntries.push({
+        key: k,
+        label: monthLabel(k),
+        kind: "month",
+        start: d,
+        end: new Date(d.getFullYear(), d.getMonth() + 1, 1),
+      });
+    }
   }
-  return out;
+  for (let m = 0; m < 12; m++) {
+    const d = new Date(2026, m, 1);
+    const k = monthKey(d);
+    if (!monthsSet.has(k)) {
+      monthsSet.add(k);
+      monthEntries.push({
+        key: k,
+        label: monthLabel(k),
+        kind: "month",
+        start: d,
+        end: new Date(2026, m + 1, 1),
+      });
+    }
+  }
+  monthEntries.sort((a, b) => b.start.getTime() - a.start.getTime());
+  return [...periods, ...monthEntries];
 };
 
 interface ManualInputs {
@@ -189,44 +252,43 @@ function NumberField({
 export default function ManageUp() {
   const { user } = useAuth();
   const { data: deals = [] } = useDeals();
-  const months = useMemo(() => recentMonths(6), []);
-  const [month, setMonth] = useState(months[0]);
+  const periods = useMemo(() => buildPeriods(), []);
+  const [periodKey, setPeriodKey] = useState(
+    periods.find((p) => p.kind === "month")?.key ?? periods[0].key,
+  );
+  const period = periods.find((p) => p.key === periodKey) ?? periods[0];
   const [inputs, setInputs] = useState<ManualInputs>(DEFAULTS);
   const [copied, setCopied] = useState(false);
 
-  // load + persist per-month inputs
+  // load + persist per-period inputs
   useEffect(() => {
     if (!user) return;
-    setInputs(loadInputs(user.id, month));
-  }, [user, month]);
+    setInputs(loadInputs(user.id, periodKey));
+  }, [user, periodKey]);
 
   useEffect(() => {
     if (!user) return;
-    localStorage.setItem(storageKey(user.id, month), JSON.stringify(inputs));
-  }, [user, month, inputs]);
+    localStorage.setItem(storageKey(user.id, periodKey), JSON.stringify(inputs));
+  }, [user, periodKey, inputs]);
 
-  // derive metrics from deals for the selected month
-  // Rule (per rep): every deal CREATED in the month = 1 lead.
-  //                every deal whose stage is presented/follow_up/won/lost = pitched.
+  // derive metrics from deals for the selected period
   const derived = useMemo(() => {
-    const [y, m] = month.split("-").map(Number);
-    const start = new Date(y, m - 1, 1).toISOString();
-    const end = new Date(y, m, 1).toISOString();
+    const start = period.start.toISOString();
+    const end = period.end.toISOString();
 
-    const createdInMonth = deals.filter(
+    const createdInPeriod = deals.filter(
       (d) => d.created_at >= start && d.created_at < end,
     );
-    const leadsAuto = createdInMonth.length;
-    // "Pitched" = any deal that has a calculated price on Option A/B/C.
-    const pitchedAuto = createdInMonth.filter(
+    const leadsAuto = createdInPeriod.length;
+    const pitchedAuto = createdInPeriod.filter(
       (d) => (d.price_a ?? 0) > 0 || (d.price_b ?? 0) > 0 || (d.price_c ?? 0) > 0,
     ).length;
 
-    const closedInMonth = deals.filter(
+    const closedInPeriod = deals.filter(
       (d) => d.closed_at && d.closed_at >= start && d.closed_at < end,
     );
-    const won = closedInMonth.filter((d) => d.stage === "won");
-    const lost = closedInMonth.filter((d) => d.stage === "lost");
+    const won = closedInPeriod.filter((d) => d.stage === "won");
+    const lost = closedInPeriod.filter((d) => d.stage === "lost");
 
     const finished = won.length + lost.length;
     const closeRate = finished > 0 ? (won.length / finished) * 100 : 0;
@@ -240,7 +302,7 @@ export default function ManageUp() {
       leadsAuto,
       pitchedAuto,
     };
-  }, [deals, month]);
+  }, [deals, period]);
 
   // resolved values (override > derived > input)
   const closeRate = inputs.closeRateOverride ?? derived.closeRate;
@@ -266,7 +328,7 @@ export default function ManageUp() {
 
   const summaryText = useMemo(() => {
     const lines = [
-      `Monthly Self-Evaluation — ${monthLabel(month)}`,
+      `Self-Evaluation — ${period.label}`,
       `Average proficiency: ${avgPoints.toFixed(1)} / 10  (total ${totalPoints} / 50)`,
       "",
       ...scores.map(
@@ -278,7 +340,7 @@ export default function ManageUp() {
       `Total Leads Run: ${inputs.totalLeads}`,
     ];
     return lines.join("\n");
-  }, [month, scores, avgPoints, totalPoints, inputs.selfGens, inputs.totalLeads]);
+  }, [period, scores, avgPoints, totalPoints, inputs.selfGens, inputs.totalLeads]);
 
   const copyAll = async () => {
     await navigator.clipboard.writeText(summaryText);
@@ -319,15 +381,20 @@ export default function ManageUp() {
             <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <select
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
-                className="bg-transparent text-sm font-semibold text-foreground outline-none"
+                value={periodKey}
+                onChange={(e) => setPeriodKey(e.target.value)}
+                className="bg-transparent text-sm font-semibold text-foreground outline-none max-w-[240px]"
               >
-                {months.map((m) => (
-                  <option key={m} value={m}>
-                    {monthLabel(m)}
-                  </option>
-                ))}
+                <optgroup label="Quarters">
+                  {periods.filter((p) => p.kind === "quarter").map((p) => (
+                    <option key={p.key} value={p.key}>{p.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Months">
+                  {periods.filter((p) => p.kind === "month").map((p) => (
+                    <option key={p.key} value={p.key}>{p.label}</option>
+                  ))}
+                </optgroup>
               </select>
             </label>
             <button
@@ -345,7 +412,7 @@ export default function ManageUp() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                {monthLabel(month)} · Overall Proficiency
+                {period.label} · Overall Proficiency
               </p>
               <p className="mt-1 text-5xl font-display font-extrabold gradient-text tabular-nums">
                 {avgPoints.toFixed(1)}
