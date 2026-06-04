@@ -16,6 +16,15 @@ import {
 import { toast } from "sonner";
 
 // ───────────────────────── helpers ─────────────────────────
+type PeriodKind = "month" | "quarter";
+interface Period {
+  key: string;
+  label: string;
+  kind: PeriodKind;
+  start: Date;
+  end: Date; // exclusive
+}
+
 const monthKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
@@ -24,13 +33,67 @@ const monthLabel = (key: string) => {
   return new Date(y, m - 1, 1).toLocaleString("en-US", { month: "long", year: "numeric" });
 };
 
-const recentMonths = (n = 6): string[] => {
-  const out: string[] = [];
-  const d = new Date();
-  for (let i = 0; i < n; i++) {
-    out.push(monthKey(new Date(d.getFullYear(), d.getMonth() - i, 1)));
+const quarterOf = (d: Date) => Math.floor(d.getMonth() / 3);
+
+const buildPeriods = (): Period[] => {
+  const now = new Date();
+  const periods: Period[] = [];
+
+  const cqIdx = quarterOf(now);
+  const cqStart = new Date(now.getFullYear(), cqIdx * 3, 1);
+  const cqEnd = new Date(now.getFullYear(), cqIdx * 3 + 3, 1);
+  periods.push({
+    key: `Q-${now.getFullYear()}-${cqIdx + 1}`,
+    label: `Current Quarter (Q${cqIdx + 1} ${now.getFullYear()})`,
+    kind: "quarter",
+    start: cqStart,
+    end: cqEnd,
+  });
+
+  const pqStart = new Date(cqStart);
+  pqStart.setMonth(pqStart.getMonth() - 3);
+  const pqEnd = new Date(cqStart);
+  const pqIdx = quarterOf(pqStart);
+  periods.push({
+    key: `Q-${pqStart.getFullYear()}-${pqIdx + 1}`,
+    label: `Previous Quarter (Q${pqIdx + 1} ${pqStart.getFullYear()})`,
+    kind: "quarter",
+    start: pqStart,
+    end: pqEnd,
+  });
+
+  const monthsSet = new Set<string>();
+  const monthEntries: Period[] = [];
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const k = monthKey(d);
+    if (!monthsSet.has(k)) {
+      monthsSet.add(k);
+      monthEntries.push({
+        key: k,
+        label: monthLabel(k),
+        kind: "month",
+        start: d,
+        end: new Date(d.getFullYear(), d.getMonth() + 1, 1),
+      });
+    }
   }
-  return out;
+  for (let m = 0; m < 12; m++) {
+    const d = new Date(2026, m, 1);
+    const k = monthKey(d);
+    if (!monthsSet.has(k)) {
+      monthsSet.add(k);
+      monthEntries.push({
+        key: k,
+        label: monthLabel(k),
+        kind: "month",
+        start: d,
+        end: new Date(2026, m + 1, 1),
+      });
+    }
+  }
+  monthEntries.sort((a, b) => b.start.getTime() - a.start.getTime());
+  return [...periods, ...monthEntries];
 };
 
 interface ManualInputs {
