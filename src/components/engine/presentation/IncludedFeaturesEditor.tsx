@@ -102,12 +102,14 @@ export default function IncludedFeaturesEditor({
 }
 
 function FeatureList({
-  features, onChange, onResetToShared, onCopyFromShared, optionLabel,
+  features, onChange, onResetToShared, onCopyFromShared, onCopyToOthers, copyToOthersLabel, optionLabel,
 }: {
   features: string[];
   onChange: (next: string[]) => void;
   onResetToShared: () => void;
   onCopyFromShared?: () => void;
+  onCopyToOthers?: () => void;
+  copyToOthersLabel?: string;
   optionLabel: string;
 }) {
   const [draft, setDraft] = useState("");
