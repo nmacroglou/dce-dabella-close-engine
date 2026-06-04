@@ -3,6 +3,7 @@ import { Check, ArrowRight, ChevronLeft } from "lucide-react";
 import { OPTION_KEYS } from "@/lib/engineHelpers";
 import type { ComputedValues } from "@/types/engine";
 import OptionCard from "./OptionCard";
+import type { RoofMaterial } from "./constants";
 
 interface OptionRevealProps {
   revealIndex: number;
@@ -13,6 +14,8 @@ interface OptionRevealProps {
   onGoBack: () => void;
   customFeatures?: string[];
   perOptionFeatures?: Partial<Record<"A" | "B" | "C", string[] | undefined>>;
+  products?: string[];
+  roofMaterial?: RoofMaterial;
   originalOptions?: { key: "A" | "B" | "C"; price: number }[];
   discountPct?: number;
   monthlyOverrides?: Partial<Record<"A" | "B" | "C", number | undefined>>;
@@ -20,7 +23,7 @@ interface OptionRevealProps {
 }
 
 export default memo(function OptionReveal({
-  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures, perOptionFeatures, originalOptions, discountPct, monthlyOverrides, onMonthlyChange,
+  revealIndex, options, computed, onAccept, onShowNext, onGoBack, customFeatures, perOptionFeatures, products, roofMaterial, originalOptions, discountPct, monthlyOverrides, onMonthlyChange,
 }: OptionRevealProps) {
   const currentKey = OPTION_KEYS[revealIndex];
   const currentOption = options[revealIndex];
@@ -57,6 +60,8 @@ export default memo(function OptionReveal({
         computed={computed}
         selected={false}
         customFeatures={perOptionFeatures?.[currentKey] ?? customFeatures}
+        products={products}
+        roofMaterial={roofMaterial}
         originalPrice={originalPrice}
         discountPct={discountPct}
         monthlyOverride={monthlyOverrides?.[currentKey]}

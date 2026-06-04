@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Plus, X, RotateCcw, ListChecks, Copy } from "lucide-react";
-import { DEFAULT_FEATURE_TEXTS } from "./constants";
+import { Plus, X, RotateCcw, ListChecks, Copy, Home } from "lucide-react";
+import { getDefaultFeatureTexts, type RoofMaterial } from "./constants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type OptKey = "A" | "B" | "C";
@@ -11,26 +11,56 @@ interface Props {
   onChange: (next: string[]) => void;
   perOption: Record<OptKey, string[] | undefined>;
   onChangePerOption: (key: OptKey, next: string[]) => void;
+  products?: string[];
+  roofMaterial?: RoofMaterial;
+  onChangeRoofMaterial?: (next: RoofMaterial) => void;
 }
 
-export default function IncludedFeaturesEditor({ value, onChange, perOption, onChangePerOption }: Props) {
-  const [tab, setTab] = useState<OptKey>("A");
-  const sharedDefault = value && value.length > 0 ? value : DEFAULT_FEATURE_TEXTS;
+export default function IncludedFeaturesEditor({
+  value, onChange, perOption, onChangePerOption,
+  products, roofMaterial, onChangeRoofMaterial,
+}: Props) {
+  const [tab, setTab] = useState<OptKey | "shared">("A");
+  const computedDefault = getDefaultFeatureTexts(products, roofMaterial);
+  const sharedDefault = value && value.length > 0 ? value : computedDefault;
+
+  const hasRoofing = (products ?? []).some((p) => p.toLowerCase().includes("roof"));
 
   return (
     <div className="card-elevated-lg p-6">
-      <div className="flex items-start justify-between gap-3 mb-4">
+      <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
         <div>
           <h3 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
             <ListChecks className="h-5 w-5 text-primary" /> What's included
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Customize the bullets shown for each option independently. Untouched options inherit the shared list.
+            Defaults adapt to the job type{hasRoofing ? " and roof material" : ""}. Customize per option as needed.
           </p>
         </div>
+
+        {hasRoofing && onChangeRoofMaterial && (
+          <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-1">
+            <Home className="h-3.5 w-3.5 text-muted-foreground ml-2" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Roof</span>
+            {(["shingle", "tile"] as RoofMaterial[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => onChangeRoofMaterial(m)}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold capitalize transition-colors ${
+                  (roofMaterial ?? "shingle") === m
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as OptKey)}>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as OptKey | "shared")}>
         <TabsList className="grid grid-cols-4 w-full mb-4">
           <TabsTrigger value="A">Option A</TabsTrigger>
           <TabsTrigger value="B">Option B</TabsTrigger>
@@ -43,7 +73,7 @@ export default function IncludedFeaturesEditor({ value, onChange, perOption, onC
             <FeatureList
               features={perOption[k] ?? sharedDefault}
               onChange={(next) => onChangePerOption(k, next)}
-              onResetToShared={() => onChangePerOption(k, [...sharedDefault])}
+              onResetToShared={() => onChangePerOption(k, [...computedDefault])}
               onCopyFromShared={() => onChangePerOption(k, [...sharedDefault])}
               optionLabel={`Option ${k}`}
             />
@@ -54,7 +84,7 @@ export default function IncludedFeaturesEditor({ value, onChange, perOption, onC
           <FeatureList
             features={sharedDefault}
             onChange={onChange}
-            onResetToShared={() => onChange([...DEFAULT_FEATURE_TEXTS])}
+            onResetToShared={() => onChange([...computedDefault])}
             optionLabel="Shared default"
           />
         </TabsContent>
@@ -105,7 +135,7 @@ function FeatureList({
             onClick={onResetToShared}
             className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted"
           >
-            <RotateCcw className="h-3.5 w-3.5" /> Reset
+            <RotateCcw className="h-3.5 w-3.5" /> Reset to default
           </button>
         </div>
       </div>

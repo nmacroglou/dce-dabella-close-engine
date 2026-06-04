@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, TrendingUp, Zap, Sparkles, Pencil, Check, X } from "lucide-react";
 import { fmt } from "@/lib/format";
-import { OPTION_THEMES, FEATURES_BY_OPTION, featuresFromTexts } from "./constants";
+import { OPTION_THEMES, getFeaturesForOption, type RoofMaterial } from "./constants";
 import type { ComputedValues } from "@/types/engine";
 
 interface OptionCardProps {
@@ -11,17 +11,17 @@ interface OptionCardProps {
   selected?: boolean;
   onClick?: () => void;
   customFeatures?: string[];
+  products?: string[];
+  roofMaterial?: RoofMaterial;
   originalPrice?: number;
   discountPct?: number;
   monthlyOverride?: number;
   onMonthlyChange?: (next: number | undefined) => void;
 }
 
-export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, originalPrice, discountPct, monthlyOverride, onMonthlyChange }: OptionCardProps) {
+export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, products, roofMaterial, originalPrice, discountPct, monthlyOverride, onMonthlyChange }: OptionCardProps) {
   const theme = OPTION_THEMES[optionKey];
-  const features = customFeatures && customFeatures.length > 0
-    ? featuresFromTexts(customFeatures)
-    : FEATURES_BY_OPTION[optionKey];
+  const features = getFeaturesForOption(products, roofMaterial, customFeatures);
   const isHighlighted = optionKey === "A";
   const opt = computed.options[optionKey];
   const showStrike = !!discountPct && !!originalPrice && originalPrice > opt.price;

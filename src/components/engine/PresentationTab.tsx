@@ -81,6 +81,9 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
             else if (key === "B") update("customFeaturesB", next);
             else update("customFeaturesC", next);
           }}
+          products={state.products}
+          roofMaterial={state.roofMaterial ?? "shingle"}
+          onChangeRoofMaterial={(m) => update("roofMaterial", m)}
         />
 
         <FinancialImpact state={state} computed={computed} />

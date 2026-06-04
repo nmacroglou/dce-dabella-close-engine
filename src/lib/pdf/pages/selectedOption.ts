@@ -2,7 +2,7 @@ import type { jsPDF } from "jspdf";
 import type { EngineState, ComputedValues } from "@/types/engine";
 import { fmt } from "@/lib/format";
 import { getOptionMetrics, getProductLabel } from "@/lib/engineHelpers";
-import { FEATURES_BY_OPTION } from "@/components/engine/presentation/constants";
+import { getDefaultFeatureTexts } from "@/components/engine/presentation/constants";
 import {
   type RGB,
   ACCENT, BORDER, CARD, CREAM, FOREST_INK, GRAPHITE, INK,
@@ -83,9 +83,8 @@ export function drawSelectedOption(
   hairline(pdf, COL_LEFT_X + 8, colY + 22, COL_LEFT_X + colW - 8, colY + 22, MIST, 0.3);
 
   const customTexts = state.customFeatures && state.customFeatures.length > 0 ? state.customFeatures : null;
-  const features = customTexts
-    ? customTexts.map((text) => ({ text }))
-    : (FEATURES_BY_OPTION[opt.key] || []);
+  const defaultTexts = getDefaultFeatureTexts(state.products, state.roofMaterial);
+  const features = (customTexts ?? defaultTexts).map((text) => ({ text }));
 
   let fy = colY + 30;
   features.slice(0, 8).forEach((f) => {

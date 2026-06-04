@@ -39,6 +39,7 @@ export interface EngineState {
   monthlyOverrideB?: number;
   monthlyOverrideC?: number;
   postCloseChecks?: Record<string, boolean>;
+  roofMaterial?: "shingle" | "tile";
 }
 
 export interface OptionComputed {
