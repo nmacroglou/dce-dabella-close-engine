@@ -322,6 +322,7 @@ export type Database = {
           homeowner1: string | null
           homeowner2: string | null
           id: string
+          lead_source: string | null
           lost_reason: string | null
           notes: string | null
           preliminary_estimate: Json
@@ -334,6 +335,8 @@ export type Database = {
           stage: Database["public"]["Enums"]["deal_stage"]
           stage_changed_at: string
           updated_at: string
+          was_demoed: boolean
+          was_presented: boolean
         }
         Insert: {
           address?: string | null
@@ -345,6 +348,7 @@ export type Database = {
           homeowner1?: string | null
           homeowner2?: string | null
           id?: string
+          lead_source?: string | null
           lost_reason?: string | null
           notes?: string | null
           preliminary_estimate?: Json
@@ -357,6 +361,8 @@ export type Database = {
           stage?: Database["public"]["Enums"]["deal_stage"]
           stage_changed_at?: string
           updated_at?: string
+          was_demoed?: boolean
+          was_presented?: boolean
         }
         Update: {
           address?: string | null
@@ -368,6 +374,7 @@ export type Database = {
           homeowner1?: string | null
           homeowner2?: string | null
           id?: string
+          lead_source?: string | null
           lost_reason?: string | null
           notes?: string | null
           preliminary_estimate?: Json
@@ -380,6 +387,8 @@ export type Database = {
           stage?: Database["public"]["Enums"]["deal_stage"]
           stage_changed_at?: string
           updated_at?: string
+          was_demoed?: boolean
+          was_presented?: boolean
         }
         Relationships: []
       }
