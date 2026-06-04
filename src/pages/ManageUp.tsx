@@ -412,7 +412,7 @@ export default function ManageUp() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                {monthLabel(month)} · Overall Proficiency
+                {period.label} · Overall Proficiency
               </p>
               <p className="mt-1 text-5xl font-display font-extrabold gradient-text tabular-nums">
                 {avgPoints.toFixed(1)}
