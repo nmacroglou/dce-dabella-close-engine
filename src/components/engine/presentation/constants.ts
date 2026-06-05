@@ -41,7 +41,31 @@ export const OPTION_THEMES: Record<"A" | "B" | "C", OptionTheme> = {
   },
 };
 
-export type RoofMaterial = "shingle" | "tile";
+export type RoofMaterial = "shingle" | "tile" | "tpo";
+
+/** Default option names per roof material — used when the user switches material. */
+export const OPTION_NAME_DEFAULTS: Record<RoofMaterial, { A: string; B: string; C: string }> = {
+  shingle: {
+    A: "Timberline Energy Charcoal",
+    B: "Grand Sequoia Charcoal",
+    C: "Timberline American Harvest",
+  },
+  tile: {
+    A: "Westlake Royal Therma Series",
+    B: "Westlake Royal Cool Series",
+    C: "Westlake Royal Standard Roof",
+  },
+  tpo: {
+    A: "GAF EverGuard TPO Premium",
+    B: "GAF EverGuard TPO Performance",
+    C: "GAF EverGuard TPO Essential",
+  },
+};
+
+/** All known default option names — used to detect "untouched" names safely. */
+export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set(
+  Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C])
+);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
 
