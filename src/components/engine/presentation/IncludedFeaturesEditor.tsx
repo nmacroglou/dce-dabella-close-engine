@@ -21,8 +21,10 @@ export default function IncludedFeaturesEditor({
   products, roofMaterial, onChangeRoofMaterial,
 }: Props) {
   const [tab, setTab] = useState<OptKey | "shared">("A");
-  const computedDefault = getDefaultFeatureTexts(products, roofMaterial);
-  const sharedDefault = value && value.length > 0 ? value : computedDefault;
+  const computedDefaultA = getDefaultFeatureTexts(products, roofMaterial, "A");
+  const computedDefaultB = getDefaultFeatureTexts(products, roofMaterial, "B");
+  const computedDefaultC = getDefaultFeatureTexts(products, roofMaterial, "C");
+  const sharedDefault = value && value.length > 0 ? value : computedDefaultA;
 
   const hasRoofing = (products ?? []).some((p) => p.toLowerCase().includes("roof"));
 
@@ -70,15 +72,19 @@ export default function IncludedFeaturesEditor({
 
         {(["A", "B", "C"] as OptKey[]).map((k) => {
           const others = (["A", "B", "C"] as OptKey[]).filter((o) => o !== k);
+          const optionDefault =
+            k === "A" ? computedDefaultA :
+            k === "B" ? computedDefaultB :
+            computedDefaultC;
           return (
             <TabsContent key={k} value={k}>
               <FeatureList
-                features={perOption[k] ?? sharedDefault}
+                features={perOption[k] ?? optionDefault}
                 onChange={(next) => onChangePerOption(k, next)}
-                onResetToShared={() => onChangePerOption(k, [...computedDefault])}
+                onResetToShared={() => onChangePerOption(k, [...optionDefault])}
                 onCopyFromShared={() => onChangePerOption(k, [...sharedDefault])}
                 onCopyToOthers={() => {
-                  const src = perOption[k] ?? sharedDefault;
+                  const src = perOption[k] ?? optionDefault;
                   others.forEach((o) => onChangePerOption(o, [...src]));
                 }}
                 copyToOthersLabel={`Copy to ${others.join(" & ")}`}
@@ -92,7 +98,7 @@ export default function IncludedFeaturesEditor({
           <FeatureList
             features={sharedDefault}
             onChange={onChange}
-            onResetToShared={() => onChange([...computedDefault])}
+            onResetToShared={() => onChange([...computedDefaultA])}
             optionLabel="Shared default"
           />
         </TabsContent>
