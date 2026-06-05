@@ -46,7 +46,7 @@ export default function IncludedFeaturesEditor({
             <ListChecks className="h-5 w-5 text-primary" /> What's included
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Defaults adapt to the job type{hasRoofing ? " and roof material" : showWindowsBadge ? " and window series" : showSidingBadge ? " and siding collection" : showBathBadge ? " and bath series" : showSolarBadge ? " and system size" : ""}. Customize per option as needed.
+            Defaults adapt to the job type{hasRoofing ? " and roof material" : showWindowsBadge ? " and window series" : showSidingBadge ? " and siding collection" : showBathBadge ? " and bath series" : showSolarBadge ? " and system size" : showGutterBadge ? " and gutter tier" : ""}. Customize per option as needed.
           </p>
         </div>
 
