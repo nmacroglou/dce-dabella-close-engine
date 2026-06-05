@@ -41,7 +41,31 @@ export const OPTION_THEMES: Record<"A" | "B" | "C", OptionTheme> = {
   },
 };
 
-export type RoofMaterial = "shingle" | "tile";
+export type RoofMaterial = "shingle" | "tile" | "tpo";
+
+/** Default option names per roof material — used when the user switches material. */
+export const OPTION_NAME_DEFAULTS: Record<RoofMaterial, { A: string; B: string; C: string }> = {
+  shingle: {
+    A: "Timberline Energy Charcoal",
+    B: "Grand Sequoia Charcoal",
+    C: "Timberline American Harvest",
+  },
+  tile: {
+    A: "Westlake Royal Therma Series",
+    B: "Westlake Royal Cool Series",
+    C: "Westlake Royal Standard Roof",
+  },
+  tpo: {
+    A: "GAF EverGuard TPO Premium",
+    B: "GAF EverGuard TPO Performance",
+    C: "GAF EverGuard TPO Essential",
+  },
+};
+
+/** All known default option names — used to detect "untouched" names safely. */
+export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set(
+  Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C])
+);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
 
@@ -87,6 +111,39 @@ const ROOF_TILE_C: string[] = [
   "Premium Underlayment Replacement",
   "Standard Batten System",
   "Ridge Replacement",
+  "Professional Installation",
+  "Manufacturer Warranty",
+  "Reliable Weather Protection",
+];
+
+const ROOF_TPO_A: string[] = [
+  "GAF EverGuard TPO 80-mil Membrane",
+  "High-Performance Cover Board",
+  "Fully Adhered Flashing System",
+  "Reinforced Seam Welding",
+  "Tapered Insulation for Positive Drainage",
+  "ENERGY STAR® Cool Roof Rated",
+  "30-Year Manufacturer System Warranty",
+  "Factory-Certified Commercial Installers",
+  "Best Long-Term ROI",
+];
+
+const ROOF_TPO_B: string[] = [
+  "GAF EverGuard TPO 60-mil Membrane",
+  "Cover Board Protection",
+  "Mechanically Attached System",
+  "Reinforced Seam Welding",
+  "ENERGY STAR® Cool Roof Rated",
+  "25-Year Manufacturer System Warranty",
+  "Factory-Certified Commercial Installers",
+  "Exceptional Long-Term Value",
+];
+
+const ROOF_TPO_C: string[] = [
+  "GAF EverGuard TPO 45-mil Membrane",
+  "Standard Insulation Replacement",
+  "Mechanically Attached System",
+  "Heat-Welded Seams",
   "Professional Installation",
   "Manufacturer Warranty",
   "Reliable Weather Protection",
@@ -157,15 +214,28 @@ export function getDefaultFeatureTexts(
   const list = products && products.length > 0 ? products : [];
   const has = (name: string) => list.some((p) => p.toLowerCase().includes(name.toLowerCase()));
 
-  // Tile roof: return per-option lists when an option key is provided
+  // Tile roof: per-option lists
   if (has("Roof") && roofMaterial === "tile" && optKey) {
     if (optKey === "A") return ROOF_TILE_A.slice();
     if (optKey === "B") return ROOF_TILE_B.slice();
     return ROOF_TILE_C.slice();
   }
 
+  // TPO flat roof: per-option lists
+  if (has("Roof") && roofMaterial === "tpo" && optKey) {
+    if (optKey === "A") return ROOF_TPO_A.slice();
+    if (optKey === "B") return ROOF_TPO_B.slice();
+    return ROOF_TPO_C.slice();
+  }
+
   const buckets: string[][] = [];
-  if (has("Roof")) buckets.push(roofMaterial === "tile" ? ROOF_TILE_A : ROOF_SHINGLE);
+  if (has("Roof")) {
+    buckets.push(
+      roofMaterial === "tile" ? ROOF_TILE_A :
+      roofMaterial === "tpo" ? ROOF_TPO_A :
+      ROOF_SHINGLE
+    );
+  }
   if (has("Window")) buckets.push(WINDOWS);
   if (has("Siding")) buckets.push(SIDING);
   if (has("Bath")) buckets.push(BATH);
