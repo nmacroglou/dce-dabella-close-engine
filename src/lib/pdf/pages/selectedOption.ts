@@ -82,8 +82,11 @@ export function drawSelectedOption(
 
   hairline(pdf, COL_LEFT_X + 8, colY + 22, COL_LEFT_X + colW - 8, colY + 22, MIST, 0.3);
 
-  const customTexts = state.customFeatures && state.customFeatures.length > 0 ? state.customFeatures : null;
-  const defaultTexts = getDefaultFeatureTexts(state.products, state.roofMaterial);
+  const customKey = `customFeatures${opt.key}` as keyof EngineState;
+  const customTexts = (state[customKey] as string[] | undefined) && (state[customKey] as string[]).length > 0
+    ? (state[customKey] as string[])
+    : null;
+  const defaultTexts = getDefaultFeatureTexts(state.products, state.roofMaterial, opt.key);
   const features = (customTexts ?? defaultTexts).map((text) => ({ text }));
 
   let fy = colY + 30;

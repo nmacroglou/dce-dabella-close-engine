@@ -54,13 +54,42 @@ const ROOF_SHINGLE: string[] = [
   "Best long-term ROI",
 ];
 
-const ROOF_TILE: string[] = [
-  "Lifetime Tile System Warranty",
-  "Factory-Trained Certified Tile Installers",
-  "Premium underlayment full replacement",
-  "Cool-Roof rated tile profile",
-  "Bird-stop & weather seal package",
-  "Best long-term ROI",
+const ROOF_TILE_A: string[] = [
+  "Westlake Royal Roof Tile",
+  "TileSeal HT Underlayment System",
+  "Vented Eave Riser",
+  "Elevated Batten System",
+  "Zephyr Roll Ridge Ventilation",
+  "Vented Elevated Ridge System",
+  "Bird Stop & Weather Seal Package",
+  "Up to 22% Greater Energy Efficiency",
+  "Cool Roof Rated Tile Profile",
+  "Lifetime System Warranty",
+  "Factory-Certified Tile Installers",
+  "Best Long-Term ROI",
+];
+
+const ROOF_TILE_B: string[] = [
+  "Westlake Royal Roof Tile",
+  "TileSeal HT Underlayment System",
+  "Elevated Batten System",
+  "Zephyr Roll Ridge Ventilation",
+  "Bird Stop Protection",
+  "Up to 22% Greater Energy Efficiency",
+  "Cool Roof Rated Tile Profile",
+  "Lifetime System Warranty",
+  "Factory-Certified Tile Installers",
+  "Exceptional Long-Term Value",
+];
+
+const ROOF_TILE_C: string[] = [
+  "Westlake Royal Roof Tile",
+  "Premium Underlayment Replacement",
+  "Standard Batten System",
+  "Ridge Replacement",
+  "Professional Installation",
+  "Manufacturer Warranty",
+  "Reliable Weather Protection",
 ];
 
 const WINDOWS: string[] = [
@@ -123,12 +152,20 @@ export const DEFAULT_FEATURE_TEXTS: string[] = SHARED_FALLBACK;
 export function getDefaultFeatureTexts(
   products: string[] | undefined,
   roofMaterial: RoofMaterial | undefined,
+  optKey?: "A" | "B" | "C",
 ): string[] {
   const list = products && products.length > 0 ? products : [];
   const has = (name: string) => list.some((p) => p.toLowerCase().includes(name.toLowerCase()));
 
+  // Tile roof: return per-option lists when an option key is provided
+  if (has("Roof") && roofMaterial === "tile" && optKey) {
+    if (optKey === "A") return ROOF_TILE_A.slice();
+    if (optKey === "B") return ROOF_TILE_B.slice();
+    return ROOF_TILE_C.slice();
+  }
+
   const buckets: string[][] = [];
-  if (has("Roof")) buckets.push(roofMaterial === "tile" ? ROOF_TILE : ROOF_SHINGLE);
+  if (has("Roof")) buckets.push(roofMaterial === "tile" ? ROOF_TILE_A : ROOF_SHINGLE);
   if (has("Window")) buckets.push(WINDOWS);
   if (has("Siding")) buckets.push(SIDING);
   if (has("Bath")) buckets.push(BATH);
@@ -176,9 +213,10 @@ export function getFeaturesForOption(
   products: string[] | undefined,
   roofMaterial: RoofMaterial | undefined,
   customFeatures: string[] | undefined,
+  optKey: "A" | "B" | "C",
 ): { icon: LucideIcon; text: string }[] {
   const texts = customFeatures && customFeatures.length > 0
     ? customFeatures
-    : getDefaultFeatureTexts(products, roofMaterial);
+    : getDefaultFeatureTexts(products, roofMaterial, optKey);
   return featuresFromTexts(texts);
 }
