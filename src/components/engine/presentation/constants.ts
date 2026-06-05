@@ -341,6 +341,37 @@ const GUTTERS: string[] = [
   "Best long-term ROI",
 ];
 
+const GUTTERS_A: string[] = [
+  "Premium K-Style Gutters with Gutter Covers",
+  "Heavy-Gauge Seamless Aluminum Construction",
+  "Micro-Mesh Gutter Guard System",
+  "Reinforced Hidden Hanger System",
+  "Lifetime Gutter-Guard Warranty",
+  "Factory-Trained Certified Installers",
+  "Precise & Accurate Installation",
+  "Best Long-Term ROI",
+];
+
+const GUTTERS_B: string[] = [
+  "K-Style Gutters with Gutter Covers",
+  "Seamless Aluminum Construction",
+  "Gutter Guard Protection System",
+  "Reinforced Hidden Hangers",
+  "Lifetime Gutter-Guard Warranty",
+  "Factory-Trained Certified Installers",
+  "Professional Installation",
+  "Exceptional Long-Term Value",
+];
+
+const GUTTERS_C: string[] = [
+  "Standard K-Style Gutters",
+  "Seamless Aluminum Construction",
+  "Standard Downspout System",
+  "Professional Installation",
+  "Manufacturer Warranty",
+  "Reliable Weather Protection",
+];
+
 const SOLAR: string[] = [
   "25-year panel performance warranty",
   "Factory-Trained Certified Installers",
