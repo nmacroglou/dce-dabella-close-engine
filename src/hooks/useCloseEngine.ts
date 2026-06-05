@@ -144,9 +144,19 @@ export function useCloseEngine() {
           const stickyA = next.stickyOptionAName ?? true;
           const stickyB = next.stickyOptionBName ?? true;
           const stickyC = next.stickyOptionCName ?? true;
-          if (stickyA && (!next.optionAName || ALL_DEFAULT_OPTION_NAMES.has(next.optionAName))) next.optionAName = defaults.A;
-          if (stickyB && (!next.optionBName || ALL_DEFAULT_OPTION_NAMES.has(next.optionBName))) next.optionBName = defaults.B;
-          if (stickyC && (!next.optionCName || ALL_DEFAULT_OPTION_NAMES.has(next.optionCName))) next.optionCName = defaults.C;
+          // Sticky = user opted in to auto-fill, so swap unconditionally.
+          // This also refreshes legacy/older saved names on existing deals.
+          if (stickyA) next.optionAName = defaults.A;
+          if (stickyB) next.optionBName = defaults.B;
+          if (stickyC) next.optionCName = defaults.C;
+        }
+
+        // Refresh "What's Included" on product/material change for existing deals.
+        // Clearing forces the per-product defaults to render.
+        next.customFeaturesA = undefined;
+        next.customFeaturesB = undefined;
+        next.customFeaturesC = undefined;
+        next.customFeatures = undefined;
         }
 
         // Clear stale "What's Included" arrays that are still untouched presets
