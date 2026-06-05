@@ -123,6 +123,7 @@ export function useCloseEngine() {
         const hasSiding = prods.some((p) => p.toLowerCase().includes("siding"));
         const hasBath = prods.some((p) => p.toLowerCase().includes("bath"));
         const hasSolar = prods.some((p) => p.toLowerCase().includes("solar"));
+        const hasGutters = prods.some((p) => p.toLowerCase().includes("gutter"));
         let defaults: { A: string; B: string; C: string } | null = null;
         if (hasRoof) {
           defaults = OPTION_NAME_DEFAULTS[next.roofMaterial ?? "shingle"];
@@ -134,6 +135,8 @@ export function useCloseEngine() {
           defaults = BATH_OPTION_NAME_DEFAULTS;
         } else if (hasSolar) {
           defaults = SOLAR_OPTION_NAME_DEFAULTS;
+        } else if (hasGutters) {
+          defaults = GUTTER_OPTION_NAME_DEFAULTS;
         }
         if (defaults) {
           if (!next.optionAName || ALL_DEFAULT_OPTION_NAMES.has(next.optionAName)) next.optionAName = defaults.A;
