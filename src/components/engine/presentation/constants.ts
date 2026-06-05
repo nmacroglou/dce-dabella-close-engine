@@ -340,6 +340,43 @@ const SOLAR: string[] = [
   "SolarMAX monitoring app",
 ];
 
+const SOLAR_A: string[] = [
+  "GAF Energy Timberline Solar™ — American Harvest",
+  "6 kW Nailable Solar Shingle System",
+  "Integrated Roof + Solar (No Racking)",
+  "25-Year Power & Product Warranty",
+  "Class A Fire & Class F Wind Rated",
+  "Maximum Offset — Up to 100% of Average Bill",
+  "Battery-Ready Smart Inverter",
+  "Net-Metering & Monitoring App",
+  "Factory-Trained Certified Installers",
+  "Best Long-Term ROI",
+];
+
+const SOLAR_B: string[] = [
+  "GAF Energy Timberline Solar™ — American Harvest",
+  "3 kW Nailable Solar Shingle System",
+  "Integrated Roof + Solar (No Racking)",
+  "25-Year Power & Product Warranty",
+  "Class A Fire & Class F Wind Rated",
+  "Significant Offset — Up to 50% of Average Bill",
+  "Battery-Ready Smart Inverter",
+  "Net-Metering & Monitoring App",
+  "Factory-Trained Certified Installers",
+];
+
+const SOLAR_C: string[] = [
+  "GAF Energy Timberline Solar™ — American Harvest",
+  "2 kW Nailable Solar Shingle System",
+  "Integrated Roof + Solar (No Racking)",
+  "25-Year Power & Product Warranty",
+  "Class A Fire & Class F Wind Rated",
+  "Starter Offset — Up to 30% of Average Bill",
+  "Net-Metering & Monitoring App",
+  "Professional Installation",
+];
+
+
 const SHARED_FALLBACK: string[] = [
   "Golden Pledge® Lifetime Warranty",
   "Factory-Trained Certified Installers",
