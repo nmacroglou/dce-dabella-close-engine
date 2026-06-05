@@ -148,6 +148,13 @@ export function useCloseEngine() {
           if (stickyB && (!next.optionBName || ALL_DEFAULT_OPTION_NAMES.has(next.optionBName))) next.optionBName = defaults.B;
           if (stickyC && (!next.optionCName || ALL_DEFAULT_OPTION_NAMES.has(next.optionCName))) next.optionCName = defaults.C;
         }
+
+        // Clear stale "What's Included" arrays that are still untouched presets
+        // from a prior product/material, so the new defaults take over visibly.
+        if (isKnownDefaultFeatureSet(next.customFeaturesA)) next.customFeaturesA = undefined;
+        if (isKnownDefaultFeatureSet(next.customFeaturesB)) next.customFeaturesB = undefined;
+        if (isKnownDefaultFeatureSet(next.customFeaturesC)) next.customFeaturesC = undefined;
+        if (isKnownDefaultFeatureSet(next.customFeatures)) next.customFeatures = undefined;
       }
 
       return next;
