@@ -76,6 +76,13 @@ export const SIDING_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = 
   C: "James Hardie Foundation Collection",
 };
 
+/** Default option names when Solar is the primary product (GAF Energy / American Harvest tiers). */
+export const SOLAR_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "GAF Energy American Harvest — 6 kW System",
+  B: "GAF Energy American Harvest — 3 kW System",
+  C: "GAF Energy American Harvest — 2 kW System",
+};
+
 /** Default option names when Bath is the primary product (Sentrel tiers). */
 export const BATH_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
   A: "Sentrel Signature Series",
@@ -95,6 +102,9 @@ export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   BATH_OPTION_NAME_DEFAULTS.A,
   BATH_OPTION_NAME_DEFAULTS.B,
   BATH_OPTION_NAME_DEFAULTS.C,
+  SOLAR_OPTION_NAME_DEFAULTS.A,
+  SOLAR_OPTION_NAME_DEFAULTS.B,
+  SOLAR_OPTION_NAME_DEFAULTS.C,
 ]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
@@ -330,6 +340,43 @@ const SOLAR: string[] = [
   "SolarMAX monitoring app",
 ];
 
+const SOLAR_A: string[] = [
+  "GAF Energy Timberline Solar™ — American Harvest",
+  "6 kW Nailable Solar Shingle System",
+  "Integrated Roof + Solar (No Racking)",
+  "25-Year Power & Product Warranty",
+  "Class A Fire & Class F Wind Rated",
+  "Maximum Offset — Up to 100% of Average Bill",
+  "Battery-Ready Smart Inverter",
+  "Net-Metering & Monitoring App",
+  "Factory-Trained Certified Installers",
+  "Best Long-Term ROI",
+];
+
+const SOLAR_B: string[] = [
+  "GAF Energy Timberline Solar™ — American Harvest",
+  "3 kW Nailable Solar Shingle System",
+  "Integrated Roof + Solar (No Racking)",
+  "25-Year Power & Product Warranty",
+  "Class A Fire & Class F Wind Rated",
+  "Significant Offset — Up to 50% of Average Bill",
+  "Battery-Ready Smart Inverter",
+  "Net-Metering & Monitoring App",
+  "Factory-Trained Certified Installers",
+];
+
+const SOLAR_C: string[] = [
+  "GAF Energy Timberline Solar™ — American Harvest",
+  "2 kW Nailable Solar Shingle System",
+  "Integrated Roof + Solar (No Racking)",
+  "25-Year Power & Product Warranty",
+  "Class A Fire & Class F Wind Rated",
+  "Starter Offset — Up to 30% of Average Bill",
+  "Net-Metering & Monitoring App",
+  "Professional Installation",
+];
+
+
 const SHARED_FALLBACK: string[] = [
   "Golden Pledge® Lifetime Warranty",
   "Factory-Trained Certified Installers",
@@ -383,6 +430,13 @@ export function getDefaultFeatureTexts(
     if (optKey === "A") return BATH_A.slice();
     if (optKey === "B") return BATH_B.slice();
     return BATH_C.slice();
+  }
+
+  // Solar as primary product: per-option GAF Energy American Harvest tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && !has("Bath") && has("Solar") && optKey) {
+    if (optKey === "A") return SOLAR_A.slice();
+    if (optKey === "B") return SOLAR_B.slice();
+    return SOLAR_C.slice();
   }
 
   const buckets: string[][] = [];

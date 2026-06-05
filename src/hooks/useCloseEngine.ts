@@ -12,6 +12,7 @@ import {
   WINDOW_OPTION_NAME_DEFAULTS,
   SIDING_OPTION_NAME_DEFAULTS,
   BATH_OPTION_NAME_DEFAULTS,
+  SOLAR_OPTION_NAME_DEFAULTS,
   ALL_DEFAULT_OPTION_NAMES,
 } from "@/components/engine/presentation/constants";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
@@ -120,6 +121,7 @@ export function useCloseEngine() {
         const hasWindows = prods.some((p) => p.toLowerCase().includes("window"));
         const hasSiding = prods.some((p) => p.toLowerCase().includes("siding"));
         const hasBath = prods.some((p) => p.toLowerCase().includes("bath"));
+        const hasSolar = prods.some((p) => p.toLowerCase().includes("solar"));
         let defaults: { A: string; B: string; C: string } | null = null;
         if (hasRoof) {
           defaults = OPTION_NAME_DEFAULTS[next.roofMaterial ?? "shingle"];
@@ -129,6 +131,8 @@ export function useCloseEngine() {
           defaults = SIDING_OPTION_NAME_DEFAULTS;
         } else if (hasBath) {
           defaults = BATH_OPTION_NAME_DEFAULTS;
+        } else if (hasSolar) {
+          defaults = SOLAR_OPTION_NAME_DEFAULTS;
         }
         if (defaults) {
           if (!next.optionAName || ALL_DEFAULT_OPTION_NAMES.has(next.optionAName)) next.optionAName = defaults.A;
