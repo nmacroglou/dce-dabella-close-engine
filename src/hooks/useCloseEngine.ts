@@ -151,20 +151,13 @@ export function useCloseEngine() {
           if (stickyC) next.optionCName = defaults.C;
         }
 
-        // Refresh "What's Included" on product/material change for existing deals.
-        // Clearing forces the per-product defaults to render.
+        // Refresh "What's Included" on product/material change so per-product
+        // defaults render — including for older deals whose saved arrays don't
+        // match any current preset signature.
         next.customFeaturesA = undefined;
         next.customFeaturesB = undefined;
         next.customFeaturesC = undefined;
         next.customFeatures = undefined;
-        }
-
-        // Clear stale "What's Included" arrays that are still untouched presets
-        // from a prior product/material, so the new defaults take over visibly.
-        if (isKnownDefaultFeatureSet(next.customFeaturesA)) next.customFeaturesA = undefined;
-        if (isKnownDefaultFeatureSet(next.customFeaturesB)) next.customFeaturesB = undefined;
-        if (isKnownDefaultFeatureSet(next.customFeaturesC)) next.customFeaturesC = undefined;
-        if (isKnownDefaultFeatureSet(next.customFeatures)) next.customFeatures = undefined;
       }
 
       return next;
