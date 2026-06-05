@@ -90,6 +90,13 @@ export const BATH_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
   C: "Sentrel Classic Series",
 };
 
+/** Default option names when Gutters is the primary product. */
+export const GUTTER_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Premium K-Style Gutters with Covers",
+  B: "K-Style Gutters with Gutter Covers",
+  C: "Standard K-Style Gutters",
+};
+
 /** All known default option names — used to detect "untouched" names safely. */
 export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   ...Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C]),
