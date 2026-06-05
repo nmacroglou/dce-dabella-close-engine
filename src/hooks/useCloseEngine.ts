@@ -10,6 +10,7 @@ import { WINDOW_INSPECTION_ITEMS, WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import {
   OPTION_NAME_DEFAULTS,
   WINDOW_OPTION_NAME_DEFAULTS,
+  SIDING_OPTION_NAME_DEFAULTS,
   ALL_DEFAULT_OPTION_NAMES,
 } from "@/components/engine/presentation/constants";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
@@ -116,11 +117,14 @@ export function useCloseEngine() {
         const prods = (value as string[]) || [];
         const hasRoof = prods.some((p) => p.toLowerCase().includes("roof"));
         const hasWindows = prods.some((p) => p.toLowerCase().includes("window"));
+        const hasSiding = prods.some((p) => p.toLowerCase().includes("siding"));
         let defaults: { A: string; B: string; C: string } | null = null;
         if (hasRoof) {
           defaults = OPTION_NAME_DEFAULTS[next.roofMaterial ?? "shingle"];
         } else if (hasWindows) {
           defaults = WINDOW_OPTION_NAME_DEFAULTS;
+        } else if (hasSiding) {
+          defaults = SIDING_OPTION_NAME_DEFAULTS;
         }
         if (defaults) {
           if (!next.optionAName || ALL_DEFAULT_OPTION_NAMES.has(next.optionAName)) next.optionAName = defaults.A;
