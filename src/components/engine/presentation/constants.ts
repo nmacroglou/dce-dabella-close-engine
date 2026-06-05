@@ -62,10 +62,20 @@ export const OPTION_NAME_DEFAULTS: Record<RoofMaterial, { A: string; B: string; 
   },
 };
 
+/** Default option names when Windows is the primary product. */
+export const WINDOW_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Glasswing Triple Pane with Krypton",
+  B: "Glasswing Double Pane with Krypton",
+  C: "Fairfield Double Pane with Argon",
+};
+
 /** All known default option names — used to detect "untouched" names safely. */
-export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set(
-  Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C])
-);
+export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
+  ...Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C]),
+  WINDOW_OPTION_NAME_DEFAULTS.A,
+  WINDOW_OPTION_NAME_DEFAULTS.B,
+  WINDOW_OPTION_NAME_DEFAULTS.C,
+]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
 
