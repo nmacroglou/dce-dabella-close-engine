@@ -214,15 +214,28 @@ export function getDefaultFeatureTexts(
   const list = products && products.length > 0 ? products : [];
   const has = (name: string) => list.some((p) => p.toLowerCase().includes(name.toLowerCase()));
 
-  // Tile roof: return per-option lists when an option key is provided
+  // Tile roof: per-option lists
   if (has("Roof") && roofMaterial === "tile" && optKey) {
     if (optKey === "A") return ROOF_TILE_A.slice();
     if (optKey === "B") return ROOF_TILE_B.slice();
     return ROOF_TILE_C.slice();
   }
 
+  // TPO flat roof: per-option lists
+  if (has("Roof") && roofMaterial === "tpo" && optKey) {
+    if (optKey === "A") return ROOF_TPO_A.slice();
+    if (optKey === "B") return ROOF_TPO_B.slice();
+    return ROOF_TPO_C.slice();
+  }
+
   const buckets: string[][] = [];
-  if (has("Roof")) buckets.push(roofMaterial === "tile" ? ROOF_TILE_A : ROOF_SHINGLE);
+  if (has("Roof")) {
+    buckets.push(
+      roofMaterial === "tile" ? ROOF_TILE_A :
+      roofMaterial === "tpo" ? ROOF_TPO_A :
+      ROOF_SHINGLE
+    );
+  }
   if (has("Window")) buckets.push(WINDOWS);
   if (has("Siding")) buckets.push(SIDING);
   if (has("Bath")) buckets.push(BATH);
