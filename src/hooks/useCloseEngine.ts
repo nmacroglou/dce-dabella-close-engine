@@ -75,7 +75,38 @@ export function useCloseEngine() {
   }, [deal, activeDealId]);
 
   const update: EngineUpdater = useCallback((key, value) => {
-    setState((prev) => ({ ...prev, [key]: value }));
+    setState((prev) => {
+      const next = { ...prev, [key]: value } as EngineState;
+
+      // When roof material switches to tile/tpo and prices are empty,
+      // prepopulate from the last-ask remembered for that material.
+      if (key === "roofMaterial" && (value === "tile" || value === "tpo")) {
+        if (!next.priceA && !next.priceB && !next.priceC) {
+          try {
+            const raw = localStorage.getItem(`dce:lastAsk:${value}`);
+            if (raw) {
+              const r = JSON.parse(raw) as { A?: number; B?: number; C?: number };
+              next.priceA = r.A ?? 0;
+              next.priceB = r.B ?? 0;
+              next.priceC = r.C ?? 0;
+            }
+          } catch { /* ignore */ }
+        }
+      }
+
+      // Remember the last-ask whenever a price is edited for tile/tpo.
+      if ((key === "priceA" || key === "priceB" || key === "priceC") &&
+          (next.roofMaterial === "tile" || next.roofMaterial === "tpo")) {
+        try {
+          localStorage.setItem(
+            `dce:lastAsk:${next.roofMaterial}`,
+            JSON.stringify({ A: next.priceA, B: next.priceB, C: next.priceC })
+          );
+        } catch { /* ignore */ }
+      }
+
+      return next;
+    });
   }, []);
 
   const reset = useCallback(() => setState(initialState), []);
