@@ -154,6 +154,27 @@ export default function IncludedFeaturesEditor({
             ))}
           </div>
         )}
+
+        {showGutterBadge && (
+          <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-1">
+            <Droplets className="h-3.5 w-3.5 text-muted-foreground ml-2" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Gutters</span>
+            {(["A", "B", "C"] as OptKey[]).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setTab(k)}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase transition-colors ${
+                  tab === k
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {k === "A" ? "Premium" : k === "B" ? "With Covers" : "Standard"}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
 
