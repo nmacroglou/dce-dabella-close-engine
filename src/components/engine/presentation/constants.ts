@@ -168,6 +168,39 @@ const WINDOWS: string[] = [
   "Sound & UV reduction package",
 ];
 
+const WINDOWS_A: string[] = [
+  "Glasswing Triple-Pane with Krypton Gas",
+  "Premium Low-E³ Glass Coating",
+  "Foam-Filled Reinforced Frames",
+  "Lifetime Transferable Warranty",
+  "ENERGY STAR® Most Efficient",
+  "Full-Frame Replacement & Exterior Wrap",
+  "Maximum Sound & UV Reduction",
+  "Factory-Trained Certified Installers",
+  "Best Long-Term ROI",
+];
+
+const WINDOWS_B: string[] = [
+  "Glasswing Double-Pane with Krypton Gas",
+  "Low-E³ Glass Coating",
+  "Foam-Filled Frames",
+  "Lifetime Transferable Warranty",
+  "ENERGY STAR® Qualified",
+  "Full-Frame Replacement & Exterior Wrap",
+  "Enhanced Sound & UV Reduction",
+  "Factory-Trained Certified Installers",
+];
+
+const WINDOWS_C: string[] = [
+  "Fairfield Double-Pane with Argon Gas",
+  "Low-E Glass Coating",
+  "Reinforced Vinyl Frames",
+  "Limited Lifetime Warranty",
+  "ENERGY STAR® Qualified",
+  "Professional Installation",
+  "Reliable Weather Protection",
+];
+
 const SIDING: string[] = [
   "Lifetime fade & hail warranty",
   "Insulated siding system",
@@ -236,6 +269,13 @@ export function getDefaultFeatureTexts(
     if (optKey === "A") return ROOF_TPO_A.slice();
     if (optKey === "B") return ROOF_TPO_B.slice();
     return ROOF_TPO_C.slice();
+  }
+
+  // Windows as primary product (no Roof): per-option lists
+  if (!has("Roof") && has("Window") && optKey) {
+    if (optKey === "A") return WINDOWS_A.slice();
+    if (optKey === "B") return WINDOWS_B.slice();
+    return WINDOWS_C.slice();
   }
 
   const buckets: string[][] = [];
