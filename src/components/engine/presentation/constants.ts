@@ -116,6 +116,39 @@ const ROOF_TILE_C: string[] = [
   "Reliable Weather Protection",
 ];
 
+const ROOF_TPO_A: string[] = [
+  "GAF EverGuard TPO 80-mil Membrane",
+  "High-Performance Cover Board",
+  "Fully Adhered Flashing System",
+  "Reinforced Seam Welding",
+  "Tapered Insulation for Positive Drainage",
+  "ENERGY STAR® Cool Roof Rated",
+  "30-Year Manufacturer System Warranty",
+  "Factory-Certified Commercial Installers",
+  "Best Long-Term ROI",
+];
+
+const ROOF_TPO_B: string[] = [
+  "GAF EverGuard TPO 60-mil Membrane",
+  "Cover Board Protection",
+  "Mechanically Attached System",
+  "Reinforced Seam Welding",
+  "ENERGY STAR® Cool Roof Rated",
+  "25-Year Manufacturer System Warranty",
+  "Factory-Certified Commercial Installers",
+  "Exceptional Long-Term Value",
+];
+
+const ROOF_TPO_C: string[] = [
+  "GAF EverGuard TPO 45-mil Membrane",
+  "Standard Insulation Replacement",
+  "Mechanically Attached System",
+  "Heat-Welded Seams",
+  "Professional Installation",
+  "Manufacturer Warranty",
+  "Reliable Weather Protection",
+];
+
 const WINDOWS: string[] = [
   "Lifetime transferable warranty",
   "Triple-pane Low-E + Argon glass",
