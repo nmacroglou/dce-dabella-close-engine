@@ -13,6 +13,7 @@ import {
   SIDING_OPTION_NAME_DEFAULTS,
   BATH_OPTION_NAME_DEFAULTS,
   SOLAR_OPTION_NAME_DEFAULTS,
+  GUTTER_OPTION_NAME_DEFAULTS,
   ALL_DEFAULT_OPTION_NAMES,
 } from "@/components/engine/presentation/constants";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
