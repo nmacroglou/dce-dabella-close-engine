@@ -268,6 +268,7 @@ const SIDING_C: string[] = [
 ];
 
 const BATH: string[] = [
+  "Sentrel Bath Systems wall panels",
   "Lifetime tub & surround warranty",
   "One-day professional installation",
   "Factory-Trained Certified Installers",
@@ -275,6 +276,41 @@ const BATH: string[] = [
   "ADA-compliant safety options",
   "Premium fixture package",
 ];
+
+const BATH_A: string[] = [
+  "Sentrel Signature Series — Premium Designer Panels",
+  "Solid Surface Wall System",
+  "Lifetime Tub & Surround Warranty",
+  "Microban® Antimicrobial Protection",
+  "One-Day Professional Installation",
+  "ADA-Compliant Safety Package",
+  "Premium Fixture & Hardware Upgrade",
+  "Factory-Trained Certified Installers",
+  "Best Long-Term ROI",
+];
+
+const BATH_B: string[] = [
+  "Sentrel Designer Series Wall Panels",
+  "Solid Surface Wall System",
+  "Lifetime Tub & Surround Warranty",
+  "Microban® Antimicrobial Protection",
+  "One-Day Professional Installation",
+  "Standard Safety Package",
+  "Designer Fixture Package",
+  "Factory-Trained Certified Installers",
+  "Exceptional Long-Term Value",
+];
+
+const BATH_C: string[] = [
+  "Sentrel Classic Series Wall Panels",
+  "Durable Wall System",
+  "Lifetime Tub & Surround Warranty",
+  "Microban® Antimicrobial Protection",
+  "Professional Installation",
+  "Standard Fixture Package",
+  "Reliable Waterproof Protection",
+];
+
 
 const GUTTERS: string[] = [
   "Lifetime gutter-guard warranty",
