@@ -129,6 +129,9 @@ export default function IncludedFeaturesEditor({
                 {k === "A" ? "Signature" : k === "B" ? "Designer" : "Classic"}
               </button>
             ))}
+          </div>
+        )}
+
         {showSolarBadge && (
           <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-1">
             <Sun className="h-3.5 w-3.5 text-muted-foreground ml-2" />
