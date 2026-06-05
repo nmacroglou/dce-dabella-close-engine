@@ -76,6 +76,13 @@ export const SIDING_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = 
   C: "James Hardie Foundation Collection",
 };
 
+/** Default option names when Solar is the primary product (GAF Energy / American Harvest tiers). */
+export const SOLAR_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "GAF Energy American Harvest — 6 kW System",
+  B: "GAF Energy American Harvest — 3 kW System",
+  C: "GAF Energy American Harvest — 2 kW System",
+};
+
 /** Default option names when Bath is the primary product (Sentrel tiers). */
 export const BATH_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
   A: "Sentrel Signature Series",
