@@ -7,6 +7,7 @@ import ScriptCard from "./shared/ScriptCard";
 import ActionGrid from "./presentation/ActionGrid";
 import FinancialImpact from "./presentation/FinancialImpact";
 import IncludedFeaturesEditor from "./presentation/IncludedFeaturesEditor";
+import { OPTION_NAME_DEFAULTS, ALL_DEFAULT_OPTION_NAMES, type RoofMaterial } from "./presentation/constants";
 
 const CustomerPresentationView = lazy(() => import("./CustomerPresentationView"));
 
