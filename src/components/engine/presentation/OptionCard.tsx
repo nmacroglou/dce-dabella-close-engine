@@ -21,7 +21,7 @@ interface OptionCardProps {
 
 export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, products, roofMaterial, originalPrice, discountPct, monthlyOverride, onMonthlyChange }: OptionCardProps) {
   const theme = OPTION_THEMES[optionKey];
-  const features = getFeaturesForOption(products, roofMaterial, customFeatures);
+  const features = getFeaturesForOption(products, roofMaterial, customFeatures, optionKey);
   const isHighlighted = optionKey === "A";
   const opt = computed.options[optionKey];
   const showStrike = !!discountPct && !!originalPrice && originalPrice > opt.price;
