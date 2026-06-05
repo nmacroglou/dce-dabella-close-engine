@@ -102,6 +102,9 @@ export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   BATH_OPTION_NAME_DEFAULTS.A,
   BATH_OPTION_NAME_DEFAULTS.B,
   BATH_OPTION_NAME_DEFAULTS.C,
+  SOLAR_OPTION_NAME_DEFAULTS.A,
+  SOLAR_OPTION_NAME_DEFAULTS.B,
+  SOLAR_OPTION_NAME_DEFAULTS.C,
 ]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
