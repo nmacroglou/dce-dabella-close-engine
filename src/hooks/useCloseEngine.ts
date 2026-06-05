@@ -15,6 +15,7 @@ import {
   SOLAR_OPTION_NAME_DEFAULTS,
   GUTTER_OPTION_NAME_DEFAULTS,
   ALL_DEFAULT_OPTION_NAMES,
+  isKnownDefaultFeatureSet,
 } from "@/components/engine/presentation/constants";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal, useUpdateDeal } from "@/hooks/useDeals";
@@ -147,6 +148,13 @@ export function useCloseEngine() {
           if (stickyB && (!next.optionBName || ALL_DEFAULT_OPTION_NAMES.has(next.optionBName))) next.optionBName = defaults.B;
           if (stickyC && (!next.optionCName || ALL_DEFAULT_OPTION_NAMES.has(next.optionCName))) next.optionCName = defaults.C;
         }
+
+        // Clear stale "What's Included" arrays that are still untouched presets
+        // from a prior product/material, so the new defaults take over visibly.
+        if (isKnownDefaultFeatureSet(next.customFeaturesA)) next.customFeaturesA = undefined;
+        if (isKnownDefaultFeatureSet(next.customFeaturesB)) next.customFeaturesB = undefined;
+        if (isKnownDefaultFeatureSet(next.customFeaturesC)) next.customFeaturesC = undefined;
+        if (isKnownDefaultFeatureSet(next.customFeatures)) next.customFeatures = undefined;
       }
 
       return next;

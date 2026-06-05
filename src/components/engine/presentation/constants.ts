@@ -427,6 +427,27 @@ const SHARED_FALLBACK: string[] = [
   "Best long-term ROI",
 ];
 
+/** All known preset feature lists — used to detect "untouched" saved arrays. */
+const ALL_PRESET_FEATURE_LISTS: string[][] = [
+  ROOF_SHINGLE, ROOF_TILE_A, ROOF_TILE_B, ROOF_TILE_C,
+  ROOF_TPO_A, ROOF_TPO_B, ROOF_TPO_C,
+  WINDOWS, WINDOWS_A, WINDOWS_B, WINDOWS_C,
+  SIDING, SIDING_A, SIDING_B, SIDING_C,
+  BATH, BATH_A, BATH_B, BATH_C,
+  GUTTERS, GUTTERS_A, GUTTERS_B, GUTTERS_C,
+  SOLAR, SOLAR_A, SOLAR_B, SOLAR_C,
+  SHARED_FALLBACK,
+];
+const PRESET_FEATURE_SIGNATURES = new Set(
+  ALL_PRESET_FEATURE_LISTS.map((l) => l.join("|"))
+);
+
+/** Returns true if the given array matches any known preset (i.e. untouched default). */
+export function isKnownDefaultFeatureSet(arr: string[] | undefined | null): boolean {
+  if (!arr || arr.length === 0) return true;
+  return PRESET_FEATURE_SIGNATURES.has(arr.join("|"));
+}
+
 export const DEFAULT_FEATURE_TEXTS: string[] = SHARED_FALLBACK;
 
 /** Compute the default "What's Included" bullets based on products + roof material. */
