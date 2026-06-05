@@ -114,10 +114,11 @@ export function useCloseEngine() {
         } catch { /* ignore */ }
       }
 
-      // When products change, auto-swap option names to match the primary product
-      // (only if the existing names are untouched defaults).
-      if (key === "products") {
-        const prods = (value as string[]) || [];
+      // When products OR roof material change, auto-swap option names to match
+      // the primary product/material (only if existing names are untouched defaults
+      // and the per-option "sticky" flag is on).
+      if (key === "products" || key === "roofMaterial") {
+        const prods = next.products || [];
         const hasRoof = prods.some((p) => p.toLowerCase().includes("roof"));
         const hasWindows = prods.some((p) => p.toLowerCase().includes("window"));
         const hasSiding = prods.some((p) => p.toLowerCase().includes("siding"));
