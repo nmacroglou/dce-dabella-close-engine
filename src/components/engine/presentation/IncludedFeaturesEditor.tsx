@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X, RotateCcw, ListChecks, Copy, Home, AppWindow } from "lucide-react";
+import { Plus, X, RotateCcw, ListChecks, Copy, Home, AppWindow, Layers } from "lucide-react";
 import { getDefaultFeatureTexts, type RoofMaterial } from "./constants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
