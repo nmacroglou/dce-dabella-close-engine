@@ -90,6 +90,13 @@ export const BATH_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
   C: "Sentrel Classic Series",
 };
 
+/** Default option names when Gutters is the primary product. */
+export const GUTTER_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Premium K-Style Gutters with Covers",
+  B: "K-Style Gutters with Gutter Covers",
+  C: "Standard K-Style Gutters",
+};
+
 /** All known default option names — used to detect "untouched" names safely. */
 export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   ...Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C]),
@@ -105,6 +112,9 @@ export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   SOLAR_OPTION_NAME_DEFAULTS.A,
   SOLAR_OPTION_NAME_DEFAULTS.B,
   SOLAR_OPTION_NAME_DEFAULTS.C,
+  GUTTER_OPTION_NAME_DEFAULTS.A,
+  GUTTER_OPTION_NAME_DEFAULTS.B,
+  GUTTER_OPTION_NAME_DEFAULTS.C,
 ]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
@@ -331,6 +341,37 @@ const GUTTERS: string[] = [
   "Best long-term ROI",
 ];
 
+const GUTTERS_A: string[] = [
+  "Premium K-Style Gutters with Gutter Covers",
+  "Heavy-Gauge Seamless Aluminum Construction",
+  "Micro-Mesh Gutter Guard System",
+  "Reinforced Hidden Hanger System",
+  "Lifetime Gutter-Guard Warranty",
+  "Factory-Trained Certified Installers",
+  "Precise & Accurate Installation",
+  "Best Long-Term ROI",
+];
+
+const GUTTERS_B: string[] = [
+  "K-Style Gutters with Gutter Covers",
+  "Seamless Aluminum Construction",
+  "Gutter Guard Protection System",
+  "Reinforced Hidden Hangers",
+  "Lifetime Gutter-Guard Warranty",
+  "Factory-Trained Certified Installers",
+  "Professional Installation",
+  "Exceptional Long-Term Value",
+];
+
+const GUTTERS_C: string[] = [
+  "Standard K-Style Gutters",
+  "Seamless Aluminum Construction",
+  "Standard Downspout System",
+  "Professional Installation",
+  "Manufacturer Warranty",
+  "Reliable Weather Protection",
+];
+
 const SOLAR: string[] = [
   "25-year panel performance warranty",
   "Factory-Trained Certified Installers",
@@ -437,6 +478,13 @@ export function getDefaultFeatureTexts(
     if (optKey === "A") return SOLAR_A.slice();
     if (optKey === "B") return SOLAR_B.slice();
     return SOLAR_C.slice();
+  }
+
+  // Gutters as primary product: per-option gutter tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && !has("Bath") && !has("Solar") && has("Gutter") && optKey) {
+    if (optKey === "A") return GUTTERS_A.slice();
+    if (optKey === "B") return GUTTERS_B.slice();
+    return GUTTERS_C.slice();
   }
 
   const buckets: string[][] = [];
