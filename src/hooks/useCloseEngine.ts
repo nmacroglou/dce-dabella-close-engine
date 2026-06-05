@@ -15,6 +15,7 @@ import {
   SOLAR_OPTION_NAME_DEFAULTS,
   GUTTER_OPTION_NAME_DEFAULTS,
   ALL_DEFAULT_OPTION_NAMES,
+  isKnownDefaultFeatureSet,
 } from "@/components/engine/presentation/constants";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal, useUpdateDeal } from "@/hooks/useDeals";
