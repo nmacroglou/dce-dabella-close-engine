@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X, RotateCcw, ListChecks, Copy, Home, AppWindow, Layers } from "lucide-react";
+import { Plus, X, RotateCcw, ListChecks, Copy, Home, AppWindow, Layers, Bath } from "lucide-react";
 import { getDefaultFeatureTexts, type RoofMaterial } from "./constants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
@@ -29,8 +29,10 @@ export default function IncludedFeaturesEditor({
   const hasRoofing = (products ?? []).some((p) => p.toLowerCase().includes("roof"));
   const hasWindows = (products ?? []).some((p) => p.toLowerCase().includes("window"));
   const hasSiding = (products ?? []).some((p) => p.toLowerCase().includes("siding"));
+  const hasBath = (products ?? []).some((p) => p.toLowerCase().includes("bath"));
   const showWindowsBadge = hasWindows && !hasRoofing;
   const showSidingBadge = hasSiding && !hasRoofing && !hasWindows;
+  const showBathBadge = hasBath && !hasRoofing && !hasWindows && !hasSiding;
 
   return (
     <div className="card-elevated-lg p-6">
@@ -40,7 +42,7 @@ export default function IncludedFeaturesEditor({
             <ListChecks className="h-5 w-5 text-primary" /> What's included
           </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Defaults adapt to the job type{hasRoofing ? " and roof material" : showWindowsBadge ? " and window series" : showSidingBadge ? " and siding collection" : ""}. Customize per option as needed.
+            Defaults adapt to the job type{hasRoofing ? " and roof material" : showWindowsBadge ? " and window series" : showSidingBadge ? " and siding collection" : showBathBadge ? " and bath series" : ""}. Customize per option as needed.
           </p>
         </div>
 
@@ -102,6 +104,27 @@ export default function IncludedFeaturesEditor({
                 }`}
               >
                 {k === "A" ? "Statement" : k === "B" ? "Dream" : "Foundation"}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {showBathBadge && (
+          <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-1">
+            <Bath className="h-3.5 w-3.5 text-muted-foreground ml-2" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Sentrel</span>
+            {(["A", "B", "C"] as OptKey[]).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setTab(k)}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase transition-colors ${
+                  tab === k
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {k === "A" ? "Signature" : k === "B" ? "Designer" : "Classic"}
               </button>
             ))}
           </div>

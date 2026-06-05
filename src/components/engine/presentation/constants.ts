@@ -76,6 +76,13 @@ export const SIDING_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = 
   C: "James Hardie Foundation Collection",
 };
 
+/** Default option names when Bath is the primary product (Sentrel tiers). */
+export const BATH_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Sentrel Signature Series",
+  B: "Sentrel Designer Series",
+  C: "Sentrel Classic Series",
+};
+
 /** All known default option names — used to detect "untouched" names safely. */
 export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   ...Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C]),
@@ -85,6 +92,9 @@ export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   SIDING_OPTION_NAME_DEFAULTS.A,
   SIDING_OPTION_NAME_DEFAULTS.B,
   SIDING_OPTION_NAME_DEFAULTS.C,
+  BATH_OPTION_NAME_DEFAULTS.A,
+  BATH_OPTION_NAME_DEFAULTS.B,
+  BATH_OPTION_NAME_DEFAULTS.C,
 ]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
@@ -258,6 +268,7 @@ const SIDING_C: string[] = [
 ];
 
 const BATH: string[] = [
+  "Sentrel Bath Systems wall panels",
   "Lifetime tub & surround warranty",
   "One-day professional installation",
   "Factory-Trained Certified Installers",
@@ -265,6 +276,41 @@ const BATH: string[] = [
   "ADA-compliant safety options",
   "Premium fixture package",
 ];
+
+const BATH_A: string[] = [
+  "Sentrel Signature Series — Premium Designer Panels",
+  "Solid Surface Wall System",
+  "Lifetime Tub & Surround Warranty",
+  "Microban® Antimicrobial Protection",
+  "One-Day Professional Installation",
+  "ADA-Compliant Safety Package",
+  "Premium Fixture & Hardware Upgrade",
+  "Factory-Trained Certified Installers",
+  "Best Long-Term ROI",
+];
+
+const BATH_B: string[] = [
+  "Sentrel Designer Series Wall Panels",
+  "Solid Surface Wall System",
+  "Lifetime Tub & Surround Warranty",
+  "Microban® Antimicrobial Protection",
+  "One-Day Professional Installation",
+  "Standard Safety Package",
+  "Designer Fixture Package",
+  "Factory-Trained Certified Installers",
+  "Exceptional Long-Term Value",
+];
+
+const BATH_C: string[] = [
+  "Sentrel Classic Series Wall Panels",
+  "Durable Wall System",
+  "Lifetime Tub & Surround Warranty",
+  "Microban® Antimicrobial Protection",
+  "Professional Installation",
+  "Standard Fixture Package",
+  "Reliable Waterproof Protection",
+];
+
 
 const GUTTERS: string[] = [
   "Lifetime gutter-guard warranty",
@@ -330,6 +376,13 @@ export function getDefaultFeatureTexts(
     if (optKey === "A") return SIDING_A.slice();
     if (optKey === "B") return SIDING_B.slice();
     return SIDING_C.slice();
+  }
+
+  // Bath as primary product: per-option Sentrel tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && has("Bath") && optKey) {
+    if (optKey === "A") return BATH_A.slice();
+    if (optKey === "B") return BATH_B.slice();
+    return BATH_C.slice();
   }
 
   const buckets: string[][] = [];
