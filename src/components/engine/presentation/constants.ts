@@ -325,6 +325,13 @@ export function getDefaultFeatureTexts(
     return WINDOWS_C.slice();
   }
 
+  // Siding as primary product (no Roof, no Windows): per-option James Hardie tiers
+  if (!has("Roof") && !has("Window") && has("Siding") && optKey) {
+    if (optKey === "A") return SIDING_A.slice();
+    if (optKey === "B") return SIDING_B.slice();
+    return SIDING_C.slice();
+  }
+
   const buckets: string[][] = [];
   if (has("Roof")) {
     buckets.push(
