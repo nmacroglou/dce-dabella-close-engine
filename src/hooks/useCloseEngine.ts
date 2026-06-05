@@ -139,9 +139,12 @@ export function useCloseEngine() {
           defaults = GUTTER_OPTION_NAME_DEFAULTS;
         }
         if (defaults) {
-          if (!next.optionAName || ALL_DEFAULT_OPTION_NAMES.has(next.optionAName)) next.optionAName = defaults.A;
-          if (!next.optionBName || ALL_DEFAULT_OPTION_NAMES.has(next.optionBName)) next.optionBName = defaults.B;
-          if (!next.optionCName || ALL_DEFAULT_OPTION_NAMES.has(next.optionCName)) next.optionCName = defaults.C;
+          const stickyA = next.stickyOptionAName ?? true;
+          const stickyB = next.stickyOptionBName ?? true;
+          const stickyC = next.stickyOptionCName ?? true;
+          if (stickyA && (!next.optionAName || ALL_DEFAULT_OPTION_NAMES.has(next.optionAName))) next.optionAName = defaults.A;
+          if (stickyB && (!next.optionBName || ALL_DEFAULT_OPTION_NAMES.has(next.optionBName))) next.optionBName = defaults.B;
+          if (stickyC && (!next.optionCName || ALL_DEFAULT_OPTION_NAMES.has(next.optionCName))) next.optionCName = defaults.C;
         }
       }
 
