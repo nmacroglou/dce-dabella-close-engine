@@ -29,8 +29,10 @@ export default function IncludedFeaturesEditor({
   const hasRoofing = (products ?? []).some((p) => p.toLowerCase().includes("roof"));
   const hasWindows = (products ?? []).some((p) => p.toLowerCase().includes("window"));
   const hasSiding = (products ?? []).some((p) => p.toLowerCase().includes("siding"));
+  const hasBath = (products ?? []).some((p) => p.toLowerCase().includes("bath"));
   const showWindowsBadge = hasWindows && !hasRoofing;
   const showSidingBadge = hasSiding && !hasRoofing && !hasWindows;
+  const showBathBadge = hasBath && !hasRoofing && !hasWindows && !hasSiding;
 
   return (
     <div className="card-elevated-lg p-6">
