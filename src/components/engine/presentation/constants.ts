@@ -168,6 +168,39 @@ const WINDOWS: string[] = [
   "Sound & UV reduction package",
 ];
 
+const WINDOWS_A: string[] = [
+  "Glasswing Triple-Pane with Krypton Gas",
+  "Premium Low-E³ Glass Coating",
+  "Foam-Filled Reinforced Frames",
+  "Lifetime Transferable Warranty",
+  "ENERGY STAR® Most Efficient",
+  "Full-Frame Replacement & Exterior Wrap",
+  "Maximum Sound & UV Reduction",
+  "Factory-Trained Certified Installers",
+  "Best Long-Term ROI",
+];
+
+const WINDOWS_B: string[] = [
+  "Glasswing Double-Pane with Krypton Gas",
+  "Low-E³ Glass Coating",
+  "Foam-Filled Frames",
+  "Lifetime Transferable Warranty",
+  "ENERGY STAR® Qualified",
+  "Full-Frame Replacement & Exterior Wrap",
+  "Enhanced Sound & UV Reduction",
+  "Factory-Trained Certified Installers",
+];
+
+const WINDOWS_C: string[] = [
+  "Fairfield Double-Pane with Argon Gas",
+  "Low-E Glass Coating",
+  "Reinforced Vinyl Frames",
+  "Limited Lifetime Warranty",
+  "ENERGY STAR® Qualified",
+  "Professional Installation",
+  "Reliable Weather Protection",
+];
+
 const SIDING: string[] = [
   "Lifetime fade & hail warranty",
   "Insulated siding system",
