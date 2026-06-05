@@ -112,6 +112,9 @@ export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   SOLAR_OPTION_NAME_DEFAULTS.A,
   SOLAR_OPTION_NAME_DEFAULTS.B,
   SOLAR_OPTION_NAME_DEFAULTS.C,
+  GUTTER_OPTION_NAME_DEFAULTS.A,
+  GUTTER_OPTION_NAME_DEFAULTS.B,
+  GUTTER_OPTION_NAME_DEFAULTS.C,
 ]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
