@@ -69,12 +69,22 @@ export const WINDOW_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = 
   C: "Fairfield Double Pane with Argon",
 };
 
+/** Default option names when Siding is the primary product (James Hardie tiers). */
+export const SIDING_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "James Hardie Statement Collection",
+  B: "James Hardie Dream Collection",
+  C: "James Hardie Foundation Collection",
+};
+
 /** All known default option names — used to detect "untouched" names safely. */
 export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   ...Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C]),
   WINDOW_OPTION_NAME_DEFAULTS.A,
   WINDOW_OPTION_NAME_DEFAULTS.B,
   WINDOW_OPTION_NAME_DEFAULTS.C,
+  SIDING_OPTION_NAME_DEFAULTS.A,
+  SIDING_OPTION_NAME_DEFAULTS.B,
+  SIDING_OPTION_NAME_DEFAULTS.C,
 ]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
