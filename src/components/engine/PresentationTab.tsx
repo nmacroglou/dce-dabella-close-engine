@@ -84,7 +84,14 @@ export default function PresentationTab({ state, computed, update }: EngineTabPr
           }}
           products={state.products}
           roofMaterial={state.roofMaterial ?? "shingle"}
-          onChangeRoofMaterial={(m) => update("roofMaterial", m)}
+          onChangeRoofMaterial={(m: RoofMaterial) => {
+            update("roofMaterial", m);
+            const defaults = OPTION_NAME_DEFAULTS[m];
+            // Only swap names that were untouched (still match a known default)
+            if (!state.optionAName || ALL_DEFAULT_OPTION_NAMES.has(state.optionAName)) update("optionAName", defaults.A);
+            if (!state.optionBName || ALL_DEFAULT_OPTION_NAMES.has(state.optionBName)) update("optionBName", defaults.B);
+            if (!state.optionCName || ALL_DEFAULT_OPTION_NAMES.has(state.optionCName)) update("optionCName", defaults.C);
+          }}
         />
 
         <FinancialImpact state={state} computed={computed} />
