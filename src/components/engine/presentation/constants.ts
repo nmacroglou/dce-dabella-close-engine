@@ -480,6 +480,13 @@ export function getDefaultFeatureTexts(
     return SOLAR_C.slice();
   }
 
+  // Gutters as primary product: per-option gutter tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && !has("Bath") && !has("Solar") && has("Gutter") && optKey) {
+    if (optKey === "A") return GUTTERS_A.slice();
+    if (optKey === "B") return GUTTERS_B.slice();
+    return GUTTERS_C.slice();
+  }
+
   const buckets: string[][] = [];
   if (has("Roof")) {
     buckets.push(
