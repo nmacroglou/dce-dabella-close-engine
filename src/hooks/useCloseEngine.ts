@@ -10,6 +10,7 @@ import { WINDOW_INSPECTION_ITEMS, WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import {
   OPTION_NAME_DEFAULTS,
   WINDOW_OPTION_NAME_DEFAULTS,
+  SIDING_OPTION_NAME_DEFAULTS,
   ALL_DEFAULT_OPTION_NAMES,
 } from "@/components/engine/presentation/constants";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
