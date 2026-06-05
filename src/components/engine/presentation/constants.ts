@@ -271,6 +271,13 @@ export function getDefaultFeatureTexts(
     return ROOF_TPO_C.slice();
   }
 
+  // Windows as primary product (no Roof): per-option lists
+  if (!has("Roof") && has("Window") && optKey) {
+    if (optKey === "A") return WINDOWS_A.slice();
+    if (optKey === "B") return WINDOWS_B.slice();
+    return WINDOWS_C.slice();
+  }
+
   const buckets: string[][] = [];
   if (has("Roof")) {
     buckets.push(
