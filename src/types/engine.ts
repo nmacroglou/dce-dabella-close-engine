@@ -40,6 +40,9 @@ export interface EngineState {
   monthlyOverrideC?: number;
   postCloseChecks?: Record<string, boolean>;
   roofMaterial?: "shingle" | "tile" | "tpo";
+  stickyOptionAName?: boolean;
+  stickyOptionBName?: boolean;
+  stickyOptionCName?: boolean;
 }
 
 export interface OptionComputed {
