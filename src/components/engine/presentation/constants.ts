@@ -76,6 +76,13 @@ export const SIDING_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = 
   C: "James Hardie Foundation Collection",
 };
 
+/** Default option names when Bath is the primary product (Sentrel tiers). */
+export const BATH_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Sentrel Signature Series",
+  B: "Sentrel Designer Series",
+  C: "Sentrel Classic Series",
+};
+
 /** All known default option names — used to detect "untouched" names safely. */
 export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   ...Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C]),
@@ -85,6 +92,9 @@ export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   SIDING_OPTION_NAME_DEFAULTS.A,
   SIDING_OPTION_NAME_DEFAULTS.B,
   SIDING_OPTION_NAME_DEFAULTS.C,
+  BATH_OPTION_NAME_DEFAULTS.A,
+  BATH_OPTION_NAME_DEFAULTS.B,
+  BATH_OPTION_NAME_DEFAULTS.C,
 ]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
