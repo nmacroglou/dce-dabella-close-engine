@@ -212,12 +212,49 @@ const WINDOWS_C: string[] = [
 ];
 
 const SIDING: string[] = [
-  "Lifetime fade & hail warranty",
+  "James Hardie fiber cement siding",
+  "30-year non-prorated warranty",
   "Insulated siding system",
   "Factory-Trained Certified Installers",
   "House-wrap moisture barrier",
   "Color-match guarantee",
   "Best long-term ROI",
+];
+
+const SIDING_A: string[] = [
+  "James Hardie Statement Collection®",
+  "HardiePlank® Lap Siding",
+  "ColorPlus® Technology — 15-yr finish warranty",
+  "HZ5® Engineered for Climate",
+  "30-Year Non-Prorated Substrate Warranty",
+  "Premium House-Wrap Moisture Barrier",
+  "Full Tear-Off & Trim Replacement",
+  "Factory-Trained Certified Installers",
+  "Class A Fire Resistance",
+  "Best Long-Term ROI",
+];
+
+const SIDING_B: string[] = [
+  "James Hardie Dream Collection®",
+  "HardieShingle® or HardiePlank® Profile",
+  "ColorPlus® Technology Finish",
+  "HZ5® Engineered for Climate",
+  "30-Year Non-Prorated Substrate Warranty",
+  "House-Wrap Moisture Barrier",
+  "Factory-Trained Certified Installers",
+  "Class A Fire Resistance",
+  "Exceptional Long-Term Value",
+];
+
+const SIDING_C: string[] = [
+  "James Hardie Foundation Collection®",
+  "HardiePlank® Primed Lap Siding",
+  "Field-Painted Finish",
+  "30-Year Non-Prorated Substrate Warranty",
+  "House-Wrap Moisture Barrier",
+  "Professional Installation",
+  "Class A Fire Resistance",
+  "Reliable Weather Protection",
 ];
 
 const BATH: string[] = [
