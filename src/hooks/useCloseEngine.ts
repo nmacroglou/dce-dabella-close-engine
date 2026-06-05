@@ -105,6 +105,25 @@ export function useCloseEngine() {
         } catch { /* ignore */ }
       }
 
+      // When products change, auto-swap option names to match the primary product
+      // (only if the existing names are untouched defaults).
+      if (key === "products") {
+        const prods = (value as string[]) || [];
+        const hasRoof = prods.some((p) => p.toLowerCase().includes("roof"));
+        const hasWindows = prods.some((p) => p.toLowerCase().includes("window"));
+        let defaults: { A: string; B: string; C: string } | null = null;
+        if (hasRoof) {
+          defaults = OPTION_NAME_DEFAULTS[next.roofMaterial ?? "shingle"];
+        } else if (hasWindows) {
+          defaults = WINDOW_OPTION_NAME_DEFAULTS;
+        }
+        if (defaults) {
+          if (!next.optionAName || ALL_DEFAULT_OPTION_NAMES.has(next.optionAName)) next.optionAName = defaults.A;
+          if (!next.optionBName || ALL_DEFAULT_OPTION_NAMES.has(next.optionBName)) next.optionBName = defaults.B;
+          if (!next.optionCName || ALL_DEFAULT_OPTION_NAMES.has(next.optionCName)) next.optionCName = defaults.C;
+        }
+      }
+
       return next;
     });
   }, []);
