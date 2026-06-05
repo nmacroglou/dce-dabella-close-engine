@@ -378,6 +378,13 @@ export function getDefaultFeatureTexts(
     return SIDING_C.slice();
   }
 
+  // Bath as primary product: per-option Sentrel tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && has("Bath") && optKey) {
+    if (optKey === "A") return BATH_A.slice();
+    if (optKey === "B") return BATH_B.slice();
+    return BATH_C.slice();
+  }
+
   const buckets: string[][] = [];
   if (has("Roof")) {
     buckets.push(
