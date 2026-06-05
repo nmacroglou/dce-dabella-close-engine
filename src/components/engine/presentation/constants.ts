@@ -432,6 +432,13 @@ export function getDefaultFeatureTexts(
     return BATH_C.slice();
   }
 
+  // Solar as primary product: per-option GAF Energy American Harvest tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && !has("Bath") && has("Solar") && optKey) {
+    if (optKey === "A") return SOLAR_A.slice();
+    if (optKey === "B") return SOLAR_B.slice();
+    return SOLAR_C.slice();
+  }
+
   const buckets: string[][] = [];
   if (has("Roof")) {
     buckets.push(
