@@ -93,6 +93,17 @@ export default function Pipeline() {
     </div>
   );
 
+  const RepBadge = ({ repId }: { repId: string }) => {
+    const p = profileMap.get(repId);
+    const label = p?.display_name || p?.email || repId.slice(0, 8);
+    return (
+      <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-muted-foreground bg-muted/60 px-1 py-0.5 rounded">
+        <User className="h-2.5 w-2.5" />
+        {label}
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-screen surface-premium">
       <AppHeader />
