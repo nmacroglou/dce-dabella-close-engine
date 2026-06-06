@@ -203,6 +203,7 @@ export default function Pipeline() {
                                 <p className="text-xs font-bold text-foreground truncate">{d.homeowner1 || "Untitled"}</p>
                                 {next && <span className={`h-2 w-2 rounded-full flex-shrink-0 mt-1 ${dot}`} />}
                               </div>
+                              {isAdmin && <div className="mt-0.5"><RepBadge repId={d.rep_id} /></div>}
                               {next ? (
                                 <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                                   <Clock className="h-2.5 w-2.5" />
