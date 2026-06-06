@@ -229,21 +229,22 @@ export default function DealsPage() {
                 return (
                   <div key={deal.id} className="card-premium p-3 flex flex-col group">
                     <div className="flex items-start justify-between mb-2 gap-2">
-                      <div className="min-w-0">
-                        <h3 className="text-sm font-bold text-foreground truncate">
-                          {deal.homeowner1 || "Untitled deal"}
-                          {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
-                        </h3>
-                        {deal.address && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
-                            <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
-                            {deal.address}
-                          </p>
-                        )}
-                      </div>
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${STAGE_COLORS[deal.stage]}`}>
-                        {STAGE_LABELS[deal.stage]}
-                      </span>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-foreground truncate">
+                        {deal.homeowner1 || "Untitled deal"}
+                        {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
+                      </h3>
+                      {deal.address && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
+                          <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
+                          {deal.address}
+                        </p>
+                      )}
+                      {isAdmin && <div className="mt-1"><RepBadge repId={deal.rep_id} /></div>}
+                    </div>
+                    <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${STAGE_COLORS[deal.stage]}`}>
+                      {STAGE_LABELS[deal.stage]}
+                    </span>
                     </div>
 
                     <div className="space-y-1 text-[11px] text-muted-foreground mb-3">
