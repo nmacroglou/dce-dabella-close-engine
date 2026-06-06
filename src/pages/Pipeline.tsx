@@ -2,11 +2,13 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/AppHeader";
 import { useDeals, useUpdateDealStage } from "@/hooks/useDeals";
+import { useAllProfiles, buildProfileMap } from "@/hooks/useProfiles";
+import { useIsAdmin } from "@/hooks/useUserRole";
 import { useFollowUps, useUpdateFollowUp, useDeleteFollowUp } from "@/hooks/useFollowUps";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { followUpStatus } from "@/types/followUp";
 import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
-import { AlertCircle, Calendar, CheckCircle2, Clock, GripVertical, Sparkles, TrendingUp } from "lucide-react";
+import { AlertCircle, Calendar, CheckCircle2, Clock, GripVertical, Sparkles, TrendingUp, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FollowUpComposer from "@/components/followups/FollowUpComposer";
 import { toast } from "sonner";
@@ -20,6 +22,9 @@ const DRAGGABLE_TARGETS: DealStage[] = ["inspecting", "presented", "follow_up"];
 
 export default function Pipeline() {
   const { data: deals = [] } = useDeals();
+  const { isAdmin } = useIsAdmin();
+  const { data: profiles = [] } = useAllProfiles(isAdmin);
+  const profileMap = buildProfileMap(profiles);
   const { data: followUps = [] } = useFollowUps();
   const updateFollowUp = useUpdateFollowUp();
   const deleteFollowUp = useDeleteFollowUp();
@@ -88,15 +93,26 @@ export default function Pipeline() {
     </div>
   );
 
+  const RepBadge = ({ repId }: { repId: string }) => {
+    const p = profileMap.get(repId);
+    const label = p?.display_name || p?.email || repId.slice(0, 8);
+    return (
+      <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-muted-foreground bg-muted/60 px-1 py-0.5 rounded">
+        <User className="h-2.5 w-2.5" />
+        {label}
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-screen surface-premium">
       <AppHeader />
       <main className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 space-y-5">
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
-            <h2 className="text-2xl font-display font-extrabold text-foreground">My Pipeline</h2>
+            <h2 className="text-2xl font-display font-extrabold text-foreground">{isAdmin ? "All Pipeline" : "My Pipeline"}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Drag any deal between Inspecting, Presented, and Follow-up.
+              {isAdmin ? "Every rep's pipeline, all in one view." : "Drag any deal between Inspecting, Presented, and Follow-up."}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -187,6 +203,7 @@ export default function Pipeline() {
                                 <p className="text-xs font-bold text-foreground truncate">{d.homeowner1 || "Untitled"}</p>
                                 {next && <span className={`h-2 w-2 rounded-full flex-shrink-0 mt-1 ${dot}`} />}
                               </div>
+                              {isAdmin && <div className="mt-0.5"><RepBadge repId={d.rep_id} /></div>}
                               {next ? (
                                 <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                                   <Clock className="h-2.5 w-2.5" />

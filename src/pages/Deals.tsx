@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDeals, useCreateDeal, useDeleteDeal } from "@/hooks/useDeals";
+import { useAllProfiles, buildProfileMap } from "@/hooks/useProfiles";
+import { useIsAdmin } from "@/hooks/useUserRole";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
-  ShieldAlert, Search, LayoutGrid, LayoutList,
+  ShieldAlert, Search, LayoutGrid, LayoutList, User,
 } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, LEAD_SOURCE_LABELS, type DealStage, type LeadSource } from "@/types/deal";
 import { fmt } from "@/lib/format";
@@ -30,6 +32,9 @@ type ViewMode = "comfortable" | "compact";
 
 export default function DealsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin } = useIsAdmin();
+  const { data: profiles = [] } = useAllProfiles(isAdmin);
+  const profileMap = buildProfileMap(profiles);
   const navigate = useNavigate();
   const { data: deals = [], isLoading } = useDeals();
   const create = useCreateDeal();
@@ -92,6 +97,17 @@ export default function DealsPage() {
   const openDeal = (id: string) => {
     setActiveDealId(id);
     navigate("/");
+  };
+
+  const RepBadge = ({ repId }: { repId: string }) => {
+    const p = profileMap.get(repId);
+    const label = p?.display_name || p?.email || repId.slice(0, 8);
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
+        <User className="h-2.5 w-2.5" />
+        {label}
+      </span>
+    );
   };
 
   return (
@@ -213,21 +229,22 @@ export default function DealsPage() {
                 return (
                   <div key={deal.id} className="card-premium p-3 flex flex-col group">
                     <div className="flex items-start justify-between mb-2 gap-2">
-                      <div className="min-w-0">
-                        <h3 className="text-sm font-bold text-foreground truncate">
-                          {deal.homeowner1 || "Untitled deal"}
-                          {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
-                        </h3>
-                        {deal.address && (
-                          <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
-                            <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
-                            {deal.address}
-                          </p>
-                        )}
-                      </div>
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${STAGE_COLORS[deal.stage]}`}>
-                        {STAGE_LABELS[deal.stage]}
-                      </span>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-foreground truncate">
+                        {deal.homeowner1 || "Untitled deal"}
+                        {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
+                      </h3>
+                      {deal.address && (
+                        <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
+                          <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
+                          {deal.address}
+                        </p>
+                      )}
+                      {isAdmin && <div className="mt-1"><RepBadge repId={deal.rep_id} /></div>}
+                    </div>
+                    <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${STAGE_COLORS[deal.stage]}`}>
+                      {STAGE_LABELS[deal.stage]}
+                    </span>
                     </div>
 
                     <div className="space-y-1 text-[11px] text-muted-foreground mb-3">
@@ -311,6 +328,7 @@ export default function DealsPage() {
                           {deal.address}
                         </p>
                       )}
+                      {isAdmin && <div className="mt-1"><RepBadge repId={deal.rep_id} /></div>}
                     </div>
                     <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${STAGE_COLORS[deal.stage]}`}>
                       {STAGE_LABELS[deal.stage]}
