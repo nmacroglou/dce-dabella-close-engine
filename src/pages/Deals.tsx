@@ -32,6 +32,9 @@ type ViewMode = "comfortable" | "compact";
 
 export default function DealsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin } = useIsAdmin();
+  const { data: profiles = [] } = useAllProfiles(isAdmin);
+  const profileMap = buildProfileMap(profiles);
   const navigate = useNavigate();
   const { data: deals = [], isLoading } = useDeals();
   const create = useCreateDeal();
