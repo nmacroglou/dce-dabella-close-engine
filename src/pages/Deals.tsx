@@ -328,6 +328,7 @@ export default function DealsPage() {
                           {deal.address}
                         </p>
                       )}
+                      {isAdmin && <div className="mt-1"><RepBadge repId={deal.rep_id} /></div>}
                     </div>
                     <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${STAGE_COLORS[deal.stage]}`}>
                       {STAGE_LABELS[deal.stage]}
