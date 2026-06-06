@@ -110,9 +110,9 @@ export default function Pipeline() {
       <main className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 space-y-5">
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
-            <h2 className="text-2xl font-display font-extrabold text-foreground">My Pipeline</h2>
+            <h2 className="text-2xl font-display font-extrabold text-foreground">{isAdmin ? "All Pipeline" : "My Pipeline"}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Drag any deal between Inspecting, Presented, and Follow-up.
+              {isAdmin ? "Every rep's pipeline, all in one view." : "Drag any deal between Inspecting, Presented, and Follow-up."}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
