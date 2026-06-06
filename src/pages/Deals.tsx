@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDeals, useCreateDeal, useDeleteDeal } from "@/hooks/useDeals";
+import { useAllProfiles, buildProfileMap } from "@/hooks/useProfiles";
+import { useIsAdmin } from "@/hooks/useUserRole";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
-  ShieldAlert, Search, LayoutGrid, LayoutList,
+  ShieldAlert, Search, LayoutGrid, LayoutList, User,
 } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, LEAD_SOURCE_LABELS, type DealStage, type LeadSource } from "@/types/deal";
 import { fmt } from "@/lib/format";
