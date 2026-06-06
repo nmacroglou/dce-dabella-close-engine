@@ -22,6 +22,9 @@ const DRAGGABLE_TARGETS: DealStage[] = ["inspecting", "presented", "follow_up"];
 
 export default function Pipeline() {
   const { data: deals = [] } = useDeals();
+  const { isAdmin } = useIsAdmin();
+  const { data: profiles = [] } = useAllProfiles(isAdmin);
+  const profileMap = buildProfileMap(profiles);
   const { data: followUps = [] } = useFollowUps();
   const updateFollowUp = useUpdateFollowUp();
   const deleteFollowUp = useDeleteFollowUp();
