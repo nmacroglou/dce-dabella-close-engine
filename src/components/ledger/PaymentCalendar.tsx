@@ -243,7 +243,7 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
                     period {fmtDay(windowStart)} – {fmtDay(payday)}
                   </div>
                 </div>
-                {!isEditing && (
+                {!isEditing && canEdit && (
                   <button
                     onClick={() => { setEditing(key); setDraft(amount ? String(amount) : ""); }}
                     className="text-muted-foreground hover:text-foreground p-1 -m-1"
