@@ -157,7 +157,7 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
     if (!Number.isFinite(n) || n === 0) delete next[key];
     else next[key] = n;
     setOverrides(next);
-    saveOverrides(next);
+    saveOverrides(user?.id, next);
     setEditing(null);
     setDraft("");
   }
