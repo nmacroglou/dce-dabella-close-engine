@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-
+import { useOwnerScope } from "@/contexts/OwnerScopeContext";
 import { toast } from "sonner";
 import { errMsg } from "@/lib/errors";
 import { useEffect } from "react";
@@ -27,42 +27,46 @@ export interface CommissionPayment {
 
 export function useCommissionLedger() {
   const { user } = useAuth();
+  const { effectiveRepId, scope } = useOwnerScope();
   const qc = useQueryClient();
 
-  // Ledger is ALWAYS scoped to the logged-in rep — even admins only ever see
-  // their own commission payments here. Owner scope filter does not apply.
+  // Read follows owner scope: non-admins are pinned to themselves by the
+  // scope context; admins see whichever rep they've selected ("me", a specific
+  // rep, or all reps when effectiveRepId is null). Writes/auto-sync remain
+  // pinned to the logged-in user elsewhere.
   const query = useQuery({
-    queryKey: ["commission_payments", user?.id],
+    queryKey: ["commission_payments", user?.id, scope, effectiveRepId],
     enabled: !!user,
     staleTime: 60_000,
     queryFn: async (): Promise<CommissionPayment[]> => {
-      if (!user) return [];
-      const { data, error } = await supabase
+      let q = supabase
         .from("commission_payments")
         .select("*")
-        .eq("rep_id", user.id)
         .order("sale_date", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false });
+      if (effectiveRepId) q = q.eq("rep_id", effectiveRepId);
+      const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as CommissionPayment[];
     },
   });
 
-  // realtime — only the logged-in rep's own ledger rows
+  // realtime — scoped to the rep being viewed, or all rows when admin views all
   useEffect(() => {
     if (!user) return;
+    const filter = effectiveRepId ? `rep_id=eq.${effectiveRepId}` : undefined;
     const ch = supabase
       .channel("commission_payments_rt")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "commission_payments", filter: `rep_id=eq.${user.id}` },
+        { event: "*", schema: "public", table: "commission_payments", ...(filter ? { filter } : {}) },
         () => qc.invalidateQueries({ queryKey: ["commission_payments"] }),
       )
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [user, qc]);
+  }, [user, qc, effectiveRepId]);
 
   return query;
 }
