@@ -1,41 +1,75 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fmt } from "@/lib/format";
+import { useAuth } from "@/contexts/AuthContext";
 import type { CommissionPayment } from "@/hooks/useCommissionLedger";
 
 /**
  * Bi-weekly payday tracker.
- * Anchor: Friday 5/15/2026 — last confirmed payday at $1,375.13.
+ * Anchor: Friday 5/15/2026.
  * Each payday covers the 14-day window ending on the payday itself.
  * Auto-rolls up front_paid_amount / back_paid_amount from the ledger by paid date,
- * with optional manual overrides persisted to localStorage.
+ * with optional manual overrides persisted per-user to localStorage.
  */
 const ANCHOR_ISO = "2026-05-15";
 const PERIOD_DAYS = 14;
-const STORE_KEY = "dabella.paychecks.overrides.v1";
-const SEED_CLEANUP_KEY = "dabella.paychecks.seed-cleanup.v1";
+const STORE_KEY_BASE = "dabella.paychecks.overrides.v1";
+const LEGACY_SHARED_KEY = "dabella.paychecks.overrides.v1"; // pre-per-user storage
+const SEED_KEY_PREFIX = "dabella.paychecks.seeded.v2.";
+
+// User-specific historical paychecks to seed once (the rep had already logged these
+// before per-user storage existed). Add more here if other reps need backfill.
+const USER_SEEDS: Record<string, Overrides> = {
+  // Niko Macroglou
+  "36a09991-0b3e-497f-a9f6-f3e24b0755b1": { "2026-05-15": 1375.13 },
+};
 
 type Overrides = Record<string, number>;
 
-function loadOverrides(): Overrides {
+function storeKeyFor(userId: string | undefined) {
+  return userId ? `${STORE_KEY_BASE}.${userId}` : STORE_KEY_BASE;
+}
+
+function loadOverrides(userId: string | undefined): Overrides {
+  if (!userId) return {};
+  const key = storeKeyFor(userId);
   try {
-    const o: Overrides = JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}");
-    // One-time cleanup: remove the legacy hardcoded $1,375.13 seed on 2026-05-15
-    // that earlier versions auto-injected for every viewer.
-    if (!localStorage.getItem(SEED_CLEANUP_KEY)) {
-      if (o["2026-05-15"] === 1375.13) delete o["2026-05-15"];
-      localStorage.setItem(STORE_KEY, JSON.stringify(o));
-      localStorage.setItem(SEED_CLEANUP_KEY, "1");
+    let o: Overrides = JSON.parse(localStorage.getItem(key) ?? "{}");
+    // Migrate any legacy shared overrides into this user's bucket the first time.
+    const legacy = localStorage.getItem(LEGACY_SHARED_KEY);
+    if (legacy && key !== LEGACY_SHARED_KEY) {
+      try {
+        const legacyParsed: Overrides = JSON.parse(legacy);
+        // Drop the well-known broadcasted seed unless it's actually this user's
+        if (legacyParsed["2026-05-15"] === 1375.13 && !USER_SEEDS[userId]?.["2026-05-15"]) {
+          delete legacyParsed["2026-05-15"];
+        }
+        o = { ...legacyParsed, ...o };
+      } catch { /* ignore */ }
+      localStorage.removeItem(LEGACY_SHARED_KEY);
     }
+    // One-time per-user seed of known historical paychecks
+    const seedFlag = `${SEED_KEY_PREFIX}${userId}`;
+    if (!localStorage.getItem(seedFlag)) {
+      const seed = USER_SEEDS[userId];
+      if (seed) {
+        for (const [k, v] of Object.entries(seed)) {
+          if (!(k in o)) o[k] = v;
+        }
+      }
+      localStorage.setItem(seedFlag, "1");
+    }
+    localStorage.setItem(key, JSON.stringify(o));
     return o;
   } catch {
     return {};
   }
 }
-function saveOverrides(o: Overrides) {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(o)); } catch { /* ignore */ }
+function saveOverrides(userId: string | undefined, o: Overrides) {
+  if (!userId) return;
+  try { localStorage.setItem(storeKeyFor(userId), JSON.stringify(o)); } catch { /* ignore */ }
 }
 
 function toISODate(d: Date) {
@@ -58,6 +92,7 @@ function fmtLong(d: Date) {
 }
 
 export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] }) {
+  const { user } = useAuth();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const anchor = parseISO(ANCHOR_ISO);
@@ -65,9 +100,14 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
   // Find the payday closest to "today" as a starting anchor for navigation.
   const periodsFromAnchor = Math.round((today.getTime() - anchor.getTime()) / (PERIOD_DAYS * 86400000));
   const [offset, setOffset] = useState(0); // window offset in pay periods
-  const [overrides, setOverrides] = useState<Overrides>(loadOverrides);
+  const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(user?.id));
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<string>("");
+
+  // Reload overrides when the logged-in user changes (sign-in/out, account switch).
+  useEffect(() => {
+    setOverrides(loadOverrides(user?.id));
+  }, [user?.id]);
 
   // Build a window of 6 paydays centered around current view.
   const WINDOW = 6;
@@ -117,7 +157,7 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
     if (!Number.isFinite(n) || n === 0) delete next[key];
     else next[key] = n;
     setOverrides(next);
-    saveOverrides(next);
+    saveOverrides(user?.id, next);
     setEditing(null);
     setDraft("");
   }
