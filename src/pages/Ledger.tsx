@@ -3,7 +3,6 @@ import { Download, Import, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOwnerScope } from "@/contexts/OwnerScopeContext";
 import AppHeader from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { useUpsertPayment, useDeletePayment, type CommissionPayment } from "@/hooks/useCommissionLedger";
