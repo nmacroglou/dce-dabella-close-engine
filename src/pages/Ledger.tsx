@@ -38,8 +38,6 @@ const empty: LedgerFormState = {
 
 export default function Ledger() {
   const { user } = useAuth();
-  const { scope } = useOwnerScope();
-  const viewingSelf = scope === "me";
   const qc = useQueryClient();
   const upsert = useUpsertPayment();
   const del = useDeletePayment();
