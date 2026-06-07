@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import PublishStatusBadge from "@/components/PublishStatusBadge";
+import OwnerScopeFilter from "@/components/OwnerScopeFilter";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
 const NAV = [
