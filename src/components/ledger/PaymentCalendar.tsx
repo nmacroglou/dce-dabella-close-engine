@@ -161,12 +161,13 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
   // an explicit user-entered override.
 
   function commitDraft(key: string) {
+    if (!canEdit) { setEditing(null); setDraft(""); return; }
     const n = parseFloat(draft.replace(/[^0-9.\-]/g, ""));
     const next = { ...overrides };
     if (!Number.isFinite(n) || n === 0) delete next[key];
     else next[key] = n;
     setOverrides(next);
-    saveOverrides(user?.id, next);
+    saveOverrides(viewedRepId, next);
     setEditing(null);
     setDraft("");
   }
