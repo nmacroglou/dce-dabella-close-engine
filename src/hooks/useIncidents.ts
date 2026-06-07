@@ -2,20 +2,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOwnerScope } from "@/contexts/OwnerScopeContext";
 import { errMsg } from "@/lib/errors";
 import type { Incident, IncidentNote } from "@/types/incident";
 
 export function useIncidents() {
   const { user } = useAuth();
+  const { effectiveRepId, scope } = useOwnerScope();
   return useQuery({
-    queryKey: ["incidents", user?.id],
+    queryKey: ["incidents", user?.id, scope, effectiveRepId],
     enabled: !!user,
     staleTime: 15_000,
     queryFn: async (): Promise<Incident[]> => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("deal_incidents")
         .select("*")
         .order("created_at", { ascending: false });
+      if (effectiveRepId) q = q.eq("rep_id", effectiveRepId);
+      const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as Incident[];
     },
