@@ -146,6 +146,7 @@ export default function AppHeader() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          <OwnerScopeFilter />
           <PublishStatusBadge />
           {/* Mobile nav trigger */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
