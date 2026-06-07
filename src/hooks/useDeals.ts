@@ -9,16 +9,16 @@ import { errMsg } from "@/lib/errors";
 
 export function useDeals() {
   const { user } = useAuth();
+  const { effectiveRepId, scope } = useOwnerScope();
 
   return useQuery({
-    queryKey: ["deals", user?.id],
+    queryKey: ["deals", user?.id, scope, effectiveRepId],
     enabled: !!user,
     staleTime: 30_000,
     queryFn: async (): Promise<Deal[]> => {
-      const { data, error } = await supabase
-        .from("deals")
-        .select("*")
-        .order("updated_at", { ascending: false });
+      let q = supabase.from("deals").select("*").order("updated_at", { ascending: false });
+      if (effectiveRepId) q = q.eq("rep_id", effectiveRepId);
+      const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as Deal[];
     },
