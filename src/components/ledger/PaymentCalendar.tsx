@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fmt } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOwnerScope } from "@/contexts/OwnerScopeContext";
 import type { CommissionPayment } from "@/hooks/useCommissionLedger";
 
 /**
