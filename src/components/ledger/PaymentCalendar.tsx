@@ -15,6 +15,7 @@ import type { CommissionPayment } from "@/hooks/useCommissionLedger";
 const ANCHOR_ISO = "2026-05-15";
 const PERIOD_DAYS = 14;
 const STORE_KEY = "dabella.paychecks.overrides.v1";
+const SEED_CLEANUP_KEY = "dabella.paychecks.seed-cleanup.v1";
 
 type Overrides = Record<string, number>;
 
