@@ -1,19 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOwnerScope } from "@/contexts/OwnerScopeContext";
 import type { FollowUp } from "@/types/followUp";
 import { toast } from "sonner";
 import { errMsg } from "@/lib/errors";
 
 export function useFollowUps(dealId?: string) {
   const { user } = useAuth();
+  const { effectiveRepId, scope } = useOwnerScope();
   return useQuery({
-    queryKey: ["follow-ups", user?.id, dealId ?? "all"],
+    queryKey: ["follow-ups", user?.id, scope, effectiveRepId, dealId ?? "all"],
     enabled: !!user,
     staleTime: 30_000,
     queryFn: async (): Promise<FollowUp[]> => {
       let q = supabase.from("follow_ups").select("*").order("due_at", { ascending: true });
       if (dealId) q = q.eq("deal_id", dealId);
+      if (effectiveRepId) q = q.eq("rep_id", effectiveRepId);
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []) as unknown as FollowUp[];

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOwnerScope } from "@/contexts/OwnerScopeContext";
 import type { DealStage } from "@/types/deal";
 import { STAGE_LABELS } from "@/types/deal";
 import { OBJECTIONS } from "@/data/objections";
@@ -21,16 +22,19 @@ const objLabel = (id: string) => OBJECTIONS.find((o) => o.id === id)?.label ?? i
 
 export function useActivityTimeline(days = 14) {
   const { user } = useAuth();
+  const { effectiveRepId, scope } = useOwnerScope();
   return useQuery({
-    queryKey: ["activity-timeline", user?.id, days],
+    queryKey: ["activity-timeline", user?.id, scope, effectiveRepId, days],
     enabled: !!user,
     queryFn: async (): Promise<TimelineEvent[]> => {
       const since = new Date(Date.now() - days * 864e5).toISOString();
+      const scopeEq = <T extends { eq: (col: string, v: string) => T }>(q: T, col = "rep_id") =>
+        effectiveRepId ? q.eq(col, effectiveRepId) : q;
       const [historyRes, dealsRes, objRes, fuRes] = await Promise.all([
-        supabase.from("deal_stage_history").select("*").gte("changed_at", since).order("changed_at", { ascending: false }),
-        supabase.from("deals").select("id, homeowner1"),
-        supabase.from("deal_objections").select("*").gte("created_at", since).order("created_at", { ascending: false }),
-        supabase.from("follow_ups").select("*").order("due_at", { ascending: false }).limit(500),
+        scopeEq(supabase.from("deal_stage_history").select("*").gte("changed_at", since).order("changed_at", { ascending: false }) as any),
+        scopeEq(supabase.from("deals").select("id, homeowner1") as any),
+        scopeEq(supabase.from("deal_objections").select("*").gte("created_at", since).order("created_at", { ascending: false }) as any),
+        scopeEq(supabase.from("follow_ups").select("*").order("due_at", { ascending: false }).limit(500) as any),
       ]);
 
       if (historyRes.error) throw historyRes.error;
