@@ -21,7 +21,15 @@ type Overrides = Record<string, number>;
 
 function loadOverrides(): Overrides {
   try {
-    return JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}");
+    const o: Overrides = JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}");
+    // One-time cleanup: remove the legacy hardcoded $1,375.13 seed on 2026-05-15
+    // that earlier versions auto-injected for every viewer.
+    if (!localStorage.getItem(SEED_CLEANUP_KEY)) {
+      if (o["2026-05-15"] === 1375.13) delete o["2026-05-15"];
+      localStorage.setItem(STORE_KEY, JSON.stringify(o));
+      localStorage.setItem(SEED_CLEANUP_KEY, "1");
+    }
+    return o;
   } catch {
     return {};
   }
