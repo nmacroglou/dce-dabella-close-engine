@@ -93,6 +93,12 @@ function fmtLong(d: Date) {
 
 export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] }) {
   const { user } = useAuth();
+  const { effectiveRepId, scope, isAdmin } = useOwnerScope();
+  // Overrides follow the rep being viewed, not the logged-in user. When an admin
+  // views "all reps" (no effectiveRepId) we don't show or write overrides.
+  const viewedRepId = effectiveRepId ?? (isAdmin ? undefined : user?.id);
+  const canEdit = !!user && viewedRepId === user.id && scope === "me";
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const anchor = parseISO(ANCHOR_ISO);
@@ -100,14 +106,16 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
   // Find the payday closest to "today" as a starting anchor for navigation.
   const periodsFromAnchor = Math.round((today.getTime() - anchor.getTime()) / (PERIOD_DAYS * 86400000));
   const [offset, setOffset] = useState(0); // window offset in pay periods
-  const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(user?.id));
+  const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(viewedRepId));
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<string>("");
 
-  // Reload overrides when the logged-in user changes (sign-in/out, account switch).
+  // Reload overrides when the viewed rep changes.
   useEffect(() => {
-    setOverrides(loadOverrides(user?.id));
-  }, [user?.id]);
+    setOverrides(loadOverrides(viewedRepId));
+    setEditing(null);
+    setDraft("");
+  }, [viewedRepId]);
 
   // Build a window of 6 paydays centered around current view.
   const WINDOW = 6;
