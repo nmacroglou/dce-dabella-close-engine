@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOwnerScope } from "@/contexts/OwnerScopeContext";
 import type { Deal, DealStage } from "@/types/deal";
 import type { EngineState } from "@/types/engine";
 import { toast } from "sonner";
