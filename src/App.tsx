@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ActiveDealProvider } from "@/contexts/ActiveDealContext";
+import { OwnerScopeProvider } from "@/contexts/OwnerScopeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -59,26 +60,28 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <ActiveDealProvider>
-            <ErrorBoundary>
-              <Suspense fallback={<RouteFallback />}>
-                <Routes>
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/deals" element={<ProtectedRoute><Deals /></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
-                  <Route path="/ledger" element={<ProtectedRoute><Ledger /></ProtectedRoute>} />
-                  <Route path="/energy-lens" element={<ProtectedRoute><EnergyLens /></ProtectedRoute>} />
-                  <Route path="/incidents" element={<ProtectedRoute><Incidents /></ProtectedRoute>} />
-                  <Route path="/manage-up" element={<ProtectedRoute><ManageUp /></ProtectedRoute>} />
-                  <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
-          </ActiveDealProvider>
+          <OwnerScopeProvider>
+            <ActiveDealProvider>
+              <ErrorBoundary>
+                <Suspense fallback={<RouteFallback />}>
+                  <Routes>
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                    <Route path="/deals" element={<ProtectedRoute><Deals /></ProtectedRoute>} />
+                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
+                    <Route path="/ledger" element={<ProtectedRoute><Ledger /></ProtectedRoute>} />
+                    <Route path="/energy-lens" element={<ProtectedRoute><EnergyLens /></ProtectedRoute>} />
+                    <Route path="/incidents" element={<ProtectedRoute><Incidents /></ProtectedRoute>} />
+                    <Route path="/manage-up" element={<ProtectedRoute><ManageUp /></ProtectedRoute>} />
+                    <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </ActiveDealProvider>
+          </OwnerScopeProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

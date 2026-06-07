@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import PublishStatusBadge from "@/components/PublishStatusBadge";
+import OwnerScopeFilter from "@/components/OwnerScopeFilter";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
 const NAV = [
@@ -145,6 +146,7 @@ export default function AppHeader() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          <OwnerScopeFilter />
           <PublishStatusBadge />
           {/* Mobile nav trigger */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
