@@ -54,16 +54,20 @@ const daysBetween = (a: string, b: string) =>
 
 export function useDashboardStats() {
   const { user } = useAuth();
+  const { effectiveRepId, scope } = useOwnerScope();
 
   return useQuery({
-    queryKey: ["dashboard-stats", user?.id],
+    queryKey: ["dashboard-stats", user?.id, scope, effectiveRepId],
     enabled: !!user,
     staleTime: 60_000,
     queryFn: async (): Promise<DashboardStats> => {
-      const [dealsRes, objectionsRes] = await Promise.all([
-        supabase.from("deals").select("*"),
-        supabase.from("deal_objections").select("*"),
-      ]);
+      let dealsQ = supabase.from("deals").select("*");
+      let objQ = supabase.from("deal_objections").select("*");
+      if (effectiveRepId) {
+        dealsQ = dealsQ.eq("rep_id", effectiveRepId);
+        objQ = objQ.eq("rep_id", effectiveRepId);
+      }
+      const [dealsRes, objectionsRes] = await Promise.all([dealsQ, objQ]);
       if (dealsRes.error) throw dealsRes.error;
       if (objectionsRes.error) throw objectionsRes.error;
 
