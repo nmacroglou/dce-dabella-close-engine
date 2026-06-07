@@ -99,12 +99,8 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
     return map;
   }, [rows]);
 
-  // Seed last confirmed paycheck on first load if user hasn't entered anything.
-  if (!(ANCHOR_ISO in overrides) && Object.keys(overrides).length === 0) {
-    const seeded = { [ANCHOR_ISO]: 1375.13 };
-    setOverrides(seeded);
-    saveOverrides(seeded);
-  }
+  // No seeded amounts — every payday number comes from the ledger or from
+  // an explicit user-entered override.
 
   function commitDraft(key: string) {
     const n = parseFloat(draft.replace(/[^0-9.\-]/g, ""));
