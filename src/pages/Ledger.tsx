@@ -77,6 +77,10 @@ export default function Ledger() {
 
   async function runSync(opts: { silent?: boolean } = {}) {
     if (!grid || !user) return 0;
+    if (!viewingSelf) {
+      if (!opts.silent) toast.info("Switch to ‘Only mine’ to sync your own deals into the ledger.");
+      return 0;
+    }
     const changed = await syncWonDealsToLedger({ user, deals, rows, grid, silent: opts.silent });
     if (changed > 0) {
       qc.invalidateQueries({ queryKey: ["commission_payments", user.id] });
@@ -85,8 +89,10 @@ export default function Ledger() {
   }
 
   // Auto-sync once after initial load so the ledger always reflects current won deals.
+  // Only when the rep is viewing their own data — never write rows on another rep's behalf.
   useEffect(() => {
     if (autoImportRan.current) return;
+    if (!viewingSelf) return;
     if (!user || !grid || !deals.length || isLoading) return;
     const existingDealIds = new Set(rows.map((r) => r.deal_id).filter(Boolean));
     const missing = deals.filter(
@@ -97,7 +103,7 @@ export default function Ledger() {
       runSync({ silent: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, grid, deals, rows, isLoading]);
+  }, [user, grid, deals, rows, isLoading, viewingSelf]);
 
   return (
     <div className="min-h-screen bg-background">
