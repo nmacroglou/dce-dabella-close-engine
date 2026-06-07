@@ -15,12 +15,21 @@ import type { CommissionPayment } from "@/hooks/useCommissionLedger";
 const ANCHOR_ISO = "2026-05-15";
 const PERIOD_DAYS = 14;
 const STORE_KEY = "dabella.paychecks.overrides.v1";
+const SEED_CLEANUP_KEY = "dabella.paychecks.seed-cleanup.v1";
 
 type Overrides = Record<string, number>;
 
 function loadOverrides(): Overrides {
   try {
-    return JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}");
+    const o: Overrides = JSON.parse(localStorage.getItem(STORE_KEY) ?? "{}");
+    // One-time cleanup: remove the legacy hardcoded $1,375.13 seed on 2026-05-15
+    // that earlier versions auto-injected for every viewer.
+    if (!localStorage.getItem(SEED_CLEANUP_KEY)) {
+      if (o["2026-05-15"] === 1375.13) delete o["2026-05-15"];
+      localStorage.setItem(STORE_KEY, JSON.stringify(o));
+      localStorage.setItem(SEED_CLEANUP_KEY, "1");
+    }
+    return o;
   } catch {
     return {};
   }
@@ -99,12 +108,8 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
     return map;
   }, [rows]);
 
-  // Seed last confirmed paycheck on first load if user hasn't entered anything.
-  if (!(ANCHOR_ISO in overrides) && Object.keys(overrides).length === 0) {
-    const seeded = { [ANCHOR_ISO]: 1375.13 };
-    setOverrides(seeded);
-    saveOverrides(seeded);
-  }
+  // No seeded amounts — every payday number comes from the ledger or from
+  // an explicit user-entered override.
 
   function commitDraft(key: string) {
     const n = parseFloat(draft.replace(/[^0-9.\-]/g, ""));
