@@ -60,6 +60,19 @@ export default function LiveCoachPanel({ state }: Props) {
   const [micTestAudioUrl, setMicTestAudioUrl] = useState<string | null>(null);
   const [micTestPlaying, setMicTestPlaying] = useState(false);
 
+  // Voice selection
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>("");
+
+  // Custom voice chime — recorded in the rep's own voice, plays before each spoken tip
+  const [chimeUrl, setChimeUrl] = useState<string | null>(null);
+  const [chimeRecording, setChimeRecording] = useState(false);
+  const [chimeProgress, setChimeProgress] = useState(0);
+  const [useChime, setUseChime] = useState(false);
+
+  // Pause-aware speaking
+  const [waitForPause, setWaitForPause] = useState(true);
+
   const mediaRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -67,6 +80,8 @@ export default function LiveCoachPanel({ state }: Props) {
   const taggedObjectionsRef = useRef<Set<string>>(new Set());
   const micTestTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const chimeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const chimeRecRef = useRef<MediaRecorder | null>(null);
 
   // Meter refs
   const meterStreamRef = useRef<MediaStream | null>(null);
@@ -75,6 +90,15 @@ export default function LiveCoachPanel({ state }: Props) {
   const rafRef = useRef<number | null>(null);
   const peakRef = useRef(0);
   const peakDecayRef = useRef<number>(0);
+
+  // Live silence tracking for "wait for pause" speaking
+  const liveAnalyserRef = useRef<AnalyserNode | null>(null);
+  const liveCtxRef = useRef<AudioContext | null>(null);
+  const liveRafRef = useRef<number | null>(null);
+  const lastVoiceAtRef = useRef<number>(0);
+  const tipQueueRef = useRef<string[]>([]);
+  const drainTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const spokenRef = useRef(false);
 
   const loadDevices = useCallback(async () => {
     try {
