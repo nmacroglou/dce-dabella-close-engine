@@ -469,6 +469,108 @@ export default function LiveCoachPanel({ state }: Props) {
     }
   }
 
+  // Record a ~30s clean sample of the rep's voice and upload to ElevenLabs for cloning
+  async function recordVoiceClone() {
+    if (cloneRecording || cloning) return;
+    setCloneRecording(true);
+    setCloneProgress(0);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+        },
+      });
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/mp4") ? "audio/mp4" : "audio/webm";
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      cloneRecRef.current = rec;
+      const parts: Blob[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setCloneRecording(false);
+        const blob = new Blob(parts, { type: mime });
+        if (blob.size < 50_000) {
+          toast.error("Sample too short — try again and speak for the full 30s");
+          return;
+        }
+        setCloning(true);
+        try {
+          const buf = await blob.arrayBuffer();
+          let binary = "";
+          const bytes = new Uint8Array(buf);
+          const CHUNK = 0x8000;
+          for (let i = 0; i < bytes.length; i += CHUNK) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+          }
+          const audioBase64 = btoa(binary);
+          const { data, error } = await supabase.functions.invoke("clone-voice", {
+            body: {
+              audioBase64,
+              mimeType: mime,
+              name: (user?.email?.split("@")[0] || "Rep") + " — Coach voice",
+              description: "Cloned for live coach playback",
+            },
+          });
+          if (error) throw error;
+          const vid = data?.voiceId as string;
+          if (!vid) throw new Error("No voice id returned");
+          setClonedVoiceId(vid);
+          try { localStorage.setItem("coach_cloned_voice_id", vid); } catch { /* ignore */ }
+          setUseClonedVoice(true);
+          ttsCacheRef.current.clear();
+          toast.success("Your voice is cloned — coach tips will now sound like you");
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : "Clone failed";
+          toast.error("Voice clone failed: " + msg);
+        } finally {
+          setCloning(false);
+        }
+      };
+      rec.start();
+      let elapsed = 0;
+      const TOTAL = 30_000;
+      cloneTimerRef.current = setInterval(() => {
+        elapsed += 200;
+        setCloneProgress(Math.min((elapsed / TOTAL) * 100, 100));
+        if (elapsed >= TOTAL) {
+          if (cloneTimerRef.current) clearInterval(cloneTimerRef.current);
+          cloneTimerRef.current = null;
+          try { rec.stop(); } catch { /* ignore */ }
+        }
+      }, 200);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Mic blocked";
+      toast.error("Voice clone record failed: " + msg);
+      setCloneRecording(false);
+      setCloneProgress(0);
+    }
+  }
+
+  function stopVoiceCloneRecording() {
+    if (cloneTimerRef.current) { clearInterval(cloneTimerRef.current); cloneTimerRef.current = null; }
+    if (cloneRecRef.current && cloneRecRef.current.state !== "inactive") {
+      try { cloneRecRef.current.stop(); } catch { /* ignore */ }
+    }
+  }
+
+  async function previewClonedVoice() {
+    if (!clonedVoiceId) return;
+    const ok = await speakClonedVoice("Hey, this is your coach speaking in your own voice. I'll only chime in during natural pauses.");
+    if (!ok) toast.error("Could not play cloned voice preview");
+  }
+
+  function removeClonedVoice() {
+    setClonedVoiceId(null);
+    setUseClonedVoice(false);
+    ttsCacheRef.current.clear();
+    try { localStorage.removeItem("coach_cloned_voice_id"); } catch { /* ignore */ }
+    toast.success("Cloned voice removed");
+  }
+
+
   const sendChunk = useCallback(async (blob: Blob, mimeType: string) => {
     if (blob.size < 2000) return; // skip near-silent tiny chunks
     setBusy(true);
