@@ -358,6 +358,58 @@ export default function LiveCoachPanel({ state }: Props) {
     audio.play();
   }
 
+  function previewVoice() {
+    speakNow("Hey, this is your live coach. I'll whisper the next move during natural pauses.");
+  }
+
+  // Record a ~2s custom voice chime (rep's own voice) used as the lead-in before each spoken tip
+  async function recordChime() {
+    if (chimeRecording) return;
+    if (chimeUrl) { URL.revokeObjectURL(chimeUrl); setChimeUrl(null); }
+    setChimeRecording(true);
+    setChimeProgress(0);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+        },
+      });
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/mp4") ? "audio/mp4" : "audio/webm";
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      chimeRecRef.current = rec;
+      const parts: Blob[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(parts, { type: mime });
+        setChimeUrl(URL.createObjectURL(blob));
+        setChimeRecording(false);
+        setChimeProgress(100);
+        setUseChime(true);
+      };
+      rec.start();
+      let elapsed = 0;
+      const TOTAL = 2000;
+      chimeTimerRef.current = setInterval(() => {
+        elapsed += 100;
+        setChimeProgress(Math.min((elapsed / TOTAL) * 100, 100));
+        if (elapsed >= TOTAL) {
+          if (chimeTimerRef.current) clearInterval(chimeTimerRef.current);
+          chimeTimerRef.current = null;
+          try { rec.stop(); } catch { /* ignore */ }
+        }
+      }, 100);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Mic blocked";
+      toast.error("Chime record failed: " + msg);
+      setChimeRecording(false);
+      setChimeProgress(0);
+    }
+  }
+
   const sendChunk = useCallback(async (blob: Blob, mimeType: string) => {
     if (blob.size < 2000) return; // skip near-silent tiny chunks
     setBusy(true);
