@@ -71,7 +71,9 @@ export default function CoachModeTab({ state, coachingTip, update }: Props) {
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
 }
+
 
