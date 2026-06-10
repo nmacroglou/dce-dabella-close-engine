@@ -786,6 +786,87 @@ export default function LiveCoachPanel({ state }: Props) {
         </div>
       )}
 
+      {/* Voice & pacing card */}
+      <div className="rounded-xl border border-hairline bg-muted/30 p-4 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-primary/10 p-2">
+            <Volume2 className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-foreground">Coach voice & pacing</h4>
+            <p className="text-xs text-muted-foreground">Pick the voice in your ear, or record a personal lead-in so tips feel like your own coach whispering.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
+          <div>
+            <label className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1 block">Coach voice</label>
+            <Select value={selectedVoiceURI} onValueChange={setSelectedVoiceURI}>
+              <SelectTrigger className="rounded-lg">
+                <SelectValue placeholder={voices.length ? "Choose a voice" : "Loading voices…"} />
+              </SelectTrigger>
+              <SelectContent>
+                {voices.length === 0 && <SelectItem value="__none" disabled>No voices available</SelectItem>}
+                {voices.map((v) => (
+                  <SelectItem key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} {v.lang ? `· ${v.lang}` : ""}{v.default ? " · default" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={previewVoice} variant="outline" size="sm" className="rounded-lg border-hairline-strong">
+            <Volume2 className="h-4 w-4 mr-1" /> Preview voice
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="rounded-lg border border-hairline bg-background/40 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-foreground">Your voice lead-in</span>
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                Use chime
+                <Switch checked={useChime} onCheckedChange={setUseChime} disabled={!chimeUrl} />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">Record up to 2s in your own voice (e.g. "Heads up…"). Plays before each spoken tip.</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {!chimeRecording ? (
+                <Button onClick={recordChime} size="sm" className="rounded-lg gradient-brand text-primary-foreground pressable">
+                  <Mic className="h-4 w-4 mr-1" /> {chimeUrl ? "Re-record" : "Record lead-in"}
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Recording…</span>
+                  <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-100" style={{ width: `${chimeProgress}%` }} />
+                  </div>
+                </div>
+              )}
+              {chimeUrl && !chimeRecording && (
+                <Button
+                  onClick={() => { const a = new Audio(chimeUrl); a.play().catch(() => {}); }}
+                  variant="outline" size="sm" className="rounded-lg border-hairline-strong"
+                >
+                  <Volume2 className="h-4 w-4 mr-1" /> Play
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-hairline bg-background/40 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-foreground">Wait for natural pause</span>
+              <Switch checked={waitForPause} onCheckedChange={setWaitForPause} />
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              When on, tips are queued and only spoken when the homeowner stops talking for ~0.7s — no more talking over them.
+            </p>
+          </div>
+        </div>
+      </div>
+
+
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         <div className="lg:col-span-3 space-y-3">
           <div className="flex items-center justify-between">
