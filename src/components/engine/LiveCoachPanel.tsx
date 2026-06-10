@@ -463,6 +463,41 @@ export default function LiveCoachPanel({ state }: Props) {
       setTips([]);
       setLastSummary(null);
 
+      // Live silence detector for pause-aware speaking
+      try {
+        const Ctx = (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
+        const ctx = new Ctx();
+        liveCtxRef.current = ctx;
+        const src = ctx.createMediaStreamSource(stream);
+        const an = ctx.createAnalyser();
+        an.fftSize = 1024;
+        src.connect(an);
+        liveAnalyserRef.current = an;
+        const buf = new Uint8Array(an.fftSize);
+        lastVoiceAtRef.current = performance.now();
+        const watch = () => {
+          if (!liveAnalyserRef.current) return;
+          liveAnalyserRef.current.getByteTimeDomainData(buf);
+          let sum = 0;
+          for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v; }
+          const rms = Math.sqrt(sum / buf.length);
+          if (rms > 0.04) lastVoiceAtRef.current = performance.now();
+          liveRafRef.current = requestAnimationFrame(watch);
+        };
+        watch();
+      } catch (e) { console.warn("silence detector failed", e); }
+
+      // Drain queued tips during natural pauses (>700ms quiet) and only when TTS isn't speaking
+      drainTimerRef.current = setInterval(() => {
+        if (!ttsOn) return;
+        if (tipQueueRef.current.length === 0) return;
+        if (window.speechSynthesis?.speaking) return;
+        const quietMs = performance.now() - lastVoiceAtRef.current;
+        if (waitForPause && quietMs < 700) return;
+        const next = tipQueueRef.current.shift();
+        if (next) speakNow(next);
+      }, 250);
+
       await tick();
       intervalRef.current = setInterval(tick, CHUNK_MS);
       setRecording(true);
