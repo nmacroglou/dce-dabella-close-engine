@@ -398,7 +398,7 @@ export default function LiveCoachPanel({ state }: Props) {
       if (tip) {
         const t: Tip = { id: crypto.randomUUID(), text: tip, urgency, at: Date.now(), step };
         setTips((prev) => [t, ...prev].slice(0, 8));
-        speak(tip);
+        queueTip(tip);
       }
       if (objection && activeDealId && !taggedObjectionsRef.current.has(objection)) {
         taggedObjectionsRef.current.add(objection);
