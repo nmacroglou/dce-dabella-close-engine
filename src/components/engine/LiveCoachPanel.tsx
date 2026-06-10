@@ -603,6 +603,7 @@ export default function LiveCoachPanel({ state }: Props) {
         if (!ttsOn) return;
         if (tipQueueRef.current.length === 0) return;
         if (window.speechSynthesis?.speaking) return;
+        if (clonedAudioRef.current && !clonedAudioRef.current.paused && !clonedAudioRef.current.ended) return;
         const quietMs = performance.now() - lastVoiceAtRef.current;
         if (waitForPause && quietMs < 700) return;
         const next = tipQueueRef.current.shift();
