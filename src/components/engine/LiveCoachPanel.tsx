@@ -173,26 +173,64 @@ export default function LiveCoachPanel({ state }: Props) {
     return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, []);
 
-  function speakNow(text: string) {
+  async function speakClonedVoice(text: string): Promise<boolean> {
+    if (!clonedVoiceId) return false;
+    try {
+      let url = ttsCacheRef.current.get(text);
+      if (!url) {
+        const { data, error } = await supabase.functions.invoke("coach-tts", {
+          body: { text, voiceId: clonedVoiceId },
+        });
+        if (error) throw error;
+        const b64 = data?.audioBase64 as string;
+        if (!b64) throw new Error("No audio returned");
+        url = `data:audio/mpeg;base64,${b64}`;
+        ttsCacheRef.current.set(text, url);
+        // cap cache
+        if (ttsCacheRef.current.size > 30) {
+          const firstKey = ttsCacheRef.current.keys().next().value;
+          if (firstKey) ttsCacheRef.current.delete(firstKey);
+        }
+      }
+      if (clonedAudioRef.current) { try { clonedAudioRef.current.pause(); } catch { /* ignore */ } }
+      const a = new Audio(url);
+      clonedAudioRef.current = a;
+      await a.play();
+      return true;
+    } catch (e) {
+      console.warn("Cloned voice playback failed, falling back", e);
+      return false;
+    }
+  }
+
+  function speakBrowser(text: string) {
     if (!("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const playUtterance = () => {
-        const u = new SpeechSynthesisUtterance(text);
-        const v = voices.find((vv) => vv.voiceURI === selectedVoiceURI);
-        if (v) u.voice = v;
-        u.rate = 1.02; u.pitch = 1; u.volume = 1;
-        window.speechSynthesis.speak(u);
-      };
-      if (useChime && chimeUrl) {
-        const a = new Audio(chimeUrl);
-        a.onended = playUtterance;
-        a.onerror = playUtterance;
-        a.play().catch(playUtterance);
-      } else {
-        playUtterance();
-      }
+      const u = new SpeechSynthesisUtterance(text);
+      const v = voices.find((vv) => vv.voiceURI === selectedVoiceURI);
+      if (v) u.voice = v;
+      u.rate = 1.02; u.pitch = 1; u.volume = 1;
+      window.speechSynthesis.speak(u);
     } catch { /* ignore */ }
+  }
+
+  function speakNow(text: string) {
+    const playMain = async () => {
+      if (useClonedVoice && clonedVoiceId) {
+        const ok = await speakClonedVoice(text);
+        if (ok) return;
+      }
+      speakBrowser(text);
+    };
+    if (useChime && chimeUrl) {
+      const a = new Audio(chimeUrl);
+      a.onended = () => { void playMain(); };
+      a.onerror = () => { void playMain(); };
+      a.play().catch(() => { void playMain(); });
+    } else {
+      void playMain();
+    }
   }
 
   // Queue a tip and let the drain loop speak it once the homeowner pauses
