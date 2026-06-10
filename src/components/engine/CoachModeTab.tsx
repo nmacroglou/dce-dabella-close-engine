@@ -2,6 +2,7 @@ import type { EngineState, EngineUpdater } from "@/types/engine";
 import { getCoachCard, COACHING_RULES } from "@/data/coachingCards";
 import { Brain, Shield, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LiveCoachPanel from "./LiveCoachPanel";
 
 interface Props {
   state: EngineState;
@@ -13,7 +14,10 @@ export default function CoachModeTab({ state, coachingTip, update }: Props) {
   const card = getCoachCard(state);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
+      <LiveCoachPanel state={state} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
       <div className="lg:col-span-3 space-y-6">
         <div className="card-premium p-6 relative overflow-hidden">
           <div className="absolute -top-20 -right-20 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
@@ -67,6 +71,9 @@ export default function CoachModeTab({ state, coachingTip, update }: Props) {
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
 }
+
+
