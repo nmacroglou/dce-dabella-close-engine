@@ -2,6 +2,7 @@ import type { EngineState, EngineUpdater } from "@/types/engine";
 import { getCoachCard, COACHING_RULES } from "@/data/coachingCards";
 import { Brain, Shield, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LiveCoachPanel from "./LiveCoachPanel";
 
 interface Props {
   state: EngineState;
