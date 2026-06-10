@@ -77,6 +77,72 @@ export default function LiveCoachPanel({ state }: Props) {
     mediaRef.current = null;
   }
 
+  // Mic test — record 3 seconds then play it back
+  async function testMic() {
+    if (micTestRecording) return;
+    setMicTestAudioUrl(null);
+    setMicTestRecording(true);
+    setMicTestProgress(0);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/mp4")
+        ? "audio/mp4"
+        : "audio/webm";
+
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      const parts: Blob[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(parts, { type: mime });
+        const url = URL.createObjectURL(blob);
+        setMicTestAudioUrl(url);
+        setMicTestRecording(false);
+        setMicTestProgress(100);
+      };
+
+      rec.start();
+      let elapsed = 0;
+      const TOTAL = 3000;
+      micTestTimerRef.current = setInterval(() => {
+        elapsed += 100;
+        setMicTestProgress(Math.min((elapsed / TOTAL) * 100, 100));
+        if (elapsed >= TOTAL) {
+          if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
+          micTestTimerRef.current = null;
+          try { rec.stop(); } catch { /* ignore */ }
+        }
+      }, 100);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Mic blocked";
+      toast.error("Mic check failed: " + msg);
+      setMicTestRecording(false);
+      setMicTestProgress(0);
+    }
+  }
+
+  function playTestAudio() {
+    if (!micTestAudioUrl) return;
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current = null;
+    }
+    const audio = new Audio(micTestAudioUrl);
+    audioPlayerRef.current = audio;
+    setMicTestPlaying(true);
+    audio.onended = () => setMicTestPlaying(false);
+    audio.onerror = () => {
+      setMicTestPlaying(false);
+      toast.error("Could not play back test audio");
+    };
+    audio.play();
+  }
+
   const sendChunk = useCallback(async (blob: Blob, mimeType: string) => {
     if (blob.size < 2000) return; // skip near-silent tiny chunks
     setBusy(true);
