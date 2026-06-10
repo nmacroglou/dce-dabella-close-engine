@@ -102,6 +102,33 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
               type="number"
             />
           </div>
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quick credit presets — sets Factor 2</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Great credit", factor: 0.0108, hint: "Top-tier APR" },
+                { label: "OK credit / 6-mo deferral", factor: 0.012, hint: "Mid-tier or short deferral" },
+                { label: "Bad credit + 1–2 yr deferral", factor: 0.015, hint: "Subprime or long deferral" },
+              ].map((p) => {
+                const active = Math.abs((state.financingFactor2 ?? 0) - p.factor) < 1e-6;
+                return (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => update("financingFactor2", p.factor)}
+                    title={p.hint}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium border transition-all touch-target ${
+                      active
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card text-foreground border-border hover:border-primary/60"
+                    }`}
+                  >
+                    {p.label} <span className="opacity-75 ml-1">{p.factor.toFixed(4)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </FormSection>
 
         <FormSection icon="🏷️" title="Promotional Discounts" quote='"Because you&apos;re working with us today, you qualify for some special promotions that can lower your price or your monthly payment."'>
