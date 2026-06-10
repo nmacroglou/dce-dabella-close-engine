@@ -54,7 +54,14 @@ export default function LiveCoachPanel({ state }: Props) {
   const micTestTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => () => stopAll(), []); // cleanup
+  useEffect(() => {
+    return () => {
+      stopAll();
+      if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
+      if (audioPlayerRef.current) { audioPlayerRef.current.pause(); audioPlayerRef.current = null; }
+      if (micTestAudioUrl) URL.revokeObjectURL(micTestAudioUrl);
+    };
+  }, []);
 
   function speak(text: string) {
     if (!ttsOn || !("speechSynthesis" in window)) return;
