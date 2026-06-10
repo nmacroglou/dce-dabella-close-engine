@@ -338,6 +338,57 @@ export default function LiveCoachPanel({ state }: Props) {
         </div>
       )}
 
+      {/* Mic check card */}
+      {!recording && (
+        <div className="rounded-xl border border-hairline bg-muted/30 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Headphones className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-foreground">Mic check</h4>
+                <p className="text-xs text-muted-foreground">Record 3 seconds and hear it back to verify your mic / AirPods.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {micTestAudioUrl && !micTestRecording && (
+                <Button
+                  onClick={playTestAudio}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg border-hairline-strong"
+                  disabled={micTestPlaying}
+                >
+                  {micTestPlaying ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Volume2 className="h-4 w-4 mr-1" />}
+                  Play back
+                </Button>
+              )}
+              {!micTestRecording ? (
+                <Button onClick={testMic} size="sm" className="rounded-lg gradient-brand text-primary-foreground pressable">
+                  <Mic className="h-4 w-4 mr-1" /> Test mic
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Recording…</span>
+                  <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-100"
+                      style={{ width: `${micTestProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          {micTestAudioUrl && !micTestRecording && (
+            <div className="flex items-center gap-2 text-xs text-green-500">
+              <CheckCircle2 className="h-4 w-4" /> Mic is working — you heard the playback.
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         <div className="lg:col-span-3 space-y-3">
           <div className="flex items-center justify-between">
