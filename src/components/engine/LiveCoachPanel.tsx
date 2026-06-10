@@ -73,6 +73,25 @@ export default function LiveCoachPanel({ state }: Props) {
   // Pause-aware speaking
   const [waitForPause, setWaitForPause] = useState(true);
 
+  // Cloned voice (ElevenLabs Instant Voice Clone)
+  const [clonedVoiceId, setClonedVoiceId] = useState<string | null>(() => {
+    try { return localStorage.getItem("coach_cloned_voice_id"); } catch { return null; }
+  });
+  const [useClonedVoice, setUseClonedVoice] = useState<boolean>(() => {
+    try { return localStorage.getItem("coach_use_cloned_voice") === "1"; } catch { return false; }
+  });
+  const [cloneRecording, setCloneRecording] = useState(false);
+  const [cloneProgress, setCloneProgress] = useState(0);
+  const [cloning, setCloning] = useState(false);
+  const cloneRecRef = useRef<MediaRecorder | null>(null);
+  const cloneTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const clonedAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsCacheRef = useRef<Map<string, string>>(new Map()); // tip text -> object URL
+
+  useEffect(() => {
+    try { localStorage.setItem("coach_use_cloned_voice", useClonedVoice ? "1" : "0"); } catch { /* ignore */ }
+  }, [useClonedVoice]);
+
   const mediaRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
