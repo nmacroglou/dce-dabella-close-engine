@@ -128,8 +128,10 @@ export default function LiveCoachPanel({ state }: Props) {
       stopAll();
       stopMeter();
       if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
+      if (chimeTimerRef.current) clearInterval(chimeTimerRef.current);
       if (audioPlayerRef.current) { audioPlayerRef.current.pause(); audioPlayerRef.current = null; }
       if (micTestAudioUrl) URL.revokeObjectURL(micTestAudioUrl);
+      if (chimeUrl) URL.revokeObjectURL(chimeUrl);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
