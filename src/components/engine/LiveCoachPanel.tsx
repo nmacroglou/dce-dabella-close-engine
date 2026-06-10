@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Mic, MicOff, Loader2, Volume2, VolumeX, Sparkles, AlertCircle, Headphones, CheckCircle2, RefreshCw } from "lucide-react";
+import { Mic, MicOff, Loader2, Volume2, VolumeX, Sparkles, AlertCircle, Headphones, CheckCircle2, RefreshCw, UserCircle2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -73,6 +73,25 @@ export default function LiveCoachPanel({ state }: Props) {
   // Pause-aware speaking
   const [waitForPause, setWaitForPause] = useState(true);
 
+  // Cloned voice (ElevenLabs Instant Voice Clone)
+  const [clonedVoiceId, setClonedVoiceId] = useState<string | null>(() => {
+    try { return localStorage.getItem("coach_cloned_voice_id"); } catch { return null; }
+  });
+  const [useClonedVoice, setUseClonedVoice] = useState<boolean>(() => {
+    try { return localStorage.getItem("coach_use_cloned_voice") === "1"; } catch { return false; }
+  });
+  const [cloneRecording, setCloneRecording] = useState(false);
+  const [cloneProgress, setCloneProgress] = useState(0);
+  const [cloning, setCloning] = useState(false);
+  const cloneRecRef = useRef<MediaRecorder | null>(null);
+  const cloneTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const clonedAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsCacheRef = useRef<Map<string, string>>(new Map()); // tip text -> object URL
+
+  useEffect(() => {
+    try { localStorage.setItem("coach_use_cloned_voice", useClonedVoice ? "1" : "0"); } catch { /* ignore */ }
+  }, [useClonedVoice]);
+
   const mediaRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -129,7 +148,9 @@ export default function LiveCoachPanel({ state }: Props) {
       stopMeter();
       if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
       if (chimeTimerRef.current) clearInterval(chimeTimerRef.current);
+      if (cloneTimerRef.current) clearInterval(cloneTimerRef.current);
       if (audioPlayerRef.current) { audioPlayerRef.current.pause(); audioPlayerRef.current = null; }
+      if (clonedAudioRef.current) { try { clonedAudioRef.current.pause(); } catch { /* ignore */ } clonedAudioRef.current = null; }
       if (micTestAudioUrl) URL.revokeObjectURL(micTestAudioUrl);
       if (chimeUrl) URL.revokeObjectURL(chimeUrl);
     };
@@ -154,26 +175,64 @@ export default function LiveCoachPanel({ state }: Props) {
     return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, []);
 
-  function speakNow(text: string) {
+  async function speakClonedVoice(text: string): Promise<boolean> {
+    if (!clonedVoiceId) return false;
+    try {
+      let url = ttsCacheRef.current.get(text);
+      if (!url) {
+        const { data, error } = await supabase.functions.invoke("coach-tts", {
+          body: { text, voiceId: clonedVoiceId },
+        });
+        if (error) throw error;
+        const b64 = data?.audioBase64 as string;
+        if (!b64) throw new Error("No audio returned");
+        url = `data:audio/mpeg;base64,${b64}`;
+        ttsCacheRef.current.set(text, url);
+        // cap cache
+        if (ttsCacheRef.current.size > 30) {
+          const firstKey = ttsCacheRef.current.keys().next().value;
+          if (firstKey) ttsCacheRef.current.delete(firstKey);
+        }
+      }
+      if (clonedAudioRef.current) { try { clonedAudioRef.current.pause(); } catch { /* ignore */ } }
+      const a = new Audio(url);
+      clonedAudioRef.current = a;
+      await a.play();
+      return true;
+    } catch (e) {
+      console.warn("Cloned voice playback failed, falling back", e);
+      return false;
+    }
+  }
+
+  function speakBrowser(text: string) {
     if (!("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const playUtterance = () => {
-        const u = new SpeechSynthesisUtterance(text);
-        const v = voices.find((vv) => vv.voiceURI === selectedVoiceURI);
-        if (v) u.voice = v;
-        u.rate = 1.02; u.pitch = 1; u.volume = 1;
-        window.speechSynthesis.speak(u);
-      };
-      if (useChime && chimeUrl) {
-        const a = new Audio(chimeUrl);
-        a.onended = playUtterance;
-        a.onerror = playUtterance;
-        a.play().catch(playUtterance);
-      } else {
-        playUtterance();
-      }
+      const u = new SpeechSynthesisUtterance(text);
+      const v = voices.find((vv) => vv.voiceURI === selectedVoiceURI);
+      if (v) u.voice = v;
+      u.rate = 1.02; u.pitch = 1; u.volume = 1;
+      window.speechSynthesis.speak(u);
     } catch { /* ignore */ }
+  }
+
+  function speakNow(text: string) {
+    const playMain = async () => {
+      if (useClonedVoice && clonedVoiceId) {
+        const ok = await speakClonedVoice(text);
+        if (ok) return;
+      }
+      speakBrowser(text);
+    };
+    if (useChime && chimeUrl) {
+      const a = new Audio(chimeUrl);
+      a.onended = () => { void playMain(); };
+      a.onerror = () => { void playMain(); };
+      a.play().catch(() => { void playMain(); });
+    } else {
+      void playMain();
+    }
   }
 
   // Queue a tip and let the drain loop speak it once the homeowner pauses
@@ -412,6 +471,108 @@ export default function LiveCoachPanel({ state }: Props) {
     }
   }
 
+  // Record a ~30s clean sample of the rep's voice and upload to ElevenLabs for cloning
+  async function recordVoiceClone() {
+    if (cloneRecording || cloning) return;
+    setCloneRecording(true);
+    setCloneProgress(0);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+        },
+      });
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/mp4") ? "audio/mp4" : "audio/webm";
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      cloneRecRef.current = rec;
+      const parts: Blob[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setCloneRecording(false);
+        const blob = new Blob(parts, { type: mime });
+        if (blob.size < 50_000) {
+          toast.error("Sample too short — try again and speak for the full 30s");
+          return;
+        }
+        setCloning(true);
+        try {
+          const buf = await blob.arrayBuffer();
+          let binary = "";
+          const bytes = new Uint8Array(buf);
+          const CHUNK = 0x8000;
+          for (let i = 0; i < bytes.length; i += CHUNK) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+          }
+          const audioBase64 = btoa(binary);
+          const { data, error } = await supabase.functions.invoke("clone-voice", {
+            body: {
+              audioBase64,
+              mimeType: mime,
+              name: (user?.email?.split("@")[0] || "Rep") + " — Coach voice",
+              description: "Cloned for live coach playback",
+            },
+          });
+          if (error) throw error;
+          const vid = data?.voiceId as string;
+          if (!vid) throw new Error("No voice id returned");
+          setClonedVoiceId(vid);
+          try { localStorage.setItem("coach_cloned_voice_id", vid); } catch { /* ignore */ }
+          setUseClonedVoice(true);
+          ttsCacheRef.current.clear();
+          toast.success("Your voice is cloned — coach tips will now sound like you");
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : "Clone failed";
+          toast.error("Voice clone failed: " + msg);
+        } finally {
+          setCloning(false);
+        }
+      };
+      rec.start();
+      let elapsed = 0;
+      const TOTAL = 30_000;
+      cloneTimerRef.current = setInterval(() => {
+        elapsed += 200;
+        setCloneProgress(Math.min((elapsed / TOTAL) * 100, 100));
+        if (elapsed >= TOTAL) {
+          if (cloneTimerRef.current) clearInterval(cloneTimerRef.current);
+          cloneTimerRef.current = null;
+          try { rec.stop(); } catch { /* ignore */ }
+        }
+      }, 200);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Mic blocked";
+      toast.error("Voice clone record failed: " + msg);
+      setCloneRecording(false);
+      setCloneProgress(0);
+    }
+  }
+
+  function stopVoiceCloneRecording() {
+    if (cloneTimerRef.current) { clearInterval(cloneTimerRef.current); cloneTimerRef.current = null; }
+    if (cloneRecRef.current && cloneRecRef.current.state !== "inactive") {
+      try { cloneRecRef.current.stop(); } catch { /* ignore */ }
+    }
+  }
+
+  async function previewClonedVoice() {
+    if (!clonedVoiceId) return;
+    const ok = await speakClonedVoice("Hey, this is your coach speaking in your own voice. I'll only chime in during natural pauses.");
+    if (!ok) toast.error("Could not play cloned voice preview");
+  }
+
+  function removeClonedVoice() {
+    setClonedVoiceId(null);
+    setUseClonedVoice(false);
+    ttsCacheRef.current.clear();
+    try { localStorage.removeItem("coach_cloned_voice_id"); } catch { /* ignore */ }
+    toast.success("Cloned voice removed");
+  }
+
+
   const sendChunk = useCallback(async (blob: Blob, mimeType: string) => {
     if (blob.size < 2000) return; // skip near-silent tiny chunks
     setBusy(true);
@@ -546,6 +707,7 @@ export default function LiveCoachPanel({ state }: Props) {
         if (!ttsOn) return;
         if (tipQueueRef.current.length === 0) return;
         if (window.speechSynthesis?.speaking) return;
+        if (clonedAudioRef.current && !clonedAudioRef.current.paused && !clonedAudioRef.current.ended) return;
         const quietMs = performance.now() - lastVoiceAtRef.current;
         if (waitForPause && quietMs < 700) return;
         const next = tipQueueRef.current.shift();
@@ -567,6 +729,7 @@ export default function LiveCoachPanel({ state }: Props) {
     stopAll();
     setRecording(false);
     window.speechSynthesis?.cancel();
+    if (clonedAudioRef.current) { try { clonedAudioRef.current.pause(); } catch { /* ignore */ } clonedAudioRef.current = null; }
 
     if (sessionId && transcriptRef.current.trim().length > 20) {
       setSummarizing(true);
@@ -821,6 +984,63 @@ export default function LiveCoachPanel({ state }: Props) {
             <Volume2 className="h-4 w-4 mr-1" /> Preview voice
           </Button>
         </div>
+
+        {/* Cloned voice (use my own voice) */}
+        <div className="rounded-lg border border-hairline bg-background/40 p-3 space-y-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <UserCircle2 className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold text-foreground">Use my own voice (AI clone)</span>
+              {clonedVoiceId && (
+                <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-green-500/15 text-green-500">Ready</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              Speak in my voice
+              <Switch checked={useClonedVoice} onCheckedChange={setUseClonedVoice} disabled={!clonedVoiceId} />
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Record ~30 seconds of clear speech (read a paragraph naturally). We'll clone your voice so the AI coach whispers tips in your own voice via your AirPods.
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {!cloneRecording ? (
+              <Button
+                onClick={recordVoiceClone}
+                size="sm"
+                className="rounded-lg gradient-brand text-primary-foreground pressable"
+                disabled={cloning}
+              >
+                {cloning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Mic className="h-4 w-4 mr-1" />}
+                {cloning ? "Cloning…" : clonedVoiceId ? "Re-record (30s)" : "Record 30s sample"}
+              </Button>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Recording…</span>
+                  <div className="w-40 h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-100" style={{ width: `${cloneProgress}%` }} />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">{Math.round(cloneProgress * 0.3)}s / 30s</span>
+                </div>
+                <Button onClick={stopVoiceCloneRecording} size="sm" variant="outline" className="rounded-lg border-hairline-strong">
+                  Stop early
+                </Button>
+              </>
+            )}
+            {clonedVoiceId && !cloneRecording && !cloning && (
+              <>
+                <Button onClick={previewClonedVoice} variant="outline" size="sm" className="rounded-lg border-hairline-strong">
+                  <Volume2 className="h-4 w-4 mr-1" /> Preview my voice
+                </Button>
+                <Button onClick={removeClonedVoice} variant="ghost" size="sm" className="rounded-lg text-xs text-muted-foreground hover:text-destructive">
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="rounded-lg border border-hairline bg-background/40 p-3 space-y-2">
