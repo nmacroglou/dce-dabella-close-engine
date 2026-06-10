@@ -148,7 +148,9 @@ export default function LiveCoachPanel({ state }: Props) {
       stopMeter();
       if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
       if (chimeTimerRef.current) clearInterval(chimeTimerRef.current);
+      if (cloneTimerRef.current) clearInterval(cloneTimerRef.current);
       if (audioPlayerRef.current) { audioPlayerRef.current.pause(); audioPlayerRef.current = null; }
+      if (clonedAudioRef.current) { try { clonedAudioRef.current.pause(); } catch { /* ignore */ } clonedAudioRef.current = null; }
       if (micTestAudioUrl) URL.revokeObjectURL(micTestAudioUrl);
       if (chimeUrl) URL.revokeObjectURL(chimeUrl);
     };
