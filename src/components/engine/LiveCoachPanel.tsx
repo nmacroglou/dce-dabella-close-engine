@@ -625,6 +625,7 @@ export default function LiveCoachPanel({ state }: Props) {
     stopAll();
     setRecording(false);
     window.speechSynthesis?.cancel();
+    if (clonedAudioRef.current) { try { clonedAudioRef.current.pause(); } catch { /* ignore */ } clonedAudioRef.current = null; }
 
     if (sessionId && transcriptRef.current.trim().length > 20) {
       setSummarizing(true);
