@@ -40,11 +40,19 @@ export default function LiveCoachPanel({ state }: Props) {
   const [summarizing, setSummarizing] = useState(false);
   const [lastSummary, setLastSummary] = useState<string | null>(null);
 
+  // Mic test states
+  const [micTestRecording, setMicTestRecording] = useState(false);
+  const [micTestProgress, setMicTestProgress] = useState(0);
+  const [micTestAudioUrl, setMicTestAudioUrl] = useState<string | null>(null);
+  const [micTestPlaying, setMicTestPlaying] = useState(false);
+
   const mediaRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const transcriptRef = useRef("");
   const taggedObjectionsRef = useRef<Set<string>>(new Set());
+  const micTestTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => () => stopAll(), []); // cleanup
 
