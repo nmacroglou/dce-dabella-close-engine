@@ -93,11 +93,16 @@ export default function CalculatorTab({ state, computed, update, reset }: Engine
             <InputField label="Factor 2" description="An alternate financing rate — we'll show you which one gives you the best monthly payment" value={state.financingFactor2} onChange={(v) => update("financingFactor2", parseNum(v))} type="number" />
             <InputField
               label="Credit Score"
-              description="Optional (300–850). When provided, the discount range previews auto-pick the lender APR tier that matches this score."
+              description="Optional (300–850). Auto-sets Factor 2: ≥720 → .0108, 640–719 → .012, <640 → .015."
               value={state.creditScore ?? ""}
               onChange={(v) => {
                 const n = parseInt(v, 10);
-                update("creditScore", Number.isFinite(n) ? n : null);
+                const score = Number.isFinite(n) ? n : null;
+                update("creditScore", score);
+                if (score !== null) {
+                  const auto = score >= 720 ? 0.0108 : score >= 640 ? 0.012 : 0.015;
+                  update("financingFactor2", auto);
+                }
               }}
               type="number"
             />
