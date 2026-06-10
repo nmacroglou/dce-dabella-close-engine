@@ -134,19 +134,68 @@ export default function LiveCoachPanel({ state }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function speak(text: string) {
-    if (!ttsOn || !("speechSynthesis" in window)) return;
+  // Load TTS voices (async on Chrome)
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const load = () => {
+      const list = window.speechSynthesis.getVoices();
+      if (!list.length) return;
+      setVoices(list);
+      setSelectedVoiceURI((prev) => {
+        if (prev && list.some((v) => v.voiceURI === prev)) return prev;
+        const en = list.find((v) => /en[-_]US/i.test(v.lang)) || list.find((v) => v.lang?.startsWith("en")) || list[0];
+        return en?.voiceURI ?? "";
+      });
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+
+  function speakNow(text: string) {
+    if (!("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.05; u.pitch = 1; u.volume = 1;
-      window.speechSynthesis.speak(u);
+      const playUtterance = () => {
+        const u = new SpeechSynthesisUtterance(text);
+        const v = voices.find((vv) => vv.voiceURI === selectedVoiceURI);
+        if (v) u.voice = v;
+        u.rate = 1.02; u.pitch = 1; u.volume = 1;
+        window.speechSynthesis.speak(u);
+      };
+      if (useChime && chimeUrl) {
+        const a = new Audio(chimeUrl);
+        a.onended = playUtterance;
+        a.onerror = playUtterance;
+        a.play().catch(playUtterance);
+      } else {
+        playUtterance();
+      }
     } catch { /* ignore */ }
+  }
+
+  // Queue a tip and let the drain loop speak it once the homeowner pauses
+  function queueTip(text: string) {
+    if (!ttsOn) return;
+    tipQueueRef.current.push(text);
+    if (!waitForPause) {
+      const next = tipQueueRef.current.shift();
+      if (next) speakNow(next);
+    }
   }
 
   function stopAll() {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = null;
+    if (drainTimerRef.current) clearInterval(drainTimerRef.current);
+    drainTimerRef.current = null;
+    if (liveRafRef.current != null) cancelAnimationFrame(liveRafRef.current);
+    liveRafRef.current = null;
+    try { liveAnalyserRef.current?.disconnect(); } catch { /* ignore */ }
+    liveAnalyserRef.current = null;
+    try { liveCtxRef.current?.close(); } catch { /* ignore */ }
+    liveCtxRef.current = null;
+    tipQueueRef.current = [];
     if (mediaRef.current && mediaRef.current.state !== "inactive") {
       try { mediaRef.current.stop(); } catch { /* ignore */ }
     }
