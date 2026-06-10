@@ -60,6 +60,19 @@ export default function LiveCoachPanel({ state }: Props) {
   const [micTestAudioUrl, setMicTestAudioUrl] = useState<string | null>(null);
   const [micTestPlaying, setMicTestPlaying] = useState(false);
 
+  // Voice selection
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>("");
+
+  // Custom voice chime — recorded in the rep's own voice, plays before each spoken tip
+  const [chimeUrl, setChimeUrl] = useState<string | null>(null);
+  const [chimeRecording, setChimeRecording] = useState(false);
+  const [chimeProgress, setChimeProgress] = useState(0);
+  const [useChime, setUseChime] = useState(false);
+
+  // Pause-aware speaking
+  const [waitForPause, setWaitForPause] = useState(true);
+
   const mediaRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -67,6 +80,8 @@ export default function LiveCoachPanel({ state }: Props) {
   const taggedObjectionsRef = useRef<Set<string>>(new Set());
   const micTestTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const chimeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const chimeRecRef = useRef<MediaRecorder | null>(null);
 
   // Meter refs
   const meterStreamRef = useRef<MediaStream | null>(null);
@@ -75,6 +90,15 @@ export default function LiveCoachPanel({ state }: Props) {
   const rafRef = useRef<number | null>(null);
   const peakRef = useRef(0);
   const peakDecayRef = useRef<number>(0);
+
+  // Live silence tracking for "wait for pause" speaking
+  const liveAnalyserRef = useRef<AnalyserNode | null>(null);
+  const liveCtxRef = useRef<AudioContext | null>(null);
+  const liveRafRef = useRef<number | null>(null);
+  const lastVoiceAtRef = useRef<number>(0);
+  const tipQueueRef = useRef<string[]>([]);
+  const drainTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const spokenRef = useRef(false);
 
   const loadDevices = useCallback(async () => {
     try {
@@ -104,25 +128,76 @@ export default function LiveCoachPanel({ state }: Props) {
       stopAll();
       stopMeter();
       if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
+      if (chimeTimerRef.current) clearInterval(chimeTimerRef.current);
       if (audioPlayerRef.current) { audioPlayerRef.current.pause(); audioPlayerRef.current = null; }
       if (micTestAudioUrl) URL.revokeObjectURL(micTestAudioUrl);
+      if (chimeUrl) URL.revokeObjectURL(chimeUrl);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function speak(text: string) {
-    if (!ttsOn || !("speechSynthesis" in window)) return;
+  // Load TTS voices (async on Chrome)
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const load = () => {
+      const list = window.speechSynthesis.getVoices();
+      if (!list.length) return;
+      setVoices(list);
+      setSelectedVoiceURI((prev) => {
+        if (prev && list.some((v) => v.voiceURI === prev)) return prev;
+        const en = list.find((v) => /en[-_]US/i.test(v.lang)) || list.find((v) => v.lang?.startsWith("en")) || list[0];
+        return en?.voiceURI ?? "";
+      });
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+
+  function speakNow(text: string) {
+    if (!("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 1.05; u.pitch = 1; u.volume = 1;
-      window.speechSynthesis.speak(u);
+      const playUtterance = () => {
+        const u = new SpeechSynthesisUtterance(text);
+        const v = voices.find((vv) => vv.voiceURI === selectedVoiceURI);
+        if (v) u.voice = v;
+        u.rate = 1.02; u.pitch = 1; u.volume = 1;
+        window.speechSynthesis.speak(u);
+      };
+      if (useChime && chimeUrl) {
+        const a = new Audio(chimeUrl);
+        a.onended = playUtterance;
+        a.onerror = playUtterance;
+        a.play().catch(playUtterance);
+      } else {
+        playUtterance();
+      }
     } catch { /* ignore */ }
+  }
+
+  // Queue a tip and let the drain loop speak it once the homeowner pauses
+  function queueTip(text: string) {
+    if (!ttsOn) return;
+    tipQueueRef.current.push(text);
+    if (!waitForPause) {
+      const next = tipQueueRef.current.shift();
+      if (next) speakNow(next);
+    }
   }
 
   function stopAll() {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = null;
+    if (drainTimerRef.current) clearInterval(drainTimerRef.current);
+    drainTimerRef.current = null;
+    if (liveRafRef.current != null) cancelAnimationFrame(liveRafRef.current);
+    liveRafRef.current = null;
+    try { liveAnalyserRef.current?.disconnect(); } catch { /* ignore */ }
+    liveAnalyserRef.current = null;
+    try { liveCtxRef.current?.close(); } catch { /* ignore */ }
+    liveCtxRef.current = null;
+    tipQueueRef.current = [];
     if (mediaRef.current && mediaRef.current.state !== "inactive") {
       try { mediaRef.current.stop(); } catch { /* ignore */ }
     }
@@ -285,6 +360,58 @@ export default function LiveCoachPanel({ state }: Props) {
     audio.play();
   }
 
+  function previewVoice() {
+    speakNow("Hey, this is your live coach. I'll whisper the next move during natural pauses.");
+  }
+
+  // Record a ~2s custom voice chime (rep's own voice) used as the lead-in before each spoken tip
+  async function recordChime() {
+    if (chimeRecording) return;
+    if (chimeUrl) { URL.revokeObjectURL(chimeUrl); setChimeUrl(null); }
+    setChimeRecording(true);
+    setChimeProgress(0);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+        },
+      });
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/mp4") ? "audio/mp4" : "audio/webm";
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      chimeRecRef.current = rec;
+      const parts: Blob[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(parts, { type: mime });
+        setChimeUrl(URL.createObjectURL(blob));
+        setChimeRecording(false);
+        setChimeProgress(100);
+        setUseChime(true);
+      };
+      rec.start();
+      let elapsed = 0;
+      const TOTAL = 2000;
+      chimeTimerRef.current = setInterval(() => {
+        elapsed += 100;
+        setChimeProgress(Math.min((elapsed / TOTAL) * 100, 100));
+        if (elapsed >= TOTAL) {
+          if (chimeTimerRef.current) clearInterval(chimeTimerRef.current);
+          chimeTimerRef.current = null;
+          try { rec.stop(); } catch { /* ignore */ }
+        }
+      }, 100);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Mic blocked";
+      toast.error("Chime record failed: " + msg);
+      setChimeRecording(false);
+      setChimeProgress(0);
+    }
+  }
+
   const sendChunk = useCallback(async (blob: Blob, mimeType: string) => {
     if (blob.size < 2000) return; // skip near-silent tiny chunks
     setBusy(true);
@@ -325,7 +452,7 @@ export default function LiveCoachPanel({ state }: Props) {
       if (tip) {
         const t: Tip = { id: crypto.randomUUID(), text: tip, urgency, at: Date.now(), step };
         setTips((prev) => [t, ...prev].slice(0, 8));
-        speak(tip);
+        queueTip(tip);
       }
       if (objection && activeDealId && !taggedObjectionsRef.current.has(objection)) {
         taggedObjectionsRef.current.add(objection);
@@ -389,6 +516,41 @@ export default function LiveCoachPanel({ state }: Props) {
       setTranscript("");
       setTips([]);
       setLastSummary(null);
+
+      // Live silence detector for pause-aware speaking
+      try {
+        const Ctx = (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
+        const ctx = new Ctx();
+        liveCtxRef.current = ctx;
+        const src = ctx.createMediaStreamSource(stream);
+        const an = ctx.createAnalyser();
+        an.fftSize = 1024;
+        src.connect(an);
+        liveAnalyserRef.current = an;
+        const buf = new Uint8Array(an.fftSize);
+        lastVoiceAtRef.current = performance.now();
+        const watch = () => {
+          if (!liveAnalyserRef.current) return;
+          liveAnalyserRef.current.getByteTimeDomainData(buf);
+          let sum = 0;
+          for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v; }
+          const rms = Math.sqrt(sum / buf.length);
+          if (rms > 0.04) lastVoiceAtRef.current = performance.now();
+          liveRafRef.current = requestAnimationFrame(watch);
+        };
+        watch();
+      } catch (e) { console.warn("silence detector failed", e); }
+
+      // Drain queued tips during natural pauses (>700ms quiet) and only when TTS isn't speaking
+      drainTimerRef.current = setInterval(() => {
+        if (!ttsOn) return;
+        if (tipQueueRef.current.length === 0) return;
+        if (window.speechSynthesis?.speaking) return;
+        const quietMs = performance.now() - lastVoiceAtRef.current;
+        if (waitForPause && quietMs < 700) return;
+        const next = tipQueueRef.current.shift();
+        if (next) speakNow(next);
+      }, 250);
 
       await tick();
       intervalRef.current = setInterval(tick, CHUNK_MS);
@@ -625,6 +787,87 @@ export default function LiveCoachPanel({ state }: Props) {
           </div>
         </div>
       )}
+
+      {/* Voice & pacing card */}
+      <div className="rounded-xl border border-hairline bg-muted/30 p-4 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-primary/10 p-2">
+            <Volume2 className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-foreground">Coach voice & pacing</h4>
+            <p className="text-xs text-muted-foreground">Pick the voice in your ear, or record a personal lead-in so tips feel like your own coach whispering.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
+          <div>
+            <label className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1 block">Coach voice</label>
+            <Select value={selectedVoiceURI} onValueChange={setSelectedVoiceURI}>
+              <SelectTrigger className="rounded-lg">
+                <SelectValue placeholder={voices.length ? "Choose a voice" : "Loading voices…"} />
+              </SelectTrigger>
+              <SelectContent>
+                {voices.length === 0 && <SelectItem value="__none" disabled>No voices available</SelectItem>}
+                {voices.map((v) => (
+                  <SelectItem key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} {v.lang ? `· ${v.lang}` : ""}{v.default ? " · default" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={previewVoice} variant="outline" size="sm" className="rounded-lg border-hairline-strong">
+            <Volume2 className="h-4 w-4 mr-1" /> Preview voice
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="rounded-lg border border-hairline bg-background/40 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-foreground">Your voice lead-in</span>
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                Use chime
+                <Switch checked={useChime} onCheckedChange={setUseChime} disabled={!chimeUrl} />
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">Record up to 2s in your own voice (e.g. "Heads up…"). Plays before each spoken tip.</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {!chimeRecording ? (
+                <Button onClick={recordChime} size="sm" className="rounded-lg gradient-brand text-primary-foreground pressable">
+                  <Mic className="h-4 w-4 mr-1" /> {chimeUrl ? "Re-record" : "Record lead-in"}
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Recording…</span>
+                  <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-100" style={{ width: `${chimeProgress}%` }} />
+                  </div>
+                </div>
+              )}
+              {chimeUrl && !chimeRecording && (
+                <Button
+                  onClick={() => { const a = new Audio(chimeUrl); a.play().catch(() => {}); }}
+                  variant="outline" size="sm" className="rounded-lg border-hairline-strong"
+                >
+                  <Volume2 className="h-4 w-4 mr-1" /> Play
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-hairline bg-background/40 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-foreground">Wait for natural pause</span>
+              <Switch checked={waitForPause} onCheckedChange={setWaitForPause} />
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              When on, tips are queued and only spoken when the homeowner stops talking for ~0.7s — no more talking over them.
+            </p>
+          </div>
+        </div>
+      </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         <div className="lg:col-span-3 space-y-3">
