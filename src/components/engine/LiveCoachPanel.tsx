@@ -983,6 +983,63 @@ export default function LiveCoachPanel({ state }: Props) {
           </Button>
         </div>
 
+        {/* Cloned voice (use my own voice) */}
+        <div className="rounded-lg border border-hairline bg-background/40 p-3 space-y-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <UserCircle2 className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold text-foreground">Use my own voice (AI clone)</span>
+              {clonedVoiceId && (
+                <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-green-500/15 text-green-500">Ready</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              Speak in my voice
+              <Switch checked={useClonedVoice} onCheckedChange={setUseClonedVoice} disabled={!clonedVoiceId} />
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Record ~30 seconds of clear speech (read a paragraph naturally). We'll clone your voice so the AI coach whispers tips in your own voice via your AirPods.
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {!cloneRecording ? (
+              <Button
+                onClick={recordVoiceClone}
+                size="sm"
+                className="rounded-lg gradient-brand text-primary-foreground pressable"
+                disabled={cloning}
+              >
+                {cloning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Mic className="h-4 w-4 mr-1" />}
+                {cloning ? "Cloning…" : clonedVoiceId ? "Re-record (30s)" : "Record 30s sample"}
+              </Button>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Recording…</span>
+                  <div className="w-40 h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-100" style={{ width: `${cloneProgress}%` }} />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground tabular-nums">{Math.round(cloneProgress * 0.3)}s / 30s</span>
+                </div>
+                <Button onClick={stopVoiceCloneRecording} size="sm" variant="outline" className="rounded-lg border-hairline-strong">
+                  Stop early
+                </Button>
+              </>
+            )}
+            {clonedVoiceId && !cloneRecording && !cloning && (
+              <>
+                <Button onClick={previewClonedVoice} variant="outline" size="sm" className="rounded-lg border-hairline-strong">
+                  <Volume2 className="h-4 w-4 mr-1" /> Preview my voice
+                </Button>
+                <Button onClick={removeClonedVoice} variant="ghost" size="sm" className="rounded-lg text-xs text-muted-foreground hover:text-destructive">
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="rounded-lg border border-hairline bg-background/40 p-3 space-y-2">
             <div className="flex items-center justify-between">
