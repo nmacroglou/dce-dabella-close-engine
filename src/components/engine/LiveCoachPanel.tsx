@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Mic, MicOff, Loader2, Volume2, VolumeX, Sparkles, AlertCircle, Headphones, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, Loader2, Volume2, VolumeX, Sparkles, AlertCircle, Headphones, CheckCircle2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,6 +47,13 @@ export default function LiveCoachPanel({ state }: Props) {
   const [summarizing, setSummarizing] = useState(false);
   const [lastSummary, setLastSummary] = useState<string | null>(null);
 
+  // Mic devices + meter
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
+  const [meterActive, setMeterActive] = useState(false);
+  const [level, setLevel] = useState(0); // 0..100
+  const [peak, setPeak] = useState(0);
+
   // Mic test states
   const [micTestRecording, setMicTestRecording] = useState(false);
   const [micTestProgress, setMicTestProgress] = useState(0);
@@ -54,13 +68,46 @@ export default function LiveCoachPanel({ state }: Props) {
   const micTestTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
+  // Meter refs
+  const meterStreamRef = useRef<MediaStream | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const peakRef = useRef(0);
+  const peakDecayRef = useRef<number>(0);
+
+  const loadDevices = useCallback(async () => {
+    try {
+      const list = await navigator.mediaDevices.enumerateDevices();
+      const mics = list.filter((d) => d.kind === "audioinput");
+      setDevices(mics);
+      setSelectedDeviceId((prev) => {
+        if (prev && mics.some((m) => m.deviceId === prev)) return prev;
+        return mics[0]?.deviceId ?? "";
+      });
+    } catch (e) {
+      console.error("enumerateDevices failed", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDevices();
+    const handler = () => loadDevices();
+    navigator.mediaDevices?.addEventListener?.("devicechange", handler);
+    return () => {
+      navigator.mediaDevices?.removeEventListener?.("devicechange", handler);
+    };
+  }, [loadDevices]);
+
   useEffect(() => {
     return () => {
       stopAll();
+      stopMeter();
       if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
       if (audioPlayerRef.current) { audioPlayerRef.current.pause(); audioPlayerRef.current = null; }
       if (micTestAudioUrl) URL.revokeObjectURL(micTestAudioUrl);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function speak(text: string) {
@@ -84,6 +131,91 @@ export default function LiveCoachPanel({ state }: Props) {
     mediaRef.current = null;
   }
 
+  function stopMeter() {
+    if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+    try { analyserRef.current?.disconnect(); } catch { /* ignore */ }
+    analyserRef.current = null;
+    try { audioCtxRef.current?.close(); } catch { /* ignore */ }
+    audioCtxRef.current = null;
+    meterStreamRef.current?.getTracks().forEach((t) => t.stop());
+    meterStreamRef.current = null;
+    setMeterActive(false);
+    setLevel(0);
+    setPeak(0);
+    peakRef.current = 0;
+  }
+
+  async function startMeter() {
+    if (meterActive) return;
+    try {
+      const constraints: MediaStreamConstraints = {
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      meterStreamRef.current = stream;
+
+      // Refresh labels now that we have permission
+      loadDevices();
+
+      const Ctx = (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext);
+      const ctx = new Ctx();
+      audioCtxRef.current = ctx;
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 1024;
+      src.connect(analyser);
+      analyserRef.current = analyser;
+
+      const data = new Uint8Array(analyser.fftSize);
+      const tick = () => {
+        if (!analyserRef.current) return;
+        analyserRef.current.getByteTimeDomainData(data);
+        // RMS for stable level
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms = Math.sqrt(sum / data.length);
+        // Scale: rms ~0..0.5 typical speech -> 0..100
+        const lvl = Math.min(100, Math.round(rms * 220));
+        setLevel(lvl);
+        const now = performance.now();
+        if (lvl > peakRef.current) {
+          peakRef.current = lvl;
+          peakDecayRef.current = now;
+          setPeak(lvl);
+        } else if (now - peakDecayRef.current > 700) {
+          peakRef.current = Math.max(0, peakRef.current - 2);
+          setPeak(peakRef.current);
+        }
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      setMeterActive(true);
+      tick();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Mic blocked";
+      toast.error("Could not start meter: " + msg);
+      stopMeter();
+    }
+  }
+
+  // When device changes while meter is on, restart it on the new device
+  useEffect(() => {
+    if (!meterActive) return;
+    stopMeter();
+    // small delay to allow cleanup
+    const id = setTimeout(() => { startMeter(); }, 50);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDeviceId]);
+
   // Mic test — record 3 seconds then play it back
   async function testMic() {
     if (micTestRecording) return;
@@ -92,7 +224,10 @@ export default function LiveCoachPanel({ state }: Props) {
     setMicTestProgress(0);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+        },
       });
 
       const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
@@ -155,7 +290,6 @@ export default function LiveCoachPanel({ state }: Props) {
     setBusy(true);
     try {
       const buf = await blob.arrayBuffer();
-      // base64 encode
       let binary = "";
       const bytes = new Uint8Array(buf);
       const CHUNK = 0x8000;
@@ -211,9 +345,14 @@ export default function LiveCoachPanel({ state }: Props) {
 
   async function start() {
     if (!user) { toast.error("Sign in first"); return; }
+    // Free up the meter stream so the recorder gets fresh exclusive access on some devices
+    stopMeter();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+          echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+        },
       });
       streamRef.current = stream;
 
@@ -223,7 +362,6 @@ export default function LiveCoachPanel({ state }: Props) {
         ? "audio/mp4"
         : "audio/webm";
 
-      // Create a fresh recorder per chunk for clean self-contained audio blobs.
       const tick = async () => {
         if (!streamRef.current) return;
         const rec = new MediaRecorder(streamRef.current, { mimeType: mime });
@@ -238,7 +376,6 @@ export default function LiveCoachPanel({ state }: Props) {
         mediaRef.current = rec;
       };
 
-      // Create coaching session
       const { data: sess, error: sessErr } = await supabase
         .from("coaching_sessions")
         .insert({ rep_id: user.id, deal_id: activeDealId, transcript: "" })
@@ -301,6 +438,13 @@ export default function LiveCoachPanel({ state }: Props) {
     : u === "med" ? "border-amber-500/50 bg-amber-500/10"
     : "border-primary/40 bg-primary/5";
 
+  // Color the meter green/amber/red based on level
+  const meterColor =
+    level > 80 ? "bg-red-500"
+    : level > 55 ? "bg-amber-500"
+    : level > 8 ? "bg-green-500"
+    : "bg-muted-foreground/40";
+
   return (
     <div className="card-premium p-6 space-y-5">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -340,7 +484,7 @@ export default function LiveCoachPanel({ state }: Props) {
 
       {/* Mic check card */}
       {!recording && (
-        <div className="rounded-xl border border-hairline bg-muted/30 p-4 space-y-3">
+        <div className="rounded-xl border border-hairline bg-muted/30 p-4 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
@@ -348,10 +492,118 @@ export default function LiveCoachPanel({ state }: Props) {
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-foreground">Mic check</h4>
-                <p className="text-xs text-muted-foreground">Record 3 seconds and hear it back to verify your mic / AirPods.</p>
+                <p className="text-xs text-muted-foreground">Pick your input, watch the meter, then record a 3-second clip.</p>
               </div>
             </div>
+            <Button
+              onClick={loadDevices}
+              variant="ghost"
+              size="sm"
+              className="rounded-lg text-xs"
+              title="Refresh device list"
+            >
+              <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+            </Button>
+          </div>
+
+          {/* Device picker */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center">
+            <div>
+              <label className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1 block">
+                Microphone
+              </label>
+              <Select
+                value={selectedDeviceId}
+                onValueChange={setSelectedDeviceId}
+              >
+                <SelectTrigger className="rounded-lg">
+                  <SelectValue placeholder={devices.length ? "Choose a microphone" : "Grant mic access to see devices"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {devices.length === 0 && (
+                    <SelectItem value="__none" disabled>No mics found</SelectItem>
+                  )}
+                  {devices.map((d, i) => (
+                    <SelectItem key={d.deviceId || `dev-${i}`} value={d.deviceId || `dev-${i}`}>
+                      {d.label || `Microphone ${i + 1}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex md:justify-end">
+              {!meterActive ? (
+                <Button
+                  onClick={startMeter}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-lg border-hairline-strong"
+                >
+                  <Mic className="h-4 w-4 mr-1" /> Start meter
+                </Button>
+              ) : (
+                <Button
+                  onClick={stopMeter}
+                  size="sm"
+                  variant="outline"
+                  className="rounded-lg border-hairline-strong"
+                >
+                  <MicOff className="h-4 w-4 mr-1" /> Stop meter
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Live level meter */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Input level</span>
+              <span className="text-[11px] text-muted-foreground">
+                {meterActive ? (level < 5 ? "Silent — try speaking" : level > 80 ? "Loud" : "Picking you up") : "Meter off"}
+              </span>
+            </div>
+            <div className="relative h-3 rounded-full bg-muted overflow-hidden">
+              <div
+                className={`h-full ${meterColor} transition-[width] duration-75`}
+                style={{ width: `${level}%` }}
+              />
+              {/* Peak hold marker */}
+              {meterActive && peak > 0 && (
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-foreground/80"
+                  style={{ left: `calc(${peak}% - 1px)` }}
+                />
+              )}
+              {/* Tick marks */}
+              <div className="absolute inset-0 flex justify-between px-[2px] pointer-events-none">
+                {[0, 25, 50, 75, 100].map((t) => (
+                  <div key={t} className="w-px h-full bg-foreground/10" />
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+              <span>0</span><span>quiet</span><span>good</span><span>hot</span><span>peak</span>
+            </div>
+          </div>
+
+          {/* Record + playback */}
+          <div className="flex items-center justify-between flex-wrap gap-3 pt-1">
             <div className="flex items-center gap-2">
+              {!micTestRecording ? (
+                <Button onClick={testMic} size="sm" className="rounded-lg gradient-brand text-primary-foreground pressable">
+                  <Mic className="h-4 w-4 mr-1" /> Record 3s test
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Recording…</span>
+                  <div className="w-32 h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-100"
+                      style={{ width: `${micTestProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
               {micTestAudioUrl && !micTestRecording && (
                 <Button
                   onClick={playTestAudio}
@@ -364,28 +616,13 @@ export default function LiveCoachPanel({ state }: Props) {
                   Play back
                 </Button>
               )}
-              {!micTestRecording ? (
-                <Button onClick={testMic} size="sm" className="rounded-lg gradient-brand text-primary-foreground pressable">
-                  <Mic className="h-4 w-4 mr-1" /> Test mic
-                </Button>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Recording…</span>
-                  <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all duration-100"
-                      style={{ width: `${micTestProgress}%` }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
+            {micTestAudioUrl && !micTestRecording && (
+              <div className="flex items-center gap-2 text-xs text-green-500">
+                <CheckCircle2 className="h-4 w-4" /> Mic is working — you heard the playback.
+              </div>
+            )}
           </div>
-          {micTestAudioUrl && !micTestRecording && (
-            <div className="flex items-center gap-2 text-xs text-green-500">
-              <CheckCircle2 className="h-4 w-4" /> Mic is working — you heard the playback.
-            </div>
-          )}
         </div>
       )}
 
