@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      coaching_sessions: {
+        Row: {
+          created_at: string
+          deal_id: string | null
+          detected_objections: Json | null
+          ended_at: string | null
+          id: string
+          next_steps: Json | null
+          rep_id: string
+          started_at: string
+          summary: string | null
+          transcript: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id?: string | null
+          detected_objections?: Json | null
+          ended_at?: string | null
+          id?: string
+          next_steps?: Json | null
+          rep_id: string
+          started_at?: string
+          summary?: string | null
+          transcript?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string | null
+          detected_objections?: Json | null
+          ended_at?: string | null
+          id?: string
+          next_steps?: Json | null
+          rep_id?: string
+          started_at?: string
+          summary?: string | null
+          transcript?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coaching_sessions_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_grids: {
         Row: {
           created_at: string
