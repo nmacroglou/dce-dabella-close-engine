@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Mic, MicOff, Loader2, Volume2, VolumeX, Sparkles, AlertCircle } from "lucide-react";
+import { Mic, MicOff, Loader2, Volume2, VolumeX, Sparkles, AlertCircle, Headphones, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -40,13 +40,28 @@ export default function LiveCoachPanel({ state }: Props) {
   const [summarizing, setSummarizing] = useState(false);
   const [lastSummary, setLastSummary] = useState<string | null>(null);
 
+  // Mic test states
+  const [micTestRecording, setMicTestRecording] = useState(false);
+  const [micTestProgress, setMicTestProgress] = useState(0);
+  const [micTestAudioUrl, setMicTestAudioUrl] = useState<string | null>(null);
+  const [micTestPlaying, setMicTestPlaying] = useState(false);
+
   const mediaRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const transcriptRef = useRef("");
   const taggedObjectionsRef = useRef<Set<string>>(new Set());
+  const micTestTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => () => stopAll(), []); // cleanup
+  useEffect(() => {
+    return () => {
+      stopAll();
+      if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
+      if (audioPlayerRef.current) { audioPlayerRef.current.pause(); audioPlayerRef.current = null; }
+      if (micTestAudioUrl) URL.revokeObjectURL(micTestAudioUrl);
+    };
+  }, []);
 
   function speak(text: string) {
     if (!ttsOn || !("speechSynthesis" in window)) return;
@@ -67,6 +82,72 @@ export default function LiveCoachPanel({ state }: Props) {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     mediaRef.current = null;
+  }
+
+  // Mic test — record 3 seconds then play it back
+  async function testMic() {
+    if (micTestRecording) return;
+    setMicTestAudioUrl(null);
+    setMicTestRecording(true);
+    setMicTestProgress(0);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/mp4")
+        ? "audio/mp4"
+        : "audio/webm";
+
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      const parts: Blob[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) parts.push(e.data); };
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(parts, { type: mime });
+        const url = URL.createObjectURL(blob);
+        setMicTestAudioUrl(url);
+        setMicTestRecording(false);
+        setMicTestProgress(100);
+      };
+
+      rec.start();
+      let elapsed = 0;
+      const TOTAL = 3000;
+      micTestTimerRef.current = setInterval(() => {
+        elapsed += 100;
+        setMicTestProgress(Math.min((elapsed / TOTAL) * 100, 100));
+        if (elapsed >= TOTAL) {
+          if (micTestTimerRef.current) clearInterval(micTestTimerRef.current);
+          micTestTimerRef.current = null;
+          try { rec.stop(); } catch { /* ignore */ }
+        }
+      }, 100);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Mic blocked";
+      toast.error("Mic check failed: " + msg);
+      setMicTestRecording(false);
+      setMicTestProgress(0);
+    }
+  }
+
+  function playTestAudio() {
+    if (!micTestAudioUrl) return;
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current = null;
+    }
+    const audio = new Audio(micTestAudioUrl);
+    audioPlayerRef.current = audio;
+    setMicTestPlaying(true);
+    audio.onended = () => setMicTestPlaying(false);
+    audio.onerror = () => {
+      setMicTestPlaying(false);
+      toast.error("Could not play back test audio");
+    };
+    audio.play();
   }
 
   const sendChunk = useCallback(async (blob: Blob, mimeType: string) => {
@@ -254,6 +335,57 @@ export default function LiveCoachPanel({ state }: Props) {
       {!activeDealId && (
         <div className="flex items-center gap-2 text-xs text-amber-500 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
           <AlertCircle className="h-4 w-4" /> No active deal selected — session will save without a deal link.
+        </div>
+      )}
+
+      {/* Mic check card */}
+      {!recording && (
+        <div className="rounded-xl border border-hairline bg-muted/30 p-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Headphones className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-foreground">Mic check</h4>
+                <p className="text-xs text-muted-foreground">Record 3 seconds and hear it back to verify your mic / AirPods.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {micTestAudioUrl && !micTestRecording && (
+                <Button
+                  onClick={playTestAudio}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-lg border-hairline-strong"
+                  disabled={micTestPlaying}
+                >
+                  {micTestPlaying ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Volume2 className="h-4 w-4 mr-1" />}
+                  Play back
+                </Button>
+              )}
+              {!micTestRecording ? (
+                <Button onClick={testMic} size="sm" className="rounded-lg gradient-brand text-primary-foreground pressable">
+                  <Mic className="h-4 w-4 mr-1" /> Test mic
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Recording…</span>
+                  <div className="w-24 h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary transition-all duration-100"
+                      style={{ width: `${micTestProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          {micTestAudioUrl && !micTestRecording && (
+            <div className="flex items-center gap-2 text-xs text-green-500">
+              <CheckCircle2 className="h-4 w-4" /> Mic is working — you heard the playback.
+            </div>
+          )}
         </div>
       )}
 
