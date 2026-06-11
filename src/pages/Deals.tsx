@@ -22,6 +22,7 @@ import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import DealTagsEditor from "@/components/deals/DealTagsEditor";
+import DealContactEditor from "@/components/deals/DealContactEditor";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
 import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
@@ -44,6 +45,8 @@ export default function DealsPage() {
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPhone, setNewPhone] = useState("");
   const [newLeadSource, setNewLeadSource] = useState<LeadSource | "unset">("unset");
   const [stageFilter, setStageFilter] = useState<DealStage | "all">("all");
   const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
@@ -83,12 +86,16 @@ export default function DealsPage() {
     const deal = await create.mutateAsync({
       homeowner1: newName.trim(),
       address: newAddress.trim(),
+      homeowner_email: newEmail.trim() || null,
+      homeowner_phone: newPhone.trim() || null,
       lead_source: newLeadSource === "unset" ? null : newLeadSource,
     });
     setActiveDealId(deal.id);
     setOpen(false);
     setNewName("");
     setNewAddress("");
+    setNewEmail("");
+    setNewPhone("");
     setNewLeadSource("unset");
     toast.success("Deal created — let's go close it");
     navigate("/");
@@ -167,6 +174,16 @@ export default function DealsPage() {
                     <div className="space-y-1.5">
                       <Label>Address (optional)</Label>
                       <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label>Email</Label>
+                        <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="homeowner@email.com" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Phone</Label>
+                        <Input type="tel" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="(555) 555-5555" />
+                      </div>
                     </div>
                     <div className="space-y-1.5">
                       <Label>Lead source</Label>
@@ -375,6 +392,10 @@ export default function DealsPage() {
                         );
                       })()
                     ) : null}
+                  </div>
+
+                  <div className="mb-3">
+                    <DealContactEditor deal={deal} />
                   </div>
 
                   <div className="mb-3">

@@ -36,6 +36,8 @@ export interface Deal {
   rep_id: string;
   homeowner1: string | null;
   homeowner2: string | null;
+  homeowner_email: string | null;
+  homeowner_phone: string | null;
   address: string | null;
   notes: string | null;
   stage: DealStage;

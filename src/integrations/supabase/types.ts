@@ -369,6 +369,8 @@ export type Database = {
           commission_sheet: Json
           created_at: string
           engine_state: Json
+          homeowner_email: string | null
+          homeowner_phone: string | null
           homeowner1: string | null
           homeowner2: string | null
           id: string
@@ -395,6 +397,8 @@ export type Database = {
           commission_sheet?: Json
           created_at?: string
           engine_state?: Json
+          homeowner_email?: string | null
+          homeowner_phone?: string | null
           homeowner1?: string | null
           homeowner2?: string | null
           id?: string
@@ -421,6 +425,8 @@ export type Database = {
           commission_sheet?: Json
           created_at?: string
           engine_state?: Json
+          homeowner_email?: string | null
+          homeowner_phone?: string | null
           homeowner1?: string | null
           homeowner2?: string | null
           id?: string
