@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign, ClipboardCheck } from "lucide-react";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign, ClipboardCheck, Sparkles } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import ActiveDealBanner from "@/components/ActiveDealBanner";
 
@@ -13,11 +13,13 @@ const CoachModeTab = lazy(() => import("@/components/engine/CoachModeTab"));
 const PlaybookTab = lazy(() => import("@/components/engine/PlaybookTab"));
 const CommissionTab = lazy(() => import("@/components/engine/CommissionTab"));
 const PostCloseTab = lazy(() => import("@/components/engine/PostCloseTab"));
+const VisionTab = lazy(() => import("@/components/engine/VisionTab"));
 
 const TABS = [
   { value: "playbook", label: "Playbook", icon: BookOpen },
   { value: "calculator", label: "Calculator", icon: Calculator },
   { value: "presentation", label: "Presentation", icon: Presentation },
+  { value: "vision", label: "Vision", icon: Sparkles },
   { value: "objections", label: "Objections", icon: ShieldAlert },
   { value: "closing", label: "Closing Stack", icon: Layers },
   { value: "postclose", label: "Post-Close", icon: ClipboardCheck },
@@ -44,7 +46,7 @@ export default function Index() {
         <ActiveDealBanner />
 
         <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
-          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card/60 backdrop-blur-xl border border-border/60 rounded-2xl mb-6 grid grid-cols-8 gap-1 shadow-sm">
+          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card/60 backdrop-blur-xl border border-border/60 rounded-2xl mb-6 grid grid-cols-9 gap-1 shadow-sm">
             {TABS.map(({ value, label, icon: Icon }) => (
               <TabsTrigger
                 key={value}
@@ -61,6 +63,7 @@ export default function Index() {
             <TabsContent value="playbook"><PlaybookTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} reset={reset} /></TabsContent>
             <TabsContent value="presentation"><PresentationTab state={state} computed={computed} update={update} /></TabsContent>
+            <TabsContent value="vision"><VisionTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="objections"><ObjectionsTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="closing"><ClosingStackTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="postclose"><PostCloseTab state={state} computed={computed} update={update} /></TabsContent>
