@@ -63,6 +63,7 @@ export default function Index() {
             <TabsContent value="playbook"><PlaybookTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} reset={reset} /></TabsContent>
             <TabsContent value="presentation"><PresentationTab state={state} computed={computed} update={update} /></TabsContent>
+            <TabsContent value="vision"><VisionTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="objections"><ObjectionsTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="closing"><ClosingStackTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="postclose"><PostCloseTab state={state} computed={computed} update={update} /></TabsContent>
