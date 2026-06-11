@@ -394,6 +394,10 @@ export default function DealsPage() {
                   </div>
 
                   <div className="mb-3">
+                    <DealContactEditor deal={deal} />
+                  </div>
+
+                  <div className="mb-3">
                     <DealTagsEditor deal={deal} />
                   </div>
 
