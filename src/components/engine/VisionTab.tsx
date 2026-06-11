@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import {
   Sparkles, Home, ShieldCheck, Heart, TrendingUp, Sun, CloudRain,
   Users, Award, ChevronLeft, ChevronRight, Play, RotateCcw, Volume2,
