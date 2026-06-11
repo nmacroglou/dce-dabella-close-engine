@@ -155,13 +155,13 @@ export default function AppHeader() {
         </Link>
 
         {/* Center: Primary navigation (desktop / tablet) */}
-        <nav className="hidden md:flex flex-1 items-center justify-center gap-0.5 px-2 overflow-hidden">
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-0 px-1 overflow-hidden">
           {navItems.slice(0, 8).map(({ to, label, icon: Icon, end }) => (
             <NavItem key={to} to={to} label={label} icon={Icon} end={end} />
           ))}
           {isAdmin && (
             <>
-              <span className="hidden lg:inline-block h-4 w-px bg-hairline mx-1" />
+              <span className="hidden xl:inline-block h-4 w-px bg-hairline mx-1" />
               <NavItem
                 to="/admin"
                 label="Admin"
@@ -173,8 +173,8 @@ export default function AppHeader() {
         </nav>
 
         {/* Right: Utility cluster */}
-        <div className="flex items-center gap-2 pl-2 lg:pl-3 lg:border-l lg:border-hairline shrink-0">
-          <div className="hidden lg:flex items-center gap-2">
+        <div className="flex items-center gap-1.5 pl-2 xl:pl-3 xl:border-l xl:border-hairline shrink-0">
+          <div className="hidden xl:flex items-center gap-2">
             <OwnerScopeFilter />
             <PublishStatusBadge />
           </div>
