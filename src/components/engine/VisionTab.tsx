@@ -410,30 +410,23 @@ export default function VisionTab({ state }: EngineTabProps) {
           </div>
           <ChevronRight className={cn("h-4 w-4 transition-transform", showTalkTrack && "rotate-90")} />
         </button>
-        <AnimatePresence initial={false}>
-          {showTalkTrack && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="px-5 pb-5 pt-1 space-y-2.5 border-t border-border/40">
-                {M.talkTrack(ctx).map((line, i) => (
-                  <div key={i} className="flex gap-3">
-                    <span className="text-[11px] font-mono text-muted-foreground/60 mt-1 shrink-0 w-5">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <p className="text-[15px] leading-relaxed text-foreground/90 italic">
-                      "{line}"
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {showTalkTrack && (
+          <div className="overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="px-5 pb-5 pt-1 space-y-2.5 border-t border-border/40">
+              {M.talkTrack(ctx).map((line, i) => (
+                <div key={i} className="flex gap-3">
+                  <span className="text-[11px] font-mono text-muted-foreground/60 mt-1 shrink-0 w-5">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="text-[15px] leading-relaxed text-foreground/90 italic">
+                    "{line}"
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </Card>
 
       {/* Nav */}
