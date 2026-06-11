@@ -358,51 +358,44 @@ export default function VisionTab({ state }: EngineTabProps) {
       </div>
 
       {/* Cinematic moment card */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={M.id}
-          initial={{ opacity: 0, y: 20, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -10, scale: 0.98 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <Card className="relative overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl">
-            <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90", M.gradient)} />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/50 to-transparent" />
+      <div key={M.id} className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+        <Card className="relative overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl">
+          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90", M.gradient)} />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/50 to-transparent" />
 
-            {/* Decorative iconography */}
-            <div className="absolute -right-10 -top-10 opacity-10">
-              <Icon className="h-64 w-64" strokeWidth={1} />
+          {/* Decorative iconography */}
+          <div className="absolute -right-10 -top-10 opacity-10">
+            <Icon className="h-64 w-64" strokeWidth={1} />
+          </div>
+
+          <div className="relative p-6 sm:p-10 min-h-[420px] flex flex-col justify-end">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-background/80 backdrop-blur ring-1 ring-border/60 mb-5">
+              <Icon className="h-7 w-7 text-primary" />
             </div>
 
-            <div className="relative p-6 sm:p-10 min-h-[420px] flex flex-col justify-end">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-background/80 backdrop-blur ring-1 ring-border/60 mb-5">
-                <Icon className="h-7 w-7 text-primary" />
-              </div>
+            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight leading-tight max-w-4xl">
+              {M.headline(ctx)}
+            </h2>
 
-              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight leading-tight max-w-4xl">
-                {M.headline(ctx)}
-              </h2>
+            <p className="mt-4 text-base sm:text-xl text-foreground/85 max-w-3xl leading-relaxed">
+              {M.body(ctx)}
+            </p>
 
-              <p className="mt-4 text-base sm:text-xl text-foreground/85 max-w-3xl leading-relaxed">
-                {M.body(ctx)}
-              </p>
-
-              {stat && (
-                <div className="mt-6 inline-flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 self-start">
-                  <DollarSign className="h-5 w-5 text-primary" />
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                      {stat.label}
-                    </div>
-                    <div className="text-2xl font-bold tracking-tight">{stat.value}</div>
+            {stat && (
+              <div className="mt-6 inline-flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 self-start">
+                <DollarSign className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                    {stat.label}
                   </div>
+                  <div className="text-2xl font-bold tracking-tight">{stat.value}</div>
                 </div>
-              )}
-            </div>
-          </Card>
-        </motion.div>
-      </AnimatePresence>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
+
 
       {/* Talk track (rep-facing) */}
       <Card className="border-border/60 bg-card/40 backdrop-blur-xl overflow-hidden">
