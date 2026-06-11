@@ -129,6 +129,7 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
           homeowner: [deal.homeowner1, deal.homeowner2].filter(Boolean).join(" & "),
           rep_name: repName,
           rep_email: user?.email,
+          recipient_email: deal.homeowner_email,
           address: deal.address,
           products: deal.products,
           notes: deal.notes,
