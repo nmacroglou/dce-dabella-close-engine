@@ -174,6 +174,16 @@ export default function DealsPage() {
                       <Label>Address (optional)</Label>
                       <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St" />
                     </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label>Email</Label>
+                        <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="homeowner@email.com" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Phone</Label>
+                        <Input type="tel" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="(555) 555-5555" />
+                      </div>
+                    </div>
                     <div className="space-y-1.5">
                       <Label>Lead source</Label>
                       <Select value={newLeadSource} onValueChange={(v) => setNewLeadSource(v as LeadSource | "unset")}>
