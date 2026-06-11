@@ -22,6 +22,7 @@ import { fmt } from "@/lib/format";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import DealTagsEditor from "@/components/deals/DealTagsEditor";
+import DealContactEditor from "@/components/deals/DealContactEditor";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
 import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
