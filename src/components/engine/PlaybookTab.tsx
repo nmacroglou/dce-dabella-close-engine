@@ -9,6 +9,7 @@ import ReferencePanel from "./playbook/ReferencePanel";
 import PaymentFactorsPanel from "./playbook/PaymentFactorsPanel";
 import CollapsibleCard from "./shared/CollapsibleCard";
 import BattleCardPanel from "./playbook/BattleCardPanel";
+import PillarsBattleCardPanel from "./playbook/PillarsBattleCardPanel";
 
 const TAB_LABELS: Record<string, string> = {
   calculator: "Calculator",
@@ -113,7 +114,8 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
 
         {/* Sidebar */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Battle Card */}
+          {/* Battle Cards */}
+          <PillarsBattleCardPanel />
           <BattleCardPanel />
 
           {/* Tips */}
