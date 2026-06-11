@@ -1,7 +1,10 @@
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck, ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen } from "lucide-react";
+import {
+  Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck,
+  ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
@@ -20,7 +23,7 @@ import PublishStatusBadge from "@/components/PublishStatusBadge";
 import OwnerScopeFilter from "@/components/OwnerScopeFilter";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
-const NAV = [
+const PRIMARY_NAV = [
   { to: "/", label: "Engine", icon: Wrench, end: true },
   { to: "/deals", label: "Deals", icon: Briefcase, end: false },
   { to: "/pipeline", label: "Pipeline", icon: GitBranch, end: false },
@@ -46,19 +49,16 @@ function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
       end={end}
       {...prefetch}
       className={({ isActive }) =>
-        `relative px-2.5 lg:px-3 py-1.5 rounded-lg text-xs lg:text-sm font-semibold transition-all flex items-center gap-1.5 pressable ${
+        `group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all pressable ${
           isActive
-            ? "bg-card text-foreground shadow-sm ring-1 ring-hairline-strong"
-            : "text-muted-foreground hover:text-foreground hover:bg-card/70"
+            ? "bg-primary/10 text-primary font-semibold"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
         }`
       }
     >
       {({ isActive }) => (
         <>
-          {isActive && (
-            <span aria-hidden className="absolute inset-x-3 -bottom-px h-0.5 rounded-full gradient-brand opacity-80" />
-          )}
-          <Icon className={`h-4 w-4 transition-colors ${isActive ? "text-primary" : ""}`} />
+          <Icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-primary" : ""}`} />
           <span className="hidden lg:inline">{label}</span>
         </>
       )}
@@ -96,7 +96,7 @@ export default function AppHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = [
-    ...NAV,
+    ...PRIMARY_NAV,
     ...(isAdmin ? [{ to: "/admin", label: "Admin", icon: ShieldCheck, end: false } as const] : []),
   ];
 
@@ -113,41 +113,71 @@ export default function AppHeader() {
     .slice(0, 2)
     .toUpperCase();
 
+  const homeownerLabel = activeDeal
+    ? `${activeDeal.homeowner1 || "Untitled"}${activeDeal.homeowner2 ? ` & ${activeDeal.homeowner2}` : ""}`
+    : null;
+
   return (
-    <header className="sticky top-0 z-40 glass-strong border-b border-hairline">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2.5 flex items-center justify-between gap-3">
-        <Link to="/" className="flex items-center gap-2 sm:gap-3 min-w-0 group">
-          <div className="relative flex-shrink-0">
-            <div className="absolute -inset-1 rounded-2xl gradient-brand opacity-0 group-hover:opacity-40 blur-lg transition-opacity duration-300" />
-            <img src={dabellaLogo} alt="DaBella" className="relative h-7 sm:h-8 w-auto" />
+    <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-3 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
+      <div className="max-w-7xl mx-auto flex items-center gap-3 h-14 px-3 rounded-2xl border border-hairline bg-card/80 backdrop-blur-xl shadow-[var(--shadow-md)]">
+        {/* Left: Brand + active-deal status */}
+        <Link to="/" className="flex items-center gap-3 pr-3 lg:pr-4 border-r border-hairline shrink-0 min-w-0 group">
+          <div className="relative shrink-0">
+            <div className="absolute -inset-1 rounded-xl gradient-brand opacity-0 group-hover:opacity-40 blur-md transition-opacity duration-300" />
+            <img src={dabellaLogo} alt="DaBella" className="relative h-7 w-auto" />
           </div>
-          <div className="h-8 w-px bg-hairline hidden sm:block" />
-          <div className="hidden sm:block min-w-0">
-            <h1 className="text-base font-display font-extrabold text-foreground tracking-tight leading-none truncate">
+          <div className="hidden sm:flex flex-col leading-none min-w-0">
+            <span className="text-[14px] font-display font-extrabold text-foreground tracking-tight whitespace-nowrap truncate">
               Close <span className="gradient-text">Engine</span>
-            </h1>
-            {activeDeal && (
-              <p className="text-[11px] text-primary font-semibold mt-1 truncate flex items-center gap-1.5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_hsl(var(--accent))]" />
-                <span className="truncate">
-                  {activeDeal.homeowner1 || "Untitled"}
-                  {activeDeal.homeowner2 ? ` & ${activeDeal.homeowner2}` : ""}
-                </span>
-              </p>
-            )}
+            </span>
+            <div className="flex items-center gap-1.5 mt-1 min-w-0">
+              {activeDeal ? (
+                <>
+                  <span className="relative flex h-1.5 w-1.5 shrink-0">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+                  </span>
+                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider truncate">
+                    {homeownerLabel}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    No active deal
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </Link>
 
-        {/* Desktop / tablet nav */}
-        <nav className="hidden md:flex items-center gap-1 p-1 rounded-xl bg-muted/50 border border-hairline shadow-[var(--shadow-xs)]">
-          {navItems.map(({ to, label, icon: Icon, end }) => (
+        {/* Center: Primary navigation (desktop / tablet) */}
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-0.5 px-2 overflow-hidden">
+          {navItems.slice(0, 8).map(({ to, label, icon: Icon, end }) => (
             <NavItem key={to} to={to} label={label} icon={Icon} end={end} />
           ))}
+          {isAdmin && (
+            <>
+              <span className="hidden lg:inline-block h-4 w-px bg-hairline mx-1" />
+              <NavItem
+                to="/admin"
+                label="Admin"
+                icon={ShieldCheck}
+                end={false}
+              />
+            </>
+          )}
         </nav>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <OwnerScopeFilter />
-          <PublishStatusBadge />
+        {/* Right: Utility cluster */}
+        <div className="flex items-center gap-2 pl-2 lg:pl-3 lg:border-l lg:border-hairline shrink-0">
+          <div className="hidden lg:flex items-center gap-2">
+            <OwnerScopeFilter />
+            <PublishStatusBadge />
+          </div>
+
           {/* Mobile nav trigger */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
@@ -170,24 +200,25 @@ export default function AppHeader() {
                   <MobileNavItem key={item.to} {...item} onNavigate={() => setMobileOpen(false)} />
                 ))}
               </nav>
+              <div className="mt-6 pt-4 border-t border-hairline space-y-2">
+                <OwnerScopeFilter />
+                <PublishStatusBadge />
+              </div>
             </SheetContent>
           </Sheet>
 
           <button
             onClick={toggle}
-            className="rounded-xl bg-muted/60 border border-hairline p-2 hover:bg-muted hover:border-hairline-strong transition-colors pressable"
+            className="rounded-xl p-2 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors pressable"
             aria-label="Toggle dark mode"
           >
-            {dark ? (
-              <Sun className="h-4 w-4 text-warning" />
-            ) : (
-              <Moon className="h-4 w-4 text-muted-foreground" />
-            )}
+            {dark ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4" />}
           </button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="h-9 w-9 rounded-full text-xs font-bold flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity gradient-brand pressable shadow-[var(--shadow-glow)]"
+                className="h-9 w-9 rounded-full text-xs font-bold flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity gradient-brand pressable shadow-[var(--shadow-glow)] border-2 border-card"
                 aria-label="Account"
               >
                 {initials}
