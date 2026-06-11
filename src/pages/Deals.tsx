@@ -44,6 +44,8 @@ export default function DealsPage() {
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPhone, setNewPhone] = useState("");
   const [newLeadSource, setNewLeadSource] = useState<LeadSource | "unset">("unset");
   const [stageFilter, setStageFilter] = useState<DealStage | "all">("all");
   const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
