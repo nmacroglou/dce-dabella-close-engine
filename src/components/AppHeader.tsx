@@ -48,8 +48,9 @@ function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
       to={to}
       end={end}
       {...prefetch}
+      title={label}
       className={({ isActive }) =>
-        `group flex items-center gap-1.5 px-2 lg:px-2.5 py-1.5 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all pressable ${
+        `group flex items-center gap-1.5 px-2 xl:px-2.5 py-1.5 rounded-lg text-[12px] font-medium whitespace-nowrap transition-all pressable ${
           isActive
             ? "bg-primary/10 text-primary font-semibold"
             : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
@@ -59,7 +60,7 @@ function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
       {({ isActive }) => (
         <>
           <Icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-primary" : ""}`} />
-          <span className="hidden lg:inline">{label}</span>
+          <span className="hidden xl:inline">{label}</span>
         </>
       )}
     </NavLink>
