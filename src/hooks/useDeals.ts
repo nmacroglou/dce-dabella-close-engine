@@ -59,6 +59,8 @@ export function useCreateDeal() {
           rep_id: user.id,
           homeowner1: initial.homeowner1 ?? "",
           homeowner2: initial.homeowner2 ?? "",
+          homeowner_email: initial.homeowner_email ?? null,
+          homeowner_phone: initial.homeowner_phone ?? null,
           address: initial.address ?? "",
           notes: initial.notes ?? "",
           stage: initial.stage ?? "inspecting",
