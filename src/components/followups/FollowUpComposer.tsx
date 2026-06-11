@@ -213,8 +213,9 @@ export default function FollowUpComposer({ dealId, open, onOpenChange, followUpI
       ? `\n\nAttachments:\n${attachments.map((a) => `${a.name}: ${a.url}`).join("\n")}`
       : "";
     const params = new URLSearchParams({ subject, body: `${body}${links}` });
-    return `mailto:?${params.toString()}`;
-  }, [subject, body, attachments]);
+    const to = deal?.homeowner_email ? encodeURIComponent(deal.homeowner_email) : "";
+    return `mailto:${to}?${params.toString()}`;
+  }, [subject, body, attachments, deal?.homeowner_email]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
