@@ -1,0 +1,1 @@
+ALTER TABLE public.deals ADD COLUMN IF NOT EXISTS homeowner_email TEXT; ALTER TABLE public.deals ADD COLUMN IF NOT EXISTS homeowner_phone TEXT;
