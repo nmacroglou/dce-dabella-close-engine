@@ -13,11 +13,13 @@ const CoachModeTab = lazy(() => import("@/components/engine/CoachModeTab"));
 const PlaybookTab = lazy(() => import("@/components/engine/PlaybookTab"));
 const CommissionTab = lazy(() => import("@/components/engine/CommissionTab"));
 const PostCloseTab = lazy(() => import("@/components/engine/PostCloseTab"));
+const VisionTab = lazy(() => import("@/components/engine/VisionTab"));
 
 const TABS = [
   { value: "playbook", label: "Playbook", icon: BookOpen },
   { value: "calculator", label: "Calculator", icon: Calculator },
   { value: "presentation", label: "Presentation", icon: Presentation },
+  { value: "vision", label: "Vision", icon: Sparkles },
   { value: "objections", label: "Objections", icon: ShieldAlert },
   { value: "closing", label: "Closing Stack", icon: Layers },
   { value: "postclose", label: "Post-Close", icon: ClipboardCheck },
