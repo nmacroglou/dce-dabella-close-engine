@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck, ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy } from "lucide-react";
+import { Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck, ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
@@ -206,6 +206,9 @@ export default function AppHeader() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                 <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/manual")}>
+                <BookOpen className="h-4 w-4 mr-2" /> How to use this app
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
