@@ -49,7 +49,7 @@ function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
       end={end}
       {...prefetch}
       className={({ isActive }) =>
-        `group flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all pressable ${
+        `group flex items-center gap-1.5 px-2 lg:px-2.5 py-1.5 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all pressable ${
           isActive
             ? "bg-primary/10 text-primary font-semibold"
             : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
