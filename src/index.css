@@ -174,8 +174,8 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: "cv11", "ss01", "ss03";
+    font-family: 'Epilogue', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "ss01", "ss02";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     background-image: var(--gradient-mesh);
@@ -183,8 +183,9 @@
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-    letter-spacing: -0.018em;
+    font-family: 'Urbanist', 'Epilogue', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 700;
   }
 
   /* Subtle ambient hairline on hr */
