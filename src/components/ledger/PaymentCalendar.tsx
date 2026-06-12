@@ -58,13 +58,37 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
   // Find the payday closest to "today" as a starting anchor for navigation.
   const periodsFromAnchor = Math.round((today.getTime() - anchor.getTime()) / (PERIOD_DAYS * 86400000));
   const [offset, setOffset] = useState(0); // window offset in pay periods
-  const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(viewedRepId));
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<string>("");
 
-  // Reload overrides when the viewed rep changes.
+  const { data: overrideMap = {}, isLoading: overridesLoading } = usePaycheckOverrides(viewedRepId);
+  const upsertOverride = useUpsertPaycheckOverride();
+  const deleteOverride = useDeletePaycheckOverride();
+
+  // One-time, best-effort migration of any legacy per-device localStorage
+  // overrides for the signed-in user into the DB.
   useEffect(() => {
-    setOverrides(loadOverrides(viewedRepId));
+    if (!user?.id || viewedRepId !== user.id) return;
+    const key = `${LEGACY_STORE_KEY_BASE}.${user.id}`;
+    const raw = (() => { try { return localStorage.getItem(key); } catch { return null; } })();
+    if (!raw) return;
+    try {
+      const legacy = JSON.parse(raw) as Record<string, number>;
+      const entries = Object.entries(legacy).filter(([, v]) => Number.isFinite(v) && v > 0);
+      if (!entries.length) { localStorage.removeItem(key); return; }
+      Promise.all(
+        entries.map(([payday_date, amount]) =>
+          upsertOverride.mutateAsync({ payday_date, amount: Number(amount) }).catch(() => null),
+        ),
+      ).then(() => { try { localStorage.removeItem(key); } catch { /* ignore */ } });
+    } catch {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, viewedRepId]);
+
+  // Reset edit state when the viewed rep changes.
+  useEffect(() => {
     setEditing(null);
     setDraft("");
   }, [viewedRepId]);
@@ -108,24 +132,21 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
     return map;
   }, [rows]);
 
-  // No seeded amounts — every payday number comes from the ledger or from
-  // an explicit user-entered override.
-
-  function commitDraft(key: string) {
+  async function commitDraft(key: string) {
     if (!canEdit) { setEditing(null); setDraft(""); return; }
     const n = parseFloat(draft.replace(/[^0-9.\-]/g, ""));
-    const next = { ...overrides };
-    if (!Number.isFinite(n) || n === 0) delete next[key];
-    else next[key] = n;
-    setOverrides(next);
-    saveOverrides(viewedRepId, next);
+    if (!Number.isFinite(n) || n === 0) {
+      if (overrideMap[key]) await deleteOverride.mutateAsync(key).catch(() => null);
+    } else {
+      await upsertOverride.mutateAsync({ payday_date: key, amount: n }).catch(() => null);
+    }
     setEditing(null);
     setDraft("");
   }
 
-  const ytdActual = Object.entries(overrides)
+  const ytdActual = Object.entries(overrideMap)
     .filter(([k]) => k.startsWith(String(today.getFullYear())))
-    .reduce((s, [, v]) => s + v, 0);
+    .reduce((s, [, v]) => s + Number(v.amount || 0), 0);
 
   // Next upcoming payday from today
   const next = paydays.find((p) => p.payday.getTime() >= today.getTime()) ?? paydays[paydays.length - 1];
