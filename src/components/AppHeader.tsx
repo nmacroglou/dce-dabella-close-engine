@@ -18,65 +18,101 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import PublishStatusBadge from "@/components/PublishStatusBadge";
 import OwnerScopeFilter from "@/components/OwnerScopeFilter";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
-const PRIMARY_NAV = [
-  { to: "/", label: "Engine", icon: Wrench, end: true },
-  { to: "/deals", label: "Deals", icon: Briefcase, end: false },
-  { to: "/pipeline", label: "Pipeline", icon: GitBranch, end: false },
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: false },
-  { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
-  { to: "/incidents", label: "Incidents", icon: ShieldAlert, end: false },
-  { to: "/energy-lens", label: "Energy Lens", icon: SunIcon, end: false },
-  { to: "/manage-up", label: "Manage Up", icon: Trophy, end: false },
-] as const;
-
-type NavItemProps = {
+type NavEntry = {
   to: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
   end: boolean;
 };
 
-function NavItem({ to, label, icon: Icon, end }: NavItemProps) {
+const SELL_CLUSTER: NavEntry[] = [
+  { to: "/", label: "Engine", icon: Wrench, end: true },
+  { to: "/deals", label: "Deals", icon: Briefcase, end: false },
+  { to: "/pipeline", label: "Pipeline", icon: GitBranch, end: false },
+];
+
+const INSIGHTS_CLUSTER: NavEntry[] = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: false },
+  { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
+  { to: "/energy-lens", label: "Energy", icon: SunIcon, end: false },
+];
+
+const OPS_CLUSTER: NavEntry[] = [
+  { to: "/incidents", label: "Incidents", icon: ShieldAlert, end: false },
+  { to: "/manage-up", label: "Manage Up", icon: Trophy, end: false },
+];
+
+function NavItem({ to, label, icon: Icon, end }: NavEntry) {
   const prefetch = usePrefetchOnHover(to);
   return (
-    <NavLink
-      to={to}
-      end={end}
-      {...prefetch}
-      title={label}
-      className={({ isActive }) =>
-        `group flex items-center gap-1.5 px-2 xl:px-2.5 py-1.5 rounded-lg text-[12px] font-medium whitespace-nowrap transition-all pressable ${
-          isActive
-            ? "bg-primary/10 text-primary font-semibold"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-        }`
-      }
-    >
-      {({ isActive }) => (
-        <>
-          <Icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-primary" : ""}`} />
-          <span className="hidden xl:inline">{label}</span>
-        </>
-      )}
-    </NavLink>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <NavLink
+          to={to}
+          end={end}
+          {...prefetch}
+          aria-label={label}
+          className={({ isActive }) =>
+            `group relative flex items-center gap-1.5 px-2 h-7 rounded-md text-[11.5px] font-semibold whitespace-nowrap transition-all pressable ${
+              isActive
+                ? "bg-accent/15 text-accent shadow-[0_0_0_1px_hsl(var(--accent)/0.25),0_0_12px_-2px_hsl(var(--accent)/0.45)]"
+                : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+            }`
+          }
+        >
+          {({ isActive }) => (
+            <>
+              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-accent" : ""}`} />
+              <span className="hidden 2xl:inline tracking-tight">{label}</span>
+              {isActive && (
+                <span className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 h-[2px] w-5 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent))]" />
+              )}
+            </>
+          )}
+        </NavLink>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="text-[11px] font-semibold">
+        {label}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
-function MobileNavItem({ to, label, icon: Icon, end, onNavigate }: NavItemProps & { onNavigate: () => void }) {
+function ClusterDivider() {
+  return <span className="h-4 w-px bg-hairline/70 mx-1.5" aria-hidden />;
+}
+
+function NavCluster({ items, label }: { items: NavEntry[]; label: string }) {
+  return (
+    <div className="flex items-center gap-0.5" aria-label={label}>
+      {items.map((item) => (
+        <NavItem key={item.to} {...item} />
+      ))}
+    </div>
+  );
+}
+
+function MobileNavItem({ to, label, icon: Icon, end, onNavigate }: NavEntry & { onNavigate: () => void }) {
   return (
     <NavLink
       to={to}
       end={end}
       onClick={onNavigate}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all pressable ${
+        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all pressable ${
           isActive
-            ? "bg-primary/10 text-primary border border-primary/20"
+            ? "bg-accent/15 text-accent border border-accent/30"
             : "text-foreground hover:bg-muted border border-transparent"
         }`
       }
@@ -84,6 +120,14 @@ function MobileNavItem({ to, label, icon: Icon, end, onNavigate }: NavItemProps 
       <Icon className="h-4 w-4" />
       {label}
     </NavLink>
+  );
+}
+
+function MobileClusterLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+      {children}
+    </div>
   );
 }
 
@@ -96,10 +140,9 @@ export default function AppHeader() {
   const { isAdmin } = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const navItems = [
-    ...PRIMARY_NAV,
-    ...(isAdmin ? [{ to: "/admin", label: "Admin", icon: ShieldCheck, end: false } as const] : []),
-  ];
+  const opsCluster = isAdmin
+    ? [...OPS_CLUSTER, { to: "/admin", label: "Admin", icon: ShieldCheck, end: false } as NavEntry]
+    : OPS_CLUSTER;
 
   const handleSignOut = async () => {
     setActiveDealId(null);
@@ -119,137 +162,137 @@ export default function AppHeader() {
     : null;
 
   return (
-    <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-3 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
-      <div className="max-w-7xl mx-auto flex items-center gap-3 h-14 px-3 rounded-2xl border border-hairline bg-card/80 backdrop-blur-xl shadow-[var(--shadow-md)]">
-        {/* Left: Brand + active-deal status */}
-        <Link to="/" className="flex items-center gap-3 pr-3 lg:pr-4 border-r border-hairline shrink-0 min-w-0 group">
-          <div className="relative shrink-0">
-            <div className="absolute -inset-1 rounded-xl gradient-brand opacity-0 group-hover:opacity-40 blur-md transition-opacity duration-300" />
-            <img src={dabellaLogo} alt="DaBella" className="relative h-7 w-auto" />
-          </div>
-          <div className="hidden sm:flex flex-col leading-none min-w-0">
-            <span className="text-[14px] font-display font-extrabold text-foreground tracking-tight whitespace-nowrap truncate">
-              Close <span className="gradient-text">Engine</span>
-            </span>
-            <div className="flex items-center gap-1.5 mt-1 min-w-0">
+    <TooltipProvider delayDuration={200}>
+      <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-2.5 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 h-10 px-2 rounded-xl border border-hairline bg-card/85 backdrop-blur-xl shadow-[var(--shadow-md)] relative overflow-hidden">
+          {/* Emerald signal seam */}
+          <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" aria-hidden />
+
+          {/* Left: Brand + active-deal status */}
+          <Link to="/" className="flex items-center gap-2 pr-2 border-r border-hairline/70 shrink-0 min-w-0 group h-7">
+            <img src={dabellaLogo} alt="DaBella" className="h-5 w-auto" />
+            <div className="hidden sm:flex items-center gap-1.5 leading-none min-w-0">
+              <span className="text-[12px] font-display font-extrabold text-foreground tracking-tight whitespace-nowrap">
+                Close<span className="text-accent">.</span>
+              </span>
               {activeDeal ? (
-                <>
+                <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/25 max-w-[160px]">
                   <span className="relative flex h-1.5 w-1.5 shrink-0">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-75 animate-ping" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
                   </span>
-                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider truncate">
-                    {homeownerLabel}
-                  </span>
-                </>
+                  <span className="text-[10px] font-semibold text-accent truncate">{homeownerLabel}</span>
+                </span>
               ) : (
-                <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 shrink-0" />
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    No active deal
-                  </span>
-                </>
+                <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/40 border border-hairline/60">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Idle</span>
+                </span>
               )}
             </div>
+          </Link>
+
+          {/* Center: clustered nav */}
+          <nav className="hidden md:flex flex-1 items-center justify-center px-1 overflow-hidden">
+            <NavCluster items={SELL_CLUSTER} label="Sell" />
+            <ClusterDivider />
+            <NavCluster items={INSIGHTS_CLUSTER} label="Insights" />
+            <ClusterDivider />
+            <NavCluster items={opsCluster} label="Operations" />
+          </nav>
+
+          {/* Right: Utility cluster */}
+          <div className="flex items-center gap-1 pl-1.5 border-l border-hairline/70 shrink-0 h-7">
+            <div className="hidden 2xl:flex items-center gap-1.5">
+              <OwnerScopeFilter />
+              <PublishStatusBadge />
+            </div>
+
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="md:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
+                  aria-label="Open navigation"
+                >
+                  <Menu className="h-3.5 w-3.5 text-foreground" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-3">
+                <div className="flex items-center gap-2 mb-4 pt-1">
+                  <img src={dabellaLogo} alt="DaBella" className="h-7 w-auto" />
+                  <h2 className="font-display font-extrabold text-base">
+                    Close<span className="text-accent">.</span>Engine
+                  </h2>
+                </div>
+                <nav className="flex flex-col gap-0.5">
+                  <MobileClusterLabel>Sell</MobileClusterLabel>
+                  {SELL_CLUSTER.map((item) => (
+                    <MobileNavItem key={item.to} {...item} onNavigate={() => setMobileOpen(false)} />
+                  ))}
+                  <MobileClusterLabel>Insights</MobileClusterLabel>
+                  {INSIGHTS_CLUSTER.map((item) => (
+                    <MobileNavItem key={item.to} {...item} onNavigate={() => setMobileOpen(false)} />
+                  ))}
+                  <MobileClusterLabel>Operations</MobileClusterLabel>
+                  {opsCluster.map((item) => (
+                    <MobileNavItem key={item.to} {...item} onNavigate={() => setMobileOpen(false)} />
+                  ))}
+                </nav>
+                <div className="mt-4 pt-3 border-t border-hairline space-y-2">
+                  <OwnerScopeFilter />
+                  <PublishStatusBadge />
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={toggle}
+                  className="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors pressable"
+                  aria-label="Toggle dark mode"
+                >
+                  {dark ? <Sun className="h-3.5 w-3.5 text-warning" /> : <Moon className="h-3.5 w-3.5" />}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-[11px]">Theme</TooltipContent>
+            </Tooltip>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="h-7 w-7 rounded-full text-[10px] font-bold flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity gradient-brand pressable shadow-[0_0_0_1.5px_hsl(var(--card)),0_0_10px_-2px_hsl(var(--accent)/0.6)]"
+                  aria-label="Account"
+                >
+                  {initials}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {user?.user_metadata?.full_name || user?.email}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/deals")}>
+                  <Briefcase className="h-4 w-4 mr-2" /> My deals
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                  <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/manual")}>
+                  <BookOpen className="h-4 w-4 mr-2" /> How to use this app
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" /> Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </Link>
-
-        {/* Center: Primary navigation (desktop / tablet) */}
-        <nav className="hidden md:flex flex-1 items-center justify-center gap-0 px-1 overflow-hidden">
-          {navItems.slice(0, 8).map(({ to, label, icon: Icon, end }) => (
-            <NavItem key={to} to={to} label={label} icon={Icon} end={end} />
-          ))}
-          {isAdmin && (
-            <>
-              <span className="hidden xl:inline-block h-4 w-px bg-hairline mx-1" />
-              <NavItem
-                to="/admin"
-                label="Admin"
-                icon={ShieldCheck}
-                end={false}
-              />
-            </>
-          )}
-        </nav>
-
-        {/* Right: Utility cluster */}
-        <div className="flex items-center gap-1.5 pl-2 xl:pl-3 xl:border-l xl:border-hairline shrink-0">
-          <div className="hidden xl:flex items-center gap-2">
-            <OwnerScopeFilter />
-            <PublishStatusBadge />
-          </div>
-
-          {/* Mobile nav trigger */}
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <button
-                className="md:hidden rounded-xl bg-muted/60 border border-hairline p-2 hover:bg-muted transition-colors pressable"
-                aria-label="Open navigation"
-              >
-                <Menu className="h-4 w-4 text-foreground" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-4">
-              <div className="flex items-center gap-3 mb-6 pt-1">
-                <img src={dabellaLogo} alt="DaBella" className="h-8 w-auto" />
-                <h2 className="font-display font-extrabold text-lg">
-                  Close <span className="gradient-text">Engine</span>
-                </h2>
-              </div>
-              <nav className="flex flex-col gap-1">
-                {navItems.map((item) => (
-                  <MobileNavItem key={item.to} {...item} onNavigate={() => setMobileOpen(false)} />
-                ))}
-              </nav>
-              <div className="mt-6 pt-4 border-t border-hairline space-y-2">
-                <OwnerScopeFilter />
-                <PublishStatusBadge />
-              </div>
-            </SheetContent>
-          </Sheet>
-
-          <button
-            onClick={toggle}
-            className="rounded-xl p-2 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors pressable"
-            aria-label="Toggle dark mode"
-          >
-            {dark ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4" />}
-          </button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="h-9 w-9 rounded-full text-xs font-bold flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity gradient-brand pressable shadow-[var(--shadow-glow)] border-2 border-card"
-                aria-label="Account"
-              >
-                {initials}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5">
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {user?.user_metadata?.full_name || user?.email}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/deals")}>
-                <Briefcase className="h-4 w-4 mr-2" /> My deals
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/manual")}>
-                <BookOpen className="h-4 w-4 mr-2" /> How to use this app
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                <LogOut className="h-4 w-4 mr-2" /> Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-      </div>
-    </header>
+      </header>
+    </TooltipProvider>
   );
 }
