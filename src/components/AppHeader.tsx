@@ -66,17 +66,17 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           className={({ isActive }) =>
             `group relative flex items-center gap-1.5 px-2 h-7 rounded-md text-[11.5px] font-semibold whitespace-nowrap transition-all pressable ${
               isActive
-                ? "bg-accent/15 text-accent shadow-[0_0_0_1px_hsl(var(--accent)/0.25),0_0_12px_-2px_hsl(var(--accent)/0.45)]"
+                ? "bg-primary/15 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.25),0_0_12px_-2px_hsl(var(--primary)/0.45)]"
                 : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
             }`
           }
         >
           {({ isActive }) => (
             <>
-              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-accent" : ""}`} />
+              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
               <span className="hidden 2xl:inline tracking-tight">{label}</span>
               {isActive && (
-                <span className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 h-[2px] w-5 rounded-full bg-accent shadow-[0_0_8px_hsl(var(--accent))]" />
+                <span className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 h-[2px] w-5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
               )}
             </>
           )}
@@ -109,13 +109,13 @@ function MobileNavItem({ to, label, icon: Icon, end, onNavigate }: NavEntry & { 
       to={to}
       end={end}
       onClick={onNavigate}
-      className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all pressable ${
-          isActive
-            ? "bg-accent/15 text-accent border border-accent/30"
-            : "text-foreground hover:bg-muted border border-transparent"
-        }`
-      }
+        className={({ isActive }) =>
+          `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all pressable ${
+            isActive
+              ? "bg-primary/15 text-primary border border-primary/30"
+              : "text-foreground hover:bg-muted border border-transparent"
+          }`
+        }
     >
       <Icon className="h-4 w-4" />
       {label}
@@ -165,23 +165,23 @@ export default function AppHeader() {
     <TooltipProvider delayDuration={200}>
       <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-2.5 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
         <div className="max-w-7xl mx-auto flex items-center gap-2 h-10 px-2 rounded-xl border border-hairline bg-card/85 backdrop-blur-xl shadow-[var(--shadow-md)] relative overflow-hidden">
-          {/* Emerald signal seam */}
-          <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" aria-hidden />
+          {/* Electric blue signal seam */}
+          <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden />
 
           {/* Left: Brand + active-deal status */}
           <Link to="/" className="flex items-center gap-2 pr-2 border-r border-hairline/70 shrink-0 min-w-0 group h-7">
             <img src={dabellaLogo} alt="DaBella" className="h-5 w-auto" />
             <div className="hidden sm:flex items-center gap-1.5 leading-none min-w-0">
               <span className="text-[12px] font-display font-extrabold text-foreground tracking-tight whitespace-nowrap">
-                Close<span className="text-accent">.</span>
+                Close<span className="text-primary">.</span>
               </span>
               {activeDeal ? (
-                <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/25 max-w-[160px]">
+                <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/10 border border-primary/25 max-w-[160px]">
                   <span className="relative flex h-1.5 w-1.5 shrink-0">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-75 animate-ping" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
                   </span>
-                  <span className="text-[10px] font-semibold text-accent truncate">{homeownerLabel}</span>
+                  <span className="text-[10px] font-semibold text-primary truncate">{homeownerLabel}</span>
                 </span>
               ) : (
                 <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/40 border border-hairline/60">
@@ -221,7 +221,7 @@ export default function AppHeader() {
                 <div className="flex items-center gap-2 mb-4 pt-1">
                   <img src={dabellaLogo} alt="DaBella" className="h-7 w-auto" />
                   <h2 className="font-display font-extrabold text-base">
-                    Close<span className="text-accent">.</span>Engine
+                    Close<span className="text-primary">.</span>Engine
                   </h2>
                 </div>
                 <nav className="flex flex-col gap-0.5">
@@ -261,7 +261,7 @@ export default function AppHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="h-7 w-7 rounded-full text-[10px] font-bold flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity gradient-brand pressable shadow-[0_0_0_1.5px_hsl(var(--card)),0_0_10px_-2px_hsl(var(--accent)/0.6)]"
+                  className="h-7 w-7 rounded-full text-[10px] font-bold flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity gradient-brand pressable shadow-[0_0_0_1.5px_hsl(var(--card)),0_0_10px_-2px_hsl(var(--primary)/0.6)]"
                   aria-label="Account"
                 >
                   {initials}
