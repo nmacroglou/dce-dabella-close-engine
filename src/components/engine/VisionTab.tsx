@@ -237,6 +237,7 @@ export default function VisionTab({ state }: EngineTabProps) {
   const [priority, setPriority] = useState<PriorityKey | null>(null);
   const [step, setStep] = useState(0);
   const [showTalkTrack, setShowTalkTrack] = useState(true);
+  const [customerMode, setCustomerMode] = useState(false);
 
   const ctx = useMemo<VisionCtx>(() => {
     const first = (state.homeowner1 || "").trim().split(/\s+/)[0] || "your homeowner";
