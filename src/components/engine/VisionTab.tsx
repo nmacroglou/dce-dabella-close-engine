@@ -9,9 +9,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import type { EngineTabProps } from "@/types/engine";
+import VisionGallery from "./vision/VisionGallery";
 
 type PriorityKey = "comfort" | "curb" | "protection" | "legacy";
 
@@ -234,6 +237,7 @@ export default function VisionTab({ state }: EngineTabProps) {
   const [priority, setPriority] = useState<PriorityKey | null>(null);
   const [step, setStep] = useState(0);
   const [showTalkTrack, setShowTalkTrack] = useState(true);
+  const [customerMode, setCustomerMode] = useState(false);
 
   const ctx = useMemo<VisionCtx>(() => {
     const first = (state.homeowner1 || "").trim().split(/\s+/)[0] || "your homeowner";
@@ -339,16 +343,37 @@ export default function VisionTab({ state }: EngineTabProps) {
   const Icon = M.icon;
   const stat = M.stat?.(ctx);
 
+  const isRoof = (state.products?.[0] || "").toLowerCase().includes("roof");
+  const material = isRoof ? state.roofMaterial : undefined;
+
   return (
     <div className="space-y-5">
+      {/* Customer mode toggle */}
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/40 backdrop-blur-xl px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <Badge variant={customerMode ? "default" : "secondary"} className="text-[10px] uppercase tracking-wider">
+            {customerMode ? "Customer view" : "Rep view"}
+          </Badge>
+          <span className="text-xs text-muted-foreground hidden sm:inline">
+            {customerMode
+              ? "Descriptions & script hidden. Hand the iPad over."
+              : "Showing rep-facing descriptions, talk track & step labels."}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="customer-mode" className="text-xs font-medium cursor-pointer">Customer mode</Label>
+          <Switch id="customer-mode" checked={customerMode} onCheckedChange={setCustomerMode} />
+        </div>
+      </div>
+
       {/* Progress + controls */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
             <span className="font-medium tracking-wide uppercase">
-              {M.kicker}
+              {customerMode ? `${step + 1} of ${journey.length}` : M.kicker}
             </span>
-            <span>{step + 1} / {journey.length}</span>
+            {!customerMode && <span>{step + 1} / {journey.length}</span>}
           </div>
           <Progress value={progress} className="h-1.5" />
         </div>
@@ -377,9 +402,11 @@ export default function VisionTab({ state }: EngineTabProps) {
               {M.headline(ctx)}
             </h2>
 
-            <p className="mt-4 text-base sm:text-xl text-foreground/85 max-w-3xl leading-relaxed">
-              {M.body(ctx)}
-            </p>
+            {!customerMode && (
+              <p className="mt-4 text-base sm:text-xl text-foreground/85 max-w-3xl leading-relaxed">
+                {M.body(ctx)}
+              </p>
+            )}
 
             {stat && (
               <div className="mt-6 inline-flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 self-start">
@@ -396,8 +423,11 @@ export default function VisionTab({ state }: EngineTabProps) {
         </Card>
       </div>
 
+      {/* Vision gallery — AI-rendered visuals for the selected product/option */}
+      <VisionGallery product={ctx.product} optionName={ctx.optionName} material={material} />
 
       {/* Talk track (rep-facing) */}
+      {!customerMode && (
       <Card className="border-border/60 bg-card/40 backdrop-blur-xl overflow-hidden">
         <button
           onClick={() => setShowTalkTrack(v => !v)}
@@ -428,6 +458,9 @@ export default function VisionTab({ state }: EngineTabProps) {
         )}
 
       </Card>
+      )}
+
+
 
       {/* Nav */}
       <div className="flex items-center justify-between gap-3">
