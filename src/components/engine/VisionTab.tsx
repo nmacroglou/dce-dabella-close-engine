@@ -402,9 +402,11 @@ export default function VisionTab({ state }: EngineTabProps) {
               {M.headline(ctx)}
             </h2>
 
-            <p className="mt-4 text-base sm:text-xl text-foreground/85 max-w-3xl leading-relaxed">
-              {M.body(ctx)}
-            </p>
+            {!customerMode && (
+              <p className="mt-4 text-base sm:text-xl text-foreground/85 max-w-3xl leading-relaxed">
+                {M.body(ctx)}
+              </p>
+            )}
 
             {stat && (
               <div className="mt-6 inline-flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 self-start">
