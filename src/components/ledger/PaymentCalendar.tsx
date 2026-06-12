@@ -1,77 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Pencil, Check, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Pencil, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fmt } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOwnerScope } from "@/contexts/OwnerScopeContext";
+import {
+  usePaycheckOverrides,
+  useUpsertPaycheckOverride,
+  useDeletePaycheckOverride,
+} from "@/hooks/usePaycheckOverrides";
 import type { CommissionPayment } from "@/hooks/useCommissionLedger";
 
 /**
  * Bi-weekly payday tracker.
- * Anchor: Friday 5/15/2026.
- * Each payday covers the 14-day window ending on the payday itself.
- * Auto-rolls up front_paid_amount / back_paid_amount from the ledger by paid date,
- * with optional manual overrides persisted per-user to localStorage.
+ * Anchor: Friday 5/15/2026. Each payday covers the 14-day window ending on the payday.
+ * Auto-rolls up front_paid / back_paid from the ledger by paid date and overlays
+ * optional manual overrides persisted to `public.paycheck_overrides` per-rep
+ * (replaces the older localStorage-only behavior so amounts follow the rep
+ * across devices and never silently disappear).
  */
 const ANCHOR_ISO = "2026-05-15";
 const PERIOD_DAYS = 14;
-const STORE_KEY_BASE = "dabella.paychecks.overrides.v1";
-const LEGACY_SHARED_KEY = "dabella.paychecks.overrides.v1"; // pre-per-user storage
-const SEED_KEY_PREFIX = "dabella.paychecks.seeded.v2.";
-
-// User-specific historical paychecks to seed once (the rep had already logged these
-// before per-user storage existed). Add more here if other reps need backfill.
-const USER_SEEDS: Record<string, Overrides> = {
-  // Niko Macroglou
-  "36a09991-0b3e-497f-a9f6-f3e24b0755b1": { "2026-05-15": 1375.13 },
-};
-
-type Overrides = Record<string, number>;
-
-function storeKeyFor(userId: string | undefined) {
-  return userId ? `${STORE_KEY_BASE}.${userId}` : STORE_KEY_BASE;
-}
-
-function loadOverrides(userId: string | undefined): Overrides {
-  if (!userId) return {};
-  const key = storeKeyFor(userId);
-  try {
-    let o: Overrides = JSON.parse(localStorage.getItem(key) ?? "{}");
-    // Migrate any legacy shared overrides into this user's bucket the first time.
-    const legacy = localStorage.getItem(LEGACY_SHARED_KEY);
-    if (legacy && key !== LEGACY_SHARED_KEY) {
-      try {
-        const legacyParsed: Overrides = JSON.parse(legacy);
-        // Drop the well-known broadcasted seed unless it's actually this user's
-        if (legacyParsed["2026-05-15"] === 1375.13 && !USER_SEEDS[userId]?.["2026-05-15"]) {
-          delete legacyParsed["2026-05-15"];
-        }
-        o = { ...legacyParsed, ...o };
-      } catch { /* ignore */ }
-      localStorage.removeItem(LEGACY_SHARED_KEY);
-    }
-    // One-time per-user seed of known historical paychecks
-    const seedFlag = `${SEED_KEY_PREFIX}${userId}`;
-    if (!localStorage.getItem(seedFlag)) {
-      const seed = USER_SEEDS[userId];
-      if (seed) {
-        for (const [k, v] of Object.entries(seed)) {
-          if (!(k in o)) o[k] = v;
-        }
-      }
-      localStorage.setItem(seedFlag, "1");
-    }
-    localStorage.setItem(key, JSON.stringify(o));
-    return o;
-  } catch {
-    return {};
-  }
-}
-function saveOverrides(userId: string | undefined, o: Overrides) {
-  if (!userId) return;
-  try { localStorage.setItem(storeKeyFor(userId), JSON.stringify(o)); } catch { /* ignore */ }
-}
+const LEGACY_STORE_KEY_BASE = "dabella.paychecks.overrides.v1";
 
 function toISODate(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -107,13 +58,37 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
   // Find the payday closest to "today" as a starting anchor for navigation.
   const periodsFromAnchor = Math.round((today.getTime() - anchor.getTime()) / (PERIOD_DAYS * 86400000));
   const [offset, setOffset] = useState(0); // window offset in pay periods
-  const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(viewedRepId));
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<string>("");
 
-  // Reload overrides when the viewed rep changes.
+  const { data: overrideMap = {}, isLoading: overridesLoading } = usePaycheckOverrides(viewedRepId);
+  const upsertOverride = useUpsertPaycheckOverride();
+  const deleteOverride = useDeletePaycheckOverride();
+
+  // One-time, best-effort migration of any legacy per-device localStorage
+  // overrides for the signed-in user into the DB.
   useEffect(() => {
-    setOverrides(loadOverrides(viewedRepId));
+    if (!user?.id || viewedRepId !== user.id) return;
+    const key = `${LEGACY_STORE_KEY_BASE}.${user.id}`;
+    const raw = (() => { try { return localStorage.getItem(key); } catch { return null; } })();
+    if (!raw) return;
+    try {
+      const legacy = JSON.parse(raw) as Record<string, number>;
+      const entries = Object.entries(legacy).filter(([, v]) => Number.isFinite(v) && v > 0);
+      if (!entries.length) { localStorage.removeItem(key); return; }
+      Promise.all(
+        entries.map(([payday_date, amount]) =>
+          upsertOverride.mutateAsync({ payday_date, amount: Number(amount) }).catch(() => null),
+        ),
+      ).then(() => { try { localStorage.removeItem(key); } catch { /* ignore */ } });
+    } catch {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, viewedRepId]);
+
+  // Reset edit state when the viewed rep changes.
+  useEffect(() => {
     setEditing(null);
     setDraft("");
   }, [viewedRepId]);
@@ -157,24 +132,21 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
     return map;
   }, [rows]);
 
-  // No seeded amounts — every payday number comes from the ledger or from
-  // an explicit user-entered override.
-
-  function commitDraft(key: string) {
+  async function commitDraft(key: string) {
     if (!canEdit) { setEditing(null); setDraft(""); return; }
     const n = parseFloat(draft.replace(/[^0-9.\-]/g, ""));
-    const next = { ...overrides };
-    if (!Number.isFinite(n) || n === 0) delete next[key];
-    else next[key] = n;
-    setOverrides(next);
-    saveOverrides(viewedRepId, next);
+    if (!Number.isFinite(n) || n === 0) {
+      if (overrideMap[key]) await deleteOverride.mutateAsync(key).catch(() => null);
+    } else {
+      await upsertOverride.mutateAsync({ payday_date: key, amount: n }).catch(() => null);
+    }
     setEditing(null);
     setDraft("");
   }
 
-  const ytdActual = Object.entries(overrides)
+  const ytdActual = Object.entries(overrideMap)
     .filter(([k]) => k.startsWith(String(today.getFullYear())))
-    .reduce((s, [, v]) => s + v, 0);
+    .reduce((s, [, v]) => s + Number(v.amount || 0), 0);
 
   // Next upcoming payday from today
   const next = paydays.find((p) => p.payday.getTime() >= today.getTime()) ?? paydays[paydays.length - 1];
@@ -211,23 +183,33 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 p-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
+        {overridesLoading && (
+          <div className="col-span-full flex items-center justify-center py-6 text-muted-foreground">
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <span className="text-xs">Loading paychecks…</span>
+          </div>
+        )}
         {paydays.map(({ pIdx, payday, windowStart }) => {
           const key = toISODate(payday);
           const ledger = totalsByPayday.get(key);
-          const override = overrides[key];
-          const amount = override ?? ledger?.fromLedger ?? 0;
+          const override = overrideMap[key];
+          const overrideAmount = override ? Number(override.amount) : undefined;
+          const amount = overrideAmount ?? ledger?.fromLedger ?? 0;
           const isPast = payday.getTime() < today.getTime();
           const isToday = key === toISODate(today);
           const isNext = key === toISODate(next.payday) && !isPast;
           const isEditing = editing === key;
+          const hasActual = overrideAmount != null && overrideAmount > 0;
 
           return (
             <div
               key={pIdx}
-              className={`relative rounded-xl border p-3 transition ${
+              className={`relative rounded-2xl border p-4 transition-all ${
                 isNext
-                  ? "border-primary/60 bg-primary/5 shadow-sm"
+                  ? "border-primary/60 bg-primary/5 shadow-[var(--shadow-glow)]"
+                  : hasActual
+                  ? "border-success/40 bg-success/[0.04]"
                   : isPast
                   ? "border-hairline bg-background/60"
                   : "border-hairline bg-card"
@@ -235,18 +217,22 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className={`text-[10px] uppercase tracking-wide font-semibold ${isNext ? "text-primary" : "text-muted-foreground"}`}>
-                    {isToday ? "Today" : isNext ? "Next payday" : isPast ? "Paid" : "Upcoming"}
+                  <div
+                    className={`text-[10px] uppercase tracking-[0.12em] font-bold ${
+                      isNext ? "text-primary" : hasActual ? "text-success" : "text-muted-foreground"
+                    }`}
+                  >
+                    {isToday ? "Today" : isNext ? "Next payday" : hasActual ? "Logged" : isPast ? "Past" : "Upcoming"}
                   </div>
-                  <div className="text-sm font-bold">{fmtDay(payday)}</div>
+                  <div className="text-base font-extrabold tracking-tight mt-0.5">{fmtDay(payday)}</div>
                   <div className="text-[10px] text-muted-foreground">
-                    period {fmtDay(windowStart)} – {fmtDay(payday)}
+                    {fmtDay(windowStart)} – {fmtDay(payday)}
                   </div>
                 </div>
                 {!isEditing && canEdit && (
                   <button
                     onClick={() => { setEditing(key); setDraft(amount ? String(amount) : ""); }}
-                    className="text-muted-foreground hover:text-foreground p-1 -m-1"
+                    className="text-muted-foreground hover:text-foreground p-1.5 -m-1 rounded-lg hover:bg-muted/50 transition"
                     title="Log actual paycheck"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -254,34 +240,54 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
                 )}
               </div>
 
-              <div className="mt-2">
+              <div className="mt-3">
                 {isEditing ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      autoFocus
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") commitDraft(key);
-                        if (e.key === "Escape") { setEditing(null); setDraft(""); }
-                      }}
-                      placeholder="0.00"
-                      className="h-8 text-sm tabular-nums"
-                    />
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => commitDraft(key)}>
-                      <Check className="h-3.5 w-3.5 text-success" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="relative flex-1">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-semibold">$</span>
+                      <Input
+                        autoFocus
+                        inputMode="decimal"
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") commitDraft(key);
+                          if (e.key === "Escape") { setEditing(null); setDraft(""); }
+                        }}
+                        placeholder="0.00"
+                        className="h-9 pl-6 text-base font-bold tabular-nums"
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-9 w-9 hover:bg-success/10"
+                      onClick={() => commitDraft(key)}
+                      disabled={upsertOverride.isPending || deleteOverride.isPending}
+                    >
+                      {upsertOverride.isPending || deleteOverride.isPending
+                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                        : <Check className="h-4 w-4 text-success" />}
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditing(null); setDraft(""); }}>
-                      <X className="h-3.5 w-3.5" />
+                    <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => { setEditing(null); setDraft(""); }}>
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
                   <>
-                    <div className={`text-lg font-extrabold tabular-nums ${amount > 0 ? "text-foreground" : "text-muted-foreground/60"}`}>
+                    <div
+                      className={`text-2xl font-extrabold tabular-nums tracking-tight ${
+                        hasActual
+                          ? "text-success"
+                          : amount > 0
+                          ? "text-foreground"
+                          : "text-muted-foreground/50"
+                      }`}
+                    >
                       {amount > 0 ? fmt(amount) : "—"}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {override != null
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      {hasActual
                         ? "actual paycheck"
                         : ledger?.fromLedger
                         ? `${ledger.entries.length} ledger entr${ledger.entries.length === 1 ? "y" : "ies"}`
@@ -296,8 +302,8 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
           );
         })}
       </div>
-      <div className="px-4 py-2 border-t border-hairline text-[11px] text-muted-foreground">
-        Tip: click the pencil on any payday to log the actual amount that hit your account.
+      <div className="px-4 py-2.5 border-t border-hairline text-[11px] text-muted-foreground bg-muted/20">
+        Tip: tap the pencil on any payday to log the actual amount that hit your account. Synced to your DaBella account.
       </div>
     </div>
   );
