@@ -499,6 +499,36 @@ export type Database = {
         }
         Relationships: []
       }
+      paycheck_overrides: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          payday_date: string
+          rep_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payday_date: string
+          rep_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payday_date?: string
+          rep_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
