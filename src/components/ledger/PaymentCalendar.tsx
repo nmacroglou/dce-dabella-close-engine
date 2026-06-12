@@ -183,23 +183,33 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 p-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
+        {overridesLoading && (
+          <div className="col-span-full flex items-center justify-center py-6 text-muted-foreground">
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <span className="text-xs">Loading paychecks…</span>
+          </div>
+        )}
         {paydays.map(({ pIdx, payday, windowStart }) => {
           const key = toISODate(payday);
           const ledger = totalsByPayday.get(key);
-          const override = overrides[key];
-          const amount = override ?? ledger?.fromLedger ?? 0;
+          const override = overrideMap[key];
+          const overrideAmount = override ? Number(override.amount) : undefined;
+          const amount = overrideAmount ?? ledger?.fromLedger ?? 0;
           const isPast = payday.getTime() < today.getTime();
           const isToday = key === toISODate(today);
           const isNext = key === toISODate(next.payday) && !isPast;
           const isEditing = editing === key;
+          const hasActual = overrideAmount != null && overrideAmount > 0;
 
           return (
             <div
               key={pIdx}
-              className={`relative rounded-xl border p-3 transition ${
+              className={`relative rounded-2xl border p-4 transition-all ${
                 isNext
-                  ? "border-primary/60 bg-primary/5 shadow-sm"
+                  ? "border-primary/60 bg-primary/5 shadow-[var(--shadow-glow)]"
+                  : hasActual
+                  ? "border-success/40 bg-success/[0.04]"
                   : isPast
                   ? "border-hairline bg-background/60"
                   : "border-hairline bg-card"
@@ -207,18 +217,22 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className={`text-[10px] uppercase tracking-wide font-semibold ${isNext ? "text-primary" : "text-muted-foreground"}`}>
-                    {isToday ? "Today" : isNext ? "Next payday" : isPast ? "Paid" : "Upcoming"}
+                  <div
+                    className={`text-[10px] uppercase tracking-[0.12em] font-bold ${
+                      isNext ? "text-primary" : hasActual ? "text-success" : "text-muted-foreground"
+                    }`}
+                  >
+                    {isToday ? "Today" : isNext ? "Next payday" : hasActual ? "Logged" : isPast ? "Past" : "Upcoming"}
                   </div>
-                  <div className="text-sm font-bold">{fmtDay(payday)}</div>
+                  <div className="text-base font-extrabold tracking-tight mt-0.5">{fmtDay(payday)}</div>
                   <div className="text-[10px] text-muted-foreground">
-                    period {fmtDay(windowStart)} – {fmtDay(payday)}
+                    {fmtDay(windowStart)} – {fmtDay(payday)}
                   </div>
                 </div>
                 {!isEditing && canEdit && (
                   <button
                     onClick={() => { setEditing(key); setDraft(amount ? String(amount) : ""); }}
-                    className="text-muted-foreground hover:text-foreground p-1 -m-1"
+                    className="text-muted-foreground hover:text-foreground p-1.5 -m-1 rounded-lg hover:bg-muted/50 transition"
                     title="Log actual paycheck"
                   >
                     <Pencil className="h-3.5 w-3.5" />
@@ -226,34 +240,54 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
                 )}
               </div>
 
-              <div className="mt-2">
+              <div className="mt-3">
                 {isEditing ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      autoFocus
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") commitDraft(key);
-                        if (e.key === "Escape") { setEditing(null); setDraft(""); }
-                      }}
-                      placeholder="0.00"
-                      className="h-8 text-sm tabular-nums"
-                    />
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => commitDraft(key)}>
-                      <Check className="h-3.5 w-3.5 text-success" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="relative flex-1">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-semibold">$</span>
+                      <Input
+                        autoFocus
+                        inputMode="decimal"
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") commitDraft(key);
+                          if (e.key === "Escape") { setEditing(null); setDraft(""); }
+                        }}
+                        placeholder="0.00"
+                        className="h-9 pl-6 text-base font-bold tabular-nums"
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-9 w-9 hover:bg-success/10"
+                      onClick={() => commitDraft(key)}
+                      disabled={upsertOverride.isPending || deleteOverride.isPending}
+                    >
+                      {upsertOverride.isPending || deleteOverride.isPending
+                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                        : <Check className="h-4 w-4 text-success" />}
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setEditing(null); setDraft(""); }}>
-                      <X className="h-3.5 w-3.5" />
+                    <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => { setEditing(null); setDraft(""); }}>
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
                   <>
-                    <div className={`text-lg font-extrabold tabular-nums ${amount > 0 ? "text-foreground" : "text-muted-foreground/60"}`}>
+                    <div
+                      className={`text-2xl font-extrabold tabular-nums tracking-tight ${
+                        hasActual
+                          ? "text-success"
+                          : amount > 0
+                          ? "text-foreground"
+                          : "text-muted-foreground/50"
+                      }`}
+                    >
                       {amount > 0 ? fmt(amount) : "—"}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {override != null
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      {hasActual
                         ? "actual paycheck"
                         : ledger?.fromLedger
                         ? `${ledger.entries.length} ledger entr${ledger.entries.length === 1 ? "y" : "ies"}`
@@ -268,8 +302,8 @@ export default function PaymentCalendar({ rows }: { rows: CommissionPayment[] })
           );
         })}
       </div>
-      <div className="px-4 py-2 border-t border-hairline text-[11px] text-muted-foreground">
-        Tip: click the pencil on any payday to log the actual amount that hit your account.
+      <div className="px-4 py-2.5 border-t border-hairline text-[11px] text-muted-foreground bg-muted/20">
+        Tip: tap the pencil on any payday to log the actual amount that hit your account. Synced to your DaBella account.
       </div>
     </div>
   );
