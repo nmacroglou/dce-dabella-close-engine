@@ -322,7 +322,7 @@
 
   /* Numeric/tabular text — for ledger, prices, metrics */
   .num         { font-variant-numeric: tabular-nums; font-feature-settings: "tnum","cv11"; }
-  .num-display { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .num-display { font-family: 'Urbanist', 'Epilogue', system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; font-weight: 700; }
   .mono        { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
 
   .row-zebra > *:nth-child(even) { background-color: hsl(var(--muted) / 0.35); }
