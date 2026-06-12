@@ -343,16 +343,37 @@ export default function VisionTab({ state }: EngineTabProps) {
   const Icon = M.icon;
   const stat = M.stat?.(ctx);
 
+  const isRoof = (state.products?.[0] || "").toLowerCase().includes("roof");
+  const material = isRoof ? state.roofMaterial : undefined;
+
   return (
     <div className="space-y-5">
+      {/* Customer mode toggle */}
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/40 backdrop-blur-xl px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <Badge variant={customerMode ? "default" : "secondary"} className="text-[10px] uppercase tracking-wider">
+            {customerMode ? "Customer view" : "Rep view"}
+          </Badge>
+          <span className="text-xs text-muted-foreground hidden sm:inline">
+            {customerMode
+              ? "Descriptions & script hidden. Hand the iPad over."
+              : "Showing rep-facing descriptions, talk track & step labels."}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="customer-mode" className="text-xs font-medium cursor-pointer">Customer mode</Label>
+          <Switch id="customer-mode" checked={customerMode} onCheckedChange={setCustomerMode} />
+        </div>
+      </div>
+
       {/* Progress + controls */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
             <span className="font-medium tracking-wide uppercase">
-              {M.kicker}
+              {customerMode ? `${step + 1} of ${journey.length}` : M.kicker}
             </span>
-            <span>{step + 1} / {journey.length}</span>
+            {!customerMode && <span>{step + 1} / {journey.length}</span>}
           </div>
           <Progress value={progress} className="h-1.5" />
         </div>
