@@ -26,9 +26,9 @@
     --muted: 40 8% 90%;
     --muted-foreground: 0 0% 32%;
 
-    --accent: 44 56% 54%;
-    --accent-foreground: 0 0% 5%;
-    --accent-glow: 41 76% 75%;
+    --accent: 152 64% 42%;
+    --accent-foreground: 0 0% 100%;
+    --accent-glow: 158 76% 52%;
 
     --destructive: 0 65% 48%;
     --destructive-foreground: 0 0% 100%;
@@ -56,8 +56,8 @@
     --hairline: 40 8% 80%;
     --hairline-strong: 40 8% 68%;
 
-    --success: 44 56% 54%;
-    --success-foreground: 0 0% 5%;
+    --success: 152 64% 42%;
+    --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 5%;
     --info: 41 76% 60%;
@@ -65,8 +65,8 @@
 
     --brand-from: 44 56% 54%;
     --brand-to: 41 76% 75%;
-    --accent-from: 44 56% 54%;
-    --accent-to: 41 76% 75%;
+    --accent-from: 152 64% 42%;
+    --accent-to: 158 76% 52%;
     --gradient-brand: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to)));
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent-from)), hsl(var(--accent-to)));
     --gradient-surface: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%);
@@ -120,9 +120,10 @@
     --muted: 0 0% 14%;
     --muted-foreground: 41 18% 62%;
 
-    --accent: 44 56% 54%;
+    /* Accent = emerald — the "won / savings / after" tone. Contrasts gold primary. */
+    --accent: 152 64% 48%;
     --accent-foreground: 0 0% 5%;
-    --accent-glow: 41 76% 75%;
+    --accent-glow: 158 76% 60%;
 
     --destructive: 0 72% 56%;
     --destructive-foreground: 0 0% 100%;
@@ -131,7 +132,8 @@
     --input: 44 25% 16%;
     --ring: 44 56% 54%;
 
-    --success: 44 56% 54%;
+    /* Success = emerald — won deal stage badges, positive deltas */
+    --success: 152 64% 48%;
     --success-foreground: 0 0% 5%;
     --warning: 38 92% 58%;
     --warning-foreground: 0 0% 5%;
@@ -140,21 +142,21 @@
 
     --brand-from: 44 56% 54%;
     --brand-to: 41 76% 75%;
-    --accent-from: 44 56% 54%;
-    --accent-to: 41 76% 75%;
+    --accent-from: 152 64% 48%;
+    --accent-to: 158 76% 60%;
     --gradient-brand: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to)));
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent-from)), hsl(var(--accent-to)));
     --gradient-surface: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%);
     --gradient-mesh:
       radial-gradient(1100px 650px at 0% -10%, hsl(var(--primary) / 0.08), transparent 55%),
-      radial-gradient(900px 500px at 100% 0%, hsl(var(--primary) / 0.05), transparent 55%);
+      radial-gradient(900px 500px at 100% 0%, hsl(var(--accent) / 0.06), transparent 55%);
     --shadow-xs: 0 1px 1px 0 hsl(0 0% 0% / 0.35);
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.45), 0 1px 1px -1px hsl(0 0% 0% / 0.30);
     --shadow-md: 0 6px 16px -4px hsl(0 0% 0% / 0.55), 0 2px 6px -2px hsl(0 0% 0% / 0.40);
     --shadow-lg: 0 18px 40px -12px hsl(0 0% 0% / 0.65), 0 6px 16px -6px hsl(0 0% 0% / 0.45);
     --shadow-xl: 0 30px 60px -20px hsl(0 0% 0% / 0.80), 0 10px 24px -10px hsl(0 0% 0% / 0.55);
     --shadow-glow: 0 0 0 1px hsl(var(--primary) / 0.35), 0 12px 32px -6px hsl(var(--primary) / 0.40);
-    --shadow-glow-accent: 0 0 0 1px hsl(var(--primary) / 0.35), 0 12px 32px -6px hsl(var(--primary) / 0.40);
+    --shadow-glow-accent: 0 0 0 1px hsl(var(--accent) / 0.35), 0 12px 32px -6px hsl(var(--accent) / 0.40);
 
     --sidebar-background: 0 0% 6%;
     --sidebar-foreground: 41 76% 88%;
