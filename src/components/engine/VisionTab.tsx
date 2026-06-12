@@ -458,6 +458,9 @@ export default function VisionTab({ state }: EngineTabProps) {
         )}
 
       </Card>
+      )}
+
+
 
       {/* Nav */}
       <div className="flex items-center justify-between gap-3">
