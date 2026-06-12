@@ -9,9 +9,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import type { EngineTabProps } from "@/types/engine";
+import VisionGallery from "./vision/VisionGallery";
 
 type PriorityKey = "comfort" | "curb" | "protection" | "legacy";
 
