@@ -423,8 +423,11 @@ export default function VisionTab({ state }: EngineTabProps) {
         </Card>
       </div>
 
+      {/* Vision gallery — AI-rendered visuals for the selected product/option */}
+      <VisionGallery product={ctx.product} optionName={ctx.optionName} material={material} />
 
       {/* Talk track (rep-facing) */}
+      {!customerMode && (
       <Card className="border-border/60 bg-card/40 backdrop-blur-xl overflow-hidden">
         <button
           onClick={() => setShowTalkTrack(v => !v)}
