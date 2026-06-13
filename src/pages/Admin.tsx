@@ -356,7 +356,7 @@ export default function Admin() {
         </SectionCard>
 
         {/* All deals (cross-rep) */}
-        <SectionCard title="All Deals" icon={Briefcase}>
+        <SectionCard title="All Deals" icon={Briefcase} collapsible>
           <AdminDealsBrowser />
         </SectionCard>
 
