@@ -105,7 +105,7 @@ export default function Dashboard() {
     const wonInWin = deals.filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= cutoffIso);
     const lostInWin = deals.filter((d) => d.stage === "lost" && d.closed_at && d.closed_at >= cutoffIso);
     const revenue = wonInWin.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
-    const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
+    const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified").length;
     const pendingInWin = inWinByCreated.filter(
       (d) => d.stage === "presented" || d.stage === "follow_up" || d.stage === "inspecting"
     ).length;
