@@ -166,6 +166,24 @@ export default function ActiveDealBanner() {
     setLostNote("");
   };
 
+  const confirmDq = () => {
+    if (!dqReason) return;
+    const note = dqNote;
+    updateStage.mutate(
+      {
+        id: deal.id,
+        stage: "disqualified",
+        disqualified_reason: dqReason,
+      },
+      { onSuccess: () => persistStageNote("disqualified", note) }
+    );
+    setDqOpen(false);
+    setDqReason("");
+    setDqNote("");
+  };
+
+
+
 
   return (
     <>
