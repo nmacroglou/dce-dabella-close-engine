@@ -56,7 +56,7 @@ export default function Pipeline() {
 
   const dealById = useMemo(() => new Map(deals.map((d) => [d.id, d])), [deals]);
 
-  const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost"];
+  const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost", "disqualified"];
   const grouped = stages.map((s) => ({
     stage: s,
     deals: deals.filter((d) => d.stage === s),
