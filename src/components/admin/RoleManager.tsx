@@ -73,6 +73,26 @@ export default function RoleManager() {
     onError: (e) => toast.error(errMsg(e, "Failed to update role")),
   });
 
+  const deleteRep = useMutation({
+    mutationFn: async (target_user_id: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-rep", {
+        body: { target_user_id },
+      });
+      if (error) throw error;
+      if (data && (data as { error?: string }).error) throw new Error((data as { error: string }).error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users-roles"] });
+      qc.invalidateQueries({ queryKey: ["all-profiles"] });
+      qc.invalidateQueries({ queryKey: ["deals"] });
+      qc.invalidateQueries({ queryKey: ["admin-metrics"] });
+      toast.success("Rep deleted");
+      setPendingDelete(null);
+      setConfirmText("");
+    },
+    onError: (e) => toast.error(errMsg(e, "Failed to delete rep")),
+  });
+
   const rolesByUser = useMemo(() => {
     const map = new Map<string, Set<AppRole>>();
     data?.roles.forEach((r) => {
