@@ -343,6 +343,11 @@ export default function Admin() {
           )}
         </SectionCard>
 
+        {/* All deals (cross-rep) */}
+        <SectionCard title="All Deals" icon={Briefcase}>
+          <AdminDealsBrowser />
+        </SectionCard>
+
         {/* Role management */}
         <SectionCard title="User Roles" icon={UserCog}>
           <RoleManager />
