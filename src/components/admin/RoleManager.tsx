@@ -50,6 +50,11 @@ export default function RoleManager() {
   const [q, setQ] = useState("");
   const [pendingDelete, setPendingDelete] = useState<{ user_id: string; label: string } | null>(null);
   const [confirmText, setConfirmText] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newIsAdmin, setNewIsAdmin] = useState(false);
 
   const setRole = useMutation({
     mutationFn: async ({ user_id, role, enable }: { user_id: string; role: AppRole; enable: boolean }) => {
