@@ -164,7 +164,7 @@ export default function Dashboard() {
     const revPaceDelta = priorRevenue > 0 ? (revenue - priorRevenue) / priorRevenue : (revenue > 0 ? 1 : 0);
 
     /* ---- Active pipeline detail ---- */
-    const activeDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost");
+    const activeDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified");
     const pipelineValue = activeDeals.reduce(
       (s, d) => s + Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0), 0
     );
