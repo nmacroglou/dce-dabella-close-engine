@@ -368,6 +368,7 @@ export type Database = {
           closed_at: string | null
           commission_sheet: Json
           created_at: string
+          disqualified_reason: string | null
           engine_state: Json
           homeowner_email: string | null
           homeowner_phone: string | null
@@ -396,6 +397,7 @@ export type Database = {
           closed_at?: string | null
           commission_sheet?: Json
           created_at?: string
+          disqualified_reason?: string | null
           engine_state?: Json
           homeowner_email?: string | null
           homeowner_phone?: string | null
@@ -424,6 +426,7 @@ export type Database = {
           closed_at?: string | null
           commission_sheet?: Json
           created_at?: string
+          disqualified_reason?: string | null
           engine_state?: Json
           homeowner_email?: string | null
           homeowner_phone?: string | null
@@ -673,7 +676,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "rep"
-      deal_stage: "inspecting" | "presented" | "follow_up" | "won" | "lost"
+      deal_stage:
+        | "inspecting"
+        | "presented"
+        | "follow_up"
+        | "won"
+        | "lost"
+        | "disqualified"
       incident_severity: "low" | "medium" | "high" | "critical"
       incident_source:
         | "email"
@@ -831,7 +840,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "rep"],
-      deal_stage: ["inspecting", "presented", "follow_up", "won", "lost"],
+      deal_stage: [
+        "inspecting",
+        "presented",
+        "follow_up",
+        "won",
+        "lost",
+        "disqualified",
+      ],
       incident_severity: ["low", "medium", "high", "critical"],
       incident_source: [
         "email",
