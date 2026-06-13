@@ -16,11 +16,11 @@ function avgDaysFor(deals: Deal[], stage: DealStage): number {
 function ConversionRibbonBase({ deals }: { deals: Deal[] }) {
   const data = useMemo(() => {
     const counts: Record<DealStage, number> = {
-      inspecting: 0, presented: 0, follow_up: 0, won: 0, lost: 0,
+      inspecting: 0, presented: 0, follow_up: 0, won: 0, lost: 0, disqualified: 0,
     };
     for (const d of deals) counts[d.stage] += 1;
     // "ever reached" semantics: deals at stage X or later
-    const orderIdx: Record<DealStage, number> = { inspecting: 0, presented: 1, follow_up: 2, won: 3, lost: -1 };
+    const orderIdx: Record<DealStage, number> = { inspecting: 0, presented: 1, follow_up: 2, won: 3, lost: -1, disqualified: -1 };
     const everReached = (s: DealStage) =>
       deals.filter((d) => d.stage !== "lost" && orderIdx[d.stage] >= orderIdx[s]).length
       + (s !== "won" ? deals.filter((d) => d.stage === "lost").length : 0);

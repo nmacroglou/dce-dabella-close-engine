@@ -180,17 +180,20 @@ export function useUpdateDealStage() {
       selected_option,
       closed_amount,
       lost_reason,
+      disqualified_reason,
     }: {
       id: string;
       stage: DealStage;
       selected_option?: "A" | "B" | "C" | null;
       closed_amount?: number | null;
       lost_reason?: string | null;
+      disqualified_reason?: string | null;
     }) => {
       const updates: Record<string, unknown> = { stage };
       if (selected_option !== undefined) updates.selected_option = selected_option;
       if (closed_amount !== undefined) updates.closed_amount = closed_amount;
       if (lost_reason !== undefined) updates.lost_reason = lost_reason;
+      if (disqualified_reason !== undefined) updates.disqualified_reason = disqualified_reason;
 
       const { error } = await supabase.from("deals").update(updates as never).eq("id", id);
       if (error) throw error;
@@ -207,6 +210,7 @@ export function useUpdateDealStage() {
       if (vars.selected_option !== undefined) patch.selected_option = vars.selected_option;
       if (vars.closed_amount !== undefined) patch.closed_amount = vars.closed_amount;
       if (vars.lost_reason !== undefined) patch.lost_reason = vars.lost_reason;
+      if (vars.disqualified_reason !== undefined) (patch as Partial<Deal> & { disqualified_reason?: string | null }).disqualified_reason = vars.disqualified_reason;
       if (vars.stage === "won" || vars.stage === "lost") patch.closed_at = new Date().toISOString();
 
       const prevDeal = qc.getQueryData<Deal>(["deal", vars.id]);

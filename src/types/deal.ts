@@ -1,9 +1,9 @@
 import type { EngineState } from "@/types/engine";
 import type { CommissionSheetInputs } from "@/types/commission";
 
-export type DealStage = "inspecting" | "presented" | "follow_up" | "won" | "lost";
+export type DealStage = "inspecting" | "presented" | "follow_up" | "won" | "lost" | "disqualified";
 
-export const DEAL_STAGES: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost"];
+export const DEAL_STAGES: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost", "disqualified"];
 
 export const STAGE_LABELS: Record<DealStage, string> = {
   inspecting: "Inspecting",
@@ -11,6 +11,7 @@ export const STAGE_LABELS: Record<DealStage, string> = {
   follow_up: "Follow-up",
   won: "Won",
   lost: "Lost",
+  disqualified: "Disqualified",
 };
 
 export const STAGE_COLORS: Record<DealStage, string> = {
@@ -19,6 +20,28 @@ export const STAGE_COLORS: Record<DealStage, string> = {
   follow_up: "bg-warning/10 text-warning",
   won: "bg-success/10 text-success",
   lost: "bg-destructive/10 text-destructive",
+  disqualified: "bg-muted-foreground/15 text-muted-foreground",
+};
+
+export type DisqualifiedReason =
+  | "no_home"
+  | "no_money_price"
+  | "no_money_dte"
+  | "no_money_credit"
+  | "no_money_no_funds"
+  | "no_money_no_coapp"
+  | "no_money_cant_afford"
+  | "other";
+
+export const DISQUALIFIED_REASON_LABELS: Record<DisqualifiedReason, string> = {
+  no_home: "No Home",
+  no_money_price: "No Money — Price too high",
+  no_money_dte: "No Money — DTE too high / non-existent",
+  no_money_credit: "No Money — Credit in the dirt",
+  no_money_no_funds: "No Money — No funds",
+  no_money_no_coapp: "No Money — No co-applicant",
+  no_money_cant_afford: "No Money — Can't afford",
+  other: "Other",
 };
 
 export type LeadSource = "internet" | "canvass" | "self_gen" | "referral" | "other";
@@ -44,6 +67,7 @@ export interface Deal {
   stage_changed_at: string;
   closed_at: string | null;
   lost_reason: string | null;
+  disqualified_reason: string | null;
   selected_option: "A" | "B" | "C" | null;
   closed_amount: number | null;
   engine_state: Partial<EngineState>;

@@ -13,7 +13,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Briefcase, X, History, Sparkles } from "lucide-react";
-import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
+import { STAGE_LABELS, STAGE_COLORS, DISQUALIFIED_REASON_LABELS, type DealStage, type DisqualifiedReason } from "@/types/deal";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -37,12 +37,15 @@ export default function ActiveDealBanner() {
 
   const [winOpen, setWinOpen] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
+  const [dqOpen, setDqOpen] = useState(false);
   const [stageNoteOpen, setStageNoteOpen] = useState(false);
   const [pendingStage, setPendingStage] = useState<DealStage | null>(null);
   const [winAmount, setWinAmount] = useState("");
   const [winNote, setWinNote] = useState("");
   const [lostReason, setLostReason] = useState("");
   const [lostNote, setLostNote] = useState("");
+  const [dqReason, setDqReason] = useState<DisqualifiedReason | "">("");
+  const [dqNote, setDqNote] = useState("");
   const [stageNote, setStageNote] = useState("");
   const [composerOpen, setComposerOpen] = useState(false);
 
@@ -86,6 +89,12 @@ export default function ActiveDealBanner() {
       setLostReason("");
       setLostNote("");
       setLostOpen(true);
+      return;
+    }
+    if (next === "disqualified") {
+      setDqReason("");
+      setDqNote("");
+      setDqOpen(true);
       return;
     }
     setPendingStage(next);
@@ -156,6 +165,24 @@ export default function ActiveDealBanner() {
     setLostReason("");
     setLostNote("");
   };
+
+  const confirmDq = () => {
+    if (!dqReason) return;
+    const note = dqNote;
+    updateStage.mutate(
+      {
+        id: deal.id,
+        stage: "disqualified",
+        disqualified_reason: dqReason,
+      },
+      { onSuccess: () => persistStageNote("disqualified", note) }
+    );
+    setDqOpen(false);
+    setDqReason("");
+    setDqNote("");
+  };
+
+
 
 
   return (
@@ -288,6 +315,43 @@ export default function ActiveDealBanner() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={dqOpen} onOpenChange={setDqOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mark deal as disqualified</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label>Reason</Label>
+              <Select value={dqReason} onValueChange={(v) => setDqReason(v as DisqualifiedReason)}>
+                <SelectTrigger autoFocus>
+                  <SelectValue placeholder="Pick a disqualification reason…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(DISQUALIFIED_REASON_LABELS) as DisqualifiedReason[]).map((k) => (
+                    <SelectItem key={k} value={k}>{DISQUALIFIED_REASON_LABELS[k]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Textarea
+                value={dqNote}
+                onChange={(e) => setDqNote(e.target.value)}
+                placeholder="Specifics — DTE %, credit score band, missing co-app, etc."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={confirmDq} disabled={!dqReason}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
 
       <Dialog open={stageNoteOpen} onOpenChange={setStageNoteOpen}>
         <DialogContent>
