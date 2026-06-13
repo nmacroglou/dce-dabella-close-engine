@@ -201,7 +201,7 @@ export default function Dashboard() {
       (s, d) => s + ((d.closed_amount ?? 0) * commissionPct) / 100, 0
     );
     const dollarsPerHour = weeklyHours > 0 ? earnedThisWeek / weeklyHours : 0;
-    const openDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost");
+    const openDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified");
     const moneyInMotion = openDeals.reduce(
       (s, d) => s + Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0), 0
     );
