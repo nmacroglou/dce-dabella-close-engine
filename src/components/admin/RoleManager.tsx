@@ -240,6 +240,76 @@ export default function RoleManager() {
         Deleting a rep permanently removes their account and every deal, follow-up, ledger entry & photo they own.
       </p>
 
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add a new user</DialogTitle>
+            <DialogDescription>
+              Create a rep account with an email and temporary password. Share the credentials with them — they can change the password after signing in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</label>
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Alex Rivera"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</label>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="rep@dabella.us"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Temporary password</label>
+              <input
+                type="text"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 8 characters"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={newIsAdmin}
+                onChange={(e) => setNewIsAdmin(e.target.checked)}
+                className="h-4 w-4 rounded border-border"
+              />
+              Also grant Admin role
+            </label>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setAddOpen(false)}
+              disabled={createUser.isPending}
+              className="px-4 py-2 rounded-lg border border-border text-sm font-semibold hover:bg-muted transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => createUser.mutate({
+                email: newEmail, password: newPassword, display_name: newName, make_admin: newIsAdmin,
+              })}
+              disabled={createUser.isPending || !newEmail || newPassword.length < 8}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              {createUser.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Create user
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!pendingDelete} onOpenChange={(o) => { if (!o) { setPendingDelete(null); setConfirmText(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
