@@ -42,8 +42,11 @@ function useAllProfilesAndRoles() {
 
 export default function RoleManager() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const { data, isLoading, error } = useAllProfilesAndRoles();
   const [q, setQ] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<{ user_id: string; label: string } | null>(null);
+  const [confirmText, setConfirmText] = useState("");
 
   const setRole = useMutation({
     mutationFn: async ({ user_id, role, enable }: { user_id: string; role: AppRole; enable: boolean }) => {
