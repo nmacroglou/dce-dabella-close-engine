@@ -316,6 +316,43 @@ export default function ActiveDealBanner() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={dqOpen} onOpenChange={setDqOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mark deal as disqualified</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <Label>Reason</Label>
+              <Select value={dqReason} onValueChange={(v) => setDqReason(v as DisqualifiedReason)}>
+                <SelectTrigger autoFocus>
+                  <SelectValue placeholder="Pick a disqualification reason…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(DISQUALIFIED_REASON_LABELS) as DisqualifiedReason[]).map((k) => (
+                    <SelectItem key={k} value={k}>{DISQUALIFIED_REASON_LABELS[k]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Note (optional)</Label>
+              <Textarea
+                value={dqNote}
+                onChange={(e) => setDqNote(e.target.value)}
+                placeholder="Specifics — DTE %, credit score band, missing co-app, etc."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={confirmDq} disabled={!dqReason}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
+
       <Dialog open={stageNoteOpen} onOpenChange={setStageNoteOpen}>
         <DialogContent>
           <DialogHeader>
