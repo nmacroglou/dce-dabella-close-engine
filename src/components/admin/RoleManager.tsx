@@ -143,11 +143,12 @@ export default function RoleManager() {
               <th className="text-left px-2 py-2 font-semibold">User</th>
               <th className="text-center px-2 py-2 font-semibold">Rep</th>
               <th className="text-center px-2 py-2 font-semibold">Admin</th>
+              <th className="text-right px-2 py-2 font-semibold">Remove</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={3} className="text-center py-6 text-muted-foreground text-xs">No users found.</td></tr>
+              <tr><td colSpan={4} className="text-center py-6 text-muted-foreground text-xs">No users found.</td></tr>
             )}
             {filtered.map((p) => {
               const has = rolesByUser.get(p.user_id) ?? new Set<AppRole>();
