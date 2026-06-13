@@ -93,7 +93,7 @@ export function useDashboardStats() {
       const monthRevenue = closedThisMonthWon.reduce((sum, d) => sum + (d.closed_amount ?? 0), 0);
 
       // Funnel
-      const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost"];
+      const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost", "disqualified"];
       const funnel = stages.map((stage) => ({
         stage,
         count: deals.filter((d) => d.stage === stage).length,
