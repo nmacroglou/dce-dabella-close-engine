@@ -105,7 +105,7 @@ export default function Dashboard() {
     const wonInWin = deals.filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= cutoffIso);
     const lostInWin = deals.filter((d) => d.stage === "lost" && d.closed_at && d.closed_at >= cutoffIso);
     const revenue = wonInWin.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
-    const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length;
+    const active = deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified").length;
     const pendingInWin = inWinByCreated.filter(
       (d) => d.stage === "presented" || d.stage === "follow_up" || d.stage === "inspecting"
     ).length;
@@ -164,7 +164,7 @@ export default function Dashboard() {
     const revPaceDelta = priorRevenue > 0 ? (revenue - priorRevenue) / priorRevenue : (revenue > 0 ? 1 : 0);
 
     /* ---- Active pipeline detail ---- */
-    const activeDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost");
+    const activeDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified");
     const pipelineValue = activeDeals.reduce(
       (s, d) => s + Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0), 0
     );
@@ -201,7 +201,7 @@ export default function Dashboard() {
       (s, d) => s + ((d.closed_amount ?? 0) * commissionPct) / 100, 0
     );
     const dollarsPerHour = weeklyHours > 0 ? earnedThisWeek / weeklyHours : 0;
-    const openDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost");
+    const openDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified");
     const moneyInMotion = openDeals.reduce(
       (s, d) => s + Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0), 0
     );

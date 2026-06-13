@@ -93,7 +93,7 @@ export function useDashboardStats() {
       const monthRevenue = closedThisMonthWon.reduce((sum, d) => sum + (d.closed_amount ?? 0), 0);
 
       // Funnel
-      const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost"];
+      const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost", "disqualified"];
       const funnel = stages.map((stage) => ({
         stage,
         count: deals.filter((d) => d.stage === stage).length,
@@ -114,7 +114,7 @@ export function useDashboardStats() {
       const winLoss = {
         won: totalWon,
         lost: totalLost,
-        pending: deals.filter((d) => d.stage !== "won" && d.stage !== "lost").length,
+        pending: deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified").length,
         avgWon: wonAmounts.length > 0 ? wonAmounts.reduce((a, b) => a + b, 0) / wonAmounts.length : 0,
         avgLost: lostAmounts.length > 0 ? lostAmounts.reduce((a, b) => a + b, 0) / lostAmounts.length : 0,
       };
