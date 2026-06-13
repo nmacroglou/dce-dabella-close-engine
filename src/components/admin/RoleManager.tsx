@@ -101,6 +101,24 @@ export default function RoleManager() {
     onError: (e) => toast.error(errMsg(e, "Failed to delete rep")),
   });
 
+  const createUser = useMutation({
+    mutationFn: async (input: { email: string; password: string; display_name: string; make_admin: boolean }) => {
+      const { data, error } = await supabase.functions.invoke("admin-create-user", {
+        body: { ...input, make_rep: true },
+      });
+      if (error) throw error;
+      if (data && (data as { error?: string }).error) throw new Error((data as { error: string }).error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users-roles"] });
+      qc.invalidateQueries({ queryKey: ["all-profiles"] });
+      toast.success("User created");
+      setAddOpen(false);
+      setNewEmail(""); setNewPassword(""); setNewName(""); setNewIsAdmin(false);
+    },
+    onError: (e) => toast.error(errMsg(e, "Failed to create user")),
+  });
+
   const rolesByUser = useMemo(() => {
     const map = new Map<string, Set<AppRole>>();
     data?.roles.forEach((r) => {
