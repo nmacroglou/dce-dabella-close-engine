@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ShieldCheck, User as UserIcon, Search } from "lucide-react";
+import { Loader2, ShieldCheck, User as UserIcon, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { errMsg } from "@/lib/errors";
+import { useAuth } from "@/contexts/AuthContext";
 import type { AppRole } from "@/hooks/useUserRole";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ProfileRow {
   user_id: string;
@@ -37,8 +42,11 @@ function useAllProfilesAndRoles() {
 
 export default function RoleManager() {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const { data, isLoading, error } = useAllProfilesAndRoles();
   const [q, setQ] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<{ user_id: string; label: string } | null>(null);
+  const [confirmText, setConfirmText] = useState("");
 
   const setRole = useMutation({
     mutationFn: async ({ user_id, role, enable }: { user_id: string; role: AppRole; enable: boolean }) => {
@@ -63,6 +71,26 @@ export default function RoleManager() {
       toast.success("Role updated");
     },
     onError: (e) => toast.error(errMsg(e, "Failed to update role")),
+  });
+
+  const deleteRep = useMutation({
+    mutationFn: async (target_user_id: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-rep", {
+        body: { target_user_id },
+      });
+      if (error) throw error;
+      if (data && (data as { error?: string }).error) throw new Error((data as { error: string }).error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users-roles"] });
+      qc.invalidateQueries({ queryKey: ["all-profiles"] });
+      qc.invalidateQueries({ queryKey: ["deals"] });
+      qc.invalidateQueries({ queryKey: ["admin-metrics"] });
+      toast.success("Rep deleted");
+      setPendingDelete(null);
+      setConfirmText("");
+    },
+    onError: (e) => toast.error(errMsg(e, "Failed to delete rep")),
   });
 
   const rolesByUser = useMemo(() => {
@@ -115,11 +143,12 @@ export default function RoleManager() {
               <th className="text-left px-2 py-2 font-semibold">User</th>
               <th className="text-center px-2 py-2 font-semibold">Rep</th>
               <th className="text-center px-2 py-2 font-semibold">Admin</th>
+              <th className="text-right px-2 py-2 font-semibold">Remove</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={3} className="text-center py-6 text-muted-foreground text-xs">No users found.</td></tr>
+              <tr><td colSpan={4} className="text-center py-6 text-muted-foreground text-xs">No users found.</td></tr>
             )}
             {filtered.map((p) => {
               const has = rolesByUser.get(p.user_id) ?? new Set<AppRole>();
@@ -150,6 +179,20 @@ export default function RoleManager() {
                     activeClass="bg-success/15 text-success border-success/30"
                     onToggle={() => setRole.mutate({ user_id: p.user_id, role: "admin", enable: !isAdmin })}
                   />
+                  <td className="px-2 py-2 text-right">
+                    <button
+                      onClick={() => setPendingDelete({
+                        user_id: p.user_id,
+                        label: p.display_name || p.email || p.user_id.slice(0, 8),
+                      })}
+                      disabled={p.user_id === user?.id}
+                      title={p.user_id === user?.id ? "You can't delete yourself" : "Delete rep & all their data"}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -159,7 +202,43 @@ export default function RoleManager() {
 
       <p className="text-[11px] text-muted-foreground">
         Reps see only their own data. Admins see all reps and the Admin Console.
+        Deleting a rep permanently removes their account and every deal, follow-up, ledger entry & photo they own.
       </p>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => { if (!o) { setPendingDelete(null); setConfirmText(""); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this rep?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to permanently delete <span className="font-semibold text-foreground">{pendingDelete?.label}</span>,
+              their login, and every deal, follow-up, ledger entry, incident, photo, and commission record they own.
+              This cannot be undone.
+              <br /><br />
+              Type <span className="font-mono font-bold text-destructive">DELETE</span> to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="DELETE"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-destructive/40"
+            autoFocus
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteRep.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={confirmText !== "DELETE" || deleteRep.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                if (pendingDelete) deleteRep.mutate(pendingDelete.user_id);
+              }}
+            >
+              {deleteRep.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete rep"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

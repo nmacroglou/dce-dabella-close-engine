@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import AppHeader from "@/components/AppHeader";
 import RoleManager from "@/components/admin/RoleManager";
+import AdminDealsBrowser from "@/components/admin/AdminDealsBrowser";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import {
@@ -340,6 +341,11 @@ export default function Admin() {
               })}
             </div>
           )}
+        </SectionCard>
+
+        {/* All deals (cross-rep) */}
+        <SectionCard title="All Deals" icon={Briefcase}>
+          <AdminDealsBrowser />
         </SectionCard>
 
         {/* Role management */}
