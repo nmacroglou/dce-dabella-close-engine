@@ -13,7 +13,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Briefcase, X, History, Sparkles } from "lucide-react";
-import { STAGE_LABELS, STAGE_COLORS, type DealStage } from "@/types/deal";
+import { STAGE_LABELS, STAGE_COLORS, DISQUALIFIED_REASON_LABELS, type DealStage, type DisqualifiedReason } from "@/types/deal";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -37,12 +37,15 @@ export default function ActiveDealBanner() {
 
   const [winOpen, setWinOpen] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
+  const [dqOpen, setDqOpen] = useState(false);
   const [stageNoteOpen, setStageNoteOpen] = useState(false);
   const [pendingStage, setPendingStage] = useState<DealStage | null>(null);
   const [winAmount, setWinAmount] = useState("");
   const [winNote, setWinNote] = useState("");
   const [lostReason, setLostReason] = useState("");
   const [lostNote, setLostNote] = useState("");
+  const [dqReason, setDqReason] = useState<DisqualifiedReason | "">("");
+  const [dqNote, setDqNote] = useState("");
   const [stageNote, setStageNote] = useState("");
   const [composerOpen, setComposerOpen] = useState(false);
 
@@ -86,6 +89,12 @@ export default function ActiveDealBanner() {
       setLostReason("");
       setLostNote("");
       setLostOpen(true);
+      return;
+    }
+    if (next === "disqualified") {
+      setDqReason("");
+      setDqNote("");
+      setDqOpen(true);
       return;
     }
     setPendingStage(next);
