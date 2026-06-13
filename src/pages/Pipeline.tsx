@@ -130,7 +130,7 @@ export default function Pipeline() {
               <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Pipeline</h3>
               <span className="text-[11px] text-muted-foreground">{deals.length} deals</span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {grouped.map(({ stage, deals: ds }) => {
                 const canDrop = DRAGGABLE_TARGETS.includes(stage);
                 const isDropTarget = dropTarget === stage;
