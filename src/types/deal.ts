@@ -67,6 +67,7 @@ export interface Deal {
   stage_changed_at: string;
   closed_at: string | null;
   lost_reason: string | null;
+  disqualified_reason: string | null;
   selected_option: "A" | "B" | "C" | null;
   closed_amount: number | null;
   engine_state: Partial<EngineState>;
