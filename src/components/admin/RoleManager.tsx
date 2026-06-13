@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ShieldCheck, User as UserIcon, Search, Trash2 } from "lucide-react";
+import { Loader2, ShieldCheck, User as UserIcon, Search, Trash2, UserPlus } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { errMsg } from "@/lib/errors";
@@ -47,6 +50,11 @@ export default function RoleManager() {
   const [q, setQ] = useState("");
   const [pendingDelete, setPendingDelete] = useState<{ user_id: string; label: string } | null>(null);
   const [confirmText, setConfirmText] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newIsAdmin, setNewIsAdmin] = useState(false);
 
   const setRole = useMutation({
     mutationFn: async ({ user_id, role, enable }: { user_id: string; role: AppRole; enable: boolean }) => {
@@ -93,6 +101,24 @@ export default function RoleManager() {
     onError: (e) => toast.error(errMsg(e, "Failed to delete rep")),
   });
 
+  const createUser = useMutation({
+    mutationFn: async (input: { email: string; password: string; display_name: string; make_admin: boolean }) => {
+      const { data, error } = await supabase.functions.invoke("admin-create-user", {
+        body: { ...input, make_rep: true },
+      });
+      if (error) throw error;
+      if (data && (data as { error?: string }).error) throw new Error((data as { error: string }).error);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users-roles"] });
+      qc.invalidateQueries({ queryKey: ["all-profiles"] });
+      toast.success("User created");
+      setAddOpen(false);
+      setNewEmail(""); setNewPassword(""); setNewName(""); setNewIsAdmin(false);
+    },
+    onError: (e) => toast.error(errMsg(e, "Failed to create user")),
+  });
+
   const rolesByUser = useMemo(() => {
     const map = new Map<string, Set<AppRole>>();
     data?.roles.forEach((r) => {
@@ -126,14 +152,23 @@ export default function RoleManager() {
 
   return (
     <div className="space-y-3">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name or email…"
-          className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-        />
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search by name or email…"
+            className="w-full pl-9 pr-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </div>
+        <button
+          onClick={() => setAddOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-primary/40 bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition-colors shrink-0"
+        >
+          <UserPlus className="h-4 w-4" />
+          Add user
+        </button>
       </div>
 
       <div className="overflow-x-auto -mx-2">
@@ -204,6 +239,76 @@ export default function RoleManager() {
         Reps see only their own data. Admins see all reps and the Admin Console.
         Deleting a rep permanently removes their account and every deal, follow-up, ledger entry & photo they own.
       </p>
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add a new user</DialogTitle>
+            <DialogDescription>
+              Create a rep account with an email and temporary password. Share the credentials with them — they can change the password after signing in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Name</label>
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Alex Rivera"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</label>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="rep@dabella.us"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Temporary password</label>
+              <input
+                type="text"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="At least 8 characters"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={newIsAdmin}
+                onChange={(e) => setNewIsAdmin(e.target.checked)}
+                className="h-4 w-4 rounded border-border"
+              />
+              Also grant Admin role
+            </label>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setAddOpen(false)}
+              disabled={createUser.isPending}
+              className="px-4 py-2 rounded-lg border border-border text-sm font-semibold hover:bg-muted transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => createUser.mutate({
+                email: newEmail, password: newPassword, display_name: newName, make_admin: newIsAdmin,
+              })}
+              disabled={createUser.isPending || !newEmail || newPassword.length < 8}
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              {createUser.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Create user
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!pendingDelete} onOpenChange={(o) => { if (!o) { setPendingDelete(null); setConfirmText(""); } }}>
         <AlertDialogContent>
