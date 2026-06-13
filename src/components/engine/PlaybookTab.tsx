@@ -10,6 +10,7 @@ import PaymentFactorsPanel from "./playbook/PaymentFactorsPanel";
 import CollapsibleCard from "./shared/CollapsibleCard";
 import BattleCardPanel from "./playbook/BattleCardPanel";
 import PillarsBattleCardPanel from "./playbook/PillarsBattleCardPanel";
+import CvvBattleCardsPanel from "./playbook/CvvBattleCardsPanel";
 
 const TAB_LABELS: Record<string, string> = {
   calculator: "Calculator",
@@ -117,6 +118,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
           {/* Battle Cards */}
           <PillarsBattleCardPanel />
           <BattleCardPanel />
+          <CvvBattleCardsPanel />
 
           {/* Tips */}
           <div className="card-elevated-lg p-6">
