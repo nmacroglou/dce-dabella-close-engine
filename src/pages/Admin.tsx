@@ -7,7 +7,7 @@ import { useIsAdmin } from "@/hooks/useUserRole";
 import {
   Loader2, Users, UserPlus, Activity, Briefcase, DollarSign,
   TrendingUp, Trophy, AlertCircle, ShieldCheck, MessageSquareWarning, Target,
-  UserCog,
+  UserCog, ChevronDown,
 } from "lucide-react";
 import { formatCurrency, formatCount, pct } from "@/lib/format";
 import { DEAL_STAGES, STAGE_LABELS, type DealStage } from "@/types/deal";
