@@ -47,7 +47,8 @@ function KpiTile({
   );
 }
 
-function SectionCard({ title, icon: Icon, children, action }: { title: string; icon: any; children: React.ReactNode; action?: React.ReactNode }) {
+function SectionCard({ title, icon: Icon, children, action, collapsible, defaultOpen = true }: { title: string; icon: any; children: React.ReactNode; action?: React.ReactNode; collapsible?: boolean; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <section className="card-premium p-5">
       <div className="flex items-center justify-between mb-4">
@@ -55,9 +56,20 @@ function SectionCard({ title, icon: Icon, children, action }: { title: string; i
           <Icon className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-bold font-display text-foreground tracking-tight">{title}</h2>
         </div>
-        {action}
+        <div className="flex items-center gap-2">
+          {action}
+          {collapsible && (
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+              aria-label={open ? "Collapse" : "Expand"}
+            >
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${open ? "" : "-rotate-90"}`} />
+            </button>
+          )}
+        </div>
       </div>
-      {children}
+      {(!collapsible || open) && children}
     </section>
   );
 }
