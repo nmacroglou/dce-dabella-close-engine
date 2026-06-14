@@ -163,33 +163,60 @@ export default function EnergyLens() {
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8 sm:space-y-10 print:hidden">
 
         {/* Hero header */}
-        <section className="relative overflow-hidden rounded-[2rem] border border-hairline bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-12 shadow-[var(--shadow-lg)]">
-          <div className="pointer-events-none absolute -top-32 -right-20 h-96 w-96 rounded-full bg-primary/25 blur-[120px]" />
-          <div className="pointer-events-none absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-accent/20 blur-[120px]" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{backgroundImage: "radial-gradient(hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px"}} />
+        <section className="relative overflow-hidden rounded-[2.5rem] border border-hairline bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-14 shadow-[var(--shadow-xl)]">
+          <div className="pointer-events-none absolute -top-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-primary/30 blur-[140px] animate-pulse" style={{ animationDuration: "6s" }} />
+          <div className="pointer-events-none absolute -bottom-40 -left-24 h-[28rem] w-[28rem] rounded-full bg-accent/25 blur-[140px] animate-pulse" style={{ animationDuration: "8s", animationDelay: "1s" }} />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.05]" style={{backgroundImage: "radial-gradient(hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "28px 28px"}} />
+
           <div className="relative flex items-start justify-between gap-6 flex-wrap">
-            <div className="space-y-5 max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/15 backdrop-blur px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary shadow-[var(--shadow-glow)]">
+            <div className="space-y-6 max-w-3xl">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/40 bg-primary/15 backdrop-blur-xl px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-primary shadow-[var(--shadow-glow)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                </span>
                 <Sparkles className="h-3.5 w-3.5" />
-                Homeowner inflation lens
+                Homeowner inflation lens · Live
               </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-extrabold tracking-tight leading-[0.98]">
+              <h1 className="text-5xl sm:text-7xl lg:text-[5.5rem] font-display font-extrabold tracking-[-0.035em] leading-[0.92]">
                 Energy Roof<br/><span className="gradient-text">Inflation Lens</span>
               </h1>
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
-                A homeowner-friendly view of utility inflation and how a GAF Energy Roof gives you a lever to reduce exposure.
+              <p className="text-base sm:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                A homeowner-friendly view of utility inflation — and how a GAF Energy Roof becomes the lever that reduces your exposure for decades.
               </p>
             </div>
-            <Button onClick={handlePrint} variant="outline" size="lg" className="gap-2 shrink-0 backdrop-blur bg-card/60">
+            <Button onClick={handlePrint} variant="outline" size="lg" className="gap-2 shrink-0 backdrop-blur-xl bg-card/70 border-hairline-strong hover:border-primary/50 hover:bg-primary/5 h-12 px-5 text-base">
               <Printer className="h-4 w-4" /> Print summary
             </Button>
+          </div>
+
+          {/* Hero KPI ribbon — live snapshot */}
+          <div className="relative mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: "Do-nothing spend", value: formatCurrencyShort(result.cumulativeDoNothing), sub: `${horizon}-year exposure`, accent: "text-destructive", icon: TrendingUp },
+              { label: "Exposure reduced", value: pct(result.inflationExposureReducedPct), sub: "with your current setup", accent: "text-accent", icon: Shield },
+              { label: "Year-1 energy value", value: formatCurrency(result.valueYear1), sub: `${systemKw}kW · ${hasBattery ? "battery" : "no battery"}`, accent: "text-primary", icon: Zap },
+              { label: "25-year energy value", value: formatCurrencyShort(result.series[24]?.energyValueCumulative ?? result.cumulativeEnergyValue), sub: "cumulative roof output", accent: "text-primary", icon: Sun },
+            ].map((k) => (
+              <div key={k.label} className="group relative overflow-hidden rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-4 transition-all hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
+                <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-primary/15 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  <k.icon className={`h-3.5 w-3.5 ${k.accent}`} />
+                  <span className="truncate">{k.label}</span>
+                </div>
+                <div className={`relative mt-2 text-2xl sm:text-3xl font-display font-extrabold tracking-tight tabular-nums leading-none ${k.accent}`}>{k.value}</div>
+                <div className="relative text-[11px] text-muted-foreground mt-1.5 truncate">{k.sub}</div>
+              </div>
+            ))}
           </div>
         </section>
 
 
         {/* Guided steps strip */}
-        <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-4 sm:p-5 flex items-center gap-2 sm:gap-3 text-sm font-semibold overflow-x-auto shadow-[var(--shadow-sm)]">
+        <nav aria-label="Guided steps" className="relative rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-4 sm:p-5 flex items-center gap-2 sm:gap-3 text-sm font-semibold overflow-x-auto shadow-[var(--shadow-sm)]">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
           {[
             { n: 1, label: "Utility", tone: "primary" as const },
             { n: 2, label: "Inflation", tone: "primary" as const },
@@ -197,11 +224,11 @@ export default function EnergyLens() {
             { n: 4, label: "Choose option", tone: "accent" as const },
           ].map((s, i, arr) => (
             <div key={s.n} className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <span className="flex items-center gap-2 rounded-xl bg-muted/50 border border-hairline px-3.5 py-2">
-                <span className={`h-7 w-7 rounded-full grid place-items-center text-xs font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground" : "gradient-brand text-primary-foreground"} shadow-[var(--shadow-glow)]`}>{s.n}</span>
-                <span className="text-foreground whitespace-nowrap">{s.label}</span>
+              <span className="flex items-center gap-2.5 rounded-xl bg-muted/50 border border-hairline px-4 py-2.5 hover:border-hairline-strong transition-colors">
+                <span className={`h-8 w-8 rounded-full grid place-items-center text-xs font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground shadow-[var(--shadow-glow-accent)]" : "gradient-brand text-primary-foreground shadow-[var(--shadow-glow)]"}`}>{s.n}</span>
+                <span className="text-foreground whitespace-nowrap text-[13px] tracking-tight">{s.label}</span>
               </span>
-              {i < arr.length - 1 && <span className="text-hairline-strong text-lg">→</span>}
+              {i < arr.length - 1 && <span className="text-hairline-strong text-xl font-light">→</span>}
             </div>
           ))}
         </nav>
@@ -422,56 +449,71 @@ export default function EnergyLens() {
 
         {/* Options panel */}
         <SectionCard eyebrow="Step 4" title="Choose Your Lever" subtitle="Pick the option that fits the home" icon={Sparkles}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {options.map((opt) => {
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {options.map((opt, idx) => {
               const active = systemKw === opt.kw;
+              const OptIcon = idx === 0 ? Shield : idx === 1 ? Target : Zap;
               return (
                 <button
                   key={opt.key}
                   onClick={() => setSystemKw(opt.kw)}
-                  className={`group relative overflow-hidden text-left rounded-2xl border p-5 transition-all active:scale-[0.99] ${
+                  className={`group relative overflow-hidden text-left rounded-2xl border p-6 transition-all duration-300 active:scale-[0.99] ${
                     active
-                      ? "border-primary bg-gradient-to-br from-primary/10 via-card to-card shadow-[var(--shadow-glow)]"
-                      : "border-hairline bg-card hover:border-hairline-strong hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
+                      ? "border-primary bg-gradient-to-br from-primary/15 via-card to-card shadow-[var(--shadow-glow)] -translate-y-1"
+                      : "border-hairline bg-card hover:border-primary/40 hover:-translate-y-1 hover:shadow-[var(--shadow-lg)]"
                   }`}
                 >
-                  {active && (
-                    <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/15 blur-2xl" />
-                  )}
-                  <div className="relative flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${opt.accent}`}>Option {opt.key} · {opt.kw}kW</p>
-                      <h4 className="text-lg font-display font-extrabold mt-1 leading-tight">{opt.title}</h4>
+                  {/* Top accent line */}
+                  <div className={`pointer-events-none absolute inset-x-0 top-0 h-[2px] transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                       style={{ background: idx === 1 ? "linear-gradient(90deg, transparent, hsl(var(--accent)), transparent)" : "linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)" }} />
+                  {/* Corner glow */}
+                  <div className={`pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full blur-3xl transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-60"} ${idx === 1 ? "bg-accent/25" : "bg-primary/25"}`} />
+
+                  {/* Header */}
+                  <div className="relative flex items-start justify-between gap-3 mb-5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={`flex h-12 w-12 items-center justify-center rounded-2xl ring-1 transition-all ${active ? `${idx === 1 ? "bg-accent/15 text-accent ring-accent/40" : "bg-primary/15 text-primary ring-primary/40"}` : "bg-muted/60 text-muted-foreground ring-hairline group-hover:text-foreground"}`}>
+                        <OptIcon className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${opt.accent}`}>Option {opt.key} · {opt.kw}kW</p>
+                        <h4 className="text-xl font-display font-extrabold mt-0.5 leading-tight tracking-tight">{opt.title}</h4>
+                      </div>
                     </div>
                     {active && (
-                      <span className="flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                      <span className="flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] shrink-0 shadow-[var(--shadow-glow)]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
                         Selected
                       </span>
                     )}
                   </div>
-                  <div className="relative mt-4 space-y-2 text-sm">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-muted-foreground text-xs">Year 1</span>
-                      <span className="font-bold tabular-nums">{formatCurrency(opt.y1)}</span>
+
+                  {/* Hero number — 25y */}
+                  <div className="relative rounded-xl bg-muted/40 border border-hairline p-4 mb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">25-year energy value</p>
+                    <p className={`mt-1 font-display font-extrabold text-4xl sm:text-5xl tabular-nums tracking-tight leading-none ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</p>
+                  </div>
+
+                  {/* Year-1 / 10-year row */}
+                  <div className="relative grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-muted/30 border border-hairline px-3 py-2.5">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Year 1</p>
+                      <p className="font-display font-extrabold tabular-nums text-base mt-0.5">{formatCurrency(opt.y1)}</p>
                     </div>
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-muted-foreground text-xs">10-year</span>
-                      <span className="font-bold tabular-nums">{formatCurrencyShort(opt.y10)}</span>
-                    </div>
-                    <div className="flex justify-between items-baseline pt-2 mt-1 border-t border-hairline">
-                      <span className="text-muted-foreground text-xs uppercase tracking-wider">25-year</span>
-                      <span className={`font-display font-extrabold text-xl tabular-nums ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</span>
+                    <div className="rounded-lg bg-muted/30 border border-hairline px-3 py-2.5">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">10-year</p>
+                      <p className="font-display font-extrabold tabular-nums text-base mt-0.5">{formatCurrencyShort(opt.y10)}</p>
                     </div>
                   </div>
+
                   <p className="relative text-[11px] text-muted-foreground mt-4 italic leading-snug">{opt.tag}</p>
                 </button>
               );
             })}
           </div>
-          <div className="mt-5 rounded-2xl bg-gradient-to-r from-muted/60 to-muted/30 border border-hairline p-4 text-sm">
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80 mb-1">Financing language</p>
-            <p className="text-muted-foreground leading-relaxed">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
+          <div className="mt-6 rounded-2xl bg-gradient-to-r from-primary/10 via-muted/40 to-accent/10 border border-hairline p-5 text-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary/90 mb-1.5 flex items-center gap-1.5"><Info className="h-3 w-3" /> Financing language</p>
+            <p className="text-foreground/85 leading-relaxed">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
           </div>
         </SectionCard>
 
