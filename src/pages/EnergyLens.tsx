@@ -449,36 +449,6 @@ export default function EnergyLens() {
 
         {/* Options panel */}
         <SectionCard eyebrow="Step 4" title="Choose Your Lever" subtitle="Pick the option that fits the home" icon={Sparkles}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {options.map((opt) => {
-              const active = systemKw === opt.kw;
-              return (
-                <button
-                  key={opt.key}
-                  onClick={() => setSystemKw(opt.kw)}
-                  className={`group relative overflow-hidden text-left rounded-2xl border p-5 transition-all active:scale-[0.99] ${
-                    active
-                      ? "border-primary bg-gradient-to-br from-primary/10 via-card to-card shadow-[var(--shadow-glow)]"
-                      : "border-hairline bg-card hover:border-hairline-strong hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]"
-                  }`}
-                >
-                  {active && (
-                    <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/15 blur-2xl" />
-                  )}
-                  <div className="relative flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${opt.accent}`}>Option {opt.key} · {opt.kw}kW</p>
-                      <h4 className="text-lg font-display font-extrabold mt-1 leading-tight">{opt.title}</h4>
-                    </div>
-                    {active && (
-                      <span className="flex items-center gap-1 rounded-full bg-primary/15 text-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                        Selected
-                      </span>
-                    )}
-                  </div>
-        {/* Options panel */}
-        <SectionCard eyebrow="Step 4" title="Choose Your Lever" subtitle="Pick the option that fits the home" icon={Sparkles}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {options.map((opt, idx) => {
               const active = systemKw === opt.kw;
