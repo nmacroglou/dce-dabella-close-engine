@@ -303,111 +303,116 @@ export default function EnergyLens() {
           subtitle="Self-used power vs. exports · what battery storage actually changes · the perfect scenario for this home"
           icon={Sun}
         >
-          {/* Sticky control deck: every input the dashboard reacts to */}
-          <div className="sticky top-2 z-30 -mx-5 sm:-mx-6 px-5 sm:px-6 py-3 mb-5 rounded-2xl glass-strong shadow-[var(--shadow-sm)]">
-            <div className="flex items-center gap-2 mb-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
-                <Sparkles className="h-3 w-3" /> Live controls
-              </span>
-              <span className="text-[11px] text-muted-foreground">Move any slider — every graph below responds</span>
+          {/* Unified frame: live controls + dashboard together */}
+          <div className="rounded-2xl border border-hairline bg-card/60 shadow-[var(--shadow-sm)] overflow-hidden">
+            <div className="sticky top-2 z-30 px-4 sm:px-5 py-3 border-b border-hairline bg-card/95 backdrop-blur-xl">
+              <div className="flex items-center gap-2 mb-2.5">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
+                  <Sparkles className="h-3 w-3" /> Live controls
+                </span>
+                <span className="text-[11px] text-muted-foreground">Move any slider — the dashboard below responds</span>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr_0.8fr] gap-3">
+                {/* Time horizon */}
+                <div>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Time horizon</Label>
+                    <span className="text-sm font-display font-extrabold text-primary tabular-nums">{horizon}y</span>
+                  </div>
+                  <Slider min={1} max={50} step={1} value={[horizon]} onValueChange={(v) => setHorizon(v[0])} />
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {[10, 15, 20, 25, 30].map((y) => (
+                      <button key={y} onClick={() => setHorizon(y)}
+                        className={`flex-1 px-1.5 py-1 rounded-md text-[10px] font-bold border transition-all ${horizon === y ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
+                        {y}y
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* System size */}
+                <div>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">System size</Label>
+                    <span className="text-sm font-display font-extrabold text-primary tabular-nums">{systemKw.toFixed(1)}kW</span>
+                  </div>
+                  <Slider min={1} max={20} step={0.5} value={[systemKw]} onValueChange={(v) => setSystemKw(v[0])} />
+                  <div className="flex gap-1 mt-1.5">
+                    {[2, 3, 4].map((kw) => (
+                      <button key={kw} onClick={() => setSystemKw(kw)}
+                        className={`flex-1 px-1.5 py-1 rounded-md text-[10px] font-bold border transition-all ${systemKw === kw ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
+                        {kw}kW
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Self-consumption */}
+                <div>
+                  <div className="flex justify-between items-baseline mb-1">
+                    <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Used in home</Label>
+                    <span className="text-sm font-display font-extrabold text-accent tabular-nums">{pct(selfConsumption)}</span>
+                  </div>
+                  <Slider min={0.1} max={1} step={0.05} value={[selfConsumption]} onValueChange={(v) => setSelfConsumption(v[0])} />
+                  <div className="flex gap-1 mt-1.5">
+                    {SELF_CONSUMPTION_PRESETS.map((p) => (
+                      <button key={p.id} onClick={() => setSelfConsumption(p.pct)}
+                        className={`flex-1 px-1.5 py-1 rounded-md text-[10px] font-semibold border transition-all ${Math.abs(selfConsumption - p.pct) < 0.01 ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
+                        {p.label.split(" ")[0]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Battery */}
+                <div>
+                  <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1 block">Battery</Label>
+                  <div className="flex gap-1 mt-1">
+                    <button onClick={() => { setHasBattery(true); setSelfConsumption(0.85); }}
+                      className={`flex-1 px-2 py-2 rounded-md text-xs font-bold border transition-all ${hasBattery ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
+                      <Battery className="h-3 w-3 inline mr-1" /> Yes
+                    </button>
+                    <button onClick={() => { setHasBattery(false); setSelfConsumption(0.35); }}
+                      className={`flex-1 px-2 py-2 rounded-md text-xs font-bold border transition-all ${!hasBattery ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
+                      No
+                    </button>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <Label className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground whitespace-nowrap">Export $</Label>
+                    <Input type="number" step="0.01" value={exportRate} onChange={(e) => setExportRate(Number(e.target.value) || 0)} className="h-6 text-[11px] px-1.5" />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr_0.8fr] gap-3">
-              {/* Time horizon */}
-              <div>
-                <div className="flex justify-between items-baseline mb-1">
-                  <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Time horizon</Label>
-                  <span className="text-sm font-display font-extrabold text-primary tabular-nums">{horizon}y</span>
-                </div>
-                <Slider min={1} max={50} step={1} value={[horizon]} onValueChange={(v) => setHorizon(v[0])} />
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {[10, 15, 20, 25, 30].map((y) => (
-                    <button key={y} onClick={() => setHorizon(y)}
-                      className={`flex-1 px-1.5 py-1 rounded-md text-[10px] font-bold border transition-all ${horizon === y ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
-                      {y}y
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* System size */}
-              <div>
-                <div className="flex justify-between items-baseline mb-1">
-                  <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">System size</Label>
-                  <span className="text-sm font-display font-extrabold text-primary tabular-nums">{systemKw.toFixed(1)}kW</span>
-                </div>
-                <Slider min={1} max={20} step={0.5} value={[systemKw]} onValueChange={(v) => setSystemKw(v[0])} />
-                <div className="flex gap-1 mt-1.5">
-                  {[2, 3, 4].map((kw) => (
-                    <button key={kw} onClick={() => setSystemKw(kw)}
-                      className={`flex-1 px-1.5 py-1 rounded-md text-[10px] font-bold border transition-all ${systemKw === kw ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
-                      {kw}kW
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Self-consumption */}
-              <div>
-                <div className="flex justify-between items-baseline mb-1">
-                  <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Used in home</Label>
-                  <span className="text-sm font-display font-extrabold text-accent tabular-nums">{pct(selfConsumption)}</span>
-                </div>
-                <Slider min={0.1} max={1} step={0.05} value={[selfConsumption]} onValueChange={(v) => setSelfConsumption(v[0])} />
-                <div className="flex gap-1 mt-1.5">
-                  {SELF_CONSUMPTION_PRESETS.map((p) => (
-                    <button key={p.id} onClick={() => setSelfConsumption(p.pct)}
-                      className={`flex-1 px-1.5 py-1 rounded-md text-[10px] font-semibold border transition-all ${Math.abs(selfConsumption - p.pct) < 0.01 ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
-                      {p.label.split(" ")[0]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Battery */}
-              <div>
-                <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1 block">Battery</Label>
-                <div className="flex gap-1 mt-1">
-                  <button onClick={() => { setHasBattery(true); setSelfConsumption(0.85); }}
-                    className={`flex-1 px-2 py-2 rounded-md text-xs font-bold border transition-all ${hasBattery ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
-                    <Battery className="h-3 w-3 inline mr-1" /> Yes
-                  </button>
-                  <button onClick={() => { setHasBattery(false); setSelfConsumption(0.35); }}
-                    className={`flex-1 px-2 py-2 rounded-md text-xs font-bold border transition-all ${!hasBattery ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline hover:bg-muted"}`}>
-                    No
-                  </button>
-                </div>
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <Label className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground whitespace-nowrap">Export $</Label>
-                  <Input type="number" step="0.01" value={exportRate} onChange={(e) => setExportRate(Number(e.target.value) || 0)} className="h-6 text-[11px] px-1.5" />
-                </div>
-              </div>
+            <div className="p-4 sm:p-5">
+              <Suspense fallback={<div className="h-96 grid place-items-center rounded-2xl border border-border bg-card"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
+                <LiveImpactDashboard
+                  baseInputs={{
+                    monthlyBill,
+                    rate: effectiveRate,
+                    systemKw,
+                    productionFactor: utility.productionFactor,
+                    selfConsumptionPct: selfConsumption,
+                    exportRate,
+                    inflationPct,
+                    horizonYears: horizon,
+                    degradationPct: degradationOn ? 0.005 : 0,
+                    hasBattery,
+                  }}
+                  result={result}
+                  horizon={horizon}
+                  systemKw={systemKw}
+                  hasBattery={hasBattery}
+                  onSetSystemKw={setSystemKw}
+                  onSetHasBattery={setHasBattery}
+                  onSetSelfConsumption={setSelfConsumption}
+                />
+              </Suspense>
             </div>
           </div>
 
-          <Suspense fallback={<div className="h-96 grid place-items-center rounded-2xl border border-border bg-card"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
-            <LiveImpactDashboard
-              baseInputs={{
-                monthlyBill,
-                rate: effectiveRate,
-                systemKw,
-                productionFactor: utility.productionFactor,
-                selfConsumptionPct: selfConsumption,
-                exportRate,
-                inflationPct,
-                horizonYears: horizon,
-                degradationPct: degradationOn ? 0.005 : 0,
-                hasBattery,
-              }}
-              result={result}
-              horizon={horizon}
-              systemKw={systemKw}
-              hasBattery={hasBattery}
-              onSetSystemKw={setSystemKw}
-              onSetHasBattery={setHasBattery}
-              onSetSelfConsumption={setSelfConsumption}
-            />
-          </Suspense>
 
           <div className="mt-5">
             <YearlySavingsBreakdown series={result.series} horizon={horizon} />
