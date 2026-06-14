@@ -189,22 +189,23 @@ export default function EnergyLens() {
 
 
         {/* Guided steps strip */}
-        <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-2.5 sm:p-3 flex items-center gap-1.5 sm:gap-2 text-xs font-semibold overflow-x-auto">
+        <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-4 sm:p-5 flex items-center gap-2 sm:gap-3 text-sm font-semibold overflow-x-auto shadow-[var(--shadow-sm)]">
           {[
             { n: 1, label: "Utility", tone: "primary" as const },
             { n: 2, label: "Inflation", tone: "primary" as const },
             { n: 3, label: "System size", tone: "primary" as const },
             { n: 4, label: "Choose option", tone: "accent" as const },
           ].map((s, i, arr) => (
-            <div key={s.n} className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <span className="flex items-center gap-1.5 rounded-xl bg-muted/50 border border-hairline px-2.5 py-1.5">
-                <span className={`h-5 w-5 rounded-full grid place-items-center text-[10px] font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground" : "gradient-brand text-primary-foreground"}`}>{s.n}</span>
+            <div key={s.n} className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <span className="flex items-center gap-2 rounded-xl bg-muted/50 border border-hairline px-3.5 py-2">
+                <span className={`h-7 w-7 rounded-full grid place-items-center text-xs font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground" : "gradient-brand text-primary-foreground"} shadow-[var(--shadow-glow)]`}>{s.n}</span>
                 <span className="text-foreground whitespace-nowrap">{s.label}</span>
               </span>
-              {i < arr.length - 1 && <span className="text-hairline-strong">→</span>}
+              {i < arr.length - 1 && <span className="text-hairline-strong text-lg">→</span>}
             </div>
           ))}
         </nav>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* 1) Your Utility Reality */}
