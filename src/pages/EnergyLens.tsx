@@ -416,7 +416,7 @@ export default function EnergyLens() {
 
 
         {/* Options panel */}
-        <SectionCard eyebrow="Step 4" title="Choose Your Lever" subtitle="Pick the option that fits the home" icon={Sparkles}>
+        <SectionCard eyebrow="The close · pick your hedge" title="Choose Your Lever" subtitle="Same Golden Pledge, same Factory-Trained installers, same Master Elite warranty — only the kW changes" icon={Sparkles}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {options.map((opt, idx) => {
               const active = systemKw === opt.kw;
