@@ -530,7 +530,18 @@ export default function EnergyLens() {
         </SectionCard>
 
         {/* Live utility watch — auto-refreshed daily from SRP/APS/TEP/AZCC */}
-        <UtilityNewsFeed activeUtility={(utility.id.toUpperCase() as "SRP" | "APS" | "TEP")} />
+        <Collapsible open={utilityWatchOpen} onOpenChange={setUtilityWatchOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              <span className="flex items-center gap-2"><Info className="h-4 w-4" /> Live utility watch — {utility.name} headlines & rate filings</span>
+              {utilityWatchOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <UtilityNewsFeed activeUtility={(utility.id.toUpperCase() as "SRP" | "APS" | "TEP")} />
+          </CollapsibleContent>
+        </Collapsible>
+
 
         {/* Rules & Reality + Driver + Script */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
