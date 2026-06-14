@@ -477,28 +477,73 @@ export default function EnergyLens() {
                       </span>
                     )}
                   </div>
-                  <div className="relative mt-4 space-y-2 text-sm">
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-muted-foreground text-xs">Year 1</span>
-                      <span className="font-bold tabular-nums">{formatCurrency(opt.y1)}</span>
+        {/* Options panel */}
+        <SectionCard eyebrow="Step 4" title="Choose Your Lever" subtitle="Pick the option that fits the home" icon={Sparkles}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {options.map((opt, idx) => {
+              const active = systemKw === opt.kw;
+              const OptIcon = idx === 0 ? Shield : idx === 1 ? Target : Zap;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setSystemKw(opt.kw)}
+                  className={`group relative overflow-hidden text-left rounded-2xl border p-6 transition-all duration-300 active:scale-[0.99] ${
+                    active
+                      ? "border-primary bg-gradient-to-br from-primary/15 via-card to-card shadow-[var(--shadow-glow)] -translate-y-1"
+                      : "border-hairline bg-card hover:border-primary/40 hover:-translate-y-1 hover:shadow-[var(--shadow-lg)]"
+                  }`}
+                >
+                  {/* Top accent line */}
+                  <div className={`pointer-events-none absolute inset-x-0 top-0 h-[2px] transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                       style={{ background: idx === 1 ? "linear-gradient(90deg, transparent, hsl(var(--accent)), transparent)" : "linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)" }} />
+                  {/* Corner glow */}
+                  <div className={`pointer-events-none absolute -top-16 -right-16 h-40 w-40 rounded-full blur-3xl transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-60"} ${idx === 1 ? "bg-accent/25" : "bg-primary/25"}`} />
+
+                  {/* Header */}
+                  <div className="relative flex items-start justify-between gap-3 mb-5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={`flex h-12 w-12 items-center justify-center rounded-2xl ring-1 transition-all ${active ? `${idx === 1 ? "bg-accent/15 text-accent ring-accent/40" : "bg-primary/15 text-primary ring-primary/40"}` : "bg-muted/60 text-muted-foreground ring-hairline group-hover:text-foreground"}`}>
+                        <OptIcon className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className={`text-[10px] font-bold uppercase tracking-[0.16em] ${opt.accent}`}>Option {opt.key} · {opt.kw}kW</p>
+                        <h4 className="text-xl font-display font-extrabold mt-0.5 leading-tight tracking-tight">{opt.title}</h4>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-muted-foreground text-xs">10-year</span>
-                      <span className="font-bold tabular-nums">{formatCurrencyShort(opt.y10)}</span>
+                    {active && (
+                      <span className="flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] shrink-0 shadow-[var(--shadow-glow)]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
+                        Selected
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Hero number — 25y */}
+                  <div className="relative rounded-xl bg-muted/40 border border-hairline p-4 mb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">25-year energy value</p>
+                    <p className={`mt-1 font-display font-extrabold text-4xl sm:text-5xl tabular-nums tracking-tight leading-none ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</p>
+                  </div>
+
+                  {/* Year-1 / 10-year row */}
+                  <div className="relative grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-muted/30 border border-hairline px-3 py-2.5">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Year 1</p>
+                      <p className="font-display font-extrabold tabular-nums text-base mt-0.5">{formatCurrency(opt.y1)}</p>
                     </div>
-                    <div className="flex justify-between items-baseline pt-2 mt-1 border-t border-hairline">
-                      <span className="text-muted-foreground text-xs uppercase tracking-wider">25-year</span>
-                      <span className={`font-display font-extrabold text-xl tabular-nums ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</span>
+                    <div className="rounded-lg bg-muted/30 border border-hairline px-3 py-2.5">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">10-year</p>
+                      <p className="font-display font-extrabold tabular-nums text-base mt-0.5">{formatCurrencyShort(opt.y10)}</p>
                     </div>
                   </div>
+
                   <p className="relative text-[11px] text-muted-foreground mt-4 italic leading-snug">{opt.tag}</p>
                 </button>
               );
             })}
           </div>
-          <div className="mt-5 rounded-2xl bg-gradient-to-r from-muted/60 to-muted/30 border border-hairline p-4 text-sm">
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80 mb-1">Financing language</p>
-            <p className="text-muted-foreground leading-relaxed">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
+          <div className="mt-6 rounded-2xl bg-gradient-to-r from-primary/10 via-muted/40 to-accent/10 border border-hairline p-5 text-sm">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary/90 mb-1.5 flex items-center gap-1.5"><Info className="h-3 w-3" /> Financing language</p>
+            <p className="text-foreground/85 leading-relaxed">"Most homeowners decide based on monthly comfort, not total price. Which feels best — conservative, middle, or aggressive monthly range?"</p>
           </div>
         </SectionCard>
 
