@@ -117,6 +117,7 @@ export default function EnergyLens() {
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
   const [scriptOpen, setScriptOpen] = useState(false);
   const [driverOpen, setDriverOpen] = useState(false);
+  const [utilityWatchOpen, setUtilityWatchOpen] = useState(false);
 
   const effectiveRate = customRate ? Number(customRate) || rate : rate;
 
