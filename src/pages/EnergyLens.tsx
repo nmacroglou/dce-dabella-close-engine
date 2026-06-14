@@ -160,30 +160,33 @@ export default function EnergyLens() {
       <div className="print:hidden">
         <AppHeader />
       </div>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-7 print:hidden">
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8 sm:space-y-10 print:hidden">
 
         {/* Hero header */}
-        <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-card via-card to-primary/5 p-5 sm:p-7 shadow-[var(--shadow-sm)]">
-          <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
-          <div className="relative flex items-start justify-between gap-4 flex-wrap">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
-                <Sparkles className="h-3 w-3" />
+        <section className="relative overflow-hidden rounded-[2rem] border border-hairline bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-12 shadow-[var(--shadow-lg)]">
+          <div className="pointer-events-none absolute -top-32 -right-20 h-96 w-96 rounded-full bg-primary/25 blur-[120px]" />
+          <div className="pointer-events-none absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-accent/20 blur-[120px]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{backgroundImage: "radial-gradient(hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px"}} />
+          <div className="relative flex items-start justify-between gap-6 flex-wrap">
+            <div className="space-y-5 max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/15 backdrop-blur px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary shadow-[var(--shadow-glow)]">
+                <Sparkles className="h-3.5 w-3.5" />
                 Homeowner inflation lens
               </div>
-              <h1 className="text-3xl sm:text-4xl font-display font-extrabold tracking-tight leading-[1.05]">
-                Energy Roof <span className="gradient-text">Inflation Lens</span>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-extrabold tracking-tight leading-[0.98]">
+                Energy Roof<br/><span className="gradient-text">Inflation Lens</span>
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
                 A homeowner-friendly view of utility inflation and how a GAF Energy Roof gives you a lever to reduce exposure.
               </p>
             </div>
-            <Button onClick={handlePrint} variant="outline" className="gap-2 shrink-0">
+            <Button onClick={handlePrint} variant="outline" size="lg" className="gap-2 shrink-0 backdrop-blur bg-card/60">
               <Printer className="h-4 w-4" /> Print summary
             </Button>
           </div>
         </section>
+
 
         {/* Guided steps strip */}
         <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-2.5 sm:p-3 flex items-center gap-1.5 sm:gap-2 text-xs font-semibold overflow-x-auto">
