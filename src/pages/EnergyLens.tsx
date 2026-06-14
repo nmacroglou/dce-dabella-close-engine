@@ -182,7 +182,7 @@ export default function EnergyLens() {
                   Energy Roof Inflation Lens
                 </div>
                 <h1 className="text-2xl sm:text-[2rem] font-display font-extrabold tracking-[-0.03em] leading-[1.05]">
-                  From your roof to your pocket — <span className="gradient-text">take back</span> the energy your largest asset is capable of producing.
+                  From your roof to your pocket — <span className="gradient-text">harness</span> the energy your largest asset is capable of producing.
                 </h1>
                 <p className="text-[13px] sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
                   A smart, data-driven decision — see exactly who keeps the value your home is already producing.
