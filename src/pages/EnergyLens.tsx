@@ -617,10 +617,13 @@ export default function EnergyLens() {
           </SectionCard>
 
           <SectionCard title="Rep Script" subtitle="Calm, trust-based lines" icon={Info}>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {REP_SCRIPT.map((line, i) => (
-                <div key={i} className="rounded-xl border border-hairline bg-muted/30 p-3 text-sm leading-snug">
-                  "{line}"
+                <div key={i} className="group relative rounded-xl border border-hairline bg-gradient-to-br from-muted/40 to-muted/10 p-3.5 text-sm leading-snug transition-all hover:border-primary/30 hover:-translate-y-0.5">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg gradient-brand text-primary-foreground text-[11px] font-display font-extrabold shadow-[var(--shadow-glow)]">{i + 1}</span>
+                    <p className="text-foreground/90 italic">"{line}"</p>
+                  </div>
                 </div>
               ))}
             </div>
