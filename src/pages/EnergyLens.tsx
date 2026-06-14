@@ -160,201 +160,119 @@ export default function EnergyLens() {
       <div className="print:hidden">
         <AppHeader />
       </div>
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8 sm:space-y-10 print:hidden">
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-10 space-y-7 print:hidden">
 
-        {/* Hero header */}
-        <section className="relative overflow-hidden rounded-[2.5rem] border border-hairline bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-14 shadow-[var(--shadow-xl)]">
-          <div className="pointer-events-none absolute -top-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-primary/30 blur-[140px] animate-pulse" style={{ animationDuration: "6s" }} />
-          <div className="pointer-events-none absolute -bottom-40 -left-24 h-[28rem] w-[28rem] rounded-full bg-accent/25 blur-[140px] animate-pulse" style={{ animationDuration: "8s", animationDelay: "1s" }} />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.05]" style={{backgroundImage: "radial-gradient(hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "28px 28px"}} />
+        {/* === TIGHT THESIS HERO === */}
+        <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-card via-card to-primary/8 px-6 sm:px-10 py-7 sm:py-9 shadow-[var(--shadow-md)]">
+          <div className="pointer-events-none absolute -top-24 -right-16 h-72 w-72 rounded-full bg-primary/20 blur-[120px]" />
+          <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-accent/15 blur-[120px]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
           <div className="relative flex items-start justify-between gap-6 flex-wrap">
-            <div className="space-y-6 max-w-3xl">
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/40 bg-primary/15 backdrop-blur-xl px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-primary shadow-[var(--shadow-glow)]">
+            <div className="space-y-4 max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 backdrop-blur-xl px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                 </span>
-                <Sparkles className="h-3.5 w-3.5" />
-                Homeowner inflation lens · Live
+                <Sparkles className="h-3 w-3" />
+                Energy Roof Inflation Lens
               </div>
-              <h1 className="text-5xl sm:text-7xl lg:text-[5.5rem] font-display font-extrabold tracking-[-0.035em] leading-[0.92]">
-                Energy Roof<br/><span className="gradient-text">Inflation Lens</span>
+              <h1 className="text-3xl sm:text-5xl font-display font-extrabold tracking-[-0.03em] leading-[0.95]">
+                The only purchase on your bill that <span className="gradient-text">pays for itself</span>.
               </h1>
-              <p className="text-base sm:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                A homeowner-friendly view of utility inflation — and how a GAF Energy Roof becomes the lever that reduces your exposure for decades.
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl">
+                Every other dollar you give the utility disappears. The math below shows exactly how a GAF Energy Roof converts that same dollar into ownership — month after month, for decades.
               </p>
             </div>
-            <Button onClick={handlePrint} variant="outline" size="lg" className="gap-2 shrink-0 backdrop-blur-xl bg-card/70 border-hairline-strong hover:border-primary/50 hover:bg-primary/5 h-12 px-5 text-base">
-              <Printer className="h-4 w-4" /> Print summary
-            </Button>
-          </div>
 
-          {/* Hero KPI ribbon — live snapshot */}
-          <div className="relative mt-12 grid grid-cols-1 lg:grid-cols-[1.3fr_2fr] gap-6 lg:gap-8 items-stretch">
-            {/* Headline comparison — the "wow" number */}
-            <div className="relative rounded-3xl border border-destructive/30 bg-gradient-to-br from-destructive/15 via-card to-card p-6 sm:p-8 overflow-hidden shadow-[var(--shadow-lg)]">
-              <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-destructive/25 blur-3xl" />
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-destructive/50 to-transparent" />
-              <p className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-destructive flex items-center gap-1.5"><TrendingUp className="h-3 w-3" /> If nothing changes</p>
-              <p className="relative mt-2 font-display font-extrabold text-destructive tabular-nums tracking-tight leading-[0.9] text-[3.5rem] sm:text-[5rem]">{formatCurrencyShort(result.cumulativeDoNothing)}</p>
-              <p className="relative mt-3 text-sm text-muted-foreground">paid to the utility over the next <span className="font-bold text-foreground">{horizon} years</span></p>
-              <div className="relative mt-5 flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent/10 px-4 py-3 backdrop-blur-sm">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/20 ring-1 ring-accent/40">
-                  <Shield className="h-4 w-4 text-accent" />
-                </span>
-                <p className="text-xs text-foreground/90 leading-snug">
-                  <span className="font-display font-extrabold text-accent text-base">{pct(result.inflationExposureReducedPct)}</span>
-                  <span className="ml-1">of that exposure neutralized by your current setup</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Live tiles */}
-            <div className="grid grid-cols-2 gap-3">
-            {[
-              { label: "Exposure reduced", value: pct(result.inflationExposureReducedPct), sub: "with your current setup", accent: "text-accent", icon: Shield },
-              { label: "Year-1 energy value", value: formatCurrency(result.valueYear1), sub: `${systemKw}kW · ${hasBattery ? "battery" : "no battery"}`, accent: "text-primary", icon: Zap },
-              { label: "25-year energy value", value: formatCurrencyShort(result.series[24]?.energyValueCumulative ?? result.cumulativeEnergyValue), sub: "cumulative roof output", accent: "text-primary", icon: Sun },
-              { label: "Avg monthly value", value: formatCurrency(result.valueYear1Monthly), sub: "year-1 equivalent", accent: "text-accent", icon: Gauge },
-            ].map((k) => (
-              <div key={k.label} className="group relative overflow-hidden rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-5 transition-all hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
-                <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full bg-primary/15 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                  <k.icon className={`h-3.5 w-3.5 ${k.accent}`} />
-                  <span className="truncate">{k.label}</span>
-                </div>
-                <div className={`relative mt-2.5 text-3xl sm:text-[2rem] font-display font-extrabold tracking-tight tabular-nums leading-none ${k.accent}`}>{k.value}</div>
-                <div className="relative text-[11px] text-muted-foreground mt-2 truncate">{k.sub}</div>
-              </div>
-            ))}
+            {/* Live thesis number */}
+            <div className="relative rounded-2xl border border-destructive/30 bg-destructive/10 p-5 min-w-[240px] shrink-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-destructive">Do-nothing exposure · {horizon}y</p>
+              <p className="font-display font-extrabold text-destructive tabular-nums tracking-tight leading-none text-4xl sm:text-5xl mt-2">{formatCurrencyShort(result.cumulativeDoNothing)}</p>
+              <p className="text-[11px] text-muted-foreground mt-2">paid to the utility · zero ownership</p>
+              <Button onClick={handlePrint} variant="outline" size="sm" className="mt-4 w-full gap-2 backdrop-blur-xl bg-card/70 border-hairline-strong hover:border-primary/50 hover:bg-primary/5">
+                <Printer className="h-3.5 w-3.5" /> Print summary
+              </Button>
             </div>
           </div>
         </section>
 
-
-        {/* Guided steps strip */}
-        <nav aria-label="Guided steps" className="relative rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-4 sm:p-5 flex items-center gap-2 sm:gap-3 text-sm font-semibold overflow-x-auto shadow-[var(--shadow-sm)]">
+        {/* === COMPACT INPUT STRIP — the essentials Steps 1 & 2 used to gate behind === */}
+        <section className="relative rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-4 sm:p-5 shadow-[var(--shadow-sm)]">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-          {[
-            { n: 1, label: "Utility", tone: "primary" as const },
-            { n: 2, label: "Inflation", tone: "primary" as const },
-            { n: 3, label: "System size", tone: "primary" as const },
-            { n: 4, label: "Choose option", tone: "accent" as const },
-          ].map((s, i, arr) => (
-            <div key={s.n} className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <span className="flex items-center gap-2.5 rounded-xl bg-muted/50 border border-hairline px-4 py-2.5 hover:border-hairline-strong transition-colors">
-                <span className={`h-8 w-8 rounded-full grid place-items-center text-xs font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground shadow-[var(--shadow-glow-accent)]" : "gradient-brand text-primary-foreground shadow-[var(--shadow-glow)]"}`}>{s.n}</span>
-                <span className="text-foreground whitespace-nowrap text-[13px] tracking-tight">{s.label}</span>
-              </span>
-              {i < arr.length - 1 && <span className="text-hairline-strong text-xl font-light">→</span>}
-            </div>
-          ))}
-        </nav>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 border border-hairline px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              <Gauge className="h-3 w-3" /> Your numbers
+            </span>
+            <span className="text-[11px] text-muted-foreground">Set these once — the simulator below reacts to every change</span>
+          </div>
 
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {/* 1) Your Utility Reality */}
-          <SectionCard eyebrow="Step 1" title="Your Utility Reality" subtitle="Where you are today" icon={Zap}>
-            <div className="space-y-4">
-              <div>
-                <Label className="text-xs uppercase tracking-wider font-semibold">Utility provider</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {UTILITIES.map((u) => (
-                    <button
-                      key={u.id}
-                      onClick={() => { setUtilityId(u.id); setExportRate(u.exportCredit); }}
-                      className={`px-3 py-2 rounded-xl text-sm font-semibold border transition-all pressable ${
-                        utilityId === u.id ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/50 text-muted-foreground border-hairline hover:bg-muted"
-                      }`}
-                    >{u.name}</button>
-                  ))}
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1.5">{utility.region}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs uppercase tracking-wider font-semibold">Monthly bill</Label>
-                  <Input type="number" value={monthlyBill} onChange={(e) => setMonthlyBill(Number(e.target.value) || 0)} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wider font-semibold">Effective rate ($/kWh)</Label>
-                  <div className="flex gap-1.5 mt-1">
-                    <button onClick={() => { setRate(utility.defaultRateLow); setCustomRate(""); }}
-                      className={`flex-1 px-2 py-2 rounded-lg text-xs font-semibold border ${rate === utility.defaultRateLow && !customRate ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/50 border-hairline"}`}>
-                      ${utility.defaultRateLow.toFixed(2)}
-                    </button>
-                    <button onClick={() => { setRate(utility.defaultRateHigh); setCustomRate(""); }}
-                      className={`flex-1 px-2 py-2 rounded-lg text-xs font-semibold border ${rate === utility.defaultRateHigh && !customRate ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/50 border-hairline"}`}>
-                      ${utility.defaultRateHigh.toFixed(2)}
-                    </button>
-                    <Input type="number" step="0.01" placeholder="Custom" value={customRate}
-                      onChange={(e) => setCustomRate(e.target.value)} className="w-20 text-xs" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <StatTile icon={Gauge} label="Est. kWh / month" value={formatCount(result.annualKwhUsage / 12)} accent="text-foreground" />
-                <StatTile icon={Gauge} label="Est. kWh / year" value={formatCount(result.annualKwhUsage)} accent="text-foreground" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Utility */}
+            <div>
+              <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Utility</Label>
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {UTILITIES.map((u) => (
+                  <button
+                    key={u.id}
+                    onClick={() => { setUtilityId(u.id); setExportRate(u.exportCredit); }}
+                    className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-bold border transition-all ${
+                      utilityId === u.id ? "gradient-brand text-primary-foreground border-transparent shadow-[var(--shadow-glow)]" : "bg-muted/40 text-muted-foreground border-hairline hover:bg-muted"
+                    }`}
+                  >{u.name}</button>
+                ))}
               </div>
             </div>
-          </SectionCard>
 
-          {/* 2) Inflation Timeline */}
-          <SectionCard eyebrow="Step 2" title="Inflation Timeline" subtitle="What happens if nothing changes" icon={TrendingUp}>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-baseline">
-                  <Label className="text-xs uppercase tracking-wider font-semibold">Time horizon</Label>
-                  <span className="text-lg font-extrabold text-primary">{horizon}y</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {TIME_HORIZONS.map((y) => (
-                    <button key={y} onClick={() => setHorizon(y)}
-                      className={`flex-1 min-w-[52px] px-2 py-2 rounded-lg text-xs font-bold border ${horizon === y ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/50 border-hairline"}`}>
-                      {y}y
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-3">
-                  <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-                    <span>Custom range (1–50y)</span><span className="font-bold text-foreground">{horizon} years</span>
-                  </div>
-                  <Slider min={1} max={50} step={1} value={[horizon]} onValueChange={(v) => setHorizon(v[0])} />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between items-baseline">
-                  <Label className="text-xs uppercase tracking-wider font-semibold">Utility inflation scenario</Label>
-                  <span className="text-lg font-extrabold text-primary">{pct(inflationPct)}</span>
-                </div>
-                <div className="flex gap-1.5 mt-2">
-                  {INFLATION_SCENARIOS.map((s) => (
-                    <button key={s.id} onClick={() => setInflationPct(s.rate)}
-                      className={`flex-1 px-2 py-2 rounded-lg text-[11px] font-semibold border ${inflationPct === s.rate ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/50 border-hairline"}`}>
-                      {pct(s.rate)}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-2">
-                  {INFLATION_SCENARIOS.find((s) => s.rate === inflationPct)?.description ?? "Custom scenario."}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <StatTile icon={TrendingUp} label={`Spend if you do nothing (${horizon}y)`} value={formatCurrencyShort(result.cumulativeDoNothing)} accent="text-destructive" />
-                <StatTile icon={Shield} label="Inflation exposure reduced" value={pct(result.inflationExposureReducedPct)} sub="with current system + battery choice" accent="text-accent" />
+            {/* Monthly bill */}
+            <div>
+              <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Monthly bill</Label>
+              <Input type="number" value={monthlyBill} onChange={(e) => setMonthlyBill(Number(e.target.value) || 0)} className="mt-1.5 h-9 text-sm font-display font-extrabold tabular-nums" />
+            </div>
+
+            {/* Effective rate */}
+            <div>
+              <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Rate $/kWh</Label>
+              <div className="flex gap-1 mt-1.5">
+                <button onClick={() => { setRate(utility.defaultRateLow); setCustomRate(""); }}
+                  className={`flex-1 px-1.5 py-1.5 rounded-md text-[11px] font-bold border ${rate === utility.defaultRateLow && !customRate ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline"}`}>
+                  ${utility.defaultRateLow.toFixed(2)}
+                </button>
+                <button onClick={() => { setRate(utility.defaultRateHigh); setCustomRate(""); }}
+                  className={`flex-1 px-1.5 py-1.5 rounded-md text-[11px] font-bold border ${rate === utility.defaultRateHigh && !customRate ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline"}`}>
+                  ${utility.defaultRateHigh.toFixed(2)}
+                </button>
+                <Input type="number" step="0.01" placeholder="Custom" value={customRate} onChange={(e) => setCustomRate(e.target.value)} className="w-16 h-8 text-[11px] px-1.5" />
               </div>
             </div>
-          </SectionCard>
-        </div>
 
-        {/* 3) Energy Roof Impact Simulator — sticky controls + flowing dashboard */}
-        <SectionCard eyebrow="Step 3" title="Energy Roof Impact Simulator" subtitle="Adjust any lever — the dashboard updates live" icon={Sun}>
-          {/* Sticky control deck: every input the dashboard reacts to, in one row */}
+            {/* Inflation */}
+            <div>
+              <div className="flex justify-between items-baseline">
+                <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Utility inflation</Label>
+                <span className="text-xs font-display font-extrabold text-primary tabular-nums">{pct(inflationPct)}</span>
+              </div>
+              <div className="flex gap-1 mt-1.5">
+                {INFLATION_SCENARIOS.map((s) => (
+                  <button key={s.id} onClick={() => setInflationPct(s.rate)}
+                    className={`flex-1 px-1 py-1.5 rounded-md text-[10px] font-bold border ${inflationPct === s.rate ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline"}`}>
+                    {pct(s.rate)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* === CENTERPIECE: Impact Simulator — this is the page === */}
+        <SectionCard
+          eyebrow="The math · here's where the dollars go"
+          title="Energy Roof Impact Simulator"
+          subtitle="Self-used power vs. exports · what battery storage actually changes · the perfect scenario for this home"
+          icon={Sun}
+        >
+          {/* Sticky control deck: every input the dashboard reacts to */}
           <div className="sticky top-2 z-30 -mx-5 sm:-mx-6 px-5 sm:px-6 py-3 mb-5 rounded-2xl glass-strong shadow-[var(--shadow-sm)]">
             <div className="flex items-center gap-2 mb-2.5">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
@@ -364,7 +282,7 @@ export default function EnergyLens() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr_1fr_0.8fr] gap-3">
-              {/* Time horizon — moved here so it visibly drives the graphs */}
+              {/* Time horizon */}
               <div>
                 <div className="flex justify-between items-baseline mb-1">
                   <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Time horizon</Label>
@@ -436,7 +354,6 @@ export default function EnergyLens() {
             </div>
           </div>
 
-          {/* Dashboard flows full-width below — every graph driven by the deck above */}
           <Suspense fallback={<div className="h-96 grid place-items-center rounded-2xl border border-border bg-card"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
             <LiveImpactDashboard
               baseInputs={{
@@ -461,15 +378,45 @@ export default function EnergyLens() {
             />
           </Suspense>
 
-          {/* Year-by-year savings breakdown */}
           <div className="mt-5">
             <YearlySavingsBreakdown series={result.series} horizon={horizon} />
           </div>
         </SectionCard>
 
+        {/* === "PAYS FOR ITSELF" BAND — the bridge from math to options === */}
+        <section className="relative overflow-hidden rounded-3xl border-2 border-accent/40 bg-gradient-to-r from-accent/10 via-card to-primary/10 px-6 sm:px-10 py-6 shadow-[var(--shadow-md)]">
+          <div className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full bg-accent/20 blur-[100px]" />
+          <div className="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-primary/20 blur-[100px]" />
+          <div className="relative grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 items-center">
+            <div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 border border-accent/40 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-accent mb-3">
+                <Shield className="h-3 w-3" /> The math above proves it
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight leading-tight">
+                Every option below <span className="text-accent">earns more than it costs</span>. Pick the one that fits the home.
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                Three sizing levels — same Golden Pledge, same Factory-Trained installers, same Master Elite warranty. The only question is how much exposure you want neutralized.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-accent">Year-1 value</p>
+                <p className="font-display font-extrabold text-accent tabular-nums text-2xl sm:text-3xl mt-1 leading-none">{formatCurrency(result.valueYear1)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1.5">≈ {formatCurrency(result.valueYear1Monthly)}/mo</p>
+              </div>
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">{horizon}-yr value</p>
+                <p className="font-display font-extrabold text-primary tabular-nums text-2xl sm:text-3xl mt-1 leading-none">{formatCurrencyShort(result.cumulativeEnergyValue)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1.5">{pct(result.inflationExposureReducedPct)} exposure neutralized</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
 
         {/* Options panel */}
-        <SectionCard eyebrow="Step 4" title="Choose Your Lever" subtitle="Pick the option that fits the home" icon={Sparkles}>
+        <SectionCard eyebrow="The close · pick your hedge" title="Choose Your Lever" subtitle="Same Golden Pledge, same Factory-Trained installers, same Master Elite warranty — only the kW changes" icon={Sparkles}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {options.map((opt, idx) => {
               const active = systemKw === opt.kw;
