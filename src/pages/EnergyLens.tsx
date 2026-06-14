@@ -271,19 +271,26 @@ export default function EnergyLens() {
               </div>
             </div>
 
-            {/* Inflation */}
+            {/* Inflation — pick the scenario by where the rate ends up */}
             <div>
               <div className="flex justify-between items-baseline">
-                <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Utility inflation</Label>
-                <span className="text-xs font-display font-extrabold text-primary tabular-nums">{pct(inflationPct)}</span>
+                <Label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Utility inflation · rate in {horizon}y</Label>
+                <span className="text-xs font-display font-extrabold text-primary tabular-nums">
+                  {pct(inflationPct)} → ${(effectiveRate * Math.pow(1 + inflationPct, horizon)).toFixed(2)}/kWh
+                </span>
               </div>
               <div className="flex gap-1 mt-1.5">
-                {INFLATION_SCENARIOS.map((s) => (
-                  <button key={s.id} onClick={() => setInflationPct(s.rate)}
-                    className={`flex-1 px-1 py-1.5 rounded-md text-[10px] font-bold border ${inflationPct === s.rate ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline"}`}>
-                    {pct(s.rate)}
-                  </button>
-                ))}
+                {INFLATION_SCENARIOS.map((s) => {
+                  const endRate = effectiveRate * Math.pow(1 + s.rate, horizon);
+                  const active = inflationPct === s.rate;
+                  return (
+                    <button key={s.id} onClick={() => setInflationPct(s.rate)}
+                      className={`flex-1 px-1 py-1.5 rounded-md border flex flex-col items-center leading-tight ${active ? "gradient-brand text-primary-foreground border-transparent" : "bg-muted/40 border-hairline"}`}>
+                      <span className="text-[10px] font-bold">{pct(s.rate)}</span>
+                      <span className={`text-[9px] tabular-nums ${active ? "text-primary-foreground/80" : "text-muted-foreground"}`}>${endRate.toFixed(2)}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
