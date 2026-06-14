@@ -179,10 +179,10 @@ export default function EnergyLens() {
                 Energy Roof Inflation Lens
               </div>
               <h1 className="text-3xl sm:text-5xl font-display font-extrabold tracking-[-0.03em] leading-[0.95]">
-                A <span className="gradient-text">smart, data-driven decision</span> — right on your roof.
+                From your roof to your pocket — <span className="gradient-text">take back</span> what your largest asset is already producing.
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl">
-                Every other dollar you give the utility disappears. The numbers below show exactly how a GAF Energy Roof turns that same spend into ownership — informed, measurable, and built to last.
+                Your home is already generating energy from the sun. The only question is who gets the value — you, or the utility. The numbers below show exactly how a GAF Energy Roof puts that power back in your hands.
               </p>
             </div>
 
