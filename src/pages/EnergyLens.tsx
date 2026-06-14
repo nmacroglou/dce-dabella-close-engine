@@ -168,32 +168,55 @@ export default function EnergyLens() {
           <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-accent/15 blur-[120px]" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
-          <div className="relative flex items-start justify-between gap-6 flex-wrap">
-            <div className="space-y-4 max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 backdrop-blur-xl px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-                </span>
-                <Sparkles className="h-3 w-3" />
-                Energy Roof Inflation Lens
+          <div className="relative space-y-5">
+            {/* Top row: badge + tight headline + print */}
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div className="space-y-2.5 max-w-3xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 backdrop-blur-xl px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                  </span>
+                  <Sparkles className="h-3 w-3" />
+                  Energy Roof Inflation Lens
+                </div>
+                <h1 className="text-2xl sm:text-[2rem] font-display font-extrabold tracking-[-0.03em] leading-[1.05]">
+                  From your roof to your pocket — <span className="gradient-text">take back</span> the energy your largest asset is capable of producing.
+                </h1>
+                <p className="text-[13px] sm:text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                  A smart, data-driven decision — see exactly who keeps the value your home is already producing.
+                </p>
               </div>
-              <h1 className="text-3xl sm:text-5xl font-display font-extrabold tracking-[-0.03em] leading-[0.95]">
-                From your roof to your pocket — <span className="gradient-text">take back</span> the energy your largest asset is capable of producing.
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl">
-                Your home is already generating energy from the sun. The only question is who gets the value — you, or the utility. The numbers below show exactly how a GAF Energy Roof puts that power back in your hands.
-              </p>
-            </div>
-
-            {/* Live thesis number */}
-            <div className="relative rounded-2xl border border-destructive/30 bg-destructive/10 p-5 min-w-[240px] shrink-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-destructive">Do-nothing exposure · {horizon}y</p>
-              <p className="font-display font-extrabold text-destructive tabular-nums tracking-tight leading-none text-4xl sm:text-5xl mt-2">{formatCurrencyShort(result.cumulativeDoNothing)}</p>
-              <p className="text-[11px] text-muted-foreground mt-2">paid to the utility · zero ownership</p>
-              <Button onClick={handlePrint} variant="outline" size="sm" className="mt-4 w-full gap-2 backdrop-blur-xl bg-card/70 border-hairline-strong hover:border-primary/50 hover:bg-primary/5">
+              <Button onClick={handlePrint} variant="outline" size="sm" className="gap-2 backdrop-blur-xl bg-card/70 border-hairline-strong hover:border-primary/50 hover:bg-primary/5 shrink-0">
                 <Printer className="h-3.5 w-3.5" /> Print summary
               </Button>
+            </div>
+
+            {/* KPI trio — the decision at a glance */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Do-nothing exposure */}
+              <div className="relative rounded-2xl border border-destructive/30 bg-destructive/10 p-4 overflow-hidden">
+                <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-destructive/20 blur-2xl" />
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-destructive">Do nothing · {horizon}y</p>
+                <p className="font-display font-extrabold text-destructive tabular-nums tracking-tight leading-none text-3xl sm:text-4xl mt-2">{formatCurrencyShort(result.cumulativeDoNothing)}</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5">paid to the utility · zero ownership</p>
+              </div>
+
+              {/* Energy ownership value */}
+              <div className="relative rounded-2xl border border-primary/30 bg-primary/10 p-4 overflow-hidden">
+                <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-primary/20 blur-2xl" />
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">Energy you'd own · {horizon}y</p>
+                <p className="font-display font-extrabold text-primary tabular-nums tracking-tight leading-none text-3xl sm:text-4xl mt-2">{formatCurrencyShort(result.cumulativeEnergyValue)}</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5">value produced by your roof</p>
+              </div>
+
+              {/* Year 1 savings + inflation neutralized */}
+              <div className="relative rounded-2xl border border-accent/30 bg-accent/10 p-4 overflow-hidden">
+                <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-accent/20 blur-2xl" />
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-accent">Year-1 savings</p>
+                <p className="font-display font-extrabold text-accent tabular-nums tracking-tight leading-none text-3xl sm:text-4xl mt-2">{formatCurrency(result.valueYear1)}</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5">{pct(result.inflationExposureReducedPct)} of utility inflation neutralized</p>
+              </div>
             </div>
           </div>
         </section>
