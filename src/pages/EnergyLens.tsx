@@ -179,10 +179,10 @@ export default function EnergyLens() {
                 Energy Roof Inflation Lens
               </div>
               <h1 className="text-3xl sm:text-5xl font-display font-extrabold tracking-[-0.03em] leading-[0.95]">
-                The only purchase on your bill that <span className="gradient-text">pays for itself</span>.
+                A <span className="gradient-text">smart, data-driven decision</span> — right on your roof.
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl">
-                Every other dollar you give the utility disappears. The math below shows exactly how a GAF Energy Roof converts that same dollar into ownership — month after month, for decades.
+                Every other dollar you give the utility disappears. The numbers below show exactly how a GAF Energy Roof turns that same spend into ownership — informed, measurable, and built to last.
               </p>
             </div>
 
