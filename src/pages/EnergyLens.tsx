@@ -510,9 +510,13 @@ export default function EnergyLens() {
                   </div>
 
                   {/* Hero number — 25y */}
-                  <div className="relative rounded-xl bg-muted/40 border border-hairline p-4 mb-3">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">25-year energy value</p>
-                    <p className={`mt-1 font-display font-extrabold text-4xl sm:text-5xl tabular-nums tracking-tight leading-none ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</p>
+                  <div className="relative rounded-xl bg-gradient-to-br from-muted/60 to-muted/20 border border-hairline p-4 mb-3 overflow-hidden">
+                    <div className={`pointer-events-none absolute -bottom-8 -right-8 h-24 w-24 rounded-full blur-2xl ${idx === 1 ? "bg-accent/15" : "bg-primary/15"}`} />
+                    <p className="relative text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">25-year energy value</p>
+                    <p className={`relative mt-1 font-display font-extrabold text-4xl sm:text-[2.75rem] tabular-nums tracking-tight leading-none ${opt.accent}`}>{formatCurrencyShort(opt.y25)}</p>
+                    <p className="relative mt-2 text-[11px] text-muted-foreground">
+                      ≈ <span className="font-bold text-foreground tabular-nums">{formatCurrency(opt.y1 / 12)}</span>/mo equivalent (year 1)
+                    </p>
                   </div>
 
                   {/* Year-1 / 10-year row */}
@@ -526,6 +530,22 @@ export default function EnergyLens() {
                       <p className="font-display font-extrabold tabular-nums text-base mt-0.5">{formatCurrencyShort(opt.y10)}</p>
                     </div>
                   </div>
+
+                  {/* Exposure reduction bar */}
+                  {(() => {
+                    const exposure = result.cumulativeDoNothing > 0 ? Math.min(1, opt.y25 / result.cumulativeDoNothing) : 0;
+                    return (
+                      <div className="relative mt-4">
+                        <div className="flex items-baseline justify-between mb-1.5">
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Exposure neutralized</p>
+                          <p className={`text-xs font-display font-extrabold tabular-nums ${opt.accent}`}>{pct(exposure)}</p>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+                          <div className={`h-full rounded-full transition-all duration-500 ${idx === 1 ? "bg-accent" : "bg-primary"}`} style={{ width: `${exposure * 100}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <p className="relative text-[11px] text-muted-foreground mt-4 italic leading-snug">{opt.tag}</p>
                 </button>
