@@ -40,15 +40,16 @@ function StatTile({ icon: Icon, label, value, sub, accent = "text-primary", larg
   icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string; accent?: string; large?: boolean;
 }) {
   return (
-    <div className={`group relative overflow-hidden rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] transition-all hover:border-hairline-strong hover:shadow-[var(--shadow-sm)] ${large ? "p-5" : "p-4"}`}>
-      <div className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-        <span className={`flex h-6 w-6 items-center justify-center rounded-lg bg-muted/60 ${accent}`}>
-          <Icon className="h-3.5 w-3.5" />
+    <div className={`group relative overflow-hidden rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] transition-all hover:border-primary/40 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 ${large ? "p-6 sm:p-7" : "p-5 sm:p-6"}`}>
+      <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="relative flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className={`flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 ring-1 ring-hairline ${accent}`}>
+          <Icon className="h-4 w-4" />
         </span>
         <span className="truncate">{label}</span>
       </div>
-      <div className={`relative ${large ? "text-3xl sm:text-4xl" : "text-2xl"} font-display font-extrabold tracking-tight mt-2 ${accent} tabular-nums leading-none`}>{value}</div>
-      {sub && <div className="relative text-[11px] text-muted-foreground mt-1.5">{sub}</div>}
+      <div className={`relative ${large ? "text-4xl sm:text-5xl" : "text-3xl sm:text-[2.25rem]"} font-display font-extrabold tracking-tight mt-3 ${accent} num-display leading-none`}>{value}</div>
+      {sub && <div className="relative text-xs text-muted-foreground mt-2 leading-snug">{sub}</div>}
     </div>
   );
 }
@@ -57,19 +58,20 @@ function SectionCard({ title, subtitle, icon: Icon, eyebrow, children }: {
   title: string; subtitle?: string; icon?: React.ComponentType<{ className?: string }>; eyebrow?: string; children: React.ReactNode;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-hairline bg-card p-5 sm:p-6 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-[var(--shadow-sm)]">
-      <div className="flex items-start gap-3 mb-5">
+    <section className="relative overflow-hidden rounded-3xl border border-hairline bg-card p-7 sm:p-9 shadow-[var(--shadow-sm)] transition-all hover:shadow-[var(--shadow-md)] hover:border-hairline-strong">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <div className="flex items-start gap-4 mb-7">
         {Icon && (
-          <div className="h-10 w-10 rounded-2xl gradient-brand grid place-items-center text-primary-foreground flex-shrink-0 shadow-[var(--shadow-glow)]">
-            <Icon className="h-4 w-4" />
+          <div className="h-14 w-14 rounded-2xl gradient-brand grid place-items-center text-primary-foreground flex-shrink-0 shadow-[var(--shadow-glow)]">
+            <Icon className="h-6 w-6" />
           </div>
         )}
         <div className="min-w-0">
           {eyebrow && (
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80 mb-0.5">{eyebrow}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary/90 mb-1.5">{eyebrow}</p>
           )}
-          <h3 className="text-base sm:text-lg font-display font-extrabold tracking-tight leading-tight">{title}</h3>
-          {subtitle && <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
+          <h3 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight leading-tight">{title}</h3>
+          {subtitle && <p className="text-sm text-muted-foreground mt-1.5 leading-snug">{subtitle}</p>}
         </div>
       </div>
       {children}
@@ -158,48 +160,52 @@ export default function EnergyLens() {
       <div className="print:hidden">
         <AppHeader />
       </div>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-7 print:hidden">
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8 sm:space-y-10 print:hidden">
 
         {/* Hero header */}
-        <section className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-card via-card to-primary/5 p-5 sm:p-7 shadow-[var(--shadow-sm)]">
-          <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
-          <div className="relative flex items-start justify-between gap-4 flex-wrap">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
-                <Sparkles className="h-3 w-3" />
+        <section className="relative overflow-hidden rounded-[2rem] border border-hairline bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-12 shadow-[var(--shadow-lg)]">
+          <div className="pointer-events-none absolute -top-32 -right-20 h-96 w-96 rounded-full bg-primary/25 blur-[120px]" />
+          <div className="pointer-events-none absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-accent/20 blur-[120px]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{backgroundImage: "radial-gradient(hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px"}} />
+          <div className="relative flex items-start justify-between gap-6 flex-wrap">
+            <div className="space-y-5 max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/15 backdrop-blur px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary shadow-[var(--shadow-glow)]">
+                <Sparkles className="h-3.5 w-3.5" />
                 Homeowner inflation lens
               </div>
-              <h1 className="text-3xl sm:text-4xl font-display font-extrabold tracking-tight leading-[1.05]">
-                Energy Roof <span className="gradient-text">Inflation Lens</span>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-extrabold tracking-tight leading-[0.98]">
+                Energy Roof<br/><span className="gradient-text">Inflation Lens</span>
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
                 A homeowner-friendly view of utility inflation and how a GAF Energy Roof gives you a lever to reduce exposure.
               </p>
             </div>
-            <Button onClick={handlePrint} variant="outline" className="gap-2 shrink-0">
+            <Button onClick={handlePrint} variant="outline" size="lg" className="gap-2 shrink-0 backdrop-blur bg-card/60">
               <Printer className="h-4 w-4" /> Print summary
             </Button>
           </div>
         </section>
 
+
         {/* Guided steps strip */}
-        <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-2.5 sm:p-3 flex items-center gap-1.5 sm:gap-2 text-xs font-semibold overflow-x-auto">
+        <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-4 sm:p-5 flex items-center gap-2 sm:gap-3 text-sm font-semibold overflow-x-auto shadow-[var(--shadow-sm)]">
           {[
             { n: 1, label: "Utility", tone: "primary" as const },
             { n: 2, label: "Inflation", tone: "primary" as const },
             { n: 3, label: "System size", tone: "primary" as const },
             { n: 4, label: "Choose option", tone: "accent" as const },
           ].map((s, i, arr) => (
-            <div key={s.n} className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <span className="flex items-center gap-1.5 rounded-xl bg-muted/50 border border-hairline px-2.5 py-1.5">
-                <span className={`h-5 w-5 rounded-full grid place-items-center text-[10px] font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground" : "gradient-brand text-primary-foreground"}`}>{s.n}</span>
+            <div key={s.n} className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <span className="flex items-center gap-2 rounded-xl bg-muted/50 border border-hairline px-3.5 py-2">
+                <span className={`h-7 w-7 rounded-full grid place-items-center text-xs font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground" : "gradient-brand text-primary-foreground"} shadow-[var(--shadow-glow)]`}>{s.n}</span>
                 <span className="text-foreground whitespace-nowrap">{s.label}</span>
               </span>
-              {i < arr.length - 1 && <span className="text-hairline-strong">→</span>}
+              {i < arr.length - 1 && <span className="text-hairline-strong text-lg">→</span>}
             </div>
           ))}
         </nav>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* 1) Your Utility Reality */}
