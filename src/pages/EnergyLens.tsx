@@ -193,23 +193,44 @@ export default function EnergyLens() {
           </div>
 
           {/* Hero KPI ribbon — live snapshot */}
-          <div className="relative mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="relative mt-12 grid grid-cols-1 lg:grid-cols-[1.3fr_2fr] gap-6 lg:gap-8 items-stretch">
+            {/* Headline comparison — the "wow" number */}
+            <div className="relative rounded-3xl border border-destructive/30 bg-gradient-to-br from-destructive/15 via-card to-card p-6 sm:p-8 overflow-hidden shadow-[var(--shadow-lg)]">
+              <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-destructive/25 blur-3xl" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-destructive/50 to-transparent" />
+              <p className="relative text-[10px] font-bold uppercase tracking-[0.18em] text-destructive flex items-center gap-1.5"><TrendingUp className="h-3 w-3" /> If nothing changes</p>
+              <p className="relative mt-2 font-display font-extrabold text-destructive tabular-nums tracking-tight leading-[0.9] text-[3.5rem] sm:text-[5rem]">{formatCurrencyShort(result.cumulativeDoNothing)}</p>
+              <p className="relative mt-3 text-sm text-muted-foreground">paid to the utility over the next <span className="font-bold text-foreground">{horizon} years</span></p>
+              <div className="relative mt-5 flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent/10 px-4 py-3 backdrop-blur-sm">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/20 ring-1 ring-accent/40">
+                  <Shield className="h-4 w-4 text-accent" />
+                </span>
+                <p className="text-xs text-foreground/90 leading-snug">
+                  <span className="font-display font-extrabold text-accent text-base">{pct(result.inflationExposureReducedPct)}</span>
+                  <span className="ml-1">of that exposure neutralized by your current setup</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Live tiles */}
+            <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "Do-nothing spend", value: formatCurrencyShort(result.cumulativeDoNothing), sub: `${horizon}-year exposure`, accent: "text-destructive", icon: TrendingUp },
               { label: "Exposure reduced", value: pct(result.inflationExposureReducedPct), sub: "with your current setup", accent: "text-accent", icon: Shield },
               { label: "Year-1 energy value", value: formatCurrency(result.valueYear1), sub: `${systemKw}kW · ${hasBattery ? "battery" : "no battery"}`, accent: "text-primary", icon: Zap },
               { label: "25-year energy value", value: formatCurrencyShort(result.series[24]?.energyValueCumulative ?? result.cumulativeEnergyValue), sub: "cumulative roof output", accent: "text-primary", icon: Sun },
+              { label: "Avg monthly value", value: formatCurrency(result.valueYear1Monthly), sub: "year-1 equivalent", accent: "text-accent", icon: Gauge },
             ].map((k) => (
-              <div key={k.label} className="group relative overflow-hidden rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-4 transition-all hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
-                <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-primary/15 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div key={k.label} className="group relative overflow-hidden rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-5 transition-all hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
+                <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full bg-primary/15 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                   <k.icon className={`h-3.5 w-3.5 ${k.accent}`} />
                   <span className="truncate">{k.label}</span>
                 </div>
-                <div className={`relative mt-2 text-2xl sm:text-3xl font-display font-extrabold tracking-tight tabular-nums leading-none ${k.accent}`}>{k.value}</div>
-                <div className="relative text-[11px] text-muted-foreground mt-1.5 truncate">{k.sub}</div>
+                <div className={`relative mt-2.5 text-3xl sm:text-[2rem] font-display font-extrabold tracking-tight tabular-nums leading-none ${k.accent}`}>{k.value}</div>
+                <div className="relative text-[11px] text-muted-foreground mt-2 truncate">{k.sub}</div>
               </div>
             ))}
+            </div>
           </div>
         </section>
 
