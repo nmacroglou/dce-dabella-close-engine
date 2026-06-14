@@ -40,15 +40,16 @@ function StatTile({ icon: Icon, label, value, sub, accent = "text-primary", larg
   icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string; accent?: string; large?: boolean;
 }) {
   return (
-    <div className={`group relative overflow-hidden rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] transition-all hover:border-hairline-strong hover:shadow-[var(--shadow-sm)] ${large ? "p-5" : "p-4"}`}>
-      <div className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
-        <span className={`flex h-6 w-6 items-center justify-center rounded-lg bg-muted/60 ${accent}`}>
-          <Icon className="h-3.5 w-3.5" />
+    <div className={`group relative overflow-hidden rounded-2xl border border-hairline bg-card shadow-[var(--shadow-xs)] transition-all hover:border-primary/40 hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 ${large ? "p-6 sm:p-7" : "p-5 sm:p-6"}`}>
+      <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="relative flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className={`flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 ring-1 ring-hairline ${accent}`}>
+          <Icon className="h-4 w-4" />
         </span>
         <span className="truncate">{label}</span>
       </div>
-      <div className={`relative ${large ? "text-3xl sm:text-4xl" : "text-2xl"} font-display font-extrabold tracking-tight mt-2 ${accent} tabular-nums leading-none`}>{value}</div>
-      {sub && <div className="relative text-[11px] text-muted-foreground mt-1.5">{sub}</div>}
+      <div className={`relative ${large ? "text-4xl sm:text-5xl" : "text-3xl sm:text-[2.25rem]"} font-display font-extrabold tracking-tight mt-3 ${accent} num-display leading-none`}>{value}</div>
+      {sub && <div className="relative text-xs text-muted-foreground mt-2 leading-snug">{sub}</div>}
     </div>
   );
 }
@@ -57,19 +58,20 @@ function SectionCard({ title, subtitle, icon: Icon, eyebrow, children }: {
   title: string; subtitle?: string; icon?: React.ComponentType<{ className?: string }>; eyebrow?: string; children: React.ReactNode;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-hairline bg-card p-5 sm:p-6 shadow-[var(--shadow-xs)] transition-shadow hover:shadow-[var(--shadow-sm)]">
-      <div className="flex items-start gap-3 mb-5">
+    <section className="relative overflow-hidden rounded-3xl border border-hairline bg-card p-7 sm:p-9 shadow-[var(--shadow-sm)] transition-all hover:shadow-[var(--shadow-md)] hover:border-hairline-strong">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <div className="flex items-start gap-4 mb-7">
         {Icon && (
-          <div className="h-10 w-10 rounded-2xl gradient-brand grid place-items-center text-primary-foreground flex-shrink-0 shadow-[var(--shadow-glow)]">
-            <Icon className="h-4 w-4" />
+          <div className="h-14 w-14 rounded-2xl gradient-brand grid place-items-center text-primary-foreground flex-shrink-0 shadow-[var(--shadow-glow)]">
+            <Icon className="h-6 w-6" />
           </div>
         )}
         <div className="min-w-0">
           {eyebrow && (
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary/80 mb-0.5">{eyebrow}</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary/90 mb-1.5">{eyebrow}</p>
           )}
-          <h3 className="text-base sm:text-lg font-display font-extrabold tracking-tight leading-tight">{title}</h3>
-          {subtitle && <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>}
+          <h3 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight leading-tight">{title}</h3>
+          {subtitle && <p className="text-sm text-muted-foreground mt-1.5 leading-snug">{subtitle}</p>}
         </div>
       </div>
       {children}
