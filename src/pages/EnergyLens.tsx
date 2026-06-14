@@ -163,33 +163,60 @@ export default function EnergyLens() {
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8 sm:space-y-10 print:hidden">
 
         {/* Hero header */}
-        <section className="relative overflow-hidden rounded-[2rem] border border-hairline bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-12 shadow-[var(--shadow-lg)]">
-          <div className="pointer-events-none absolute -top-32 -right-20 h-96 w-96 rounded-full bg-primary/25 blur-[120px]" />
-          <div className="pointer-events-none absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-accent/20 blur-[120px]" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.04]" style={{backgroundImage: "radial-gradient(hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px"}} />
+        <section className="relative overflow-hidden rounded-[2.5rem] border border-hairline bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-14 shadow-[var(--shadow-xl)]">
+          <div className="pointer-events-none absolute -top-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-primary/30 blur-[140px] animate-pulse" style={{ animationDuration: "6s" }} />
+          <div className="pointer-events-none absolute -bottom-40 -left-24 h-[28rem] w-[28rem] rounded-full bg-accent/25 blur-[140px] animate-pulse" style={{ animationDuration: "8s", animationDelay: "1s" }} />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.05]" style={{backgroundImage: "radial-gradient(hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "28px 28px"}} />
+
           <div className="relative flex items-start justify-between gap-6 flex-wrap">
-            <div className="space-y-5 max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/15 backdrop-blur px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary shadow-[var(--shadow-glow)]">
+            <div className="space-y-6 max-w-3xl">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-primary/40 bg-primary/15 backdrop-blur-xl px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-primary shadow-[var(--shadow-glow)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                </span>
                 <Sparkles className="h-3.5 w-3.5" />
-                Homeowner inflation lens
+                Homeowner inflation lens · Live
               </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-extrabold tracking-tight leading-[0.98]">
+              <h1 className="text-5xl sm:text-7xl lg:text-[5.5rem] font-display font-extrabold tracking-[-0.035em] leading-[0.92]">
                 Energy Roof<br/><span className="gradient-text">Inflation Lens</span>
               </h1>
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
-                A homeowner-friendly view of utility inflation and how a GAF Energy Roof gives you a lever to reduce exposure.
+              <p className="text-base sm:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                A homeowner-friendly view of utility inflation — and how a GAF Energy Roof becomes the lever that reduces your exposure for decades.
               </p>
             </div>
-            <Button onClick={handlePrint} variant="outline" size="lg" className="gap-2 shrink-0 backdrop-blur bg-card/60">
+            <Button onClick={handlePrint} variant="outline" size="lg" className="gap-2 shrink-0 backdrop-blur-xl bg-card/70 border-hairline-strong hover:border-primary/50 hover:bg-primary/5 h-12 px-5 text-base">
               <Printer className="h-4 w-4" /> Print summary
             </Button>
+          </div>
+
+          {/* Hero KPI ribbon — live snapshot */}
+          <div className="relative mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: "Do-nothing spend", value: formatCurrencyShort(result.cumulativeDoNothing), sub: `${horizon}-year exposure`, accent: "text-destructive", icon: TrendingUp },
+              { label: "Exposure reduced", value: pct(result.inflationExposureReducedPct), sub: "with your current setup", accent: "text-accent", icon: Shield },
+              { label: "Year-1 energy value", value: formatCurrency(result.valueYear1), sub: `${systemKw}kW · ${hasBattery ? "battery" : "no battery"}`, accent: "text-primary", icon: Zap },
+              { label: "25-year energy value", value: formatCurrencyShort(result.series[24]?.energyValueCumulative ?? result.cumulativeEnergyValue), sub: "cumulative roof output", accent: "text-primary", icon: Sun },
+            ].map((k) => (
+              <div key={k.label} className="group relative overflow-hidden rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-4 transition-all hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]">
+                <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-primary/15 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  <k.icon className={`h-3.5 w-3.5 ${k.accent}`} />
+                  <span className="truncate">{k.label}</span>
+                </div>
+                <div className={`relative mt-2 text-2xl sm:text-3xl font-display font-extrabold tracking-tight tabular-nums leading-none ${k.accent}`}>{k.value}</div>
+                <div className="relative text-[11px] text-muted-foreground mt-1.5 truncate">{k.sub}</div>
+              </div>
+            ))}
           </div>
         </section>
 
 
         {/* Guided steps strip */}
-        <nav aria-label="Guided steps" className="rounded-2xl border border-hairline bg-card/60 backdrop-blur p-4 sm:p-5 flex items-center gap-2 sm:gap-3 text-sm font-semibold overflow-x-auto shadow-[var(--shadow-sm)]">
+        <nav aria-label="Guided steps" className="relative rounded-2xl border border-hairline bg-card/60 backdrop-blur-xl p-4 sm:p-5 flex items-center gap-2 sm:gap-3 text-sm font-semibold overflow-x-auto shadow-[var(--shadow-sm)]">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
           {[
             { n: 1, label: "Utility", tone: "primary" as const },
             { n: 2, label: "Inflation", tone: "primary" as const },
@@ -197,11 +224,11 @@ export default function EnergyLens() {
             { n: 4, label: "Choose option", tone: "accent" as const },
           ].map((s, i, arr) => (
             <div key={s.n} className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <span className="flex items-center gap-2 rounded-xl bg-muted/50 border border-hairline px-3.5 py-2">
-                <span className={`h-7 w-7 rounded-full grid place-items-center text-xs font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground" : "gradient-brand text-primary-foreground"} shadow-[var(--shadow-glow)]`}>{s.n}</span>
-                <span className="text-foreground whitespace-nowrap">{s.label}</span>
+              <span className="flex items-center gap-2.5 rounded-xl bg-muted/50 border border-hairline px-4 py-2.5 hover:border-hairline-strong transition-colors">
+                <span className={`h-8 w-8 rounded-full grid place-items-center text-xs font-bold ${s.tone === "accent" ? "bg-accent text-accent-foreground shadow-[var(--shadow-glow-accent)]" : "gradient-brand text-primary-foreground shadow-[var(--shadow-glow)]"}`}>{s.n}</span>
+                <span className="text-foreground whitespace-nowrap text-[13px] tracking-tight">{s.label}</span>
               </span>
-              {i < arr.length - 1 && <span className="text-hairline-strong text-lg">→</span>}
+              {i < arr.length - 1 && <span className="text-hairline-strong text-xl font-light">→</span>}
             </div>
           ))}
         </nav>
