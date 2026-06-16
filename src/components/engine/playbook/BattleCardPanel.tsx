@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Maximize2, Download, BookOpen, X, ZoomIn, ZoomOut, Maximize } from "lucide-react";
+import { Maximize2, Download, BookOpen, X, ZoomIn, ZoomOut, Maximize, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import battleCard from "@/assets/dabella-10-step-battlecard.png";
@@ -10,6 +10,7 @@ const STEP = 0.25;
 
 export default function BattleCardPanel() {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   // zoom = null means "fit to screen"; otherwise explicit scale multiplier of fit size
   const [zoom, setZoom] = useState<number | null>(null);
 
@@ -24,12 +25,20 @@ export default function BattleCardPanel() {
 
   return (
     <div className="card-elevated-lg p-5">
-      <div className="flex items-center gap-2 mb-3">
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center gap-2 mb-3 text-left"
+        aria-expanded={expanded}
+      >
         <BookOpen className="h-4 w-4 text-primary" />
-        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1">
           10-Step Battle Card
         </h4>
-      </div>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
+      </button>
+      {expanded && (
+      <>
+      
       <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setZoom(null); }}>
         <DialogTrigger asChild>
           <button className="group relative w-full overflow-hidden rounded-xl border border-hairline bg-muted/30 hover:border-primary/40 transition-all pressable">
@@ -137,6 +146,8 @@ export default function BattleCardPanel() {
       <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
         Tap to expand. Reference the homeowner emotional journey and time-in-home close rates.
       </p>
+      </>
+      )}
     </div>
   );
 }
