@@ -273,9 +273,12 @@ export default memo(function OptionOutputCard({ label, name, opt, energySavings,
         <ValueLine icon={BarChart3} label="Home Value Increase (ROI)" value={`+${fmt(opt.roiValue)}`} color="text-primary" />
         <ValueLine icon={Zap} label="10-Year Energy Savings" value={`+${fmt(energySavings)}`} color="text-accent" />
         <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between">
-          <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-primary" /> Net Effective Cost
-          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-primary" /> Net Effective Cost
+            </span>
+            <span className="text-[10px] text-muted-foreground">Price minus home value gain & energy savings</span>
+          </div>
           <span className="text-base font-extrabold text-primary">{fmt(opt.netCost)}</span>
         </div>
       </div>
