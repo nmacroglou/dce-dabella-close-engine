@@ -64,10 +64,10 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {...prefetch}
           aria-label={label}
           className={({ isActive }) =>
-            `group relative flex items-center gap-1.5 px-2 h-7 rounded-md text-[11.5px] font-semibold whitespace-nowrap transition-all pressable ${
+            `group relative flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all pressable ${
               isActive
-                ? "bg-primary/15 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.25),0_0_12px_-2px_hsl(var(--primary)/0.45)]"
-                : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                ? "bg-primary/15 text-primary border border-primary/25 shadow-[0_0_20px_-4px_hsl(var(--primary)/0.15),inset_0_1px_0_0_hsl(var(--primary)/0.1)]"
+                : "text-slate-400 hover:text-white hover:bg-white/[0.05]"
             }`
           }
         >
