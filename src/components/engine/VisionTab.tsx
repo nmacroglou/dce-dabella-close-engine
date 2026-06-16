@@ -466,6 +466,7 @@ export default function VisionTab({ state }: EngineTabProps) {
           </div>
           <Progress value={progress} className="h-1.5" />
         </div>
+        {GenerateControl}
         <Button variant="ghost" size="sm" onClick={reset} className="shrink-0 gap-1.5">
           <RotateCcw className="h-3.5 w-3.5" /> Restart
         </Button>
@@ -474,8 +475,19 @@ export default function VisionTab({ state }: EngineTabProps) {
       {/* Cinematic moment card */}
       <div key={M.id} className="animate-in fade-in slide-in-from-bottom-3 duration-500">
         <Card className="relative overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl">
-          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90", M.gradient)} />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/50 to-transparent" />
+          {/* AI-rendered scene image (revealed only on this step) */}
+          {sceneImage && (
+            <img
+              src={sceneImage}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-700"
+            />
+          )}
+          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90", M.gradient, sceneImage && "opacity-40 mix-blend-multiply")} />
+          <div className={cn(
+            "absolute inset-0 bg-gradient-to-t from-background/95 via-background/50 to-transparent",
+            sceneImage && "from-background/95 via-background/70 to-background/20",
+          )} />
 
           {/* Decorative iconography */}
           <div className="absolute -right-10 -top-10 opacity-10">
@@ -508,12 +520,16 @@ export default function VisionTab({ state }: EngineTabProps) {
                 </div>
               </div>
             )}
+
+            {sceneLoading && !sceneImage && (
+              <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" /> Rendering scene…
+              </div>
+            )}
           </div>
         </Card>
       </div>
 
-      {/* Vision gallery — AI-rendered visuals for the selected product/option */}
-      <VisionGallery product={ctx.product} optionName={ctx.optionName} material={material} />
 
       {/* Talk track (rep-facing) */}
       {!customerMode && (
