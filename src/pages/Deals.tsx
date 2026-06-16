@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
-  ShieldAlert, Search, LayoutGrid, LayoutList, User,
+  ShieldAlert, Search, LayoutGrid, LayoutList, User, Pencil,
 } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, LEAD_SOURCE_LABELS, type DealStage, type LeadSource } from "@/types/deal";
 import { fmt } from "@/lib/format";
@@ -26,7 +26,9 @@ import DealContactEditor from "@/components/deals/DealContactEditor";
 import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
 import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
+import DealEditDialog from "@/components/deals/DealEditDialog";
 import type { Incident } from "@/types/incident";
+import type { Deal } from "@/types/deal";
 import { computeEstimate, type PreliminaryEstimateInput } from "@/data/roofingPricing";
 
 type ViewMode = "comfortable" | "compact";
@@ -53,6 +55,7 @@ export default function DealsPage() {
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("comfortable");
   const [incidentPrefill, setIncidentPrefill] = useState<Partial<Incident> | null>(null);
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
 
   if (authLoading) return null;
   if (!user) {
@@ -305,6 +308,15 @@ export default function DealsPage() {
                         size="sm"
                         variant="ghost"
                         className="h-7 w-7 p-0"
+                        title="Edit deal details"
+                        onClick={() => setEditingDeal(deal)}
+                      >
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0"
                         title="Log an incident for this deal"
                         onClick={() => setIncidentPrefill({
                           deal_id: deal.id,
@@ -427,6 +439,14 @@ export default function DealsPage() {
                     <Button
                       size="sm"
                       variant="ghost"
+                      title="Edit deal details"
+                      onClick={() => setEditingDeal(deal)}
+                    >
+                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       title="Log an incident for this deal"
                       onClick={() => setIncidentPrefill({
                         deal_id: deal.id,
@@ -458,6 +478,11 @@ export default function DealsPage() {
         open={!!incidentPrefill}
         onClose={() => setIncidentPrefill(null)}
         prefill={incidentPrefill}
+      />
+      <DealEditDialog
+        open={!!editingDeal}
+        deal={editingDeal}
+        onClose={() => setEditingDeal(null)}
       />
     </div>
   );
