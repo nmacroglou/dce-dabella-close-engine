@@ -19,6 +19,7 @@ export function drawSelectedOption(
   state: EngineState,
   computed: ComputedValues,
   opt: { key: "A" | "B" | "C"; name: string; price: number; monthly: number },
+  originalComputed?: ComputedValues,
 ) {
   pageBg(pdf);
   const BADGES: Record<string, string> = { A: "BEST VALUE", B: "MOST POPULAR", C: "SMART START" };
