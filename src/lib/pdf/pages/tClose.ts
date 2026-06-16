@@ -14,6 +14,7 @@ import {
 
 export function drawTClose(
   pdf: jsPDF, state: EngineState, computed: ComputedValues, selectedKey: "A" | "B" | "C",
+  originalComputed?: ComputedValues,
 ) {
   pageBg(pdf);
   const m = getOptionMetrics(selectedKey, computed);
