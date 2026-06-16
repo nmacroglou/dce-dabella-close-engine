@@ -64,20 +64,17 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {...prefetch}
           aria-label={label}
           className={({ isActive }) =>
-            `group relative flex items-center gap-1.5 px-2 py-1 rounded-lg text-[12px] font-bold whitespace-nowrap transition-all pressable ${
+            `group relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-bold whitespace-nowrap transition-all pressable ${
               isActive
-                ? "bg-primary/20 text-primary border border-primary/25 shadow-[0_0_16px_-4px_hsl(var(--primary)/0.15)]"
-                : "text-slate-300 hover:text-white hover:bg-white/[0.04]"
+                ? "bg-primary/15 text-primary border border-primary/20"
+                : "text-slate-300 hover:text-foreground hover:bg-muted/45"
             }`
           }
         >
           {({ isActive }) => (
             <>
               <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
-              <span className="hidden 2xl:inline tracking-tight">{label}</span>
-              {isActive && (
-                <span className="absolute -bottom-[3px] left-1/2 -translate-x-1/2 h-[2px] w-5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-              )}
+              <span className="hidden xl:inline">{label}</span>
             </>
           )}
         </NavLink>
@@ -90,12 +87,12 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
 }
 
 function ClusterDivider() {
-  return <span className="h-4 w-px bg-hairline/70 mx-1.5" aria-hidden />;
+  return <span className="h-4 w-px bg-hairline/50 mx-2" aria-hidden />;
 }
 
 function NavCluster({ items, label }: { items: NavEntry[]; label: string }) {
   return (
-    <div className="flex items-center gap-0.5" aria-label={label}>
+    <div className="flex items-center gap-1" aria-label={label}>
       {items.map((item) => (
         <NavItem key={item.to} {...item} />
       ))}
