@@ -5,10 +5,13 @@ export const parseNum = (v: string): number => parseFloat(v) || 0;
 
 /** Build the options array used by Presentation & Customer views */
 export function buildOptionsArray(state: EngineState, computed: ComputedValues) {
+  // Sources price from `computed.options[key].price` (not raw state.priceX) so any
+  // discount applied via applyDiscountToComputed flows through to consumers like
+  // the PDF export, share dialog, and customer-facing presentation.
   return [
-    { key: "A" as const, name: state.optionAName, price: state.priceA, monthly: computed.options.A.monthly },
-    { key: "B" as const, name: state.optionBName, price: state.priceB, monthly: computed.options.B.monthly },
-    { key: "C" as const, name: state.optionCName, price: state.priceC, monthly: computed.options.C.monthly },
+    { key: "A" as const, name: state.optionAName, price: computed.options.A.price, monthly: computed.options.A.monthly },
+    { key: "B" as const, name: state.optionBName, price: computed.options.B.price, monthly: computed.options.B.monthly },
+    { key: "C" as const, name: state.optionCName, price: computed.options.C.price, monthly: computed.options.C.monthly },
   ];
 }
 
