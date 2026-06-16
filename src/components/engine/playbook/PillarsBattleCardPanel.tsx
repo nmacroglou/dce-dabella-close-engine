@@ -24,12 +24,20 @@ export default function PillarsBattleCardPanel() {
 
   return (
     <div className="card-elevated-lg p-5">
-      <div className="flex items-center gap-2 mb-3">
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center gap-2 mb-3 text-left"
+        aria-expanded={expanded}
+      >
         <Heart className="h-4 w-4 text-primary" />
-        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1">
           3 Pillars of Power
         </h4>
-      </div>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
+      </button>
+      {expanded && (
+      <>
+
 
       <div className="grid grid-cols-3 gap-2 mb-3">
         <div className="flex flex-col items-center gap-1 rounded-lg bg-muted/40 border border-hairline px-2 py-2">
