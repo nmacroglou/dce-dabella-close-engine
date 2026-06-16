@@ -164,7 +164,7 @@ export default function AppHeader() {
   return (
     <TooltipProvider delayDuration={200}>
       <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-2.5 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 h-11 px-3 rounded-2xl border border-hairline bg-card/85 backdrop-blur-xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4),var(--shadow-md)] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 h-11 px-3 rounded-2xl border border-hairline bg-gradient-to-b from-card/95 to-card/75 backdrop-blur-xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4),var(--shadow-md)] relative overflow-hidden">
           {/* Electric blue signal seam */}
           <span className="pointer-events-none absolute inset-x-6 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent" aria-hidden />
           {/* Bottom horizon glow for contrast */}
@@ -174,7 +174,7 @@ export default function AppHeader() {
           <Link to="/" className="flex items-center gap-2 pr-2 border-r border-hairline/70 shrink-0 min-w-0 group">
             <img src={dabellaLogo} alt="DaBella" className="h-6 w-auto drop-shadow-[0_0_6px_rgba(37,99,235,0.35)]" />
             <div className="hidden sm:flex items-center gap-1.5 leading-none min-w-0">
-              <span className="text-[13px] font-display font-extrabold text-white tracking-tight whitespace-nowrap">
+              <span className="text-sm font-display font-extrabold text-white tracking-tight whitespace-nowrap">
                 Close<span className="text-primary">.</span>
               </span>
               {activeDeal ? (
