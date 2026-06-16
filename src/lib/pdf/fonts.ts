@@ -16,16 +16,24 @@ export async function registerPdfFonts(pdf: jsPDF) {
     [`${basePath}/LiberationSans-Italic.ttf`, "ProposalSans", "italic"],
   ] as const;
 
-  for (const [url, family, style] of fonts) {
-    let b64 = _b64Cache.get(url);
-    if (!b64) {
-      const data = await fetchArrayBuffer(url);
-      if (!data) continue;
-      b64 = arrayBufferToBase64(data);
-      _b64Cache.set(url, b64);
-    }
-    const fileName = `${family}-${style}.ttf`;
-    pdf.addFileToVFS(fileName, b64);
-    pdf.addFont(fileName, family, style);
+  // Fetch all three fonts in parallel — they're independent network requests.
+  const loaded = await Promise.all(
+    fonts.map(async ([url, family, style]) => {
+      let b64 = _b64Cache.get(url);
+      if (!b64) {
+        const data = await fetchArrayBuffer(url);
+        if (!data) return null;
+        b64 = arrayBufferToBase64(data);
+        _b64Cache.set(url, b64);
+      }
+      return { b64, family, style };
+    }),
+  );
+
+  for (const entry of loaded) {
+    if (!entry) continue;
+    const fileName = `${entry.family}-${entry.style}.ttf`;
+    pdf.addFileToVFS(fileName, entry.b64);
+    pdf.addFont(fileName, entry.family, entry.style);
   }
 }
