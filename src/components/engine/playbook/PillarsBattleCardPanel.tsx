@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Maximize2, Download, Heart, X, ZoomIn, ZoomOut, Maximize, Moon, Apple, Droplet } from "lucide-react";
+import { Maximize2, Download, Heart, X, ZoomIn, ZoomOut, Maximize, Moon, Apple, Droplet, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import pillarsCard from "@/assets/dabella-3-pillars-battlecard.png";
