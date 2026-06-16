@@ -1,6 +1,6 @@
-import { memo, useEffect, useState, useMemo, useRef } from "react";
+import { memo, useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
-import { useDeal, useUpdateDeal } from "@/hooks/useDeals";
+import { useDeal, useUpdateDealQuiet } from "@/hooks/useDeals";
 import { useCommissionGrid } from "@/hooks/useCommissionGrid";
 import {
   computeCommissionSheet,
