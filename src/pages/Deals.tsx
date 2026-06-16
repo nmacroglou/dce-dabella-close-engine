@@ -399,7 +399,20 @@ export default function DealsPage() {
                         <ClosedAtEditor dealId={deal.id} closedAt={deal.closed_at} label="On" />
                       </div>
                     ) : deal.price_a ? (
-                      <div className="font-medium text-foreground">Top option: {fmt(deal.price_a)}</div>
+                      <div className="flex items-center gap-2 pt-1">
+                        <span className="font-medium text-foreground">Top option: {fmt(deal.price_a)}</span>
+                        {deal.selected_option && (
+                          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">Option {deal.selected_option}</span>
+                        )}
+                        {(() => {
+                          const original = deal.selected_option === "B" ? deal.price_b : deal.selected_option === "C" ? deal.price_c : deal.price_a;
+                          if (deal.closed_amount && original && original > deal.closed_amount) {
+                            const pct = Math.round((1 - deal.closed_amount / original) * 100);
+                            return <span className="text-[10px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded">{pct}% off</span>;
+                          }
+                          return null;
+                        })()}
+                      </div>
                     ) : hasPrelim ? (
                       (() => {
                         const b = computeEstimate({
