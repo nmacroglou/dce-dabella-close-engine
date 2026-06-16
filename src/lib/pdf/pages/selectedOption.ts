@@ -48,9 +48,25 @@ export function drawSelectedOption(
   setColor(pdf, WHITE);
   pdf.text(fmt(opt.price), MARGIN + 8, heroY + 56);
 
+  // Show discount savings if original price exists and is higher
+  const originalPrice = originalComputed?.options[opt.key]?.price;
+  if (originalPrice && originalPrice > opt.price) {
+    const savings = originalPrice - opt.price;
+    const pct = Math.round((savings / originalPrice) * 100);
+    setBodyFont(pdf, 7.5);
+    setColor(pdf, LIME);
+    trackedText(
+      pdf,
+      `ORIGINAL ${fmt(originalPrice)}  ·  YOU SAVE ${fmt(savings)} (${pct}% OFF)`,
+      MARGIN + 8,
+      heroY + 63,
+      { charSpace: 0.4 },
+    );
+  }
+
   setBodyFont(pdf, 8);
   setColor(pdf, [200, 220, 200]);
-  trackedText(pdf, "TOTAL INVESTMENT — TURNKEY", MARGIN + 8, heroY + 65, { charSpace: 0.4 });
+  trackedText(pdf, "TOTAL INVESTMENT — TURNKEY", MARGIN + 8, heroY + 71, { charSpace: 0.4 });
 
   const rx = PW - MARGIN - 8;
   hairline(pdf, rx - 60, heroY + 18, rx - 60, heroY + 70, [80, 120, 85], 0.3);
