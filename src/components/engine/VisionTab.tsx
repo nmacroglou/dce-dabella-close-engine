@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 
 import {
   Sparkles, Home, ShieldCheck, Heart, TrendingUp, Sun, CloudRain,
   Users, Award, ChevronLeft, ChevronRight, Play, RotateCcw, Volume2,
-  Camera, Coffee, PartyPopper, Calendar, DollarSign,
+  Camera, Coffee, PartyPopper, Calendar, DollarSign, Loader2, Check, RefreshCw,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,30 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import type { EngineTabProps } from "@/types/engine";
-import VisionGallery from "./vision/VisionGallery";
+import { supabase } from "@/integrations/supabase/client";
+
+// Scene generation — one image per matching moment id
+type SceneDef = {
+  momentId: string;
+  buildPrompt: (ctx: { product: string; option: string; material?: string }) => string;
+};
+const SCENES: SceneDef[] = [
+  {
+    momentId: "arrival",
+    buildPrompt: ({ product, option, material }) =>
+      `Photorealistic exterior architectural rendering, golden-hour lighting, suburban American two-story home with a freshly installed ${product.toLowerCase()}${material ? ` (${material})` : ""}${option ? ` styled as "${option}"` : ""}. Crisp detail, manicured lawn, warm sky, lifestyle real-estate photography aesthetic, shot on 35mm, shallow depth of field. No people, no text, no watermarks.`,
+  },
+  {
+    momentId: "weather",
+    buildPrompt: ({ product, option }) =>
+      `Photorealistic exterior of a cozy American home at night during a heavy rainstorm, dramatic moody lighting, warm interior lights glowing from windows, brand new ${product.toLowerCase()}${option ? ` (${option})` : ""} visibly intact and water shedding cleanly. Cinematic, weatherproof feel, peaceful and protected mood. No people, no text, no watermarks.`,
+  },
+  {
+    momentId: "family",
+    buildPrompt: ({ product, option }) =>
+      `Photorealistic exterior of a beautiful American family home on a calm Saturday morning, soft sunlight, autumn leaves, the ${product.toLowerCase()}${option ? ` (${option})` : ""} looking pristine years after install. Warm, nostalgic, lifestyle magazine quality, shot on medium format. No people, no text, no watermarks.`,
+  },
+];
 
 type PriorityKey = "comfort" | "curb" | "protection" | "legacy";
 
