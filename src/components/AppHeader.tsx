@@ -64,9 +64,9 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {...prefetch}
           aria-label={label}
           className={({ isActive }) =>
-            `group relative flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[12px] font-semibold whitespace-nowrap transition-all pressable ${
+            `group relative flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[13px] font-bold whitespace-nowrap transition-all pressable ${
               isActive
-                ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_24px_-4px_hsl(var(--primary)/0.18),inset_0_1px_0_0_hsl(var(--primary)/0.12)]"
+                ? "bg-primary/25 text-primary border border-primary/30 shadow-[0_0_24px_-4px_hsl(var(--primary)/0.18),inset_0_1px_0_0_hsl(var(--primary)/0.12)]"
                 : "text-slate-300 hover:text-white hover:bg-white/[0.06]"
             }`
           }
