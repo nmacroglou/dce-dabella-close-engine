@@ -24,7 +24,7 @@ interface Props {
 
 type Mode = "menu" | "email" | "sms";
 
-export default function SharePdfDialog({ open, onOpenChange, state, computed, selectedOption }: Props) {
+export default function SharePdfDialog({ open, onOpenChange, state, computed, selectedOption, originalComputed }: Props) {
   const { user } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
