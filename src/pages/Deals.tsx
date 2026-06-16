@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDeals, useCreateDeal, useDeleteDeal } from "@/hooks/useDeals";
 import { useAllProfiles, buildProfileMap } from "@/hooks/useProfiles";
 import { useIsAdmin } from "@/hooks/useUserRole";
@@ -14,22 +14,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
-  Plus, Loader2, Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
-  ShieldAlert, Search, LayoutGrid, LayoutList, User, Pencil,
+  Plus, Loader2, Briefcase, Search, LayoutGrid, LayoutList,
 } from "lucide-react";
-import { STAGE_LABELS, STAGE_COLORS, LEAD_SOURCE_LABELS, type DealStage, type LeadSource } from "@/types/deal";
-import { fmt } from "@/lib/format";
+import { STAGE_LABELS, LEAD_SOURCE_LABELS, type DealStage, type LeadSource } from "@/types/deal";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
-import DealTagsEditor from "@/components/deals/DealTagsEditor";
-import DealContactEditor from "@/components/deals/DealContactEditor";
-import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard";
-import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
+import DealListCard from "@/components/deals/DealListCard";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
 import DealEditDialog from "@/components/deals/DealEditDialog";
 import type { Incident } from "@/types/incident";
 import type { Deal } from "@/types/deal";
-import { computeEstimate, type PreliminaryEstimateInput } from "@/data/roofingPricing";
 
 type ViewMode = "comfortable" | "compact";
 
@@ -37,7 +31,7 @@ export default function DealsPage() {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useIsAdmin();
   const { data: profiles = [] } = useAllProfiles(isAdmin);
-  const profileMap = buildProfileMap(profiles);
+  const profileMap = useMemo(() => buildProfileMap(profiles), [profiles]);
   const navigate = useNavigate();
   const { data: deals = [], isLoading } = useDeals();
   const create = useCreateDeal();
@@ -51,35 +45,62 @@ export default function DealsPage() {
   const [newPhone, setNewPhone] = useState("");
   const [newLeadSource, setNewLeadSource] = useState<LeadSource | "unset">("unset");
   const [stageFilter, setStageFilter] = useState<DealStage | "all">("all");
-  const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState(""); // debounced
   const [viewMode, setViewMode] = useState<ViewMode>("comfortable");
   const [incidentPrefill, setIncidentPrefill] = useState<Partial<Incident> | null>(null);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+
+  // Debounce search so each keystroke doesn't refilter + rerender every card.
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput), 150);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return deals.filter((d) => {
+      const stageOk = stageFilter === "all" || d.stage === stageFilter;
+      if (!q) return stageOk;
+      const hay = [
+        d.homeowner1,
+        d.homeowner2,
+        d.address,
+        STAGE_LABELS[d.stage],
+        d.lead_source ? LEAD_SOURCE_LABELS[d.lead_source] : "",
+        ...d.products,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return stageOk && hay.includes(q);
+    });
+  }, [deals, search, stageFilter]);
+
+  const openDeal = useCallback((id: string) => {
+    setActiveDealId(id);
+    navigate("/");
+  }, [navigate, setActiveDealId]);
+
+  const handleEdit = useCallback((d: Deal) => setEditingDeal(d), []);
+  const handleIncident = useCallback((d: Deal) => {
+    setIncidentPrefill({
+      deal_id: d.id,
+      customer_name: [d.homeowner1, d.homeowner2].filter(Boolean).join(" & ") || null,
+      title: `Incident — ${d.homeowner1 || "deal"}`,
+    });
+  }, []);
+  const handleDelete = useCallback((id: string, name: string) => {
+    if (confirm(`Delete deal for ${name || "this homeowner"}?`)) {
+      del.mutate(id);
+    }
+  }, [del]);
 
   if (authLoading) return null;
   if (!user) {
     navigate("/auth");
     return null;
   }
-
-  const q = search.trim().toLowerCase();
-  const filtered = deals.filter((d) => {
-    const stageOk = stageFilter === "all" || d.stage === stageFilter;
-    if (!q) return stageOk;
-    const hay = [
-      d.homeowner1,
-      d.homeowner2,
-      d.address,
-      STAGE_LABELS[d.stage],
-      d.lead_source ? LEAD_SOURCE_LABELS[d.lead_source] : "",
-      ...d.products,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return stageOk && hay.includes(q);
-  });
 
   const handleCreate = async () => {
     if (!newName.trim()) {
@@ -104,21 +125,7 @@ export default function DealsPage() {
     navigate("/");
   };
 
-  const openDeal = (id: string) => {
-    setActiveDealId(id);
-    navigate("/");
-  };
-
-  const RepBadge = ({ repId }: { repId: string }) => {
-    const p = profileMap.get(repId);
-    const label = p?.display_name || p?.email || repId.slice(0, 8);
-    return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
-        <User className="h-2.5 w-2.5" />
-        {label}
-      </span>
-    );
-  };
+  const isCompact = viewMode === "compact";
 
   return (
     <div className="min-h-screen surface-premium">
@@ -218,8 +225,8 @@ export default function DealsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search deals by name, address, product, stage..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="pl-9"
             />
           </div>
@@ -238,299 +245,20 @@ export default function DealsPage() {
             </p>
           </div>
         ) : (
-          <div className={`grid gap-4 ${viewMode === "compact" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 lg:grid-cols-2"}`}>
-            {filtered.map((deal) => {
-              const isExpanded = expandedEstimate === deal.id;
-              const prelim = ((deal as unknown as { preliminary_estimate?: PreliminaryEstimateInput }).preliminary_estimate) ?? undefined;
-              const hasPrelim = prelim && (prelim.squares || prelim.shingleId);
-              const isCompact = viewMode === "compact";
-
-              if (isCompact) {
-                return (
-                  <div key={deal.id} className="card-premium p-3 flex flex-col group">
-                    <div className="flex items-start justify-between mb-2 gap-2">
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-bold text-foreground truncate">
-                        {deal.homeowner1 || "Untitled deal"}
-                        {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
-                      </h3>
-                      {deal.stage === "won" && deal.closed_amount ? (
-                        <p className="text-xs font-semibold text-success mt-0.5">{fmt(deal.closed_amount)}</p>
-                      ) : deal.selected_option && deal.closed_amount ? (
-                        <p className="text-xs font-semibold text-primary mt-0.5">
-                          {fmt(deal.closed_amount)}
-                          {(() => {
-                            const original = deal.selected_option === "B" ? deal.price_b : deal.selected_option === "C" ? deal.price_c : deal.price_a;
-                            if (original && original > deal.closed_amount!) {
-                              const pct = Math.round((1 - deal.closed_amount! / original) * 100);
-                              return <span className="text-[10px] font-medium text-accent ml-1">({pct}% off)</span>;
-                            }
-                            return null;
-                          })()}
-                        </p>
-                      ) : deal.price_a ? (
-                        <p className="text-xs font-semibold text-foreground mt-0.5">{fmt(deal.price_a)}</p>
-                      ) : null}
-                      {deal.address && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
-                          <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
-                          {deal.address}
-                        </p>
-                      )}
-                      {isAdmin && <div className="mt-1"><RepBadge repId={deal.rep_id} /></div>}
-                    </div>
-                    <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${STAGE_COLORS[deal.stage]}`}>
-                      {STAGE_LABELS[deal.stage]}
-                    </span>
-                    </div>
-
-                    <div className="space-y-1 text-[11px] text-muted-foreground mb-3">
-                      {deal.products.length > 0 && (
-                        <div className="truncate">{deal.products.join(", ")}</div>
-                      )}
-                      {deal.stage === "won" && deal.closed_amount ? (
-                        <div className="text-success font-semibold">Won {fmt(deal.closed_amount)}</div>
-                    ) : deal.stage === "lost" ? (
-                      <div className="text-destructive font-semibold">Lost</div>
-                    ) : deal.price_a ? (
-                      <div className="font-medium text-foreground">
-                        Top option: {fmt(deal.price_a)}
-                        {deal.selected_option && (
-                          <span className="ml-1 text-[10px] text-primary">· Option {deal.selected_option}</span>
-                        )}
-                        {(() => {
-                          const original = deal.selected_option === "B" ? deal.price_b : deal.selected_option === "C" ? deal.price_c : deal.price_a;
-                          if (deal.closed_amount && original && original > deal.closed_amount) {
-                            const pct = Math.round((1 - deal.closed_amount / original) * 100);
-                            return <span className="ml-1 text-[10px] text-accent">· {pct}% off</span>;
-                          }
-                          return null;
-                        })()}
-                      </div>
-                    ) : hasPrelim ? (
-                      (() => {
-                        const b = computeEstimate({
-                          squares: prelim!.squares ?? 0,
-                          shingleId: prelim!.shingleId ?? null,
-                          accessories: prelim!.accessories ?? {},
-                          hasSolar: prelim!.hasSolar ?? false,
-                          notes: prelim!.notes ?? "",
-                        });
-                        return (
-                          <div className="font-medium text-foreground flex items-center gap-1">
-                            <Calculator className="h-2.5 w-2.5 text-primary" />
-                            Prelim: {fmt(b.low)} – {fmt(b.high)}
-                          </div>
-                        );
-                      })()
-                    ) : null}
-                    </div>
-
-                    <div className="mb-3">
-                      <DealTagsEditor deal={deal} size="sm" />
-                    </div>
-
-                    <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-hairline">
-                      <Button size="sm" className="flex-1 pressable h-7 text-[11px]" onClick={() => openDeal(deal.id)}>
-                        Open <ArrowRight className="h-2.5 w-2.5 ml-1" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0"
-                        title="Edit deal details"
-                        onClick={() => setEditingDeal(deal)}
-                      >
-                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0"
-                        title="Log an incident for this deal"
-                        onClick={() => setIncidentPrefill({
-                          deal_id: deal.id,
-                          customer_name: [deal.homeowner1, deal.homeowner2].filter(Boolean).join(" & ") || null,
-                          title: `Incident — ${deal.homeowner1 || "deal"}`,
-                        })}
-                      >
-                        <ShieldAlert className="h-3.5 w-3.5 text-warning" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 w-7 p-0"
-                        onClick={() => {
-                          if (confirm(`Delete deal for ${deal.homeowner1 || "this homeowner"}?`)) {
-                            del.mutate(deal.id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <div key={deal.id} className="card-premium p-5 flex flex-col group">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-foreground truncate">
-                        {deal.homeowner1 || "Untitled deal"}
-                        {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
-                      </h3>
-                      {deal.stage === "won" && deal.closed_amount ? (
-                        <p className="text-sm font-semibold text-success mt-0.5">{fmt(deal.closed_amount)}</p>
-                      ) : deal.selected_option && deal.closed_amount ? (
-                        <p className="text-sm font-semibold text-primary mt-0.5">
-                          {fmt(deal.closed_amount)}
-                          {(() => {
-                            const original = deal.selected_option === "B" ? deal.price_b : deal.selected_option === "C" ? deal.price_c : deal.price_a;
-                            if (original && original > deal.closed_amount!) {
-                              const pct = Math.round((1 - deal.closed_amount! / original) * 100);
-                              return <span className="text-[10px] font-medium text-accent ml-1">({pct}% off)</span>;
-                            }
-                            return null;
-                          })()}
-                        </p>
-                      ) : deal.price_a ? (
-                        <p className="text-sm font-semibold text-foreground mt-0.5">{fmt(deal.price_a)}</p>
-                      ) : null}
-                      {deal.address && (
-                        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
-                          <MapPin className="h-3 w-3 flex-shrink-0" />
-                          {deal.address}
-                        </p>
-                      )}
-                      {isAdmin && <div className="mt-1"><RepBadge repId={deal.rep_id} /></div>}
-                    </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${STAGE_COLORS[deal.stage]}`}>
-                      {STAGE_LABELS[deal.stage]}
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5 text-xs text-muted-foreground mb-4">
-                    {deal.products.length > 0 && (
-                      <div className="flex items-center gap-1.5">
-                        <Briefcase className="h-3 w-3" />
-                        <span className="truncate">{deal.products.join(", ")}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="h-3 w-3" />
-                      <span>Updated {new Date(deal.updated_at).toLocaleDateString()}</span>
-                    </div>
-                    {deal.stage === "won" && deal.closed_amount ? (
-                      <div className="flex items-center justify-between gap-2 pt-1">
-                        <span className="text-success font-semibold">Won {fmt(deal.closed_amount)}</span>
-                        <ClosedAtEditor dealId={deal.id} closedAt={deal.closed_at} label="Closed" />
-                      </div>
-                    ) : deal.stage === "lost" ? (
-                      <div className="flex items-center justify-between gap-2 pt-1">
-                        <span className="text-destructive font-semibold">Lost</span>
-                        <ClosedAtEditor dealId={deal.id} closedAt={deal.closed_at} label="On" />
-                      </div>
-                    ) : deal.price_a ? (
-                      <div className="flex items-center gap-2 pt-1">
-                        <span className="font-medium text-foreground">Top option: {fmt(deal.price_a)}</span>
-                        {deal.selected_option && (
-                          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">Option {deal.selected_option}</span>
-                        )}
-                        {(() => {
-                          const original = deal.selected_option === "B" ? deal.price_b : deal.selected_option === "C" ? deal.price_c : deal.price_a;
-                          if (deal.closed_amount && original && original > deal.closed_amount) {
-                            const pct = Math.round((1 - deal.closed_amount / original) * 100);
-                            return <span className="text-[10px] font-semibold text-accent bg-accent/10 px-1.5 py-0.5 rounded">{pct}% off</span>;
-                          }
-                          return null;
-                        })()}
-                      </div>
-                    ) : hasPrelim ? (
-                      (() => {
-                        const b = computeEstimate({
-                          squares: prelim!.squares ?? 0,
-                          shingleId: prelim!.shingleId ?? null,
-                          accessories: prelim!.accessories ?? {},
-                          hasSolar: prelim!.hasSolar ?? false,
-                          notes: prelim!.notes ?? "",
-                        });
-                        return (
-                          <div className="font-medium text-foreground flex items-center gap-1">
-                            <Calculator className="h-3 w-3 text-primary" />
-                            Prelim: {fmt(b.low)} – {fmt(b.high)}
-                          </div>
-                        );
-                      })()
-                    ) : null}
-                  </div>
-
-                  <div className="mb-3">
-                    <DealContactEditor deal={deal} />
-                  </div>
-
-                  <div className="mb-3">
-                    <DealTagsEditor deal={deal} />
-                  </div>
-
-                  <button
-                    onClick={() => setExpandedEstimate(isExpanded ? null : deal.id)}
-                    className="flex items-center justify-between gap-2 rounded-lg border border-hairline bg-muted/30 px-3 py-2 text-xs font-semibold text-foreground hover:border-primary/40 transition-colors mb-3 pressable"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Calculator className="h-3.5 w-3.5 text-primary" />
-                      Preliminary estimate
-                      {hasPrelim && <span className="text-[10px] font-normal text-muted-foreground">· saved</span>}
-                    </span>
-                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                  </button>
-
-                  {isExpanded && (
-                    <div className="mb-3 -mx-1">
-                      <PreliminaryEstimateCard dealId={deal.id} initial={prelim} />
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 mt-auto pt-3 border-t border-hairline">
-                    <Button size="sm" className="flex-1 pressable" onClick={() => openDeal(deal.id)}>
-                      Open <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="Edit deal details"
-                      onClick={() => setEditingDeal(deal)}
-                    >
-                      <Pencil className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="Log an incident for this deal"
-                      onClick={() => setIncidentPrefill({
-                        deal_id: deal.id,
-                        customer_name: [deal.homeowner1, deal.homeowner2].filter(Boolean).join(" & ") || null,
-                        title: `Incident — ${deal.homeowner1 || "deal"}`,
-                      })}
-                    >
-                      <ShieldAlert className="h-4 w-4 text-warning" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        if (confirm(`Delete deal for ${deal.homeowner1 || "this homeowner"}?`)) {
-                          del.mutate(deal.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+          <div className={`grid gap-4 ${isCompact ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 lg:grid-cols-2"}`}>
+            {filtered.map((deal) => (
+              <DealListCard
+                key={deal.id}
+                deal={deal}
+                compact={isCompact}
+                isAdmin={isAdmin}
+                repProfile={profileMap.get(deal.rep_id)}
+                onOpen={openDeal}
+                onEdit={handleEdit}
+                onIncident={handleIncident}
+                onDelete={handleDelete}
+              />
+            ))}
           </div>
         )}
       </main>
