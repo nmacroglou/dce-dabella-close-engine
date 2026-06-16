@@ -10,6 +10,7 @@ const STEP = 0.25;
 
 export default function PillarsBattleCardPanel() {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [zoom, setZoom] = useState<number | null>(null);
 
   const isFit = zoom === null;
