@@ -175,9 +175,12 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
           <ValueLine icon={Zap} label="10-yr energy savings" value={`+${fmt(computed.energySavings)}`} />
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" /> Net effective cost
-            </span>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" /> Net effective cost
+              </span>
+              <span className="text-[10px] text-muted-foreground">Price minus home value gain & energy savings</span>
+            </div>
             <span className="text-base font-extrabold text-primary">{fmt(opt.netCost)}</span>
           </div>
         </div>
