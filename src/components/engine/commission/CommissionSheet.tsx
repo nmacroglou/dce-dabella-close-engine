@@ -99,7 +99,7 @@ export default memo(function CommissionSheet() {
   const { activeDealId } = useActiveDeal();
   const { data: deal, isLoading: dealLoading } = useDeal(activeDealId);
   const { data: grid, isLoading: gridLoading } = useCommissionGrid();
-  const updateDeal = useUpdateDeal();
+  const updateDeal = useUpdateDealQuiet();
 
   const [sheet, setSheet] = useState<CommissionSheetInputs>(emptyCommissionSheet());
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
