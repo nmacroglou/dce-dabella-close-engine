@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 
 import {
   Sparkles, Home, ShieldCheck, Heart, TrendingUp, Sun, CloudRain,
   Users, Award, ChevronLeft, ChevronRight, Play, RotateCcw, Volume2,
-  Camera, Coffee, PartyPopper, Calendar, DollarSign,
+  Camera, Coffee, PartyPopper, Calendar, DollarSign, Loader2, Check, RefreshCw,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,30 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import type { EngineTabProps } from "@/types/engine";
-import VisionGallery from "./vision/VisionGallery";
+import { supabase } from "@/integrations/supabase/client";
+
+// Scene generation — one image per matching moment id
+type SceneDef = {
+  momentId: string;
+  buildPrompt: (ctx: { product: string; option: string; material?: string }) => string;
+};
+const SCENES: SceneDef[] = [
+  {
+    momentId: "arrival",
+    buildPrompt: ({ product, option, material }) =>
+      `Photorealistic exterior architectural rendering, golden-hour lighting, suburban American two-story home with a freshly installed ${product.toLowerCase()}${material ? ` (${material})` : ""}${option ? ` styled as "${option}"` : ""}. Crisp detail, manicured lawn, warm sky, lifestyle real-estate photography aesthetic, shot on 35mm, shallow depth of field. No people, no text, no watermarks.`,
+  },
+  {
+    momentId: "weather",
+    buildPrompt: ({ product, option }) =>
+      `Photorealistic exterior of a cozy American home at night during a heavy rainstorm, dramatic moody lighting, warm interior lights glowing from windows, brand new ${product.toLowerCase()}${option ? ` (${option})` : ""} visibly intact and water shedding cleanly. Cinematic, weatherproof feel, peaceful and protected mood. No people, no text, no watermarks.`,
+  },
+  {
+    momentId: "family",
+    buildPrompt: ({ product, option }) =>
+      `Photorealistic exterior of a beautiful American family home on a calm Saturday morning, soft sunlight, autumn leaves, the ${product.toLowerCase()}${option ? ` (${option})` : ""} looking pristine years after install. Warm, nostalgic, lifestyle magazine quality, shot on medium format. No people, no text, no watermarks.`,
+  },
+];
 
 type PriorityKey = "comfort" | "curb" | "protection" | "legacy";
 
@@ -239,6 +262,14 @@ export default function VisionTab({ state }: EngineTabProps) {
   const [showTalkTrack, setShowTalkTrack] = useState(true);
   const [customerMode, setCustomerMode] = useState(false);
 
+  // Scene image state — generated up-front, revealed as user reaches each card
+  const [images, setImages] = useState<Record<string, string | null>>({});
+  const [loadingScenes, setLoadingScenes] = useState<Record<string, boolean>>({});
+  const [hasRun, setHasRun] = useState(false);
+  const anyLoading = Object.values(loadingScenes).some(Boolean);
+  const loadedCount = Object.values(images).filter(Boolean).length;
+  const allReady = hasRun && !anyLoading && loadedCount === SCENES.length;
+
   const ctx = useMemo<VisionCtx>(() => {
     const first = (state.homeowner1 || "").trim().split(/\s+/)[0] || "your homeowner";
     const product = state.products?.[0] || "new system";
@@ -256,6 +287,30 @@ export default function VisionTab({ state }: EngineTabProps) {
     return { firstName: first, product, optionName, price };
   }, [state]);
 
+  const isRoofTop = (state.products?.[0] || "").toLowerCase().includes("roof");
+  const materialTop = isRoofTop ? state.roofMaterial : undefined;
+
+  const generateOne = useCallback(async (scene: SceneDef) => {
+    setLoadingScenes((p) => ({ ...p, [scene.momentId]: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-vision-image", {
+        body: { prompt: scene.buildPrompt({ product: ctx.product, option: ctx.optionName, material: materialTop }) },
+      });
+      if (error) throw error;
+      if (data?.image) setImages((p) => ({ ...p, [scene.momentId]: data.image }));
+    } catch {
+      /* ignore — UI will allow regenerate */
+    } finally {
+      setLoadingScenes((p) => ({ ...p, [scene.momentId]: false }));
+    }
+  }, [ctx.product, ctx.optionName, materialTop]);
+
+  const generateAll = useCallback(async () => {
+    setHasRun(true);
+    setImages({});
+    await Promise.all(SCENES.map(generateOne));
+  }, [generateOne]);
+
   const journey = useMemo(() => {
     if (!priority) return BASE_MOMENTS;
     return [PRIORITY_OPENERS[priority], ...BASE_MOMENTS];
@@ -268,6 +323,29 @@ export default function VisionTab({ state }: EngineTabProps) {
     setPriority(null);
     setStep(0);
   };
+
+  const GenerateControl = (
+    <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 backdrop-blur px-2 py-1">
+      {anyLoading ? (
+        <>
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+          <span className="text-xs font-medium px-1">Rendering {loadedCount}/{SCENES.length}…</span>
+        </>
+      ) : allReady ? (
+        <>
+          <Check className="h-3.5 w-3.5 text-emerald-500" />
+          <span className="text-xs font-semibold text-emerald-500 px-1">Visuals ready</span>
+          <button onClick={generateAll} className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 px-1.5">
+            <RefreshCw className="h-3 w-3" /> Regenerate
+          </button>
+        </>
+      ) : (
+        <Button onClick={generateAll} size="sm" className="gap-1.5 h-7 px-3 text-xs rounded-full">
+          <Sparkles className="h-3.5 w-3.5" /> Generate visuals
+        </Button>
+      )}
+    </div>
+  );
 
   // -------- Landing (priority selection) --------
   if (!priority) {
@@ -326,12 +404,24 @@ export default function VisionTab({ state }: EngineTabProps) {
         <Card className="border-border/60 bg-muted/30 p-5">
           <div className="flex items-start gap-3">
             <Volume2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground flex-1">
               <strong className="text-foreground">How to run this:</strong> Hand the iPad to the
               customer. Let <em>them</em> pick what matters most. That single tap tells you exactly
               which emotional door to walk through — and the talk track below each moment writes
               itself.
             </div>
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <Sparkles className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">Paint the Vision</div>
+                <div className="text-[11px] text-muted-foreground truncate">
+                  Pre-render AI visuals — they'll reveal inside each moment as you walk through.
+                </div>
+              </div>
+            </div>
+            {GenerateControl}
           </div>
         </Card>
       </div>
@@ -342,9 +432,8 @@ export default function VisionTab({ state }: EngineTabProps) {
   const M = moment;
   const Icon = M.icon;
   const stat = M.stat?.(ctx);
-
-  const isRoof = (state.products?.[0] || "").toLowerCase().includes("roof");
-  const material = isRoof ? state.roofMaterial : undefined;
+  const sceneImage = images[M.id] || null;
+  const sceneLoading = !!loadingScenes[M.id];
 
   return (
     <div className="space-y-5">
@@ -377,6 +466,7 @@ export default function VisionTab({ state }: EngineTabProps) {
           </div>
           <Progress value={progress} className="h-1.5" />
         </div>
+        {GenerateControl}
         <Button variant="ghost" size="sm" onClick={reset} className="shrink-0 gap-1.5">
           <RotateCcw className="h-3.5 w-3.5" /> Restart
         </Button>
@@ -385,8 +475,19 @@ export default function VisionTab({ state }: EngineTabProps) {
       {/* Cinematic moment card */}
       <div key={M.id} className="animate-in fade-in slide-in-from-bottom-3 duration-500">
         <Card className="relative overflow-hidden border-border/60 bg-card/60 backdrop-blur-xl">
-          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90", M.gradient)} />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/50 to-transparent" />
+          {/* AI-rendered scene image (revealed only on this step) */}
+          {sceneImage && (
+            <img
+              src={sceneImage}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-700"
+            />
+          )}
+          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90", M.gradient, sceneImage && "opacity-40 mix-blend-multiply")} />
+          <div className={cn(
+            "absolute inset-0 bg-gradient-to-t from-background/95 via-background/50 to-transparent",
+            sceneImage && "from-background/95 via-background/70 to-background/20",
+          )} />
 
           {/* Decorative iconography */}
           <div className="absolute -right-10 -top-10 opacity-10">
@@ -419,12 +520,16 @@ export default function VisionTab({ state }: EngineTabProps) {
                 </div>
               </div>
             )}
+
+            {sceneLoading && !sceneImage && (
+              <div className="absolute top-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" /> Rendering scene…
+              </div>
+            )}
           </div>
         </Card>
       </div>
 
-      {/* Vision gallery — AI-rendered visuals for the selected product/option */}
-      <VisionGallery product={ctx.product} optionName={ctx.optionName} material={material} />
 
       {/* Talk track (rep-facing) */}
       {!customerMode && (
