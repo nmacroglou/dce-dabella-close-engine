@@ -18,7 +18,7 @@ import {
   isKnownDefaultFeatureSet,
 } from "@/components/engine/presentation/constants";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
-import { useDeal, useUpdateDeal } from "@/hooks/useDeals";
+import { useDeal, useUpdateDealQuiet } from "@/hooks/useDeals";
 
 export type { EngineState, ComputedValues, OptionComputed, EngineUpdater, EngineTabProps };
 
