@@ -19,6 +19,7 @@ interface Props {
   state: EngineState;
   computed: ComputedValues;
   selectedOption: "A" | "B" | "C" | null;
+  originalComputed?: ComputedValues;
 }
 
 type Mode = "menu" | "email" | "sms";
