@@ -432,9 +432,8 @@ export default function VisionTab({ state }: EngineTabProps) {
   const M = moment;
   const Icon = M.icon;
   const stat = M.stat?.(ctx);
-
-  const isRoof = (state.products?.[0] || "").toLowerCase().includes("roof");
-  const material = isRoof ? state.roofMaterial : undefined;
+  const sceneImage = images[M.id] || null;
+  const sceneLoading = !!loadingScenes[M.id];
 
   return (
     <div className="space-y-5">
