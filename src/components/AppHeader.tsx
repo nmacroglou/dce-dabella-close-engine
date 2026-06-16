@@ -161,12 +161,10 @@ export default function AppHeader() {
   return (
     <TooltipProvider delayDuration={200}>
       <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-2.5 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 h-10 px-2.5 rounded-xl border border-hairline bg-card/85 backdrop-blur-xl shadow-[var(--shadow-md)] relative overflow-hidden">
-          {/* Electric blue signal seam */}
-          <span className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden />
+        <div className="max-w-[92rem] mx-auto flex items-center gap-3 min-h-11 px-3 rounded-xl border border-hairline bg-card/90 backdrop-blur-xl shadow-[var(--shadow-md)] relative">
 
           {/* Left: Brand + active-deal status */}
-          <Link to="/" className="flex items-center gap-2 pr-2 border-r border-hairline/70 shrink-0 min-w-0 group">
+          <Link to="/" className="flex items-center gap-2 pr-3 border-r border-hairline/60 shrink-0 min-w-0 group">
             <img src={dabellaLogo} alt="DaBella" className="h-5 w-auto" />
             <div className="hidden sm:flex items-center gap-1.5 leading-none min-w-0">
               <span className="text-[12px] font-display font-extrabold text-white tracking-tight whitespace-nowrap">
@@ -190,7 +188,7 @@ export default function AppHeader() {
           </Link>
 
           {/* Center: clustered nav */}
-          <nav className="hidden md:flex flex-1 items-center justify-center px-1 overflow-hidden">
+          <nav className="hidden xl:flex flex-1 items-center justify-center px-2 overflow-visible">
             <NavCluster items={SELL_CLUSTER} label="Sell" />
             <ClusterDivider />
             <NavCluster items={INSIGHTS_CLUSTER} label="Insights" />
@@ -199,7 +197,7 @@ export default function AppHeader() {
           </nav>
 
           {/* Right: Utility cluster */}
-          <div className="flex items-center gap-1 pl-1.5 border-l border-hairline/70 shrink-0">
+          <div className="flex items-center gap-1.5 pl-2 border-l border-hairline/60 shrink-0">
             <div className="hidden 2xl:flex items-center gap-1.5">
               <OwnerScopeFilter />
               <PublishStatusBadge />
@@ -208,7 +206,7 @@ export default function AppHeader() {
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button
-                  className="md:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
+                    className="xl:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
                   aria-label="Open navigation"
                 >
                   <Menu className="h-3.5 w-3.5 text-white" />
