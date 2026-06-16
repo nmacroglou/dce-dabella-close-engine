@@ -262,6 +262,14 @@ export default function VisionTab({ state }: EngineTabProps) {
   const [showTalkTrack, setShowTalkTrack] = useState(true);
   const [customerMode, setCustomerMode] = useState(false);
 
+  // Scene image state — generated up-front, revealed as user reaches each card
+  const [images, setImages] = useState<Record<string, string | null>>({});
+  const [loadingScenes, setLoadingScenes] = useState<Record<string, boolean>>({});
+  const [hasRun, setHasRun] = useState(false);
+  const anyLoading = Object.values(loadingScenes).some(Boolean);
+  const loadedCount = Object.values(images).filter(Boolean).length;
+  const allReady = hasRun && !anyLoading && loadedCount === SCENES.length;
+
   const ctx = useMemo<VisionCtx>(() => {
     const first = (state.homeowner1 || "").trim().split(/\s+/)[0] || "your homeowner";
     const product = state.products?.[0] || "new system";
