@@ -59,7 +59,7 @@ const initialState: EngineState = {
 export function useCloseEngine() {
   const { activeDealId } = useActiveDeal();
   const { data: deal } = useDeal(activeDealId);
-  const updateDeal = useUpdateDeal();
+  const updateDeal = useUpdateDealQuiet();
 
   const [state, setState] = useState<EngineState>(initialState);
   const hydratedDealIdRef = useRef<string | null>(null);
