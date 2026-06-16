@@ -19,11 +19,12 @@ interface Props {
   state: EngineState;
   computed: ComputedValues;
   selectedOption: "A" | "B" | "C" | null;
+  originalComputed?: ComputedValues;
 }
 
 type Mode = "menu" | "email" | "sms";
 
-export default function SharePdfDialog({ open, onOpenChange, state, computed, selectedOption }: Props) {
+export default function SharePdfDialog({ open, onOpenChange, state, computed, selectedOption, originalComputed }: Props) {
   const { user } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
   const [link, setLink] = useState<string | null>(null);
@@ -77,7 +78,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     setBusy("Generating proposal…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep });
+      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep }, originalComputed);
       setBusy("Uploading secure link…");
       const url = await uploadProposalPdf(blob, filename);
       setLink(url);
@@ -95,7 +96,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     setBusy("Building PDF…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { doc } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep });
+      const { doc } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep }, originalComputed);
       doc.save(filename);
       toast({ title: "Downloaded", description: filename });
     } finally {
@@ -108,7 +109,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     setBusy("Preparing share…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep });
+      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep }, originalComputed);
       const file = new File([blob], filename, { type: "application/pdf" });
       const ok = await nativeShare({
         title: "Your DaBella Proposal",

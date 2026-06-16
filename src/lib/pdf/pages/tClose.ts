@@ -14,6 +14,7 @@ import {
 
 export function drawTClose(
   pdf: jsPDF, state: EngineState, computed: ComputedValues, selectedKey: "A" | "B" | "C",
+  originalComputed?: ComputedValues,
 ) {
   pageBg(pdf);
   const m = getOptionMetrics(selectedKey, computed);
@@ -51,9 +52,20 @@ export function drawTClose(
   setDisplayFont(pdf, 30);
   setColor(pdf, FOREST_INK);
   pdf.text(fmt(m.price), COL_LEFT_X + HALF_W / 2, py + 36, { align: "center" });
+
+  // Show original + discount if applicable
+  const originalPrice = originalComputed?.options[selectedKey]?.price;
+  if (originalPrice && originalPrice > m.price) {
+    const savings = originalPrice - m.price;
+    const pct = Math.round((savings / originalPrice) * 100);
+    setBodyFont(pdf, 7.5);
+    setColor(pdf, SLATE);
+    pdf.text(`Was ${fmt(originalPrice)} · You save ${fmt(savings)} (${pct}% off)`, COL_LEFT_X + HALF_W / 2, py + 44, { align: "center" });
+  }
+
   setBodyFont(pdf, 8);
   setColor(pdf, SLATE);
-  pdf.text("Price guaranteed at signing", COL_LEFT_X + HALF_W / 2, py + 48, { align: "center" });
+  pdf.text("Price guaranteed at signing", COL_LEFT_X + HALF_W / 2, py + 52, { align: "center" });
 
   // Future price (right)
   rounded(pdf, COL_RIGHT_X, py, HALF_W, pH, 3, CARD, BORDER);

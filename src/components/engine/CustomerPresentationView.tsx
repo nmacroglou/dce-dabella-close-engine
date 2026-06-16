@@ -254,6 +254,7 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
         state={state}
         computed={discountedComputed}
         selectedOption={selectedOption}
+        originalComputed={computed}
       />
     </div>
   );
