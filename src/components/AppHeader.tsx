@@ -76,7 +76,7 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
               <Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? "text-primary" : ""}`} />
               <span className="hidden 2xl:inline tracking-tight">{label}</span>
               {isActive && (
-                <span className="absolute -bottom-[4px] left-1/2 -translate-x-1/2 h-[2px] w-6 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" />
+                <span className="absolute -bottom-[3px] left-1/2 -translate-x-1/2 h-[3px] w-7 rounded-full bg-primary shadow-[0_0_12px_hsl(var(--primary))]" />
               )}
             </>
           )}
@@ -164,13 +164,15 @@ export default function AppHeader() {
   return (
     <TooltipProvider delayDuration={200}>
       <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-2.5 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 h-11 px-3 rounded-2xl border border-hairline bg-card/85 backdrop-blur-xl shadow-[var(--shadow-md)] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 h-11 px-3 rounded-2xl border border-hairline bg-card/85 backdrop-blur-xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4),var(--shadow-md)] relative overflow-hidden">
           {/* Electric blue signal seam */}
           <span className="pointer-events-none absolute inset-x-6 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/60 to-transparent" aria-hidden />
+          {/* Bottom horizon glow for contrast */}
+          <span className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" aria-hidden />
 
           {/* Left: Brand + active-deal status */}
-          <Link to="/" className="flex items-center gap-2 pr-2 border-r border-hairline/70 shrink-0 min-w-0 group h-7">
-            <img src={dabellaLogo} alt="DaBella" className="h-5 w-auto" />
+          <Link to="/" className="flex items-center gap-2 pr-2 border-r border-hairline/70 shrink-0 min-w-0 group">
+            <img src={dabellaLogo} alt="DaBella" className="h-6 w-auto drop-shadow-[0_0_6px_rgba(37,99,235,0.35)]" />
             <div className="hidden sm:flex items-center gap-1.5 leading-none min-w-0">
               <span className="text-[13px] font-display font-extrabold text-white tracking-tight whitespace-nowrap">
                 Close<span className="text-primary">.</span>
