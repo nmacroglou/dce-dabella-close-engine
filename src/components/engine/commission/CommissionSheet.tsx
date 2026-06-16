@@ -186,11 +186,16 @@ export default memo(function CommissionSheet() {
     [sheet, grid]
   );
 
-  const set = <K extends keyof CommissionSheetInputs>(k: K, v: CommissionSheetInputs[K]) =>
-    setSheet((prev) => ({ ...prev, [k]: v }));
+  const set = useCallback(<K extends keyof CommissionSheetInputs>(k: K, v: CommissionSheetInputs[K]) =>
+    setSheet((prev) => ({ ...prev, [k]: v })), []);
 
-  const setNum = (k: keyof CommissionSheetInputs) => (v: string) =>
-    set(k as never, (Number(v) || 0) as never);
+  const setNum = useCallback((k: keyof CommissionSheetInputs) => (v: string) =>
+    set(k as never, (Number(v) || 0) as never), [set]);
+
+  const activePromos = useMemo(
+    () => (grid?.promos ?? []).filter((p) => p.active),
+    [grid?.promos],
+  );
 
   if (!activeDealId) {
     return (
