@@ -25,6 +25,7 @@ export async function buildCustomerPdf(
   options: ProposalOption[],
   selectedOption?: "A" | "B" | "C" | null,
   opts?: BuildOptions,
+  originalComputed?: ComputedValues,
 ): Promise<{ blob: Blob; doc: jsPDF }> {
   const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
   const isWindows = hasProduct(state.products, "Windows");
@@ -40,13 +41,13 @@ export async function buildCustomerPdf(
   const chosenOpt = options.find((o) => o.key === chosenKey) || options[0];
 
   pdf.addPage();
-  drawSelectedOption(pdf, state, computed, chosenOpt);
+  drawSelectedOption(pdf, state, computed, chosenOpt, originalComputed);
 
   pdf.addPage();
-  drawTClose(pdf, state, computed, chosenKey);
+  drawTClose(pdf, state, computed, chosenKey, originalComputed);
 
   pdf.addPage();
-  drawFinancialImpact(pdf, state, computed, chosenKey);
+  drawFinancialImpact(pdf, state, computed, chosenKey, originalComputed);
 
   if (isWindows) {
     pdf.addPage();
@@ -72,7 +73,8 @@ export async function exportCustomerPdf(
   options: ProposalOption[],
   filename = "DaBella-Proposal.pdf",
   selectedOption?: "A" | "B" | "C" | null,
+  originalComputed?: ComputedValues,
 ) {
-  const { doc } = await buildCustomerPdf(state, computed, options, selectedOption);
+  const { doc } = await buildCustomerPdf(state, computed, options, selectedOption, undefined, originalComputed);
   doc.save(filename);
 }
