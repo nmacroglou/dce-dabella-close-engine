@@ -78,7 +78,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     setBusy("Generating proposal…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep });
+      const { blob } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep }, originalComputed);
       setBusy("Uploading secure link…");
       const url = await uploadProposalPdf(blob, filename);
       setLink(url);
