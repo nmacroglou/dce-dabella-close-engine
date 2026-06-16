@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Maximize2, Download, BookOpen, X, ZoomIn, ZoomOut, Maximize } from "lucide-react";
+import { Maximize2, Download, BookOpen, X, ZoomIn, ZoomOut, Maximize, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import battleCard from "@/assets/dabella-10-step-battlecard.png";
