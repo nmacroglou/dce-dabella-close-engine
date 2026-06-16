@@ -273,27 +273,40 @@ export default function DealsPage() {
                       )}
                       {deal.stage === "won" && deal.closed_amount ? (
                         <div className="text-success font-semibold">Won {fmt(deal.closed_amount)}</div>
-                      ) : deal.stage === "lost" ? (
-                        <div className="text-destructive font-semibold">Lost</div>
-                      ) : deal.price_a ? (
-                        <div className="font-medium text-foreground">Top option: {fmt(deal.price_a)}</div>
-                      ) : hasPrelim ? (
-                        (() => {
-                          const b = computeEstimate({
-                            squares: prelim!.squares ?? 0,
-                            shingleId: prelim!.shingleId ?? null,
-                            accessories: prelim!.accessories ?? {},
-                            hasSolar: prelim!.hasSolar ?? false,
-                            notes: prelim!.notes ?? "",
-                          });
-                          return (
-                            <div className="font-medium text-foreground flex items-center gap-1">
-                              <Calculator className="h-2.5 w-2.5 text-primary" />
-                              Prelim: {fmt(b.low)} – {fmt(b.high)}
-                            </div>
-                          );
-                        })()
-                      ) : null}
+                    ) : deal.stage === "lost" ? (
+                      <div className="text-destructive font-semibold">Lost</div>
+                    ) : deal.price_a ? (
+                      <div className="font-medium text-foreground">
+                        Top option: {fmt(deal.price_a)}
+                        {deal.selected_option && (
+                          <span className="ml-1 text-[10px] text-primary">· Option {deal.selected_option}</span>
+                        )}
+                        {(() => {
+                          const original = deal.selected_option === "B" ? deal.price_b : deal.selected_option === "C" ? deal.price_c : deal.price_a;
+                          if (deal.closed_amount && original && original > deal.closed_amount) {
+                            const pct = Math.round((1 - deal.closed_amount / original) * 100);
+                            return <span className="ml-1 text-[10px] text-accent">· {pct}% off</span>;
+                          }
+                          return null;
+                        })()}
+                      </div>
+                    ) : hasPrelim ? (
+                      (() => {
+                        const b = computeEstimate({
+                          squares: prelim!.squares ?? 0,
+                          shingleId: prelim!.shingleId ?? null,
+                          accessories: prelim!.accessories ?? {},
+                          hasSolar: prelim!.hasSolar ?? false,
+                          notes: prelim!.notes ?? "",
+                        });
+                        return (
+                          <div className="font-medium text-foreground flex items-center gap-1">
+                            <Calculator className="h-2.5 w-2.5 text-primary" />
+                            Prelim: {fmt(b.low)} – {fmt(b.high)}
+                          </div>
+                        );
+                      })()
+                    ) : null}
                     </div>
 
                     <div className="mb-3">
