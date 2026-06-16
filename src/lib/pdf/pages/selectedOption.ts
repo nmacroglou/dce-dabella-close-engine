@@ -153,11 +153,16 @@ export function drawSelectedOption(
   });
 
   vy += 2;
-  rounded(pdf, rxc + 6, vy, colW - 12, 18, 2, FOREST_INK);
+  rounded(pdf, rxc + 6, vy, colW - 12, 22, 2, FOREST_INK);
   setDisplayFont(pdf, 6.5);
   setColor(pdf, LIME);
-  trackedText(pdf, "NET EFFECTIVE COST", rxc + 12, vy + 7, { charSpace: 0.45 });
+  trackedText(pdf, "NET EFFECTIVE COST", rxc + 12, vy + 6, { charSpace: 0.45 });
+
+  setBodyFont(pdf, 6);
+  setColor(pdf, [160, 200, 160]);
+  pdf.text("Price minus home value gain & energy savings", rxc + 12, vy + 11);
+
   setDisplayFont(pdf, 12.5);
   setColor(pdf, WHITE);
-  pdf.text(fmt(optComputed.netCost), rxc + colW - 12, vy + 12, { align: "right" });
+  pdf.text(fmt(optComputed.netCost), rxc + colW - 12, vy + 17, { align: "right" });
 }
