@@ -287,6 +287,30 @@ export default function VisionTab({ state }: EngineTabProps) {
     return { firstName: first, product, optionName, price };
   }, [state]);
 
+  const isRoofTop = (state.products?.[0] || "").toLowerCase().includes("roof");
+  const materialTop = isRoofTop ? state.roofMaterial : undefined;
+
+  const generateOne = useCallback(async (scene: SceneDef) => {
+    setLoadingScenes((p) => ({ ...p, [scene.momentId]: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-vision-image", {
+        body: { prompt: scene.buildPrompt({ product: ctx.product, option: ctx.optionName, material: materialTop }) },
+      });
+      if (error) throw error;
+      if (data?.image) setImages((p) => ({ ...p, [scene.momentId]: data.image }));
+    } catch {
+      /* ignore — UI will allow regenerate */
+    } finally {
+      setLoadingScenes((p) => ({ ...p, [scene.momentId]: false }));
+    }
+  }, [ctx.product, ctx.optionName, materialTop]);
+
+  const generateAll = useCallback(async () => {
+    setHasRun(true);
+    setImages({});
+    await Promise.all(SCENES.map(generateOne));
+  }, [generateOne]);
+
   const journey = useMemo(() => {
     if (!priority) return BASE_MOMENTS;
     return [PRIORITY_OPENERS[priority], ...BASE_MOMENTS];
@@ -299,6 +323,29 @@ export default function VisionTab({ state }: EngineTabProps) {
     setPriority(null);
     setStep(0);
   };
+
+  const GenerateControl = (
+    <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 backdrop-blur px-2 py-1">
+      {anyLoading ? (
+        <>
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+          <span className="text-xs font-medium px-1">Rendering {loadedCount}/{SCENES.length}…</span>
+        </>
+      ) : allReady ? (
+        <>
+          <Check className="h-3.5 w-3.5 text-emerald-500" />
+          <span className="text-xs font-semibold text-emerald-500 px-1">Visuals ready</span>
+          <button onClick={generateAll} className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 px-1.5">
+            <RefreshCw className="h-3 w-3" /> Regenerate
+          </button>
+        </>
+      ) : (
+        <Button onClick={generateAll} size="sm" className="gap-1.5 h-7 px-3 text-xs rounded-full">
+          <Sparkles className="h-3.5 w-3.5" /> Generate visuals
+        </Button>
+      )}
+    </div>
+  );
 
   // -------- Landing (priority selection) --------
   if (!priority) {
