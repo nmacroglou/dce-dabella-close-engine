@@ -130,6 +130,8 @@ export default function PillarsBattleCardPanel() {
       <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
         Pre-appointment readiness: <span className="font-semibold text-foreground">rested, fed, hydrated</span>. Tap to expand.
       </p>
+      </>
+      )}
     </div>
   );
 }
