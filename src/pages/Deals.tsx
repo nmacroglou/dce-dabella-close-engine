@@ -254,6 +254,23 @@ export default function DealsPage() {
                         {deal.homeowner1 || "Untitled deal"}
                         {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
                       </h3>
+                      {deal.stage === "won" && deal.closed_amount ? (
+                        <p className="text-xs font-semibold text-success mt-0.5">{fmt(deal.closed_amount)}</p>
+                      ) : deal.selected_option && deal.closed_amount ? (
+                        <p className="text-xs font-semibold text-primary mt-0.5">
+                          {fmt(deal.closed_amount)}
+                          {(() => {
+                            const original = deal.selected_option === "B" ? deal.price_b : deal.selected_option === "C" ? deal.price_c : deal.price_a;
+                            if (original && original > deal.closed_amount!) {
+                              const pct = Math.round((1 - deal.closed_amount! / original) * 100);
+                              return <span className="text-[10px] font-medium text-accent ml-1">({pct}% off)</span>;
+                            }
+                            return null;
+                          })()}
+                        </p>
+                      ) : deal.price_a ? (
+                        <p className="text-xs font-semibold text-foreground mt-0.5">{fmt(deal.price_a)}</p>
+                      ) : null}
                       {deal.address && (
                         <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
                           <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
@@ -364,6 +381,23 @@ export default function DealsPage() {
                         {deal.homeowner1 || "Untitled deal"}
                         {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
                       </h3>
+                      {deal.stage === "won" && deal.closed_amount ? (
+                        <p className="text-sm font-semibold text-success mt-0.5">{fmt(deal.closed_amount)}</p>
+                      ) : deal.selected_option && deal.closed_amount ? (
+                        <p className="text-sm font-semibold text-primary mt-0.5">
+                          {fmt(deal.closed_amount)}
+                          {(() => {
+                            const original = deal.selected_option === "B" ? deal.price_b : deal.selected_option === "C" ? deal.price_c : deal.price_a;
+                            if (original && original > deal.closed_amount!) {
+                              const pct = Math.round((1 - deal.closed_amount! / original) * 100);
+                              return <span className="text-[10px] font-medium text-accent ml-1">({pct}% off)</span>;
+                            }
+                            return null;
+                          })()}
+                        </p>
+                      ) : deal.price_a ? (
+                        <p className="text-sm font-semibold text-foreground mt-0.5">{fmt(deal.price_a)}</p>
+                      ) : null}
                       {deal.address && (
                         <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
                           <MapPin className="h-3 w-3 flex-shrink-0" />
