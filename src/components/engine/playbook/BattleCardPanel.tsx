@@ -146,6 +146,8 @@ export default function BattleCardPanel() {
       <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
         Tap to expand. Reference the homeowner emotional journey and time-in-home close rates.
       </p>
+      </>
+      )}
     </div>
   );
 }
