@@ -1,6 +1,6 @@
-import { memo, useEffect, useState, useMemo, useRef } from "react";
+import { memo, useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
-import { useDeal, useUpdateDeal } from "@/hooks/useDeals";
+import { useDeal, useUpdateDealQuiet } from "@/hooks/useDeals";
 import { useCommissionGrid } from "@/hooks/useCommissionGrid";
 import {
   computeCommissionSheet,
@@ -99,7 +99,7 @@ export default memo(function CommissionSheet() {
   const { activeDealId } = useActiveDeal();
   const { data: deal, isLoading: dealLoading } = useDeal(activeDealId);
   const { data: grid, isLoading: gridLoading } = useCommissionGrid();
-  const updateDeal = useUpdateDeal();
+  const updateDeal = useUpdateDealQuiet();
 
   const [sheet, setSheet] = useState<CommissionSheetInputs>(emptyCommissionSheet());
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -186,11 +186,16 @@ export default memo(function CommissionSheet() {
     [sheet, grid]
   );
 
-  const set = <K extends keyof CommissionSheetInputs>(k: K, v: CommissionSheetInputs[K]) =>
-    setSheet((prev) => ({ ...prev, [k]: v }));
+  const set = useCallback(<K extends keyof CommissionSheetInputs>(k: K, v: CommissionSheetInputs[K]) =>
+    setSheet((prev) => ({ ...prev, [k]: v })), []);
 
-  const setNum = (k: keyof CommissionSheetInputs) => (v: string) =>
-    set(k as never, (Number(v) || 0) as never);
+  const setNum = useCallback((k: keyof CommissionSheetInputs) => (v: string) =>
+    set(k as never, (Number(v) || 0) as never), [set]);
+
+  const activePromos = useMemo(
+    () => (grid?.promos ?? []).filter((p) => p.active),
+    [grid?.promos],
+  );
 
   if (!activeDealId) {
     return (
@@ -321,50 +326,48 @@ export default memo(function CommissionSheet() {
         </div>
 
         {/* Active monthly promos quick-pick */}
-        {grid?.promos?.some((p) => p.active) && (
+        {activePromos.length > 0 && (
           <div className="rounded-xl border border-accent/30 bg-accent/5 p-3 space-y-2">
             <p className="text-[10px] font-bold uppercase tracking-wider text-accent">
               This Month's Promos · tap to apply
             </p>
             <div className="flex flex-wrap gap-2">
-              {grid.promos
-                .filter((p) => p.active)
-                .map((p) => {
-                  const applied =
-                    sheet.promotion_pct_override === p.override_pct &&
-                    sheet.promotion_note.includes(p.label);
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => {
-                        if (applied) {
-                          set("promotion_pct_override", 0);
-                          set("promotion_note", "");
-                        } else {
-                          set("promotion_pct_override", p.override_pct);
-                          set(
-                            "promotion_note",
-                            `${p.product}: ${p.label}${p.details ? ` — ${p.details}` : ""}`
-                          );
-                        }
-                      }}
-                      className={`text-left rounded-lg px-3 py-2 text-xs font-semibold border transition-colors ${
-                        applied
-                          ? "bg-accent text-accent-foreground border-accent"
-                          : "bg-background border-border hover:border-accent/50 text-foreground"
-                      }`}
-                    >
-                      <span className="block">
-                        {p.product} · {p.label || "(no label)"}
+              {activePromos.map((p) => {
+                const applied =
+                  sheet.promotion_pct_override === p.override_pct &&
+                  sheet.promotion_note.includes(p.label);
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      if (applied) {
+                        set("promotion_pct_override", 0);
+                        set("promotion_note", "");
+                      } else {
+                        set("promotion_pct_override", p.override_pct);
+                        set(
+                          "promotion_note",
+                          `${p.product}: ${p.label}${p.details ? ` — ${p.details}` : ""}`,
+                        );
+                      }
+                    }}
+                    className={`text-left rounded-lg px-3 py-2 text-xs font-semibold border transition-colors ${
+                      applied
+                        ? "bg-accent text-accent-foreground border-accent"
+                        : "bg-background border-border hover:border-accent/50 text-foreground"
+                    }`}
+                  >
+                    <span className="block">
+                      {p.product} · {p.label || "(no label)"}
+                    </span>
+                    {p.override_pct > 0 && (
+                      <span className="block text-[10px] opacity-80 mt-0.5">
+                        +{p.override_pct}% override
                       </span>
-                      {p.override_pct > 0 && (
-                        <span className="block text-[10px] opacity-80 mt-0.5">
-                          +{p.override_pct}% override
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

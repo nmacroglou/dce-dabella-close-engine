@@ -139,6 +139,53 @@ export function useUpdateDeal() {
   });
 }
 
+/**
+ * Same as useUpdateDeal but skips the heavy invalidate-on-settle storm.
+ * Use for high-frequency autosaves (engine_state, commission_sheet) where the
+ * optimistic cache patch already keeps the UI in sync. Refetching the deals
+ * list + dashboard stats on every keystroke is what makes typing laggy.
+ */
+export function useUpdateDealQuiet() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Deal> }): Promise<Deal> => {
+      const payload = { ...updates } as Record<string, unknown>;
+      if (payload.engine_state) {
+        payload.engine_state = payload.engine_state as unknown as Json;
+      }
+      const { data, error } = await supabase
+        .from("deals")
+        .update(payload as never)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as unknown as Deal;
+    },
+    onMutate: async ({ id, updates }) => {
+      const prevDeal = qc.getQueryData<Deal>(["deal", id]);
+      const prevLists = qc.getQueriesData<Deal[]>({ queryKey: ["deals"] });
+
+      if (prevDeal) {
+        qc.setQueryData<Deal>(["deal", id], { ...prevDeal, ...updates } as Deal);
+      }
+      prevLists.forEach(([key, list]) => {
+        if (!list) return;
+        qc.setQueryData<Deal[]>(key, list.map((d) => (d.id === id ? { ...d, ...updates } as Deal : d)));
+      });
+
+      return { prevDeal, prevLists };
+    },
+    onError: (err, _vars, ctx) => {
+      if (ctx?.prevDeal) qc.setQueryData(["deal", ctx.prevDeal.id], ctx.prevDeal);
+      ctx?.prevLists?.forEach(([key, list]) => qc.setQueryData(key, list));
+      toast.error(errMsg(err, "Autosave failed"));
+    },
+    // No onSettled invalidations on purpose.
+  });
+}
+
 export function useDeleteDeal() {
   const qc = useQueryClient();
 

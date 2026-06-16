@@ -18,7 +18,7 @@ import {
   isKnownDefaultFeatureSet,
 } from "@/components/engine/presentation/constants";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
-import { useDeal, useUpdateDeal } from "@/hooks/useDeals";
+import { useDeal, useUpdateDealQuiet } from "@/hooks/useDeals";
 
 export type { EngineState, ComputedValues, OptionComputed, EngineUpdater, EngineTabProps };
 
@@ -59,7 +59,7 @@ const initialState: EngineState = {
 export function useCloseEngine() {
   const { activeDealId } = useActiveDeal();
   const { data: deal } = useDeal(activeDealId);
-  const updateDeal = useUpdateDeal();
+  const updateDeal = useUpdateDealQuiet();
 
   const [state, setState] = useState<EngineState>(initialState);
   const hydratedDealIdRef = useRef<string | null>(null);
