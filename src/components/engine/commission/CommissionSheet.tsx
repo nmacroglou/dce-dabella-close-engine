@@ -148,10 +148,9 @@ export default memo(function CommissionSheet() {
   }, [activeDealId]);
 
   // Live-mirror selection + discount from the Presentation tab into the
-  // Roof "Worth" / "Sold For" cells. Worth = full price of the option the
-  // homeowner picked; Sold For = closed_amount (post-discount). Other
-  // trades & manual edits are preserved.
-  const lastSyncedRef = useRef<{ opt: string | null; sold: number | null }>({ opt: null, sold: null });
+  // Roof "Worth" / "Sold For" cells — but ONLY fills cells the rep hasn't
+  // touched yet (sticky). Once a number is in the cell, upstream changes
+  // never overwrite it.
   useEffect(() => {
     if (!deal || hydratedDealId.current !== deal.id) return;
     const opt = deal.selected_option;
@@ -161,13 +160,12 @@ export default memo(function CommissionSheet() {
       : opt === "C" ? Number(deal.price_c ?? 0)
       : Number(deal.price_a ?? 0);
     const sold = Number(deal.closed_amount ?? worth);
-    if (lastSyncedRef.current.opt === opt && lastSyncedRef.current.sold === sold) return;
-    lastSyncedRef.current = { opt, sold };
-    setSheet((prev) => ({
-      ...prev,
-      project_roof: worth || prev.project_roof,
-      contract_roof: sold || prev.contract_roof,
-    }));
+    setSheet((prev) => {
+      const nextWorth = prev.project_roof > 0 ? prev.project_roof : worth;
+      const nextSold = prev.contract_roof > 0 ? prev.contract_roof : sold;
+      if (nextWorth === prev.project_roof && nextSold === prev.contract_roof) return prev;
+      return { ...prev, project_roof: nextWorth, contract_roof: nextSold };
+    });
   }, [deal?.selected_option, deal?.closed_amount, deal?.price_a, deal?.price_b, deal?.price_c, deal?.id]);
 
   // Debounced auto-save (only after hydration of the current deal)
