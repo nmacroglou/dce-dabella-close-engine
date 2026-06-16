@@ -29,8 +29,11 @@ export async function buildCustomerPdf(
 ): Promise<{ blob: Blob; doc: jsPDF }> {
   const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
   const isWindows = hasProduct(state.products, "Windows");
-  await registerPdfFonts(pdf);
-  const logoDataUrl = await loadImageDataUrl(dabellaLogoUrl);
+  // Fonts + logo are independent — fetch in parallel.
+  const [, logoDataUrl] = await Promise.all([
+    registerPdfFonts(pdf),
+    loadImageDataUrl(dabellaLogoUrl),
+  ]);
 
   const debugBoxes = opts?.debug ? installDebugRecorder(pdf) : null;
 
