@@ -96,7 +96,7 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     setBusy("Building PDF…");
     try {
       const options = buildOptionsArray(state, computed);
-      const { doc } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep });
+      const { doc } = await (await loadPdfBuilder())(state, computed, options, selectedOption, { debug, rep }, originalComputed);
       doc.save(filename);
       toast({ title: "Downloaded", description: filename });
     } finally {
