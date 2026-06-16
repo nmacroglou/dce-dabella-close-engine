@@ -404,12 +404,24 @@ export default function VisionTab({ state }: EngineTabProps) {
         <Card className="border-border/60 bg-muted/30 p-5">
           <div className="flex items-start gap-3">
             <Volume2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground flex-1">
               <strong className="text-foreground">How to run this:</strong> Hand the iPad to the
               customer. Let <em>them</em> pick what matters most. That single tap tells you exactly
               which emotional door to walk through — and the talk track below each moment writes
               itself.
             </div>
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <Sparkles className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">Paint the Vision</div>
+                <div className="text-[11px] text-muted-foreground truncate">
+                  Pre-render AI visuals — they'll reveal inside each moment as you walk through.
+                </div>
+              </div>
+            </div>
+            {GenerateControl}
           </div>
         </Card>
       </div>
