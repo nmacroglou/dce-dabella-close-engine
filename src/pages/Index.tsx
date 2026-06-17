@@ -48,7 +48,7 @@ export default function Index() {
         <ActiveDealBanner />
 
         <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
-          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card/60 backdrop-blur-xl border border-border/60 rounded-2xl mb-6 grid grid-cols-9 gap-1 shadow-sm">
+          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card/60 backdrop-blur-xl border border-border/60 rounded-2xl mb-6 grid grid-cols-10 gap-1 shadow-sm">
             {TABS.map(({ value, label, icon: Icon }) => (
               <TabsTrigger
                 key={value}
