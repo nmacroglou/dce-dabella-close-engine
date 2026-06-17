@@ -62,11 +62,11 @@ export function useSaveInspection() {
       const { error } = await supabase
         .from("deal_inspections")
         .upsert(
-          {
+          [{
             deal_id: input.deal_id,
             report_type: input.report_type,
             sections: input.sections as unknown as Record<string, unknown>,
-          },
+          }],
           { onConflict: "deal_id,report_type" },
         );
       if (error) throw error;
