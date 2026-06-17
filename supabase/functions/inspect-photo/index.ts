@@ -63,7 +63,9 @@ Deno.serve(async (req) => {
 
     // Fetch the image server-side and inline as base64 so the AI gateway
     // doesn't need to reach the signed URL itself (which can 4xx upstream).
-    const imgRes = await fetch(body.photo_url);
+    const imgRes = await fetch(body.photo_url, {
+      headers: { "User-Agent": "Mozilla/5.0 (DaBella Inspection)" },
+    });
     if (!imgRes.ok) {
       const t = await imgRes.text().catch(() => "");
       console.error("Photo fetch failed", imgRes.status, t);
