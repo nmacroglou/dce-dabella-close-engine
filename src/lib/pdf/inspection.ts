@@ -155,7 +155,7 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
     try {
       if (photo.signedUrl) {
         const dataUrl = await loadImageDataUrl(photo.signedUrl);
-        pdf.addImage(dataUrl, "JPEG", 26, y + 7.5, imgW, imgH, undefined, "FAST");
+        if (dataUrl) pdf.addImage(dataUrl, "JPEG", 26, y + 7.5, imgW, imgH, undefined, "FAST");
       }
     } catch (e) {
       console.warn("photo failed to render", e);
