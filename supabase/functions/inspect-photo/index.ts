@@ -60,6 +60,21 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+    // Fetch the image server-side and inline as base64 so the AI gateway
+    // doesn't need to reach the signed URL itself (which can 4xx upstream).
+    const imgRes = await fetch(body.photo_url);
+    if (!imgRes.ok) {
+      const t = await imgRes.text().catch(() => "");
+      console.error("Photo fetch failed", imgRes.status, t);
+      return new Response(JSON.stringify({ error: `Could not fetch photo (${imgRes.status})` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const mime = imgRes.headers.get("content-type") ?? "image/jpeg";
+    const buf = new Uint8Array(await imgRes.arrayBuffer());
+    let bin = "";
+    for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+    const dataUrl = `data:${mime};base64,${btoa(bin)}`;
+
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -74,10 +89,11 @@ Deno.serve(async (req) => {
             role: "user",
             content: [
               { type: "text", text: "Analyze this photo and return tags, severity, and caption." },
-              { type: "image_url", image_url: { url: body.photo_url } },
+              { type: "image_url", image_url: { url: dataUrl } },
             ],
           },
         ],
+
         tools: [{
           type: "function",
           function: {
