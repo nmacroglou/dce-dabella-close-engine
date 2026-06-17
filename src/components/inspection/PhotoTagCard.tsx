@@ -101,12 +101,24 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
         )}
       </div>
 
-      <Input
-        placeholder="Caption (one factual sentence)"
-        value={caption}
-        onChange={(e) => patch({ caption: e.target.value })}
-        className="h-8 text-xs"
-      />
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Caption (one factual sentence)"
+          value={caption}
+          onChange={(e) => patch({ caption: e.target.value })}
+          className="h-8 text-xs flex-1"
+        />
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 shrink-0"
+          onClick={handleCaptionOnly}
+          disabled={analyze.isPending}
+          title="AI inspect & caption"
+        >
+          {analyze.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 text-primary" />}
+        </Button>
+      </div>
 
       <div className="flex flex-wrap gap-1">
         {tags.map((t) => (
