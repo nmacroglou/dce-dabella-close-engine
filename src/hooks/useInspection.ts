@@ -114,10 +114,12 @@ export function useAnalyzePhoto() {
       storage_path: string;
       report_type: InspectionReportType;
     }) => {
-      // Create a short-lived signed URL the edge function can fetch
+      // Create a short-lived, resized signed URL so edge AI analysis never handles full-size camera photos.
       const { data: signed, error: signErr } = await supabase.storage
         .from(BUCKET)
-        .createSignedUrl(input.storage_path, 60 * 5);
+        .createSignedUrl(input.storage_path, 60 * 5, {
+          transform: { width: 1600, height: 1600, resize: "contain", quality: 80 },
+        });
       if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Failed to sign photo URL");
 
       const { data, error } = await supabase.functions.invoke("inspect-photo", {

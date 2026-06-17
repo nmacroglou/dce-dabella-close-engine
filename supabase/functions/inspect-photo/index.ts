@@ -1,10 +1,6 @@
 // Vision-based photo tagging for the inspection report.
 // Takes a signed photo URL + report type, returns { tags, severity, caption }.
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 type ReportType = "roof" | "windows" | "bath" | "solar";
 
@@ -27,6 +23,17 @@ const PERSONA: Record<ReportType, string> = {
   solar: "You are a senior PV systems inspector with 25+ years on residential solar. You speak to homeowners clearly about production loss, safety, and roof-interface risk — no jargon, no scare tactics.",
 };
 
+const MAX_IMAGE_BYTES = 5_000_000;
+
+function base64FromBytes(bytes: Uint8Array) {
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 const SYSTEM = (rt: ReportType) => `${PERSONA[rt]}
 
 You're reviewing a single field photo for a homeowner-facing condition report. Identify ONLY what is visible. Do not invent defects, do not speculate beyond the frame.
@@ -46,7 +53,7 @@ Caption voice: write ONE sentence (max ~22 words) in the first person of the ins
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  console.log("inspect-photo v2 invoked");
+  console.log("inspect-photo v3 invoked");
   try {
     const body = (await req.json()) as ReqBody;
     if (!body.photo_url || !body.report_type) {
@@ -61,22 +68,27 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Fetch the image server-side and inline as base64 so the AI gateway
-    // doesn't need to reach the signed URL itself (which can 4xx upstream).
     const imgRes = await fetch(body.photo_url, {
       headers: { "User-Agent": "Mozilla/5.0 (DaBella Inspection)" },
     });
     if (!imgRes.ok) {
       const t = await imgRes.text().catch(() => "");
-      console.error("Photo fetch failed", imgRes.status, t);
+      console.error("Photo fetch failed", imgRes.status, t.slice(0, 500));
       return new Response(JSON.stringify({ error: `Could not fetch photo (${imgRes.status})` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const mime = imgRes.headers.get("content-type") ?? "image/jpeg";
-    const buf = new Uint8Array(await imgRes.arrayBuffer());
-    let bin = "";
-    for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
-    const dataUrl = `data:${mime};base64,${btoa(bin)}`;
+    const contentLength = Number(imgRes.headers.get("content-length") ?? "0");
+    if (contentLength > MAX_IMAGE_BYTES) {
+      return new Response(JSON.stringify({ error: "Photo is too large for AI inspection. Re-upload a smaller photo." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const mime = imgRes.headers.get("content-type")?.split(";")[0] || "image/jpeg";
+    const bytes = new Uint8Array(await imgRes.arrayBuffer());
+    if (bytes.byteLength > MAX_IMAGE_BYTES) {
+      return new Response(JSON.stringify({ error: "Photo is too large for AI inspection. Re-upload a smaller photo." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const dataUrl = `data:${mime};base64,${base64FromBytes(bytes)}`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

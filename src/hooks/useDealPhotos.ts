@@ -16,6 +16,33 @@ export interface DealPhoto {
 
 const BUCKET = "deal-photos";
 
+async function downscaleImage(file: File, maxSide = 1600, quality = 0.82): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+  const imageUrl = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.decoding = "async";
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error("Could not read image"));
+      img.src = imageUrl;
+    });
+    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+    if (scale >= 1 && file.size <= 1_500_000) return file;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
 async function attachSignedUrls(photos: DealPhoto[]): Promise<DealPhoto[]> {
   if (photos.length === 0) return photos;
   const { data } = await supabase.storage
@@ -48,9 +75,10 @@ export function useUploadDealPhoto() {
   return useMutation({
     mutationFn: async ({ dealId, file, caption }: { dealId: string; file: File; caption?: string }) => {
       if (!user) throw new Error("Not authenticated");
-      const ext = file.name.split(".").pop() ?? "jpg";
+      const uploadFile = await downscaleImage(file);
+      const ext = uploadFile.name.split(".").pop() ?? "jpg";
       const path = `${user.id}/${dealId}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, {
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, uploadFile, {
         cacheControl: "3600",
         upsert: false,
       });
