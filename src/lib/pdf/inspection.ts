@@ -222,7 +222,7 @@ function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string)
     }
     rounded(pdf, 22, y, PW - 44, 26, 2, FOREST_INK);
     try {
-      pdf.addImage(logoDataUrl, "PNG", 27, y + 5, 16, 16);
+      if (logoDataUrl) pdf.addImage(logoDataUrl, "PNG", 27, y + 5, 16, 16);
     } catch { /* ignore */ }
     setDisplayFont(pdf, 9);
     setColor(pdf, LIME);
