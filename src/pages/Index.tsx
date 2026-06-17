@@ -40,6 +40,16 @@ function TabLoader() {
 
 export default function Index() {
   const { state, update, computed, coachingTip, reset } = useCloseEngine();
+  const location = useLocation();
+
+  useEffect(() => {
+    const tab = (location.state as { tab?: string } | null)?.tab;
+    if (tab && tab !== state.activeTab) {
+      update("activeTab", tab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+
 
   return (
     <div className="min-h-screen surface-premium">
