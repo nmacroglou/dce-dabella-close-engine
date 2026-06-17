@@ -190,10 +190,11 @@ export default function InspectionPanel({ dealId }: Props) {
           {upload.isPending ? "Uploading…" : "Add photos"}
         </Button>
 
-        <Button variant="outline" onClick={handleAutoTagAll} disabled={analyze.isPending || filteredPhotos.length === 0}>
-          {analyze.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-          Auto-tag all
+        <Button variant="outline" onClick={handleAutoTagAll} disabled={!!tagProgress || filteredPhotos.length === 0}>
+          {tagProgress ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+          {tagProgress ? `Tagging ${tagProgress.done}/${tagProgress.total}` : `Auto-tag all (${filteredPhotos.length})`}
         </Button>
+
 
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
           {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
