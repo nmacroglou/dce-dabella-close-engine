@@ -36,10 +36,11 @@ const SEV_LABEL = { low: "LOW", moderate: "MODERATE", high: "HIGH" } as const;
 
 export async function buildInspectionPdf(input: InspectionPdfInput): Promise<{ blob: Blob; doc: jsPDF }> {
   const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
-  const [, logoDataUrl] = await Promise.all([
+  const [, logoDataUrlRaw] = await Promise.all([
     registerPdfFonts(pdf),
     loadImageDataUrl(dabellaLogoUrl),
   ]);
+  const logoDataUrl = logoDataUrlRaw ?? "";
 
   drawCover(pdf, input);
 
