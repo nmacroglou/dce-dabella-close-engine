@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign, ClipboardCheck, Sparkles } from "lucide-react";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign, ClipboardCheck, Sparkles, Camera } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import ActiveDealBanner from "@/components/ActiveDealBanner";
 
