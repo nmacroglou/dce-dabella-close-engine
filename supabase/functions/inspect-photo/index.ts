@@ -46,6 +46,7 @@ Caption voice: write ONE sentence (max ~22 words) in the first person of the ins
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  console.log("inspect-photo v2 invoked");
   try {
     const body = (await req.json()) as ReqBody;
     if (!body.photo_url || !body.report_type) {
