@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { Sparkles, X, Loader2, Trash2 } from "lucide-react";
+import { Sparkles, X, Loader2, Trash2, Wand2 } from "lucide-react";
 import type { DealPhoto } from "@/hooks/useDealPhotos";
 import { useDeleteDealPhoto } from "@/hooks/useDealPhotos";
 import { useAnalyzePhoto, useUpdatePhotoTags } from "@/hooks/useInspection";
