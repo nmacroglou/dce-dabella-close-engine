@@ -64,6 +64,7 @@ export default function Index() {
           <Suspense fallback={<TabLoader />}>
             <TabsContent value="playbook"><PlaybookTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} reset={reset} /></TabsContent>
+            <TabsContent value="inspection"><InspectionTab /></TabsContent>
             <TabsContent value="presentation"><PresentationTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="vision"><VisionTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="objections"><ObjectionsTab state={state} computed={computed} update={update} /></TabsContent>
