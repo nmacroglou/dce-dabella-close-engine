@@ -58,6 +58,19 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
     });
   }
 
+  async function handleCaptionOnly() {
+    const res = await analyze.mutateAsync({
+      photo_id: photo.id,
+      storage_path: photo.storage_path,
+      report_type: reportType,
+    });
+    await update.mutateAsync({
+      photo_id: photo.id,
+      deal_id: photo.deal_id,
+      patch: { caption: res.caption },
+    });
+  }
+
   function patch(p: Parameters<typeof update.mutateAsync>[0]["patch"]) {
     update.mutate({ photo_id: photo.id, deal_id: photo.deal_id, patch: p });
   }
