@@ -261,6 +261,41 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_inspections: {
+        Row: {
+          created_at: string
+          deal_id: string
+          id: string
+          report_type: string
+          sections: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id: string
+          id?: string
+          report_type: string
+          sections?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string
+          id?: string
+          report_type?: string
+          sections?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_inspections_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_objections: {
         Row: {
           created_at: string
@@ -302,7 +337,11 @@ export type Database = {
           created_at: string
           deal_id: string
           id: string
+          include_in_report: boolean
+          inspection_report_type: string | null
+          inspection_tags: string[]
           rep_id: string
+          severity: string | null
           storage_path: string
         }
         Insert: {
@@ -310,7 +349,11 @@ export type Database = {
           created_at?: string
           deal_id: string
           id?: string
+          include_in_report?: boolean
+          inspection_report_type?: string | null
+          inspection_tags?: string[]
           rep_id: string
+          severity?: string | null
           storage_path: string
         }
         Update: {
@@ -318,7 +361,11 @@ export type Database = {
           created_at?: string
           deal_id?: string
           id?: string
+          include_in_report?: boolean
+          inspection_report_type?: string | null
+          inspection_tags?: string[]
           rep_id?: string
+          severity?: string | null
           storage_path?: string
         }
         Relationships: []

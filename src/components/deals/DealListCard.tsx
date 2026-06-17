@@ -1,7 +1,7 @@
 import { memo, useMemo, useState } from "react";
 import {
   Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
-  ShieldAlert, User, Pencil,
+  ShieldAlert, User, Pencil, Camera,
 } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type Deal } from "@/types/deal";
 import { fmt } from "@/lib/format";
@@ -18,7 +18,7 @@ interface Props {
   compact: boolean;
   isAdmin: boolean;
   repProfile?: Profile;
-  onOpen: (id: string) => void;
+  onOpen: (id: string, tab?: string) => void;
   onEdit: (deal: Deal) => void;
   onIncident: (deal: Deal) => void;
   onDelete: (id: string, name: string) => void;
@@ -134,6 +134,9 @@ function DealListCardImpl({
           <Button size="sm" className="flex-1 pressable h-7 text-[11px]" onClick={() => onOpen(deal.id)}>
             Open <ArrowRight className="h-2.5 w-2.5 ml-1" />
           </Button>
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="Inspection report" onClick={() => onOpen(deal.id, "inspection")}>
+            <Camera className="h-3.5 w-3.5 text-primary" />
+          </Button>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="Edit deal details" onClick={() => onEdit(deal)}>
             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
@@ -246,6 +249,9 @@ function DealListCardImpl({
       <div className="flex items-center gap-2 mt-auto pt-3 border-t border-hairline">
         <Button size="sm" className="flex-1 pressable" onClick={() => onOpen(deal.id)}>
           Open <ArrowRight className="h-3 w-3 ml-1" />
+        </Button>
+        <Button size="sm" variant="ghost" title="Inspection report" onClick={() => onOpen(deal.id, "inspection")}>
+          <Camera className="h-4 w-4 text-primary" />
         </Button>
         <Button size="sm" variant="ghost" title="Edit deal details" onClick={() => onEdit(deal)}>
           <Pencil className="h-4 w-4 text-muted-foreground" />

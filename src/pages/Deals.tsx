@@ -77,9 +77,9 @@ export default function DealsPage() {
     });
   }, [deals, search, stageFilter]);
 
-  const openDeal = useCallback((id: string) => {
+  const openDeal = useCallback((id: string, tab?: string) => {
     setActiveDealId(id);
-    navigate("/");
+    navigate("/", tab ? { state: { tab } } : undefined);
   }, [navigate, setActiveDealId]);
 
   const handleEdit = useCallback((d: Deal) => setEditingDeal(d), []);

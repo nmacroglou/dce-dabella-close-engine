@@ -1,7 +1,8 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign, ClipboardCheck, Sparkles } from "lucide-react";
+import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign, ClipboardCheck, Sparkles, Camera } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import ActiveDealBanner from "@/components/ActiveDealBanner";
 
@@ -14,10 +15,12 @@ const PlaybookTab = lazy(() => import("@/components/engine/PlaybookTab"));
 const CommissionTab = lazy(() => import("@/components/engine/CommissionTab"));
 const PostCloseTab = lazy(() => import("@/components/engine/PostCloseTab"));
 const VisionTab = lazy(() => import("@/components/engine/VisionTab"));
+const InspectionTab = lazy(() => import("@/components/engine/InspectionTab"));
 
 const TABS = [
   { value: "playbook", label: "Playbook", icon: BookOpen },
   { value: "calculator", label: "Calculator", icon: Calculator },
+  { value: "inspection", label: "Inspection", icon: Camera },
   { value: "presentation", label: "Presentation", icon: Presentation },
   { value: "vision", label: "Vision", icon: Sparkles },
   { value: "objections", label: "Objections", icon: ShieldAlert },
@@ -37,6 +40,16 @@ function TabLoader() {
 
 export default function Index() {
   const { state, update, computed, coachingTip, reset } = useCloseEngine();
+  const location = useLocation();
+
+  useEffect(() => {
+    const tab = (location.state as { tab?: string } | null)?.tab;
+    if (tab && tab !== state.activeTab) {
+      update("activeTab", tab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+
 
   return (
     <div className="min-h-screen surface-premium">
@@ -46,7 +59,7 @@ export default function Index() {
         <ActiveDealBanner />
 
         <Tabs value={state.activeTab} onValueChange={(v) => update("activeTab", v)} className="w-full">
-          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card/60 backdrop-blur-xl border border-border/60 rounded-2xl mb-6 grid grid-cols-9 gap-1 shadow-sm">
+          <TabsList className="w-full h-auto sm:h-14 p-1.5 bg-card/60 backdrop-blur-xl border border-border/60 rounded-2xl mb-6 grid grid-cols-10 gap-1 shadow-sm">
             {TABS.map(({ value, label, icon: Icon }) => (
               <TabsTrigger
                 key={value}
@@ -62,6 +75,7 @@ export default function Index() {
           <Suspense fallback={<TabLoader />}>
             <TabsContent value="playbook"><PlaybookTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="calculator"><CalculatorTab state={state} computed={computed} update={update} reset={reset} /></TabsContent>
+            <TabsContent value="inspection"><InspectionTab /></TabsContent>
             <TabsContent value="presentation"><PresentationTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="vision"><VisionTab state={state} computed={computed} update={update} /></TabsContent>
             <TabsContent value="objections"><ObjectionsTab state={state} computed={computed} update={update} /></TabsContent>
