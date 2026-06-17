@@ -1,7 +1,7 @@
 import { memo, useMemo, useState } from "react";
 import {
   Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
-  ShieldAlert, User, Pencil,
+  ShieldAlert, User, Pencil, Camera,
 } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type Deal } from "@/types/deal";
 import { fmt } from "@/lib/format";
