@@ -250,6 +250,9 @@ function DealListCardImpl({
         <Button size="sm" className="flex-1 pressable" onClick={() => onOpen(deal.id)}>
           Open <ArrowRight className="h-3 w-3 ml-1" />
         </Button>
+        <Button size="sm" variant="ghost" title="Inspection report" onClick={() => onOpen(deal.id, "inspection")}>
+          <Camera className="h-4 w-4 text-primary" />
+        </Button>
         <Button size="sm" variant="ghost" title="Edit deal details" onClick={() => onEdit(deal)}>
           <Pencil className="h-4 w-4 text-muted-foreground" />
         </Button>
