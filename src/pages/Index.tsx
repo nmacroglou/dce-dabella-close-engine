@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useCloseEngine } from "@/hooks/useCloseEngine";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign, ClipboardCheck, Sparkles, Camera } from "lucide-react";
