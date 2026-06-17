@@ -23,6 +23,17 @@ const PERSONA: Record<ReportType, string> = {
   solar: "You are a senior PV systems inspector with 25+ years on residential solar. You speak to homeowners clearly about production loss, safety, and roof-interface risk — no jargon, no scare tactics.",
 };
 
+const MAX_IMAGE_BYTES = 5_000_000;
+
+function base64FromBytes(bytes: Uint8Array) {
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
 const SYSTEM = (rt: ReportType) => `${PERSONA[rt]}
 
 You're reviewing a single field photo for a homeowner-facing condition report. Identify ONLY what is visible. Do not invent defects, do not speculate beyond the frame.
@@ -57,6 +68,28 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+    const imgRes = await fetch(body.photo_url, {
+      headers: { "User-Agent": "Mozilla/5.0 (DaBella Inspection)" },
+    });
+    if (!imgRes.ok) {
+      const t = await imgRes.text().catch(() => "");
+      console.error("Photo fetch failed", imgRes.status, t.slice(0, 500));
+      return new Response(JSON.stringify({ error: `Could not fetch photo (${imgRes.status})` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const contentLength = Number(imgRes.headers.get("content-length") ?? "0");
+    if (contentLength > MAX_IMAGE_BYTES) {
+      return new Response(JSON.stringify({ error: "Photo is too large for AI inspection. Re-upload a smaller photo." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const mime = imgRes.headers.get("content-type")?.split(";")[0] || "image/jpeg";
+    const bytes = new Uint8Array(await imgRes.arrayBuffer());
+    if (bytes.byteLength > MAX_IMAGE_BYTES) {
+      return new Response(JSON.stringify({ error: "Photo is too large for AI inspection. Re-upload a smaller photo." }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const dataUrl = `data:${mime};base64,${base64FromBytes(bytes)}`;
+
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -71,7 +104,7 @@ Deno.serve(async (req) => {
             role: "user",
             content: [
               { type: "text", text: "Analyze this photo and return tags, severity, and caption." },
-              { type: "image_url", image_url: { url: body.photo_url } },
+              { type: "image_url", image_url: { url: dataUrl } },
             ],
           },
         ],
