@@ -18,7 +18,7 @@ interface Props {
   compact: boolean;
   isAdmin: boolean;
   repProfile?: Profile;
-  onOpen: (id: string) => void;
+  onOpen: (id: string, tab?: string) => void;
   onEdit: (deal: Deal) => void;
   onIncident: (deal: Deal) => void;
   onDelete: (id: string, name: string) => void;
