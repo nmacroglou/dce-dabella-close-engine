@@ -1,10 +1,6 @@
 // Vision-based photo tagging for the inspection report.
 // Takes a signed photo URL + report type, returns { tags, severity, caption }.
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 type ReportType = "roof" | "windows" | "bath" | "solar";
 
@@ -46,7 +42,7 @@ Caption voice: write ONE sentence (max ~22 words) in the first person of the ins
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  console.log("inspect-photo v2 invoked");
+  console.log("inspect-photo v3 invoked");
   try {
     const body = (await req.json()) as ReqBody;
     if (!body.photo_url || !body.report_type) {
@@ -60,23 +56,6 @@ Deno.serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
-    // Fetch the image server-side and inline as base64 so the AI gateway
-    // doesn't need to reach the signed URL itself (which can 4xx upstream).
-    const imgRes = await fetch(body.photo_url, {
-      headers: { "User-Agent": "Mozilla/5.0 (DaBella Inspection)" },
-    });
-    if (!imgRes.ok) {
-      const t = await imgRes.text().catch(() => "");
-      console.error("Photo fetch failed", imgRes.status, t);
-      return new Response(JSON.stringify({ error: `Could not fetch photo (${imgRes.status})` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    const mime = imgRes.headers.get("content-type") ?? "image/jpeg";
-    const buf = new Uint8Array(await imgRes.arrayBuffer());
-    let bin = "";
-    for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
-    const dataUrl = `data:${mime};base64,${btoa(bin)}`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -92,7 +71,7 @@ Deno.serve(async (req) => {
             role: "user",
             content: [
               { type: "text", text: "Analyze this photo and return tags, severity, and caption." },
-              { type: "image_url", image_url: { url: dataUrl } },
+              { type: "image_url", image_url: { url: body.photo_url } },
             ],
           },
         ],
