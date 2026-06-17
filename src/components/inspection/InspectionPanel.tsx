@@ -79,11 +79,15 @@ export default function InspectionPanel({ dealId }: Props) {
     }
   }
 
+  const [tagProgress, setTagProgress] = useState<{ done: number; total: number } | null>(null);
   async function handleAutoTagAll() {
-    const untagged = filteredPhotos.filter(
-      (p) => ((p as { inspection_tags?: string[] }).inspection_tags?.length ?? 0) === 0,
-    );
-    for (const p of untagged) {
+    if (filteredPhotos.length === 0) return;
+    const total = filteredPhotos.length;
+    setTagProgress({ done: 0, total });
+    const toastId = toast.loading(`Auto-tagging 0 / ${total}…`);
+    let done = 0;
+    let failures = 0;
+    for (const p of filteredPhotos) {
       try {
         const res = await analyze.mutateAsync({
           photo_id: p.id, storage_path: p.storage_path, report_type: reportType,
@@ -96,11 +100,25 @@ export default function InspectionPanel({ dealId }: Props) {
           },
         });
       } catch (e) {
-        console.error(e);
-        break; // stop on first failure (rate limit etc.)
+        console.error("auto-tag failed", p.id, e);
+        failures++;
+        if (failures >= 3) {
+          toast.error("Stopped after 3 failures (likely rate limit). Try again shortly.", { id: toastId });
+          setTagProgress(null);
+          return;
+        }
       }
+      done++;
+      setTagProgress({ done, total });
+      toast.loading(`Auto-tagging ${done} / ${total}…`, { id: toastId });
     }
+    setTagProgress(null);
+    toast.success(
+      failures === 0 ? `Tagged ${done} photos` : `Tagged ${done - failures} of ${total} (${failures} failed)`,
+      { id: toastId },
+    );
   }
+
 
   const [generating, setGenerating] = useState(false);
   async function handleGeneratePdf() {
@@ -172,10 +190,11 @@ export default function InspectionPanel({ dealId }: Props) {
           {upload.isPending ? "Uploading…" : "Add photos"}
         </Button>
 
-        <Button variant="outline" onClick={handleAutoTagAll} disabled={analyze.isPending || filteredPhotos.length === 0}>
-          {analyze.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-          Auto-tag all
+        <Button variant="outline" onClick={handleAutoTagAll} disabled={!!tagProgress || filteredPhotos.length === 0}>
+          {tagProgress ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
+          {tagProgress ? `Tagging ${tagProgress.done}/${tagProgress.total}` : `Auto-tag all (${filteredPhotos.length})`}
         </Button>
+
 
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
           {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
