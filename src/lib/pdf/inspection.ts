@@ -4,11 +4,11 @@ import { loadImageDataUrl } from "./assets";
 import { registerPdfFonts } from "./fonts";
 import {
   ACCENT, CARD, CREAM, FOREST, FOREST_INK, GRAPHITE, INK, LIME, LIME_DEEP,
-  MIST, NEGATIVE, PAPER, PH, POSITIVE, PW, SLATE, WHITE,
+  MIST, NEGATIVE, PH, PW, SLATE, WHITE,
 } from "./theme";
 import {
-  eyebrow, hairline, hairline as _h, pageBg, rect, rounded, sectionHeader,
-  setBodyFont, setColor, setDisplayFont, setDraw, setFill, trackedText, vGradient,
+  eyebrow, hairline, pageBg, rect, rounded, sectionHeader,
+  setBodyFont, setColor, setDisplayFont, setFill, trackedText, vGradient,
 } from "./primitives";
 import {
   REPORT_TYPE_LABELS, prettyTag, type InspectionReportType, type InspectionSections,
