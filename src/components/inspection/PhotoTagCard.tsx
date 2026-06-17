@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { Sparkles, X, Loader2, Trash2 } from "lucide-react";
+import { Sparkles, X, Loader2, Trash2, Wand2 } from "lucide-react";
 import type { DealPhoto } from "@/hooks/useDealPhotos";
 import { useDeleteDealPhoto } from "@/hooks/useDealPhotos";
 import { useAnalyzePhoto, useUpdatePhotoTags } from "@/hooks/useInspection";
@@ -58,6 +58,19 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
     });
   }
 
+  async function handleCaptionOnly() {
+    const res = await analyze.mutateAsync({
+      photo_id: photo.id,
+      storage_path: photo.storage_path,
+      report_type: reportType,
+    });
+    await update.mutateAsync({
+      photo_id: photo.id,
+      deal_id: photo.deal_id,
+      patch: { caption: res.caption },
+    });
+  }
+
   function patch(p: Parameters<typeof update.mutateAsync>[0]["patch"]) {
     update.mutate({ photo_id: photo.id, deal_id: photo.deal_id, patch: p });
   }
@@ -88,12 +101,24 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
         )}
       </div>
 
-      <Input
-        placeholder="Caption (one factual sentence)"
-        value={caption}
-        onChange={(e) => patch({ caption: e.target.value })}
-        className="h-8 text-xs"
-      />
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="Caption (one factual sentence)"
+          value={caption}
+          onChange={(e) => patch({ caption: e.target.value })}
+          className="h-8 text-xs flex-1"
+        />
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 shrink-0"
+          onClick={handleCaptionOnly}
+          disabled={analyze.isPending}
+          title="AI inspect & caption"
+        >
+          {analyze.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 text-primary" />}
+        </Button>
+      </div>
 
       <div className="flex flex-wrap gap-1">
         {tags.map((t) => (
