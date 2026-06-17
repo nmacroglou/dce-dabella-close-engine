@@ -65,7 +65,7 @@ export function useSaveInspection() {
           [{
             deal_id: input.deal_id,
             report_type: input.report_type,
-            sections: input.sections as unknown as Record<string, unknown>,
+            sections: input.sections as unknown as never,
           }],
           { onConflict: "deal_id,report_type" },
         );
