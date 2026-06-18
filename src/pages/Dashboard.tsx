@@ -35,7 +35,7 @@ const SectionFallback = () => (
 const HOURS_KEY = "dabella.hud.weeklyHours";
 const COMMISSION_KEY = "dabella.hud.commissionPct";
 const RANGE_KEY = "dabella.hud.rangeDays";
-type RangeDays = 7 | 30 | 90;
+type RangeDays = 7 | 30 | 90 | "all";
 
 export default function Dashboard() {
   const { user } = useAuth();
