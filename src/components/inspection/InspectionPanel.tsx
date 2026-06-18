@@ -1,14 +1,17 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, Download, Loader2, Sparkles, FileText } from "lucide-react";
+import { Camera, Download, Loader2, Sparkles, FileText, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { useDealPhotos, useUploadDealPhoto } from "@/hooks/useDealPhotos";
 import {
-  useAnalyzePhoto, useInspection, useSaveInspection, useUpdatePhotoTags,
+  useAnalyzePhoto, useGenerateNarrative, useInspection, useSaveInspection, useUpdatePhotoTags,
 } from "@/hooks/useInspection";
 import {
   REPORT_TYPE_LABELS, TEMPLATES, type InspectionReportType,
@@ -18,6 +21,7 @@ import PhotoTagCard from "./PhotoTagCard";
 import { useDeals } from "@/hooks/useDeals";
 import { buildInspectionPdf } from "@/lib/pdf/inspection";
 import { toast } from "sonner";
+
 
 interface Props {
   dealId: string;
