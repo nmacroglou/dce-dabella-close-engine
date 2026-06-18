@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Admins update all deal photos" ON public.deal_photos;
