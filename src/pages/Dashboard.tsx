@@ -364,10 +364,10 @@ export default function Dashboard() {
 
               <div className="mt-6">
                 <WowChipStrip chips={[
-                  { label: `Revenue (${rangeDays}d)`, current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
-                  { label: `Close rate (${rangeDays}d)`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta, deltaSuffix: "pp" },
-                  { label: `Deals run (${rangeDays}d)`, current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
-                  { label: `$/Hour (${rangeDays}d)`, current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
+                  { label: `Revenue (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
+                  { label: `Close rate (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta, deltaSuffix: "pp" },
+                  { label: `Deals run (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
+                  { label: `$/Hour (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
                 ]} />
               </div>
             </div>
