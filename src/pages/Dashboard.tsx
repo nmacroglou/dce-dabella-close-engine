@@ -401,7 +401,7 @@ export default function Dashboard() {
             <p className="text-[11px] text-muted-foreground mt-0.5">KPIs below reflect deals created in the selected range.</p>
           </div>
           <div className="inline-flex items-center gap-1 p-1 rounded-xl border border-hairline-strong bg-card/60 backdrop-blur shadow-sm">
-            {([7, 30, 90] as RangeDays[]).map((d) => (
+            {([7, 30, 90, "all"] as RangeDays[]).map((d) => (
               <button
                 key={d}
                 onClick={() => setRangeDays(d)}
@@ -411,7 +411,7 @@ export default function Dashboard() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Last {d}d
+                {d === "all" ? "All time" : `Last ${d}d`}
               </button>
             ))}
           </div>
