@@ -18,6 +18,28 @@ export interface InspectionRow {
 }
 
 const BUCKET = "deal-photos";
+const MAX_ANALYSIS_SIDE = 1024;
+const ANALYSIS_QUALITY = 0.72;
+
+async function imageUrlToDataUrl(url: string) {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("Failed to load photo for AI inspection"));
+    img.src = url;
+  });
+
+  const scale = Math.min(1, MAX_ANALYSIS_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Could not prepare photo for AI inspection");
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", ANALYSIS_QUALITY);
+}
 
 export function useInspection(dealId: string | null, reportType: InspectionReportType) {
   return useQuery({
@@ -114,16 +136,18 @@ export function useAnalyzePhoto() {
       storage_path: string;
       report_type: InspectionReportType;
     }) => {
-      // Create a short-lived, resized signed URL so edge AI analysis never handles full-size camera photos.
+      // Resize in the browser so the edge function never loads camera-sized images into memory.
       const { data: signed, error: signErr } = await supabase.storage
         .from(BUCKET)
         .createSignedUrl(input.storage_path, 60 * 5, {
-          transform: { width: 1600, height: 1600, resize: "contain", quality: 80 },
+          transform: { width: MAX_ANALYSIS_SIDE, height: MAX_ANALYSIS_SIDE, resize: "contain", quality: 72 },
         });
       if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Failed to sign photo URL");
 
+      const imageDataUrl = await imageUrlToDataUrl(signed.signedUrl);
+
       const { data, error } = await supabase.functions.invoke("inspect-photo", {
-        body: { photo_url: signed.signedUrl, report_type: input.report_type },
+        body: { image_data_url: imageDataUrl, report_type: input.report_type },
       });
       if (error) throw error;
       return data as { tags: string[]; severity: "low" | "moderate" | "high"; caption: string };

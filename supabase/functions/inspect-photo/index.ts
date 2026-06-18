@@ -6,6 +6,7 @@ type ReportType = "roof" | "windows" | "bath" | "solar";
 
 interface ReqBody {
   photo_url?: string;
+  image_data_url?: string;
   report_type?: ReportType;
 }
 
@@ -22,17 +23,6 @@ const PERSONA: Record<ReportType, string> = {
   bath: "You are a veteran bath and wet-area inspector with decades of remodel and moisture-intrusion experience. You speak plainly to homeowners, focused on water management and longevity.",
   solar: "You are a senior PV systems inspector with 25+ years on residential solar. You speak to homeowners clearly about production loss, safety, and roof-interface risk — no jargon, no scare tactics.",
 };
-
-const MAX_IMAGE_BYTES = 5_000_000;
-
-function base64FromBytes(bytes: Uint8Array) {
-  let binary = "";
-  const chunkSize = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-  }
-  return btoa(binary);
-}
 
 const SYSTEM = (rt: ReportType) => `${PERSONA[rt]}
 
@@ -56,8 +46,8 @@ Deno.serve(async (req) => {
   console.log("inspect-photo v3 invoked");
   try {
     const body = (await req.json()) as ReqBody;
-    if (!body.photo_url || !body.report_type) {
-      return new Response(JSON.stringify({ error: "photo_url and report_type required" }),
+    if ((!body.photo_url && !body.image_data_url) || !body.report_type) {
+      return new Response(JSON.stringify({ error: "photo_url or image_data_url and report_type required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     if (!["roof", "windows", "bath", "solar"].includes(body.report_type)) {
@@ -68,27 +58,12 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const imgRes = await fetch(body.photo_url, {
-      headers: { "User-Agent": "Mozilla/5.0 (DaBella Inspection)" },
-    });
-    if (!imgRes.ok) {
-      const t = await imgRes.text().catch(() => "");
-      console.error("Photo fetch failed", imgRes.status, t.slice(0, 500));
-      return new Response(JSON.stringify({ error: `Could not fetch photo (${imgRes.status})` }),
+    const imageUrl = body.image_data_url ?? body.photo_url;
+    if (!imageUrl) throw new Error("No image provided");
+    if (body.image_data_url && !body.image_data_url.startsWith("data:image/")) {
+      return new Response(JSON.stringify({ error: "image_data_url must be an image data URL" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const contentLength = Number(imgRes.headers.get("content-length") ?? "0");
-    if (contentLength > MAX_IMAGE_BYTES) {
-      return new Response(JSON.stringify({ error: "Photo is too large for AI inspection. Re-upload a smaller photo." }),
-        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    const mime = imgRes.headers.get("content-type")?.split(";")[0] || "image/jpeg";
-    const bytes = new Uint8Array(await imgRes.arrayBuffer());
-    if (bytes.byteLength > MAX_IMAGE_BYTES) {
-      return new Response(JSON.stringify({ error: "Photo is too large for AI inspection. Re-upload a smaller photo." }),
-        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-    const dataUrl = `data:${mime};base64,${base64FromBytes(bytes)}`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -104,7 +79,7 @@ Deno.serve(async (req) => {
             role: "user",
             content: [
               { type: "text", text: "Analyze this photo and return tags, severity, and caption." },
-              { type: "image_url", image_url: { url: dataUrl } },
+              { type: "image_url", image_url: { url: imageUrl, detail: "low" } },
             ],
           },
         ],
