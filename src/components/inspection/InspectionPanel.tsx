@@ -128,7 +128,39 @@ export default function InspectionPanel({ dealId }: Props) {
   }
 
 
+  async function handleGenerateNarrative(tweak?: string) {
+    const findings = filteredPhotos.map((p) => {
+      const ext = p as unknown as {
+        inspection_tags?: string[];
+        severity?: "low" | "moderate" | "high" | null;
+      };
+      return {
+        caption: p.caption ?? null,
+        tags: ext.inspection_tags ?? [],
+        severity: ext.severity ?? null,
+      };
+    });
+    const tagged = findings.filter((f) => (f.caption && f.caption.length > 0) || (f.tags && f.tags.length > 0));
+    if (tagged.length === 0 && !tweak?.trim()) {
+      toast.error("Tag some photos first (or use Tweak to provide context)");
+      return;
+    }
+    const toastId = toast.loading("Drafting narrative from photos…");
+    try {
+      const res = await generateNarrative.mutateAsync({
+        report_type: reportType,
+        photos: tagged,
+        tweak,
+      });
+      setDraft(res.sections);
+      toast.success("Narrative drafted — review and Save", { id: toastId });
+    } catch {
+      toast.dismiss(toastId);
+    }
+  }
+
   const [generating, setGenerating] = useState(false);
+
   async function handleGeneratePdf() {
     if (!deal) return;
     setGenerating(true);
