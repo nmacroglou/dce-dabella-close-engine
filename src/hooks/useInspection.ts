@@ -118,8 +118,11 @@ export function useUpdatePhotoTags() {
       const { error } = await supabase
         .from("deal_photos")
         .update(input.patch)
-        .eq("id", input.photo_id);
+        .eq("id", input.photo_id)
+        .select("id")
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error("Photo update was blocked for this user");
     },
     onSuccess: (_d, v) => {
       qc.invalidateQueries({ queryKey: ["deal-photos", v.deal_id] });
