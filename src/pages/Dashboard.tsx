@@ -467,6 +467,11 @@ export default function Dashboard() {
         {/* ===== CONVERSION RIBBON ===== */}
         <ConversionRibbon deals={deals} />
 
+        {/* ===== WIN/LOSS BY LEAD SOURCE ===== */}
+        <Suspense fallback={<SectionFallback />}>
+          <WinLossBySourceChart deals={deals} />
+        </Suspense>
+
         {/* ===== INCIDENT HEALTH ===== */}
         <Suspense fallback={<SectionFallback />}>
           <IncidentHealthSection />
