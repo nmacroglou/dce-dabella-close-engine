@@ -225,11 +225,36 @@ export default function Dashboard() {
   }, [deals, weeklyHours, commissionPct, stats]);
 
   /* ---- WoW chip strip & report payload (current window vs prior of equal length) ---- */
-  const dayBuckets14 = useMemo(
-    () => bucketByDay(deals, rangeDays * 2, weeklyHours, commissionPct),
-    [deals, weeklyHours, commissionPct, rangeDays],
-  );
+  const dayBuckets14 = useMemo(() => {
+    if (rangeDays === "all") {
+      const now = Date.now();
+      const minTs = deals.reduce((min, d) => {
+        const created = d.created_at ? new Date(d.created_at).getTime() : Infinity;
+        const closed = d.closed_at ? new Date(d.closed_at).getTime() : Infinity;
+        return Math.min(min, created, closed);
+      }, now);
+      const spanDays = Math.max(30, Math.ceil((now - minTs) / 864e5));
+      return bucketByDay(deals, spanDays, weeklyHours, commissionPct);
+    }
+    return bucketByDay(deals, rangeDays * 2, weeklyHours, commissionPct);
+  }, [deals, weeklyHours, commissionPct, rangeDays]);
   const wow = useMemo(() => {
+    if (rangeDays === "all") {
+      const allRev = sumBuckets(dayBuckets14, "revenue");
+      const allWon = sumBuckets(dayBuckets14, "won");
+      const allLost = sumBuckets(dayBuckets14, "lost");
+      const allRun = sumBuckets(dayBuckets14, "dealsRun");
+      const allDph = sumBuckets(dayBuckets14, "dollarsPerHour");
+      const allRate = allWon + allLost > 0 ? allWon / (allWon + allLost) : 0;
+      const flat = { pct: 0, dir: "flat" as const, absolute: 0 };
+      return {
+        revenue: { current: allRev, prior: 0, delta: flat },
+        closeRate: { current: allRate, prior: 0, delta: flat },
+        dealsRun: { current: allRun, prior: 0, delta: flat },
+        dollarsPerHour: { current: allDph, prior: 0, delta: flat },
+        closedDeals: { current: allWon, prior: 0 },
+      };
+    }
     const { current, prior } = splitCurrentPrior(dayBuckets14);
     const curRev = sumBuckets(current, "revenue");
     const priRev = sumBuckets(prior, "revenue");
@@ -259,7 +284,7 @@ export default function Dashboard() {
       dollarsPerHour: { current: curDph, prior: priDph, delta: wowDelta(curDph, priDph) },
       closedDeals: { current: curWon, prior: priWon },
     };
-  }, [dayBuckets14]);
+  }, [dayBuckets14, rangeDays]);
 
   const topObjection = useMemo(() => {
     if (!stats) return undefined;
