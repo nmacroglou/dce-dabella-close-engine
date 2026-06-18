@@ -25,6 +25,7 @@ const TrendsCard = lazy(() => import("@/components/dashboard/TrendsCard").then(m
 const ActivityTimeline = lazy(() => import("@/components/dashboard/ActivityTimeline").then(m => ({ default: m.ActivityTimeline })));
 const ObjectionHeatmap = lazy(() => import("@/components/dashboard/ObjectionHeatmap").then(m => ({ default: m.ObjectionHeatmap })));
 const IncidentHealthSection = lazy(() => import("@/components/dashboard/IncidentHealthSection"));
+const WinLossBySourceChart = lazy(() => import("@/components/dashboard/WinLossBySourceChart").then(m => ({ default: m.WinLossBySourceChart })));
 
 const SectionFallback = () => (
   <div className="rounded-2xl border border-hairline bg-card/50 p-8 grid place-items-center">
