@@ -332,7 +332,7 @@ function PipelineKPIBase({
   stageCounts: { inspecting: number; presented: number; follow_up: number };
   avgAge: number;
   oldestAge: number;
-  rangeDays: number;
+  rangeDays: number | "all";
   dealsRunInWindow: number;
 }) {
   const total = Math.max(active, 1);
@@ -343,6 +343,7 @@ function PipelineKPIBase({
     oldestAge >= 21 ? "bg-destructive/15 text-destructive border-destructive/30"
     : oldestAge >= 10 ? "bg-warning/15 text-warning border-warning/30"
     : "bg-success/15 text-success border-success/30";
+  const rangeLabel = rangeDays === "all" ? "All time" : `${rangeDays}d`;
   return (
     <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
       <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-primary/25 to-primary/0 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
@@ -363,7 +364,7 @@ function PipelineKPIBase({
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          {fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeDays}d
+          {fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeLabel}
         </p>
         {/* Stage mix bar: inspecting / presented / follow_up */}
         <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden flex" title={`${stageCounts.inspecting} inspecting · ${stageCounts.presented} presented · ${stageCounts.follow_up} follow-up`}>
