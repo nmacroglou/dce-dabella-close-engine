@@ -84,10 +84,11 @@ export default function Dashboard() {
   useEffect(() => {
     const h = parseFloat(localStorage.getItem(HOURS_KEY) ?? "");
     const c = parseFloat(localStorage.getItem(COMMISSION_KEY) ?? "");
-    const r = parseInt(localStorage.getItem(RANGE_KEY) ?? "", 10);
+    const r = localStorage.getItem(RANGE_KEY);
     if (!Number.isNaN(h) && h > 0) setWeeklyHours(h);
     if (!Number.isNaN(c) && c > 0) setCommissionPct(c);
-    if (r === 7 || r === 30 || r === 90) setRangeDays(r);
+    if (r === "7" || r === "30" || r === "90") setRangeDays(Number(r) as RangeDays);
+    if (r === "all") setRangeDays("all");
   }, []);
   useEffect(() => { localStorage.setItem(HOURS_KEY, String(weeklyHours)); }, [weeklyHours]);
   useEffect(() => { localStorage.setItem(COMMISSION_KEY, String(commissionPct)); }, [commissionPct]);
