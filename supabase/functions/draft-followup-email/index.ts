@@ -1,6 +1,16 @@
 // AI-drafted follow-up email for a DaBella sales rep.
 // Returns { subject, body } as a JSON object using tool calling.
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.95.0/cors";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+async function requireUser(req: Request): Promise<Response | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  return null;
+}
 
 interface ReqAttachment { url?: string; name?: string; type?: string; caption?: string; }
 interface ReqBody {
@@ -36,6 +46,8 @@ homeowner feel taken care of, not chased. Always end with a low-pressure CTA.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const unauth = await requireUser(req);
+  if (unauth) return unauth;
   try {
     const body = (await req.json()) as ReqBody;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
