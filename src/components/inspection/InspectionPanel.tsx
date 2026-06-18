@@ -51,8 +51,12 @@ export default function InspectionPanel({ dealId }: Props) {
   const save = useSaveInspection();
   const analyze = useAnalyzePhoto();
   const updatePhoto = useUpdatePhotoTags();
+  const generateNarrative = useGenerateNarrative();
 
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [tweakOpen, setTweakOpen] = useState(false);
+  const [tweakText, setTweakText] = useState("");
 
   // Local override for sections so the textarea stays responsive while typing.
   const [draft, setDraft] = useState<InspectionSections | null>(null);
