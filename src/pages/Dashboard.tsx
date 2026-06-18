@@ -94,14 +94,15 @@ export default function Dashboard() {
   useEffect(() => { localStorage.setItem(COMMISSION_KEY, String(commissionPct)); }, [commissionPct]);
   useEffect(() => { localStorage.setItem(RANGE_KEY, String(rangeDays)); }, [rangeDays]);
 
-  /* ---- Windowed stats (7 / 30 / 90 days) ----
+  /* ---- Windowed stats (7 / 30 / 90 days / all time) ----
      "Revenue" + "Close rate" use closed_at so wins/losses surface in the
      window they were actually decided. "Deals run" still uses created_at
      because it tracks activity started. */
   const windowed = useMemo(() => {
     const now = Date.now();
-    const cutoff = now - rangeDays * 864e5;
-    const cutoffIso = new Date(cutoff).toISOString();
+    const isAllTime = rangeDays === "all";
+    const cutoff = isAllTime ? 0 : now - rangeDays * 864e5;
+    const cutoffIso = isAllTime ? "1970-01-01T00:00:00.000Z" : new Date(cutoff).toISOString();
     const inWinByCreated = deals.filter((d) => new Date(d.created_at).getTime() >= cutoff);
     const wonInWin = deals.filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= cutoffIso);
     const lostInWin = deals.filter((d) => d.stage === "lost" && d.closed_at && d.closed_at >= cutoffIso);
@@ -157,12 +158,16 @@ export default function Dashboard() {
         bestDayLabel = `${dt.getMonth() + 1}/${dt.getDate()}`;
       }
     }
-    // Prior period of equal length for pace delta
-    const priorCutoffIso = new Date(now - 2 * rangeDays * 864e5).toISOString();
-    const priorRevenue = deals
-      .filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= priorCutoffIso && d.closed_at < cutoffIso)
-      .reduce((s, d) => s + (d.closed_amount ?? 0), 0);
-    const revPaceDelta = priorRevenue > 0 ? (revenue - priorRevenue) / priorRevenue : (revenue > 0 ? 1 : 0);
+    // Prior period of equal length for pace delta (not applicable for all time)
+    let priorRevenue = 0;
+    let revPaceDelta = 0;
+    if (!isAllTime) {
+      const priorCutoffIso = new Date(now - 2 * rangeDays * 864e5).toISOString();
+      priorRevenue = deals
+        .filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= priorCutoffIso && d.closed_at < cutoffIso)
+        .reduce((s, d) => s + (d.closed_amount ?? 0), 0);
+      revPaceDelta = priorRevenue > 0 ? (revenue - priorRevenue) / priorRevenue : (revenue > 0 ? 1 : 0);
+    }
 
     /* ---- Active pipeline detail ---- */
     const activeDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified");
