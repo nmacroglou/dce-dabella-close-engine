@@ -6,6 +6,7 @@ type ReportType = "roof" | "windows" | "bath" | "solar";
 
 interface ReqBody {
   photo_url?: string;
+  image_data_url?: string;
   report_type?: ReportType;
 }
 
@@ -45,8 +46,8 @@ Deno.serve(async (req) => {
   console.log("inspect-photo v3 invoked");
   try {
     const body = (await req.json()) as ReqBody;
-    if (!body.photo_url || !body.report_type) {
-      return new Response(JSON.stringify({ error: "photo_url and report_type required" }),
+    if ((!body.photo_url && !body.image_data_url) || !body.report_type) {
+      return new Response(JSON.stringify({ error: "photo_url or image_data_url and report_type required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     if (!["roof", "windows", "bath", "solar"].includes(body.report_type)) {
@@ -56,6 +57,13 @@ Deno.serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    const imageUrl = body.image_data_url ?? body.photo_url;
+    if (!imageUrl) throw new Error("No image provided");
+    if (body.image_data_url && !body.image_data_url.startsWith("data:image/")) {
+      return new Response(JSON.stringify({ error: "image_data_url must be an image data URL" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -71,7 +79,7 @@ Deno.serve(async (req) => {
             role: "user",
             content: [
               { type: "text", text: "Analyze this photo and return tags, severity, and caption." },
-              { type: "image_url", image_url: { url: body.photo_url, detail: "low" } },
+              { type: "image_url", image_url: { url: imageUrl, detail: "low" } },
             ],
           },
         ],
