@@ -46,6 +46,8 @@ homeowner feel taken care of, not chased. Always end with a low-pressure CTA.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const unauth = await requireUser(req);
+  if (unauth) return unauth;
   try {
     const body = (await req.json()) as ReqBody;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
