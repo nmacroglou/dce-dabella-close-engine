@@ -115,7 +115,7 @@ export function useUpdatePhotoTags() {
         inspection_report_type?: InspectionReportType;
       };
     }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("deal_photos")
         .update(input.patch)
         .eq("id", input.photo_id)
