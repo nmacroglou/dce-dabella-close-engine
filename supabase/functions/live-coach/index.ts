@@ -44,6 +44,8 @@ Always reply with STRICT JSON only, no prose, matching:
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const unauth = await requireUser(req);
+  if (unauth) return unauth;
 
   try {
     if (!LOVABLE_API_KEY) {
