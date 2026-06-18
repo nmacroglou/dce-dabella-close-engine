@@ -35,7 +35,7 @@ const SectionFallback = () => (
 const HOURS_KEY = "dabella.hud.weeklyHours";
 const COMMISSION_KEY = "dabella.hud.commissionPct";
 const RANGE_KEY = "dabella.hud.rangeDays";
-type RangeDays = 7 | 30 | 90;
+type RangeDays = 7 | 30 | 90 | "all";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -84,23 +84,25 @@ export default function Dashboard() {
   useEffect(() => {
     const h = parseFloat(localStorage.getItem(HOURS_KEY) ?? "");
     const c = parseFloat(localStorage.getItem(COMMISSION_KEY) ?? "");
-    const r = parseInt(localStorage.getItem(RANGE_KEY) ?? "", 10);
+    const r = localStorage.getItem(RANGE_KEY);
     if (!Number.isNaN(h) && h > 0) setWeeklyHours(h);
     if (!Number.isNaN(c) && c > 0) setCommissionPct(c);
-    if (r === 7 || r === 30 || r === 90) setRangeDays(r);
+    if (r === "7" || r === "30" || r === "90") setRangeDays(Number(r) as RangeDays);
+    if (r === "all") setRangeDays("all");
   }, []);
   useEffect(() => { localStorage.setItem(HOURS_KEY, String(weeklyHours)); }, [weeklyHours]);
   useEffect(() => { localStorage.setItem(COMMISSION_KEY, String(commissionPct)); }, [commissionPct]);
   useEffect(() => { localStorage.setItem(RANGE_KEY, String(rangeDays)); }, [rangeDays]);
 
-  /* ---- Windowed stats (7 / 30 / 90 days) ----
+  /* ---- Windowed stats (7 / 30 / 90 days / all time) ----
      "Revenue" + "Close rate" use closed_at so wins/losses surface in the
      window they were actually decided. "Deals run" still uses created_at
      because it tracks activity started. */
   const windowed = useMemo(() => {
     const now = Date.now();
-    const cutoff = now - rangeDays * 864e5;
-    const cutoffIso = new Date(cutoff).toISOString();
+    const isAllTime = rangeDays === "all";
+    const cutoff = isAllTime ? 0 : now - rangeDays * 864e5;
+    const cutoffIso = isAllTime ? "1970-01-01T00:00:00.000Z" : new Date(cutoff).toISOString();
     const inWinByCreated = deals.filter((d) => new Date(d.created_at).getTime() >= cutoff);
     const wonInWin = deals.filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= cutoffIso);
     const lostInWin = deals.filter((d) => d.stage === "lost" && d.closed_at && d.closed_at >= cutoffIso);
@@ -156,12 +158,16 @@ export default function Dashboard() {
         bestDayLabel = `${dt.getMonth() + 1}/${dt.getDate()}`;
       }
     }
-    // Prior period of equal length for pace delta
-    const priorCutoffIso = new Date(now - 2 * rangeDays * 864e5).toISOString();
-    const priorRevenue = deals
-      .filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= priorCutoffIso && d.closed_at < cutoffIso)
-      .reduce((s, d) => s + (d.closed_amount ?? 0), 0);
-    const revPaceDelta = priorRevenue > 0 ? (revenue - priorRevenue) / priorRevenue : (revenue > 0 ? 1 : 0);
+    // Prior period of equal length for pace delta (not applicable for all time)
+    let priorRevenue = 0;
+    let revPaceDelta = 0;
+    if (!isAllTime) {
+      const priorCutoffIso = new Date(now - 2 * rangeDays * 864e5).toISOString();
+      priorRevenue = deals
+        .filter((d) => d.stage === "won" && d.closed_at && d.closed_at >= priorCutoffIso && d.closed_at < cutoffIso)
+        .reduce((s, d) => s + (d.closed_amount ?? 0), 0);
+      revPaceDelta = priorRevenue > 0 ? (revenue - priorRevenue) / priorRevenue : (revenue > 0 ? 1 : 0);
+    }
 
     /* ---- Active pipeline detail ---- */
     const activeDeals = deals.filter((d) => d.stage !== "won" && d.stage !== "lost" && d.stage !== "disqualified");
@@ -219,11 +225,36 @@ export default function Dashboard() {
   }, [deals, weeklyHours, commissionPct, stats]);
 
   /* ---- WoW chip strip & report payload (current window vs prior of equal length) ---- */
-  const dayBuckets14 = useMemo(
-    () => bucketByDay(deals, rangeDays * 2, weeklyHours, commissionPct),
-    [deals, weeklyHours, commissionPct, rangeDays],
-  );
+  const dayBuckets14 = useMemo(() => {
+    if (rangeDays === "all") {
+      const now = Date.now();
+      const minTs = deals.reduce((min, d) => {
+        const created = d.created_at ? new Date(d.created_at).getTime() : Infinity;
+        const closed = d.closed_at ? new Date(d.closed_at).getTime() : Infinity;
+        return Math.min(min, created, closed);
+      }, now);
+      const spanDays = Math.max(30, Math.ceil((now - minTs) / 864e5));
+      return bucketByDay(deals, spanDays, weeklyHours, commissionPct);
+    }
+    return bucketByDay(deals, rangeDays * 2, weeklyHours, commissionPct);
+  }, [deals, weeklyHours, commissionPct, rangeDays]);
   const wow = useMemo(() => {
+    if (rangeDays === "all") {
+      const allRev = sumBuckets(dayBuckets14, "revenue");
+      const allWon = sumBuckets(dayBuckets14, "won");
+      const allLost = sumBuckets(dayBuckets14, "lost");
+      const allRun = sumBuckets(dayBuckets14, "dealsRun");
+      const allDph = sumBuckets(dayBuckets14, "dollarsPerHour");
+      const allRate = allWon + allLost > 0 ? allWon / (allWon + allLost) : 0;
+      const flat = { pct: 0, dir: "flat" as const, absolute: 0 };
+      return {
+        revenue: { current: allRev, prior: 0, delta: flat },
+        closeRate: { current: allRate, prior: 0, delta: flat },
+        dealsRun: { current: allRun, prior: 0, delta: flat },
+        dollarsPerHour: { current: allDph, prior: 0, delta: flat },
+        closedDeals: { current: allWon, prior: 0 },
+      };
+    }
     const { current, prior } = splitCurrentPrior(dayBuckets14);
     const curRev = sumBuckets(current, "revenue");
     const priRev = sumBuckets(prior, "revenue");
@@ -253,7 +284,7 @@ export default function Dashboard() {
       dollarsPerHour: { current: curDph, prior: priDph, delta: wowDelta(curDph, priDph) },
       closedDeals: { current: curWon, prior: priWon },
     };
-  }, [dayBuckets14]);
+  }, [dayBuckets14, rangeDays]);
 
   const topObjection = useMemo(() => {
     if (!stats) return undefined;
@@ -301,10 +332,10 @@ export default function Dashboard() {
                   <span className="uppercase tracking-[0.2em] text-[10px]">DaBella Operator HUD</span>
                 </div>
                 <ReportingActions
-                  rangeLabel={`Last ${rangeDays} days`}
+                  rangeLabel={rangeDays === "all" ? "All time" : `Last ${rangeDays} days`}
                   buckets={dayBuckets14}
                   summary={{
-                    rangeLabel: `Last ${rangeDays} days`,
+                    rangeLabel: rangeDays === "all" ? "All time" : `Last ${rangeDays} days`,
                     revenue: { current: wow.revenue.current, prior: wow.revenue.prior },
                     closedDeals: wow.closedDeals,
                     closeRate: { current: wow.closeRate.current, prior: wow.closeRate.prior },
@@ -333,10 +364,10 @@ export default function Dashboard() {
 
               <div className="mt-6">
                 <WowChipStrip chips={[
-                  { label: `Revenue (${rangeDays}d)`, current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
-                  { label: `Close rate (${rangeDays}d)`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta, deltaSuffix: "pp" },
-                  { label: `Deals run (${rangeDays}d)`, current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
-                  { label: `$/Hour (${rangeDays}d)`, current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
+                  { label: `Revenue (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
+                  { label: `Close rate (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta, deltaSuffix: "pp" },
+                  { label: `Deals run (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
+                  { label: `$/Hour (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
                 ]} />
               </div>
             </div>
@@ -370,7 +401,7 @@ export default function Dashboard() {
             <p className="text-[11px] text-muted-foreground mt-0.5">KPIs below reflect deals created in the selected range.</p>
           </div>
           <div className="inline-flex items-center gap-1 p-1 rounded-xl border border-hairline-strong bg-card/60 backdrop-blur shadow-sm">
-            {([7, 30, 90] as RangeDays[]).map((d) => (
+            {([7, 30, 90, "all"] as RangeDays[]).map((d) => (
               <button
                 key={d}
                 onClick={() => setRangeDays(d)}
@@ -380,7 +411,7 @@ export default function Dashboard() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Last {d}d
+                {d === "all" ? "All time" : `Last ${d}d`}
               </button>
             ))}
           </div>

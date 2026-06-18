@@ -205,7 +205,7 @@ function SitToCloseKPIBase({
   oneCallPct: number;
   oneCallWins: number;
   confidence: "low" | "med" | "high";
-  rangeDays: number;
+  rangeDays: number | "all";
 }) {
   const confMap = {
     low: { label: "Low confidence", cls: "bg-warning/15 text-warning border-warning/30" },
@@ -213,13 +213,15 @@ function SitToCloseKPIBase({
     high: { label: "High confidence", cls: "bg-success/15 text-success border-success/30" },
   }[confidence];
   const pctNum = Math.round(rate * 100);
+  const rangeLabel = rangeDays === "all" ? "All time" : `${rangeDays}d`;
+  const formulaRange = rangeDays === "all" ? "all time" : `last ${rangeDays}d`;
   return (
     <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
       <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-primary/25 to-primary/0 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sit-to-Close · {rangeDays}d<FormulaHint formula={`Cohort wins ÷ resolved presentations in last ${rangeDays}d. Only counts presentations old enough to decide (excludes 'still deciding'). Confidence chip reflects cohort size.`} /></p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sit-to-Close · {rangeLabel}<FormulaHint formula={`Cohort wins ÷ resolved presentations in ${formulaRange}. Only counts presentations old enough to decide (excludes 'still deciding'). Confidence chip reflects cohort size.`} /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Wins ÷ presentations old enough to decide</p>
           </div>
           <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-primary transition-transform group-hover:scale-110">
@@ -264,7 +266,7 @@ function RevenueKPIBase({
   revenue, won, avgTicket, bestDay, bestDayLabel, priorRevenue, paceDelta, rangeDays,
 }: {
   revenue: number; won: number; avgTicket: number; bestDay: number; bestDayLabel: string;
-  priorRevenue: number; paceDelta: number; rangeDays: number;
+  priorRevenue: number; paceDelta: number; rangeDays: number | "all";
 }) {
   const dir = paceDelta > 0.01 ? "up" : paceDelta < -0.01 ? "down" : "flat";
   const PaceIcon = dir === "up" ? TrendingUp : dir === "down" ? TrendingDown : Minus;
@@ -273,13 +275,16 @@ function RevenueKPIBase({
     : dir === "down" ? "bg-destructive/15 text-destructive border-destructive/30"
     : "bg-muted/40 text-muted-foreground border-border";
   const bestPct = revenue > 0 ? Math.min(100, Math.round((bestDay / revenue) * 100)) : 0;
+  const rangeLabel = rangeDays === "all" ? "All time" : `${rangeDays}d`;
+  const formulaRange = rangeDays === "all" ? "all time" : `last ${rangeDays}d`;
+  const priorText = rangeDays === "all" ? null : `prior ${rangeDays}d ${fmt(Math.round(priorRevenue))}`;
   return (
     <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
       <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-success/25 to-success/0 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Revenue · {rangeDays}d<FormulaHint formula={`Sum of closed_amount for deals where stage = 'won' and closed_at within last ${rangeDays}d. Pace = (current − prior window) ÷ prior.`} /></p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Revenue · {rangeLabel}<FormulaHint formula={`Sum of closed_amount for deals where stage = 'won' and closed_at within ${formulaRange}. Pace = (current − prior window) ÷ prior.`} /></p>
             <p className="text-[10px] text-muted-foreground/70 mt-0.5">Closed-won dollars in window</p>
           </div>
           <div className="h-9 w-9 rounded-xl grid place-items-center bg-background/70 backdrop-blur border border-hairline text-success transition-transform group-hover:scale-110">
@@ -294,7 +299,7 @@ function RevenueKPIBase({
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          {won} deals · prior {rangeDays}d {fmt(Math.round(priorRevenue))}
+          {won} deals{priorText ? ` · ${priorText}` : ""}
         </p>
         {/* Best-day share bar */}
         <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden" title={`Best day ${bestDayLabel} = ${bestPct}% of window`}>
@@ -327,7 +332,7 @@ function PipelineKPIBase({
   stageCounts: { inspecting: number; presented: number; follow_up: number };
   avgAge: number;
   oldestAge: number;
-  rangeDays: number;
+  rangeDays: number | "all";
   dealsRunInWindow: number;
 }) {
   const total = Math.max(active, 1);
@@ -338,6 +343,7 @@ function PipelineKPIBase({
     oldestAge >= 21 ? "bg-destructive/15 text-destructive border-destructive/30"
     : oldestAge >= 10 ? "bg-warning/15 text-warning border-warning/30"
     : "bg-success/15 text-success border-success/30";
+  const rangeLabel = rangeDays === "all" ? "All time" : `${rangeDays}d`;
   return (
     <div className="card-premium p-5 group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)]">
       <div className="absolute -top-12 -right-12 h-44 w-44 rounded-full bg-gradient-to-br from-primary/25 to-primary/0 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
@@ -358,7 +364,7 @@ function PipelineKPIBase({
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          {fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeDays}d
+          {fmt(Math.round(pipelineValue))} potential · {dealsRunInWindow} run in {rangeLabel}
         </p>
         {/* Stage mix bar: inspecting / presented / follow_up */}
         <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden flex" title={`${stageCounts.inspecting} inspecting · ${stageCounts.presented} presented · ${stageCounts.follow_up} follow-up`}>
