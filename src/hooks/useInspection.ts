@@ -158,3 +158,22 @@ export function useAnalyzePhoto() {
     onError: (err) => toast.error(errMsg(err, "AI tagging failed")),
   });
 }
+
+/** Generate narrative sections from tagged photo findings + optional tweak prompt. */
+export function useGenerateNarrative() {
+  return useMutation({
+    mutationFn: async (input: {
+      report_type: InspectionReportType;
+      photos: { caption?: string | null; tags?: string[] | null; severity?: "low" | "moderate" | "high" | null }[];
+      tweak?: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke("generate-narrative", {
+        body: input,
+      });
+      if (error) throw error;
+      return data as { sections: InspectionSections };
+    },
+    onError: (err) => toast.error(errMsg(err, "Narrative generation failed")),
+  });
+}
+

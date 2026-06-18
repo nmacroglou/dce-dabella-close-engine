@@ -1,14 +1,17 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, Download, Loader2, Sparkles, FileText } from "lucide-react";
+import { Camera, Download, Loader2, Sparkles, FileText, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { useDealPhotos, useUploadDealPhoto } from "@/hooks/useDealPhotos";
 import {
-  useAnalyzePhoto, useInspection, useSaveInspection, useUpdatePhotoTags,
+  useAnalyzePhoto, useGenerateNarrative, useInspection, useSaveInspection, useUpdatePhotoTags,
 } from "@/hooks/useInspection";
 import {
   REPORT_TYPE_LABELS, TEMPLATES, type InspectionReportType,
@@ -18,6 +21,7 @@ import PhotoTagCard from "./PhotoTagCard";
 import { useDeals } from "@/hooks/useDeals";
 import { buildInspectionPdf } from "@/lib/pdf/inspection";
 import { toast } from "sonner";
+
 
 interface Props {
   dealId: string;
@@ -47,8 +51,12 @@ export default function InspectionPanel({ dealId }: Props) {
   const save = useSaveInspection();
   const analyze = useAnalyzePhoto();
   const updatePhoto = useUpdatePhotoTags();
+  const generateNarrative = useGenerateNarrative();
 
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [tweakOpen, setTweakOpen] = useState(false);
+  const [tweakText, setTweakText] = useState("");
 
   // Local override for sections so the textarea stays responsive while typing.
   const [draft, setDraft] = useState<InspectionSections | null>(null);
@@ -120,7 +128,39 @@ export default function InspectionPanel({ dealId }: Props) {
   }
 
 
+  async function handleGenerateNarrative(tweak?: string) {
+    const findings = filteredPhotos.map((p) => {
+      const ext = p as unknown as {
+        inspection_tags?: string[];
+        severity?: "low" | "moderate" | "high" | null;
+      };
+      return {
+        caption: p.caption ?? null,
+        tags: ext.inspection_tags ?? [],
+        severity: ext.severity ?? null,
+      };
+    });
+    const tagged = findings.filter((f) => (f.caption && f.caption.length > 0) || (f.tags && f.tags.length > 0));
+    if (tagged.length === 0 && !tweak?.trim()) {
+      toast.error("Tag some photos first (or use Tweak to provide context)");
+      return;
+    }
+    const toastId = toast.loading("Drafting narrative from photos…");
+    try {
+      const res = await generateNarrative.mutateAsync({
+        report_type: reportType,
+        photos: tagged,
+        tweak,
+      });
+      setDraft(res.sections);
+      toast.success("Narrative drafted — review and Save", { id: toastId });
+    } catch {
+      toast.dismiss(toastId);
+    }
+  }
+
   const [generating, setGenerating] = useState(false);
+
   async function handleGeneratePdf() {
     if (!deal) return;
     setGenerating(true);
@@ -226,12 +266,36 @@ export default function InspectionPanel({ dealId }: Props) {
       </div>
 
       <div className="card-premium p-5 space-y-5">
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-primary" />
-          <h4 className="font-display font-extrabold text-lg tracking-tight">Report Narrative</h4>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary" />
+            <h4 className="font-display font-extrabold text-lg tracking-tight">Report Narrative</h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleGenerateNarrative()}
+              disabled={generateNarrative.isPending}
+            >
+              {generateNarrative.isPending
+                ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                : <Sparkles className="h-4 w-4 mr-2" />}
+              Draft from photos
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setTweakOpen(true)}
+              disabled={generateNarrative.isPending}
+            >
+              <Wand2 className="h-4 w-4 mr-2" />
+              Tweak
+            </Button>
+          </div>
         </div>
-        <p className="text-xs text-muted-foreground -mt-3">
-          Pre-filled with a {REPORT_TYPE_LABELS[reportType].toLowerCase()} template. Tweak as needed — these blocks appear in the PDF.
+        <p className="text-xs text-muted-foreground">
+          Pre-filled with a {REPORT_TYPE_LABELS[reportType].toLowerCase()} template. Use <span className="font-semibold text-foreground">Draft from photos</span> to synthesize the narrative from the tagged photos above, or <span className="font-semibold text-foreground">Tweak</span> to steer it (material, age, prior repairs, etc.).
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {SECTION_FIELDS.map(({ key, label }) => (
@@ -247,6 +311,43 @@ export default function InspectionPanel({ dealId }: Props) {
           ))}
         </div>
       </div>
+
+      <Dialog open={tweakOpen} onOpenChange={setTweakOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tweak the narrative</DialogTitle>
+            <DialogDescription>
+              Give the AI extra context to bake into the report — material, age, prior repairs, homeowner concerns. It will re-draft all sections using the tagged photos plus this context.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={5}
+            placeholder={
+              reportType === "roof"
+                ? "e.g. 3-tab asphalt shingle, ~22 years old, prior patch over the south valley, homeowner reports staining in the master bedroom ceiling."
+                : "e.g. material, age, prior repairs, homeowner concerns…"
+            }
+            value={tweakText}
+            onChange={(e) => setTweakText(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setTweakOpen(false)}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                setTweakOpen(false);
+                await handleGenerateNarrative(tweakText);
+              }}
+              disabled={generateNarrative.isPending}
+            >
+              {generateNarrative.isPending
+                ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                : <Wand2 className="h-4 w-4 mr-2" />}
+              Re-draft with context
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
