@@ -1,10 +1,13 @@
-export type InspectionReportType = "roof" | "windows" | "bath" | "solar";
+export type InspectionReportType = "roof" | "windows" | "bath" | "solar" | "siding" | "stucco" | "paint";
 
 export const REPORT_TYPE_LABELS: Record<InspectionReportType, string> = {
   roof: "Roof Inspection",
   windows: "Window Inspection",
   bath: "Bath Inspection",
   solar: "Solar Inspection",
+  siding: "Siding Inspection",
+  stucco: "Stucco Inspection",
+  paint: "Paint Inspection",
 };
 
 export interface InspectionSections {
@@ -66,16 +69,16 @@ export const TEMPLATES: Record<InspectionReportType, InspectionSections> = {
     next_steps: COMMON_NEXT_STEPS,
     limitations: COMMON_LIMITATIONS,
   },
-  solar: {
+  paint: {
     executive_summary:
-      "A professional solar condition review was performed. The photos document panel, wiring, and mount conditions that affect generation and roof integrity. The solar array should be evaluated together with the supporting roof.",
+      "A professional exterior paint condition review was performed. The photos document finish wear, substrate exposure, and moisture-related symptoms that affect curb appeal and protect the underlying siding or trim. A quality repaint restores the weather skin and prevents slow water damage.",
     inspection_scope: COMMON_SCOPE,
     measurements:
-      "System size, panel count, inverter spec, and any required electrical upgrades should be confirmed during the engineering review.",
+      "Square footage of wall and trim surfaces, number of stories, linear feet of fascia/soffit, and areas requiring scraping or priming should be field-verified for final scope and pricing.",
     professional_opinion:
-      "Where roof condition is compromised, panel work and roofing work should be coordinated to avoid duplicate mobilization and to protect the warranty.",
+      "Spot touch-ups leave the surrounding finish in the same degraded condition. A complete repaint of affected areas (or the whole home) provides consistent appearance and uniform protection.",
     recommended_scope:
-      "Service or replace affected components, re-flash all mounts, and re-commission the array. Coordinate with roofing work where applicable.",
+      "Pressure-wash, scrape and prime bare or failing areas, caulk gaps, and apply two coats of premium exterior paint to walls and trim with a workmanship warranty backed by DaBella.",
     next_steps: COMMON_NEXT_STEPS,
     limitations: COMMON_LIMITATIONS,
   },

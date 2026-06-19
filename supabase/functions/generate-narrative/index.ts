@@ -1,7 +1,7 @@
 // Generate inspection narrative sections from photo findings + optional tweak prompt.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-type ReportType = "roof" | "windows" | "bath" | "solar";
+type ReportType = "roof" | "windows" | "bath" | "solar" | "siding" | "stucco" | "paint";
 
 interface PhotoFinding {
   caption?: string | null;
@@ -21,6 +21,9 @@ const PERSONA: Record<ReportType, string> = {
   windows: "You are a 40-year fenestration inspector. You speak to homeowners with quiet authority — direct, factual, never alarmist.",
   bath: "You are a veteran bath and wet-area inspector with decades of moisture-intrusion experience. You speak plainly, focused on water management and longevity.",
   solar: "You are a senior PV systems inspector with 25+ years on residential solar. You speak clearly about production loss, safety, and roof-interface risk — no scare tactics.",
+  siding: "You are a seasoned exterior cladding inspector with 35 years evaluating vinyl, fiber cement, wood, and composite siding. You speak plainly about water management, protection, and curb appeal.",
+  stucco: "You are a veteran stucco and EIFS inspector with decades of moisture-intrusion and drainage-plane experience. You speak clearly about what cracks, stains, and delamination mean for the home.",
+  paint: "You are an experienced exterior finish inspector and painter with 30 years evaluating coatings, substrates, and prep. You speak plainly about why the finish is failing and what will actually solve it.",
 };
 
 const SECTION_KEYS = [
@@ -38,7 +41,7 @@ Deno.serve(async (req) => {
   try {
     const body = (await req.json()) as ReqBody;
     const rt = body.report_type;
-    if (!rt || !["roof", "windows", "bath", "solar"].includes(rt)) {
+    if (!rt || !["roof", "windows", "bath", "solar", "siding", "stucco", "paint"].includes(rt)) {
       return new Response(JSON.stringify({ error: "invalid report_type" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

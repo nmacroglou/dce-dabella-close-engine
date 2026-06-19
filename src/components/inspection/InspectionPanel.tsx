@@ -27,7 +27,7 @@ interface Props {
   dealId: string;
 }
 
-const REPORT_OPTIONS: InspectionReportType[] = ["roof", "windows", "bath", "solar"];
+const REPORT_OPTIONS: InspectionReportType[] = ["roof", "windows", "bath", "solar", "siding", "stucco", "paint"];
 
 const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
   { key: "executive_summary", label: "Executive Summary" },
