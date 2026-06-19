@@ -8,6 +8,19 @@ import {
   TEMPLATES,
 } from "@/data/inspectionTemplates";
 
+async function functionErrorMessage(error: unknown, fallback: string) {
+  const context = (error as { context?: unknown })?.context;
+  if (context instanceof Response) {
+    try {
+      const payload = await context.clone().json();
+      if (typeof payload?.error === "string" && payload.error) return payload.error;
+    } catch {
+      // Fall through to the standard error helper.
+    }
+  }
+  return errMsg(error, fallback);
+}
+
 export interface InspectionRow {
   id: string;
   deal_id: string;
@@ -152,7 +165,7 @@ export function useAnalyzePhoto() {
       const { data, error } = await supabase.functions.invoke("inspect-photo", {
         body: { image_data_url: imageDataUrl, report_type: input.report_type },
       });
-      if (error) throw error;
+      if (error) throw new Error(await functionErrorMessage(error, "AI tagging failed"));
       return data as { tags: string[]; severity: "low" | "moderate" | "high"; caption: string };
     },
     onError: (err) => toast.error(errMsg(err, "AI tagging failed")),
