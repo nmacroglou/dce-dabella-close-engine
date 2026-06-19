@@ -267,9 +267,36 @@ export default function VisionTab({ state }: EngineTabProps) {
   const [images, setImages] = useState<Record<string, string | null>>({});
   const [loadingScenes, setLoadingScenes] = useState<Record<string, boolean>>({});
   const [hasRun, setHasRun] = useState(false);
+  // Optional homeowner reference photo — anchors all renders to their real home
+  const [refPhoto, setRefPhoto] = useState<string | null>(null);
+  const refInputRef = useRef<HTMLInputElement>(null);
   const anyLoading = Object.values(loadingScenes).some(Boolean);
   const loadedCount = Object.values(images).filter(Boolean).length;
   const allReady = hasRun && !anyLoading && loadedCount === SCENES.length;
+
+  const handleRefPhoto = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      await new Promise<void>((res, rej) => {
+        img.onload = () => res();
+        img.onerror = () => rej(new Error("read failed"));
+        img.src = url;
+      });
+      const maxSide = 1024;
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      const ctx2d = canvas.getContext("2d");
+      if (!ctx2d) return;
+      ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+      setRefPhoto(canvas.toDataURL("image/jpeg", 0.82));
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }, []);
 
   const ctx = useMemo<VisionCtx>(() => {
     const first = (state.homeowner1 || "").trim().split(/\s+/)[0] || "your homeowner";
