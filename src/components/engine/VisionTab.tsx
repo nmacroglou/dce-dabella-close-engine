@@ -400,9 +400,9 @@ export default function VisionTab({ state }: EngineTabProps) {
       )}
     </div>
   );
-
-
+  const GenerateControl = (
     <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 backdrop-blur px-2 py-1">
+
       {anyLoading ? (
         <>
           <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
