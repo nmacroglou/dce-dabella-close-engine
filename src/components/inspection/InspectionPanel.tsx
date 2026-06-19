@@ -225,9 +225,9 @@ export default function InspectionPanel({ dealId }: Props) {
           {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
         </Button>
 
-        <Button onClick={handleGeneratePdf} disabled={generating || !deal}>
-          {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-          Generate PDF
+        <Button onClick={() => setShareOpen(true)} disabled={!deal}>
+          <Share2 className="h-4 w-4 mr-2" />
+          Generate &amp; Share PDF
         </Button>
       </div>
 
