@@ -355,7 +355,53 @@ export default function VisionTab({ state }: EngineTabProps) {
     setStep(0);
   };
 
-  const GenerateControl = (
+  const RefPhotoControl = (
+    <div className="inline-flex items-center gap-2">
+      <input
+        ref={refInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleRefPhoto(f);
+          e.target.value = "";
+        }}
+      />
+      {refPhoto ? (
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 backdrop-blur px-2 py-1">
+          <img src={refPhoto} alt="Reference" className="h-6 w-6 rounded-full object-cover ring-1 ring-primary/40" />
+          <span className="text-[11px] font-semibold text-primary">Home photo attached</span>
+          <button
+            onClick={() => refInputRef.current?.click()}
+            className="text-[11px] text-muted-foreground hover:text-foreground px-1"
+            type="button"
+          >
+            Change
+          </button>
+          <button
+            onClick={() => setRefPhoto(null)}
+            className="text-muted-foreground hover:text-destructive p-0.5"
+            type="button"
+            aria-label="Remove reference photo"
+          >
+            <XIcon className="h-3 w-3" />
+          </button>
+        </div>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refInputRef.current?.click()}
+          className="h-7 px-3 text-xs rounded-full gap-1.5"
+        >
+          <Upload className="h-3.5 w-3.5" /> Add home photo
+        </Button>
+      )}
+    </div>
+  );
+
+
     <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 backdrop-blur px-2 py-1">
       {anyLoading ? (
         <>
