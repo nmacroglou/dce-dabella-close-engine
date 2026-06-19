@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, Download, Loader2, Sparkles, FileText, Wand2 } from "lucide-react";
+import { Camera, Loader2, Sparkles, FileText, Wand2, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ import {
 } from "@/data/inspectionTemplates";
 import PhotoTagCard from "./PhotoTagCard";
 import { useDeals } from "@/hooks/useDeals";
-import { buildInspectionPdf } from "@/lib/pdf/inspection";
+import ShareInspectionPdfDialog from "./ShareInspectionPdfDialog";
 import { toast } from "sonner";
 
 
