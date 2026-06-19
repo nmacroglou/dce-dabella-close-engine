@@ -488,18 +488,24 @@ export default function VisionTab({ state }: EngineTabProps) {
               itself.
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
             <div className="flex items-center gap-2 min-w-0">
               <Sparkles className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm font-semibold">Paint the Vision</div>
                 <div className="text-[11px] text-muted-foreground truncate">
-                  Pre-render AI visuals — they'll reveal inside each moment as you walk through.
+                  {refPhoto
+                    ? "Renders will be anchored to the home photo you attached."
+                    : "Add a photo of the home to make every render bespoke — or skip to use a stock home."}
                 </div>
               </div>
             </div>
-            {GenerateControl}
+            <div className="flex items-center gap-2 flex-wrap">
+              {RefPhotoControl}
+              {GenerateControl}
+            </div>
           </div>
+
         </Card>
       </div>
     );
