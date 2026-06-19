@@ -1,4 +1,6 @@
 // Generate product vision image via Lovable AI Gateway.
+// Optionally accepts a reference photo (data URL) to keep the rendering
+// faithful to the homeowner's actual home/space.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -11,12 +13,27 @@ Deno.serve(async (req) => {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { prompt } = await req.json();
+    const { prompt, reference_image } = await req.json();
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const hasRef = typeof reference_image === "string" && reference_image.startsWith("data:image/");
+    const userContent: unknown = hasRef
+      ? [
+          {
+            type: "text",
+            text:
+              `${prompt}\n\nIMPORTANT: Use the attached reference photo as the SAME home / space. ` +
+              `Preserve the home's architecture, roof line, siding layout, window placement, ` +
+              `landscaping context, and viewing angle. Only re-render the relevant surfaces to ` +
+              `reflect the new product described above. Do not invent a different house.`,
+          },
+          { type: "image_url", image_url: { url: reference_image } },
+        ]
+      : prompt;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
       method: "POST",
@@ -26,7 +43,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-3.1-flash-image-preview",
-        messages: [{ role: "user", content: prompt }],
+        messages: [{ role: "user", content: userContent }],
         modalities: ["image", "text"],
       }),
     });

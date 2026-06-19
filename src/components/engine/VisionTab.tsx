@@ -1,9 +1,10 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 
 import {
   Sparkles, Home, ShieldCheck, Heart, TrendingUp, Sun, CloudRain,
   Users, Award, ChevronLeft, ChevronRight, Play, RotateCcw, Volume2,
   Camera, Coffee, PartyPopper, Calendar, DollarSign, Loader2, Check, RefreshCw,
+  Upload, X as XIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -266,9 +267,36 @@ export default function VisionTab({ state }: EngineTabProps) {
   const [images, setImages] = useState<Record<string, string | null>>({});
   const [loadingScenes, setLoadingScenes] = useState<Record<string, boolean>>({});
   const [hasRun, setHasRun] = useState(false);
+  // Optional homeowner reference photo — anchors all renders to their real home
+  const [refPhoto, setRefPhoto] = useState<string | null>(null);
+  const refInputRef = useRef<HTMLInputElement>(null);
   const anyLoading = Object.values(loadingScenes).some(Boolean);
   const loadedCount = Object.values(images).filter(Boolean).length;
   const allReady = hasRun && !anyLoading && loadedCount === SCENES.length;
+
+  const handleRefPhoto = useCallback(async (file: File) => {
+    if (!file.type.startsWith("image/")) return;
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      await new Promise<void>((res, rej) => {
+        img.onload = () => res();
+        img.onerror = () => rej(new Error("read failed"));
+        img.src = url;
+      });
+      const maxSide = 1024;
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      const ctx2d = canvas.getContext("2d");
+      if (!ctx2d) return;
+      ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+      setRefPhoto(canvas.toDataURL("image/jpeg", 0.82));
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }, []);
 
   const ctx = useMemo<VisionCtx>(() => {
     const first = (state.homeowner1 || "").trim().split(/\s+/)[0] || "your homeowner";
@@ -294,7 +322,10 @@ export default function VisionTab({ state }: EngineTabProps) {
     setLoadingScenes((p) => ({ ...p, [scene.momentId]: true }));
     try {
       const { data, error } = await supabase.functions.invoke("generate-vision-image", {
-        body: { prompt: scene.buildPrompt({ product: ctx.product, option: ctx.optionName, material: materialTop }) },
+        body: {
+          prompt: scene.buildPrompt({ product: ctx.product, option: ctx.optionName, material: materialTop }),
+          reference_image: refPhoto ?? undefined,
+        },
       });
       if (error) throw error;
       if (data?.image) setImages((p) => ({ ...p, [scene.momentId]: data.image }));
@@ -303,7 +334,7 @@ export default function VisionTab({ state }: EngineTabProps) {
     } finally {
       setLoadingScenes((p) => ({ ...p, [scene.momentId]: false }));
     }
-  }, [ctx.product, ctx.optionName, materialTop]);
+  }, [ctx.product, ctx.optionName, materialTop, refPhoto]);
 
   const generateAll = useCallback(async () => {
     setHasRun(true);
@@ -324,8 +355,54 @@ export default function VisionTab({ state }: EngineTabProps) {
     setStep(0);
   };
 
+  const RefPhotoControl = (
+    <div className="inline-flex items-center gap-2">
+      <input
+        ref={refInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleRefPhoto(f);
+          e.target.value = "";
+        }}
+      />
+      {refPhoto ? (
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 backdrop-blur px-2 py-1">
+          <img src={refPhoto} alt="Reference" className="h-6 w-6 rounded-full object-cover ring-1 ring-primary/40" />
+          <span className="text-[11px] font-semibold text-primary">Home photo attached</span>
+          <button
+            onClick={() => refInputRef.current?.click()}
+            className="text-[11px] text-muted-foreground hover:text-foreground px-1"
+            type="button"
+          >
+            Change
+          </button>
+          <button
+            onClick={() => setRefPhoto(null)}
+            className="text-muted-foreground hover:text-destructive p-0.5"
+            type="button"
+            aria-label="Remove reference photo"
+          >
+            <XIcon className="h-3 w-3" />
+          </button>
+        </div>
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refInputRef.current?.click()}
+          className="h-7 px-3 text-xs rounded-full gap-1.5"
+        >
+          <Upload className="h-3.5 w-3.5" /> Add home photo
+        </Button>
+      )}
+    </div>
+  );
   const GenerateControl = (
     <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 backdrop-blur px-2 py-1">
+
       {anyLoading ? (
         <>
           <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
@@ -411,18 +488,24 @@ export default function VisionTab({ state }: EngineTabProps) {
               itself.
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
             <div className="flex items-center gap-2 min-w-0">
               <Sparkles className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm font-semibold">Paint the Vision</div>
                 <div className="text-[11px] text-muted-foreground truncate">
-                  Pre-render AI visuals — they'll reveal inside each moment as you walk through.
+                  {refPhoto
+                    ? "Renders will be anchored to the home photo you attached."
+                    : "Add a photo of the home to make every render bespoke — or skip to use a stock home."}
                 </div>
               </div>
             </div>
-            {GenerateControl}
+            <div className="flex items-center gap-2 flex-wrap">
+              {RefPhotoControl}
+              {GenerateControl}
+            </div>
           </div>
+
         </Card>
       </div>
     );
@@ -466,6 +549,7 @@ export default function VisionTab({ state }: EngineTabProps) {
           </div>
           <Progress value={progress} className="h-1.5" />
         </div>
+        {RefPhotoControl}
         {GenerateControl}
         <Button variant="ghost" size="sm" onClick={reset} className="shrink-0 gap-1.5">
           <RotateCcw className="h-3.5 w-3.5" /> Restart
