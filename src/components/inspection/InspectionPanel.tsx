@@ -159,45 +159,30 @@ export default function InspectionPanel({ dealId }: Props) {
     }
   }
 
-  const [generating, setGenerating] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
-  async function handleGeneratePdf() {
-    if (!deal) return;
-    setGenerating(true);
-    try {
-      const included = filteredPhotos.filter(
-        (p) => (p as { include_in_report?: boolean }).include_in_report !== false,
-      );
-      const customerName =
-        [deal.homeowner1, deal.homeowner2].filter(Boolean).join(" & ") || "Homeowner";
-      const { doc } = await buildInspectionPdf({
-        customerName,
-        address: deal.address ?? "",
-        reportType,
-        sections,
-        photos: included.map((p) => {
-          const ext = p as unknown as {
-            inspection_tags?: string[];
-            severity?: "low" | "moderate" | "high" | null;
-          };
-          return {
-            signedUrl: p.signedUrl,
-            tags: ext.inspection_tags ?? [],
-            severity: ext.severity ?? null,
-            caption: p.caption,
-          };
-        }),
-      });
-      const fname = `${customerName.replace(/\s+/g, "_")}_${REPORT_TYPE_LABELS[reportType].replace(/\s+/g, "_")}.pdf`;
-      doc.save(fname);
-      toast.success("PDF downloaded");
-    } catch (e) {
-      console.error(e);
-      toast.error("PDF generation failed");
-    } finally {
-      setGenerating(false);
-    }
-  }
+  const sharePhotos = useMemo(() => {
+    const included = filteredPhotos.filter(
+      (p) => (p as { include_in_report?: boolean }).include_in_report !== false,
+    );
+    return included.map((p) => {
+      const ext = p as unknown as {
+        inspection_tags?: string[];
+        severity?: "low" | "moderate" | "high" | null;
+      };
+      return {
+        signedUrl: p.signedUrl,
+        tags: ext.inspection_tags ?? [],
+        severity: ext.severity ?? null,
+        caption: p.caption,
+      };
+    });
+  }, [filteredPhotos]);
+
+  const customerName = useMemo(
+    () => [deal?.homeowner1, deal?.homeowner2].filter(Boolean).join(" & ") || "Homeowner",
+    [deal?.homeowner1, deal?.homeowner2],
+  );
 
   return (
     <div className="space-y-6">
