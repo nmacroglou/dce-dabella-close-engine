@@ -322,7 +322,10 @@ export default function VisionTab({ state }: EngineTabProps) {
     setLoadingScenes((p) => ({ ...p, [scene.momentId]: true }));
     try {
       const { data, error } = await supabase.functions.invoke("generate-vision-image", {
-        body: { prompt: scene.buildPrompt({ product: ctx.product, option: ctx.optionName, material: materialTop }) },
+        body: {
+          prompt: scene.buildPrompt({ product: ctx.product, option: ctx.optionName, material: materialTop }),
+          reference_image: refPhoto ?? undefined,
+        },
       });
       if (error) throw error;
       if (data?.image) setImages((p) => ({ ...p, [scene.momentId]: data.image }));
@@ -331,7 +334,7 @@ export default function VisionTab({ state }: EngineTabProps) {
     } finally {
       setLoadingScenes((p) => ({ ...p, [scene.momentId]: false }));
     }
-  }, [ctx.product, ctx.optionName, materialTop]);
+  }, [ctx.product, ctx.optionName, materialTop, refPhoto]);
 
   const generateAll = useCallback(async () => {
     setHasRun(true);
