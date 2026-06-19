@@ -333,6 +333,15 @@ export default function InspectionPanel({ dealId }: Props) {
         </DialogContent>
       </Dialog>
 
+      <ShareInspectionPdfDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        customerName={customerName}
+        address={deal?.address ?? ""}
+        reportType={reportType}
+        sections={sections}
+        photos={sharePhotos}
+      />
     </div>
   );
 }
