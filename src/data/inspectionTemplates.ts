@@ -69,6 +69,45 @@ export const TEMPLATES: Record<InspectionReportType, InspectionSections> = {
     next_steps: COMMON_NEXT_STEPS,
     limitations: COMMON_LIMITATIONS,
   },
+  solar: {
+    executive_summary:
+      "A professional solar condition review was performed. The photos document panel, wiring, and mount conditions that affect generation and roof integrity. The solar array should be evaluated together with the supporting roof.",
+    inspection_scope: COMMON_SCOPE,
+    measurements:
+      "System size, panel count, inverter spec, and any required electrical upgrades should be confirmed during the engineering review.",
+    professional_opinion:
+      "Where roof condition is compromised, panel work and roofing work should be coordinated to avoid duplicate mobilization and to protect the warranty.",
+    recommended_scope:
+      "Service or replace affected components, re-flash all mounts, and re-commission the array. Coordinate with roofing work where applicable.",
+    next_steps: COMMON_NEXT_STEPS,
+    limitations: COMMON_LIMITATIONS,
+  },
+  siding: {
+    executive_summary:
+      "A professional siding condition review was performed. The photos document panel damage, fastening issues, moisture intrusion, and aesthetic wear that affect the home's protection and curb appeal. Siding should be treated as a complete system: panels, trim, seams, and flashings all work together to keep water out.",
+    inspection_scope: COMMON_SCOPE,
+    measurements:
+      "Total square footage of siding, linear feet of trim and fascia, number of windows and doors to wrap, and required substrate repairs should be confirmed with a field measurement or estimate.",
+    professional_opinion:
+      "Isolated repairs often leave the remaining cladding in the same vulnerable state. Full replacement of the affected elevations provides consistent appearance, proper flashing, and a transferable workmanship warranty.",
+    recommended_scope:
+      "Replace the affected siding with manufacturer-approved panels, new housewrap, flashings, trim wrap, and a workmanship warranty backed by DaBella.",
+    next_steps: COMMON_NEXT_STEPS,
+    limitations: COMMON_LIMITATIONS,
+  },
+  stucco: {
+    executive_summary:
+      "A professional stucco condition review was performed. The photos document cracking, discoloration, and moisture-related symptoms that affect the home's weather barrier and long-term durability. Stucco problems tend to spread when the drainage plane or control joints are compromised.",
+    inspection_scope: COMMON_SCOPE,
+    measurements:
+      "Total square footage of stucco, number of cracks and repair patches, and areas requiring moisture-intrusion testing should be confirmed during the physical inspection.",
+    professional_opinion:
+      "Patch-and-paint is a temporary fix when the underlying moisture management is failing. Repair or reclad the affected elevations with proper drainage, control joints, and flashing to stop ongoing damage.",
+    recommended_scope:
+      "Repair or replace compromised stucco elevations with a moisture-managed system, seal penetrations, and apply a breathable, color-matched finish with a DaBella workmanship warranty.",
+    next_steps: COMMON_NEXT_STEPS,
+    limitations: COMMON_LIMITATIONS,
+  },
   paint: {
     executive_summary:
       "A professional exterior paint condition review was performed. The photos document finish wear, substrate exposure, and moisture-related symptoms that affect curb appeal and protect the underlying siding or trim. A quality repaint restores the weather skin and prevents slow water damage.",
