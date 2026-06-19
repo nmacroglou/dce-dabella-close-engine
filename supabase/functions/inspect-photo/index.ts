@@ -2,7 +2,7 @@
 // Takes a signed photo URL + report type, returns { tags, severity, caption }.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-type ReportType = "roof" | "windows" | "bath" | "solar";
+type ReportType = "roof" | "windows" | "bath" | "solar" | "siding" | "stucco" | "paint";
 
 interface ReqBody {
   photo_url?: string;
@@ -15,6 +15,9 @@ const TAXONOMY: Record<ReportType, string> = {
   windows: "rotted_frame, failed_seal, fogging, broken_glass, cracked_pane, gap_at_jamb, missing_caulk, weatherstrip_worn, sash_misalignment, water_staining, peeling_paint, inoperable_lock, screen_damaged, hardware_corrosion, condensation_inside, drafty, single_pane, undersized_for_egress",
   bath: "tile_cracking, grout_failure, caulk_failure, mold_growth, water_staining, soft_subfloor, leak_at_valve, leak_at_drain, fixture_corrosion, glass_door_seal_worn, shower_pan_failure, ventilation_inadequate, tub_chip, surround_separation, accessibility_concern",
   solar: "panel_cracking, hotspot_discoloration, micro_crack, debris_shading, soiling, vegetation_shading, wiring_exposed, conduit_damage, mounting_loose, flashing_at_mount, inverter_fault_light, ground_wire_disconnect, junction_box_damaged, snow_load_concern, animal_intrusion",
+  siding: "cracked_panel, loose_panel, missing_panel, buckling, warping, faded_finish, hail_damage, wind_damage, water_staining, rot_at_trim, fastener_pops, seam_gap, corner_post_damage, soffit_damage, fascia_damage, insect_damage, mold_or_mildew, housewrap_visible",
+  stucco: "hairline_crack, pattern_cracking, delamination, efflorescence, water_staining, dark_streaks, blistering, missing_sealant, flashing_gap, weep_screed_issue, control_joint_failure, spalling, soft_substrate, exposed_lath, impact_damage",
+  paint: "peeling_paint, cracking_paint, blistering, chalking, fade, exposed_substrate, water_staining, caulk_failure, trim_decay, scuffs_or_scratches, inconsistent_finish, overspray, nail_pops_visible, mildew_growth",
 };
 
 const PERSONA: Record<ReportType, string> = {
@@ -22,6 +25,9 @@ const PERSONA: Record<ReportType, string> = {
   windows: "You are a 40-year fenestration inspector who has evaluated residential window systems across every climate zone. You speak to homeowners with quiet authority — direct, factual, never alarmist.",
   bath: "You are a veteran bath and wet-area inspector with decades of remodel and moisture-intrusion experience. You speak plainly to homeowners, focused on water management and longevity.",
   solar: "You are a senior PV systems inspector with 25+ years on residential solar. You speak to homeowners clearly about production loss, safety, and roof-interface risk — no jargon, no scare tactics.",
+  siding: "You are a seasoned exterior cladding inspector with 35 years evaluating vinyl, fiber cement, wood, and composite siding. You speak plainly to homeowners about water management, structural protection, and curb appeal — practical, never salesy.",
+  stucco: "You are a veteran stucco and EIFS inspector with decades of moisture-intrusion and drainage-plane experience. You speak clearly to homeowners about what the cracks, stains, and delamination mean for the home's long-term health.",
+  paint: "You are an experienced exterior finish inspector and painter with 30 years evaluating coatings, substrates, and prep. You speak plainly to homeowners about why the finish is failing and what proper prep and product will actually solve it.",
 };
 
 const SYSTEM = (rt: ReportType) => `${PERSONA[rt]}
@@ -50,7 +56,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "photo_url or image_data_url and report_type required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    if (!["roof", "windows", "bath", "solar"].includes(body.report_type)) {
+    if (!["roof", "windows", "bath", "solar", "siding", "stucco", "paint"].includes(body.report_type)) {
       return new Response(JSON.stringify({ error: "invalid report_type" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
