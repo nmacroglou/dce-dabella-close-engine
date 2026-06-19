@@ -206,7 +206,6 @@ export default function InspectionPanel({ dealId }: Props) {
           type="file"
           accept="image/*"
           multiple
-          capture="environment"
           className="hidden"
           onChange={(e) => { handleUpload(e.target.files); e.target.value = ""; }}
         />
