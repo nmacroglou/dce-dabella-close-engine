@@ -1,9 +1,10 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 
 import {
   Sparkles, Home, ShieldCheck, Heart, TrendingUp, Sun, CloudRain,
   Users, Award, ChevronLeft, ChevronRight, Play, RotateCcw, Volume2,
   Camera, Coffee, PartyPopper, Calendar, DollarSign, Loader2, Check, RefreshCw,
+  Upload, X as XIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
