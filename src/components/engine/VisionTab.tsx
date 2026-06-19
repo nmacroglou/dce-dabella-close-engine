@@ -549,6 +549,7 @@ export default function VisionTab({ state }: EngineTabProps) {
           </div>
           <Progress value={progress} className="h-1.5" />
         </div>
+        {RefPhotoControl}
         {GenerateControl}
         <Button variant="ghost" size="sm" onClick={reset} className="shrink-0 gap-1.5">
           <RotateCcw className="h-3.5 w-3.5" /> Restart
