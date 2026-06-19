@@ -115,17 +115,21 @@ Deno.serve(async (req) => {
       }),
     });
 
+    const aiErrorText = aiRes.ok ? "" : await aiRes.text();
+    const aiErrorLower = aiErrorText.toLowerCase();
+
     if (aiRes.status === 429) {
       return new Response(JSON.stringify({ error: "Rate limit — try again in a moment." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    if (aiRes.status === 402) {
-      return new Response(JSON.stringify({ error: "AI credits exhausted." }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (aiRes.status === 402 || aiErrorLower.includes("credit_limit_reached")) {
+      console.error("AI credit limit", aiRes.status, aiErrorText);
+      return new Response(JSON.stringify({
+        error: "Workspace AI credit limit reached. Credits are available, but the workspace limit still needs to be raised in Settings → Plans & credits.",
+      }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     if (!aiRes.ok) {
-      const t = await aiRes.text();
-      console.error("AI error", aiRes.status, t);
+      console.error("AI error", aiRes.status, aiErrorText);
       return new Response(JSON.stringify({ error: "AI tagging failed" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
