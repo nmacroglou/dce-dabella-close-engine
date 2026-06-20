@@ -8,6 +8,8 @@ interface ReqBody {
   photo_url?: string;
   image_data_url?: string;
   report_type?: ReportType;
+  user_hint?: string;
+  existing_tags?: string[];
 }
 
 const TAXONOMY: Record<ReportType, string> = {
