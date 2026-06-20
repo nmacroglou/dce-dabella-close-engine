@@ -147,10 +147,12 @@ export default memo(function CommissionSheet() {
     }
   }, [activeDealId]);
 
-  // Live-mirror selection + discount from the Presentation tab into the
-  // Roof "Worth" / "Sold For" cells — but ONLY fills cells the rep hasn't
-  // touched yet (sticky). Once a number is in the cell, upstream changes
-  // never overwrite it.
+  // Live-mirror the selected option + discounted "sold for" from the Presentation
+  // tab into the Roof "Worth" / "Sold For" cells. We remember the last values we
+  // pushed in — if the rep hasn't changed those cells since, we keep mirroring.
+  // Once the rep types a different number, that manual override sticks and
+  // upstream changes stop overwriting it.
+  const lastMirrored = useRef<{ worth: number; sold: number } | null>(null);
   useEffect(() => {
     if (!deal || hydratedDealId.current !== deal.id) return;
     const opt = deal.selected_option;
@@ -159,14 +161,22 @@ export default memo(function CommissionSheet() {
       opt === "B" ? Number(deal.price_b ?? 0)
       : opt === "C" ? Number(deal.price_c ?? 0)
       : Number(deal.price_a ?? 0);
-    const sold = Number(deal.closed_amount ?? worth);
+    const sold = Number(deal.closed_amount ?? 0) || worth;
+    if (!worth && !sold) return;
+
     setSheet((prev) => {
-      const nextWorth = prev.project_roof > 0 ? prev.project_roof : worth;
-      const nextSold = prev.contract_roof > 0 ? prev.contract_roof : sold;
+      const last = lastMirrored.current;
+      // Cell is "mirror-owned" when it's still empty OR still matches what we last pushed.
+      const worthOwnsMirror = prev.project_roof === 0 || (last && prev.project_roof === last.worth);
+      const soldOwnsMirror = prev.contract_roof === 0 || (last && prev.contract_roof === last.sold);
+      const nextWorth = worthOwnsMirror ? worth : prev.project_roof;
+      const nextSold = soldOwnsMirror ? sold : prev.contract_roof;
       if (nextWorth === prev.project_roof && nextSold === prev.contract_roof) return prev;
+      lastMirrored.current = { worth: nextWorth, sold: nextSold };
       return { ...prev, project_roof: nextWorth, contract_roof: nextSold };
     });
-  }, [deal?.selected_option, deal?.closed_amount, deal?.price_a, deal?.price_b, deal?.price_c, deal?.id]);
+  }, [deal?.selected_option, deal?.closed_amount, deal?.price_a, deal?.price_b, deal?.price_c, deal?.id, deal]);
+
 
   // Debounced auto-save (only after hydration of the current deal)
   useEffect(() => {
