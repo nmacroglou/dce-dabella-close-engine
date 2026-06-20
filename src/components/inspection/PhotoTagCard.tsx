@@ -36,16 +36,32 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
   const tags = photo.inspection_tags ?? [];
   const severity = photo.severity ?? null;
   const include = photo.include_in_report ?? true;
-  const caption = photo.caption ?? "";
+  const dbCaption = photo.caption ?? "";
 
+  // Local caption state so typing stays snappy on the tablet and the wand can use the in-progress text.
+  const [caption, setCaption] = useState(dbCaption);
   const [newTag, setNewTag] = useState("");
+
+  // Pull in updates from the server when not actively editing the same value.
+  useEffect(() => {
+    setCaption((prev) => (prev === dbCaption ? prev : dbCaption));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dbCaption]);
+
+  function commitCaption(next: string) {
+    if (next === dbCaption) return;
+    patch({ caption: next });
+  }
 
   async function handleAnalyze() {
     const res = await analyze.mutateAsync({
       photo_id: photo.id,
       storage_path: photo.storage_path,
       report_type: reportType,
+      user_hint: caption.trim() || undefined,
+      existing_tags: tags,
     });
+    setCaption(res.caption);
     await update.mutateAsync({
       photo_id: photo.id,
       deal_id: photo.deal_id,
@@ -63,7 +79,10 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
       photo_id: photo.id,
       storage_path: photo.storage_path,
       report_type: reportType,
+      user_hint: caption.trim() || undefined,
+      existing_tags: tags,
     });
+    setCaption(res.caption);
     await update.mutateAsync({
       photo_id: photo.id,
       deal_id: photo.deal_id,
@@ -101,24 +120,27 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder="Caption (one factual sentence)"
+      <div className="flex items-start gap-2">
+        <Textarea
+          placeholder="Type what you see — the wand will refine it with the photo."
           value={caption}
-          onChange={(e) => patch({ caption: e.target.value })}
-          className="h-8 text-xs flex-1"
+          onChange={(e) => setCaption(e.target.value)}
+          onBlur={(e) => commitCaption(e.target.value)}
+          rows={3}
+          className="flex-1 min-h-[72px] text-sm leading-snug resize-y"
         />
         <Button
           size="sm"
-          variant="ghost"
-          className="h-8 w-8 p-0 shrink-0"
+          variant="secondary"
+          className="h-10 w-10 p-0 shrink-0"
           onClick={handleCaptionOnly}
           disabled={analyze.isPending}
-          title="AI inspect & caption"
+          title={caption.trim() ? "Refine my note with the photo" : "AI write caption from photo"}
         >
-          {analyze.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 text-primary" />}
+          {analyze.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4 text-primary" />}
         </Button>
       </div>
+
 
       <div className="flex flex-wrap gap-1">
         {tags.map((t) => (
