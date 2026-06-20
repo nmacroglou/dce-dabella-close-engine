@@ -104,6 +104,10 @@ export default memo(function CommissionSheet() {
   const [sheet, setSheet] = useState<CommissionSheetInputs>(emptyCommissionSheet());
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydratedDealId = useRef<string | null>(null);
+  // Remember the last values we mirrored from the Presentation tab so we can
+  // distinguish "still mirror-owned" from "rep has manually edited this cell".
+  const lastMirrored = useRef<{ worth: number; sold: number } | null>(null);
+
 
   // Hydrate ONCE per active deal. Auto-fill from engine_state only if the
   // saved sheet is still completely empty (first time opening this deal).
@@ -126,18 +130,25 @@ export default memo(function CommissionSheet() {
           : deal.selected_option === "C"
           ? Number(deal.price_c ?? 0)
           : Number(deal.price_a ?? 0);
+      const worth = Number(engine.priceA ?? deal.price_a ?? 0);
+      const sold = Number(deal.closed_amount ?? 0) || selectedPrice;
       setSheet({
         ...emptyCommissionSheet(),
         ...saved,
-        project_price: Number(engine.priceA ?? 0),
-        contract_roof: selectedPrice,
-        project_roof: Number(engine.priceA ?? 0),
+        project_price: worth,
+        contract_roof: sold,
+        project_roof: worth,
       });
+      lastMirrored.current = { worth, sold };
     } else {
       setSheet({ ...emptyCommissionSheet(), ...saved });
+      // Treat previously-saved values as mirror-owned so live updates can flow
+      // until the rep actually edits them.
+      lastMirrored.current = { worth: saved.project_roof, sold: saved.contract_roof };
     }
     hydratedDealId.current = deal.id;
   }, [deal]);
+
 
   // Reset hydration flag when switching deals
   useEffect(() => {
@@ -147,10 +158,11 @@ export default memo(function CommissionSheet() {
     }
   }, [activeDealId]);
 
-  // Live-mirror selection + discount from the Presentation tab into the
-  // Roof "Worth" / "Sold For" cells — but ONLY fills cells the rep hasn't
-  // touched yet (sticky). Once a number is in the cell, upstream changes
-  // never overwrite it.
+  // Live-mirror the selected option + discounted "sold for" from the Presentation
+  // tab into the Roof "Worth" / "Sold For" cells. We remember the last values we
+  // pushed in — if the rep hasn't changed those cells since, we keep mirroring.
+  // Once the rep types a different number, that manual override sticks and
+  // upstream changes stop overwriting it.
   useEffect(() => {
     if (!deal || hydratedDealId.current !== deal.id) return;
     const opt = deal.selected_option;
@@ -159,14 +171,22 @@ export default memo(function CommissionSheet() {
       opt === "B" ? Number(deal.price_b ?? 0)
       : opt === "C" ? Number(deal.price_c ?? 0)
       : Number(deal.price_a ?? 0);
-    const sold = Number(deal.closed_amount ?? worth);
+    const sold = Number(deal.closed_amount ?? 0) || worth;
+    if (!worth && !sold) return;
+
     setSheet((prev) => {
-      const nextWorth = prev.project_roof > 0 ? prev.project_roof : worth;
-      const nextSold = prev.contract_roof > 0 ? prev.contract_roof : sold;
+      const last = lastMirrored.current;
+      // Cell is "mirror-owned" when it's still empty OR still matches what we last pushed.
+      const worthOwnsMirror = prev.project_roof === 0 || (last && prev.project_roof === last.worth);
+      const soldOwnsMirror = prev.contract_roof === 0 || (last && prev.contract_roof === last.sold);
+      const nextWorth = worthOwnsMirror ? worth : prev.project_roof;
+      const nextSold = soldOwnsMirror ? sold : prev.contract_roof;
       if (nextWorth === prev.project_roof && nextSold === prev.contract_roof) return prev;
+      lastMirrored.current = { worth: nextWorth, sold: nextSold };
       return { ...prev, project_roof: nextWorth, contract_roof: nextSold };
     });
-  }, [deal?.selected_option, deal?.closed_amount, deal?.price_a, deal?.price_b, deal?.price_c, deal?.id]);
+  }, [deal?.selected_option, deal?.closed_amount, deal?.price_a, deal?.price_b, deal?.price_c, deal?.id, deal]);
+
 
   // Debounced auto-save (only after hydration of the current deal)
   useEffect(() => {
