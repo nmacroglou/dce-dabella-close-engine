@@ -142,23 +142,25 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
       </div>
 
 
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1.5 items-center">
         {tags.map((t) => (
-          <span key={t} className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+          <span key={t} className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded bg-primary/10 text-primary">
             {prettyTag(t)}
-            <button onClick={() => removeTag(t)} className="opacity-60 hover:opacity-100" aria-label={`Remove ${t}`}>
-              <X className="h-2.5 w-2.5" />
+            <button onClick={() => removeTag(t)} className="opacity-60 hover:opacity-100 p-0.5" aria-label={`Remove ${t}`}>
+              <X className="h-3 w-3" />
             </button>
           </span>
         ))}
         <input
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
+          onBlur={() => { if (newTag.trim()) addTag(); }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
-          placeholder="+ tag"
-          className="text-[10px] px-1.5 py-0.5 rounded border border-dashed border-border bg-transparent w-16 outline-none focus:border-primary"
+          placeholder="+ add tag"
+          className="text-xs px-2 py-1 h-8 rounded border border-dashed border-border bg-transparent w-28 outline-none focus:border-primary"
         />
       </div>
+
 
       <div className="flex items-center gap-2 flex-wrap">
         <Select
