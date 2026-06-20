@@ -104,6 +104,10 @@ export default memo(function CommissionSheet() {
   const [sheet, setSheet] = useState<CommissionSheetInputs>(emptyCommissionSheet());
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydratedDealId = useRef<string | null>(null);
+  // Remember the last values we mirrored from the Presentation tab so we can
+  // distinguish "still mirror-owned" from "rep has manually edited this cell".
+  const lastMirrored = useRef<{ worth: number; sold: number } | null>(null);
+
 
   // Hydrate ONCE per active deal. Auto-fill from engine_state only if the
   // saved sheet is still completely empty (first time opening this deal).
