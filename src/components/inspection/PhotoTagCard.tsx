@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Sparkles, X, Loader2, Trash2, Wand2 } from "lucide-react";
 import type { DealPhoto } from "@/hooks/useDealPhotos";
 import { useDeleteDealPhoto } from "@/hooks/useDealPhotos";
@@ -6,7 +6,7 @@ import { useAnalyzePhoto, useUpdatePhotoTags } from "@/hooks/useInspection";
 import type { InspectionReportType } from "@/data/inspectionTemplates";
 import { prettyTag, SEVERITY_LABEL } from "@/data/inspectionTemplates";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
