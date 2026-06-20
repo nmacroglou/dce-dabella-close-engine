@@ -8,6 +8,8 @@ interface ReqBody {
   photo_url?: string;
   image_data_url?: string;
   report_type?: ReportType;
+  user_hint?: string;
+  existing_tags?: string[];
 }
 
 const TAXONOMY: Record<ReportType, string> = {
@@ -84,7 +86,18 @@ Deno.serve(async (req) => {
           {
             role: "user",
             content: [
-              { type: "text", text: "Analyze this photo and return tags, severity, and caption." },
+              {
+                type: "text",
+                text: [
+                  "Analyze this photo and return tags, severity, and caption.",
+                  body.user_hint?.trim()
+                    ? `\nThe inspector has written this note about the photo — treat it as ground truth, build on it, refine the wording, and make sure the caption reflects what they observed:\n"""${body.user_hint.trim()}"""`
+                    : "",
+                  body.existing_tags?.length
+                    ? `\nExisting tags the inspector already applied (keep relevant ones, add or remove as warranted): ${body.existing_tags.join(", ")}`
+                    : "",
+                ].filter(Boolean).join("\n"),
+              },
               { type: "image_url", image_url: { url: imageUrl, detail: "low" } },
             ],
           },

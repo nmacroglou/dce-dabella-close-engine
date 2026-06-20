@@ -151,6 +151,8 @@ export function useAnalyzePhoto() {
       photo_id: string;
       storage_path: string;
       report_type: InspectionReportType;
+      user_hint?: string;
+      existing_tags?: string[];
     }) => {
       // Resize in the browser so the edge function never loads camera-sized images into memory.
       const { data: signed, error: signErr } = await supabase.storage
@@ -163,7 +165,12 @@ export function useAnalyzePhoto() {
       const imageDataUrl = await imageUrlToDataUrl(signed.signedUrl);
 
       const { data, error } = await supabase.functions.invoke("inspect-photo", {
-        body: { image_data_url: imageDataUrl, report_type: input.report_type },
+        body: {
+          image_data_url: imageDataUrl,
+          report_type: input.report_type,
+          user_hint: input.user_hint,
+          existing_tags: input.existing_tags,
+        },
       });
       if (error) throw new Error(await functionErrorMessage(error, "AI tagging failed"));
       return data as { tags: string[]; severity: "low" | "moderate" | "high"; caption: string };
