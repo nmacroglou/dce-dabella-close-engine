@@ -163,7 +163,6 @@ export default memo(function CommissionSheet() {
   // pushed in — if the rep hasn't changed those cells since, we keep mirroring.
   // Once the rep types a different number, that manual override sticks and
   // upstream changes stop overwriting it.
-  const lastMirrored = useRef<{ worth: number; sold: number } | null>(null);
   useEffect(() => {
     if (!deal || hydratedDealId.current !== deal.id) return;
     const opt = deal.selected_option;
