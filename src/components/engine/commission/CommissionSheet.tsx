@@ -126,18 +126,25 @@ export default memo(function CommissionSheet() {
           : deal.selected_option === "C"
           ? Number(deal.price_c ?? 0)
           : Number(deal.price_a ?? 0);
+      const worth = Number(engine.priceA ?? deal.price_a ?? 0);
+      const sold = Number(deal.closed_amount ?? 0) || selectedPrice;
       setSheet({
         ...emptyCommissionSheet(),
         ...saved,
-        project_price: Number(engine.priceA ?? 0),
-        contract_roof: selectedPrice,
-        project_roof: Number(engine.priceA ?? 0),
+        project_price: worth,
+        contract_roof: sold,
+        project_roof: worth,
       });
+      lastMirrored.current = { worth, sold };
     } else {
       setSheet({ ...emptyCommissionSheet(), ...saved });
+      // Treat previously-saved values as mirror-owned so live updates can flow
+      // until the rep actually edits them.
+      lastMirrored.current = { worth: saved.project_roof, sold: saved.contract_roof };
     }
     hydratedDealId.current = deal.id;
   }, [deal]);
+
 
   // Reset hydration flag when switching deals
   useEffect(() => {
