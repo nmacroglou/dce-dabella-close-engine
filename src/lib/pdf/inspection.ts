@@ -305,11 +305,11 @@ function drawBlock(pdf: jsPDF, heading: string, text: string, y: number): number
     pageBg(pdf);
     y = 22;
   }
-  eyebrow(pdf, heading, 22, y, LIME_DEEP, 7);
-  setBodyFont(pdf, 9.5);
+  eyebrow(pdf, heading, 22, y, LIME_DEEP, 7.5);
+  setBodyFont(pdf, 10);
   setColor(pdf, GRAPHITE);
   const lines = pdf.splitTextToSize(text, PW - 44);
-  let cy = y + 6;
+  let cy = y + 7;
   for (const ln of lines) {
     if (cy > PH - 22) {
       pdf.addPage();
@@ -317,9 +317,9 @@ function drawBlock(pdf: jsPDF, heading: string, text: string, y: number): number
       cy = 22;
     }
     pdf.text(ln, 22, cy);
-    cy += 5;
+    cy += 5.4;
   }
-  return cy + 6;
+  return cy + 7;
 }
 
 function drawFooters(pdf: jsPDF) {
