@@ -10,7 +10,7 @@ import AppHeader from "@/components/AppHeader";
 import {
   Loader2, Target, DollarSign, Award,
   Flame, Clock, AlertCircle, Trophy, Sparkles, ArrowUpRight,
-  Zap, Activity, Hourglass, Wallet, Gauge, Pencil,
+  Zap, Activity, Hourglass, Wallet, Gauge, Pencil, ClipboardCheck,
 } from "lucide-react";
 import { fmt, pct } from "@/lib/format";
 import { OBJECTIONS } from "@/data/objections";
