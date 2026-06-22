@@ -288,35 +288,45 @@ function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string)
   y = drawBlock(pdf, "Limitations", input.sections.limitations, y);
 
   if (input.rep && (input.rep.name || input.rep.email || input.rep.phone)) {
-    if (y + 30 > PH - 24) {
+    const bannerH = 30;
+    if (y + bannerH + 4 > PH - 24) {
       pdf.addPage();
       pageBg(pdf);
       y = 22;
     }
-    rounded(pdf, 22, y, PW - 44, 26, 2, FOREST_INK);
+    rounded(pdf, 22, y, PW - 44, bannerH, 2, FOREST_INK);
+
+    // Reserved logo slot — aspect-preserved, never overlaps text.
+    const slotX = 28;
+    const slotW = 22;
+    const slotH = 14;
+    const textX = slotX + slotW + 10;
     try {
       if (logoDataUrl) {
-        // Preserve native aspect so the wordmark doesn't squish into a square.
         const props = pdf.getImageProperties(logoDataUrl);
-        const maxH = 14;
-        const maxW = 22;
         const ratio = props.width / props.height;
-        let lw = maxH * ratio;
-        let lh = maxH;
-        if (lw > maxW) { lw = maxW; lh = maxW / ratio; }
-        pdf.addImage(logoDataUrl, "PNG", 27, y + (26 - lh) / 2, lw, lh);
+        let lw = slotH * ratio;
+        let lh = slotH;
+        if (lw > slotW) { lw = slotW; lh = slotW / ratio; }
+        const lx = slotX + (slotW - lw) / 2;
+        const ly = y + (bannerH - lh) / 2;
+        pdf.addImage(logoDataUrl, "PNG", lx, ly, lw, lh);
       }
     } catch { /* ignore */ }
-    setDisplayFont(pdf, 9);
+
+    // Subtle divider between logo slot and text block
+    hairline(pdf, slotX + slotW + 4, y + 7, slotX + slotW + 4, y + bannerH - 7, [60, 95, 65], 0.25);
+
+    setDisplayFont(pdf, 7.5);
     setColor(pdf, LIME);
-    trackedText(pdf, "YOUR DABELLA CONSULTANT", 48, y + 9, { charSpace: 0.5 });
-    setBodyFont(pdf, 10, "bold");
+    trackedText(pdf, "YOUR DABELLA CONSULTANT", textX, y + 10, { charSpace: 0.55 });
+    setBodyFont(pdf, 10.5, "bold");
     setColor(pdf, WHITE);
-    pdf.text(input.rep.name || "DaBella Team", 48, y + 16);
-    setBodyFont(pdf, 8);
+    pdf.text(input.rep.name || "DaBella Team", textX, y + 18);
+    setBodyFont(pdf, 8.5);
     setColor(pdf, [200, 215, 200]);
     const contact = [input.rep.phone, input.rep.email].filter(Boolean).join("   ·   ");
-    pdf.text(contact, 48, y + 21);
+    pdf.text(contact, textX, y + 24);
   }
 }
 
