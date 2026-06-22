@@ -36,6 +36,10 @@ export interface DashboardStats {
   totalDeals: number;
   totalWon: number;
   allTimeRevenue: number;
+  // Inspection adoption — deals with at least one uploaded + tagged photo
+  inspectionReportsCount: number;
+  inspectionAdoptionPct: number;
+  inspectionReportsThisMonth: number;
 }
 
 const startOfMonth = () => {
@@ -63,16 +67,25 @@ export function useDashboardStats() {
     queryFn: async (): Promise<DashboardStats> => {
       let dealsQ = supabase.from("deals").select("*");
       let objQ = supabase.from("deal_objections").select("*");
+      let photosQ = supabase
+        .from("deal_photos")
+        .select("deal_id, inspection_tags, created_at")
+        .not("inspection_tags", "is", null);
       if (effectiveRepId) {
         dealsQ = dealsQ.eq("rep_id", effectiveRepId);
         objQ = objQ.eq("rep_id", effectiveRepId);
+        photosQ = photosQ.eq("rep_id", effectiveRepId);
       }
-      const [dealsRes, objectionsRes] = await Promise.all([dealsQ, objQ]);
+      const [dealsRes, objectionsRes, photosRes] = await Promise.all([dealsQ, objQ, photosQ]);
       if (dealsRes.error) throw dealsRes.error;
       if (objectionsRes.error) throw objectionsRes.error;
+      if (photosRes.error) throw photosRes.error;
 
       const deals = (dealsRes.data ?? []) as unknown as Deal[];
       const objections = (objectionsRes.data ?? []) as DealObjection[];
+      const taggedPhotos = (photosRes.data ?? []) as {
+        deal_id: string; inspection_tags: string[] | null; created_at: string;
+      }[];
 
       const monthStart = startOfMonth();
       const weekStart = daysAgo(7);
@@ -169,6 +182,24 @@ export function useDashboardStats() {
         .filter((d) => d.stage === "won")
         .reduce((sum, d) => sum + (d.closed_amount ?? 0), 0);
 
+      // Inspection report adoption — a "report" exists when a deal has at
+      // least one photo with one or more tags (i.e. the rep actually
+      // documented findings, not just snapped a picture).
+      const dealIdSet = new Set(deals.map((d) => d.id));
+      const inspectedDealIds = new Set<string>();
+      const inspectedDealIdsThisMonth = new Set<string>();
+      for (const p of taggedPhotos) {
+        if (!p.deal_id || !dealIdSet.has(p.deal_id)) continue;
+        const tags = Array.isArray(p.inspection_tags) ? p.inspection_tags : [];
+        if (tags.length === 0) continue;
+        inspectedDealIds.add(p.deal_id);
+        if (p.created_at >= monthStart) inspectedDealIdsThisMonth.add(p.deal_id);
+      }
+      const inspectionReportsCount = inspectedDealIds.size;
+      const inspectionAdoptionPct =
+        deals.length > 0 ? inspectionReportsCount / deals.length : 0;
+      const inspectionReportsThisMonth = inspectedDealIdsThisMonth.size;
+
       return {
         monthDealsRun: monthDeals.length,
         monthClosed: closedThisMonthWon.length,
@@ -191,6 +222,9 @@ export function useDashboardStats() {
         totalDeals: deals.length,
         totalWon,
         allTimeRevenue,
+        inspectionReportsCount,
+        inspectionAdoptionPct,
+        inspectionReportsThisMonth,
       };
     },
   });
