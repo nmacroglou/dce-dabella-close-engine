@@ -248,7 +248,9 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
         rw.forEach((chip) => {
           rounded(pdf, tx + chip.x, ry2, chip.w, tagH, 1.2, CREAM, MIST);
           setColor(pdf, LIME_DEEP);
-          trackedText(pdf, chip.label, tx + chip.x + 3.5, ry2 + 3.6, { charSpace: 0.4 });
+          trackedText(pdf, chip.label, tx + chip.x + TAG_PAD_X, ry2 + 3.6, {
+            charSpace: TAG_CHAR_SPACE,
+          });
         });
       });
       if (overflow > 0) {
@@ -256,11 +258,16 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
         const usedW = lastRow.reduce((acc, c) => Math.max(acc, c.x + c.w), 0);
         const overflowLabel = `+${overflow}`;
         setDisplayFont(pdf, 7);
-        const ow = pdf.getTextWidth(overflowLabel) + 6;
+        const ow =
+          pdf.getTextWidth(overflowLabel) +
+          Math.max(0, overflowLabel.length - 1) * 0.3 +
+          TAG_PAD_X * 2;
         if (usedW + tagGapX + ow <= tw) {
           const ry2 = cursorY + (tagRows.length - 1) * (tagH + tagGapY);
           setColor(pdf, SLATE);
-          trackedText(pdf, overflowLabel, tx + usedW + tagGapX + 1, ry2 + 3.6, { charSpace: 0.3 });
+          trackedText(pdf, overflowLabel, tx + usedW + tagGapX + TAG_PAD_X, ry2 + 3.6, {
+            charSpace: 0.3,
+          });
         }
       }
     }
