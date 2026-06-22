@@ -36,6 +36,10 @@ export interface DashboardStats {
   totalDeals: number;
   totalWon: number;
   allTimeRevenue: number;
+  // Inspection adoption — deals with at least one uploaded + tagged photo
+  inspectionReportsCount: number;
+  inspectionAdoptionPct: number;
+  inspectionReportsThisMonth: number;
 }
 
 const startOfMonth = () => {
