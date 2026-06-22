@@ -161,9 +161,15 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
     const captionLines: string[] = pdf.splitTextToSize(captionRaw, tw).slice(0, 4);
 
     setDisplayFont(pdf, 7);
+    const TAG_CHAR_SPACE = 0.4;
+    const TAG_PAD_X = 4; // mm per side inside chip
     const tagPieces = (photo.tags || []).map((t) => {
       const label = prettyTag(t).toUpperCase();
-      return { label, w: Math.min(pdf.getTextWidth(label) + 7, tw) };
+      // getTextWidth ignores charSpace, so add it back per gap so the chip
+      // border actually wraps the rendered glyphs.
+      const trackedW =
+        pdf.getTextWidth(label) + Math.max(0, label.length - 1) * TAG_CHAR_SPACE;
+      return { label, w: Math.min(trackedW + TAG_PAD_X * 2, tw) };
     });
 
     // Lay tag rows
