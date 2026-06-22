@@ -182,6 +182,24 @@ export function useDashboardStats() {
         .filter((d) => d.stage === "won")
         .reduce((sum, d) => sum + (d.closed_amount ?? 0), 0);
 
+      // Inspection report adoption — a "report" exists when a deal has at
+      // least one photo with one or more tags (i.e. the rep actually
+      // documented findings, not just snapped a picture).
+      const dealIdSet = new Set(deals.map((d) => d.id));
+      const inspectedDealIds = new Set<string>();
+      const inspectedDealIdsThisMonth = new Set<string>();
+      for (const p of taggedPhotos) {
+        if (!p.deal_id || !dealIdSet.has(p.deal_id)) continue;
+        const tags = Array.isArray(p.inspection_tags) ? p.inspection_tags : [];
+        if (tags.length === 0) continue;
+        inspectedDealIds.add(p.deal_id);
+        if (p.created_at >= monthStart) inspectedDealIdsThisMonth.add(p.deal_id);
+      }
+      const inspectionReportsCount = inspectedDealIds.size;
+      const inspectionAdoptionPct =
+        deals.length > 0 ? inspectionReportsCount / deals.length : 0;
+      const inspectionReportsThisMonth = inspectedDealIdsThisMonth.size;
+
       return {
         monthDealsRun: monthDeals.length,
         monthClosed: closedThisMonthWon.length,
