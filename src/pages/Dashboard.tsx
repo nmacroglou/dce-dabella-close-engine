@@ -611,8 +611,13 @@ export default function Dashboard() {
             sub="From first inspection" accent="text-primary" />
           <MiniStat icon={Trophy} label="All-time revenue" value={fmt(stats.allTimeRevenue)}
             sub={`${stats.totalWon} closed deals`} accent="text-success" />
-          <MiniStat icon={Award} label="Leaderboard" value="Coming"
-            sub="Anonymous ranks soon" accent="text-muted-foreground" />
+          <MiniStat
+            icon={ClipboardCheck}
+            label="Inspection reports"
+            value={`${stats.inspectionReportsCount}`}
+            sub={`${Math.round(stats.inspectionAdoptionPct * 100)}% of deals · ${stats.inspectionReportsThisMonth} this month`}
+            accent="text-primary"
+          />
         </div>
       </main>
     </div>
