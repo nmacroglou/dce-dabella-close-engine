@@ -137,69 +137,129 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
   pageBg(pdf);
   sectionHeader(pdf, "Section 2", "Findings", "Each photo below documents an observed condition.");
 
-  let y = 78;
   const cardW = PW - 44;
-  const cardH = 75;
-  const imgW = 60;
-  const imgH = 60;
+  const cardX = 22;
+  const padX = 5;
+  const imgW = 62;
+  const imgH = 62;
+  const gap = 7;
+  const tx = cardX + padX + imgW + gap;
+  const tw = cardW - padX * 2 - imgW - gap;
+  const captionLine = 4.9;
+  const tagH = 5.2;
+  const tagGapX = 2;
+  const tagGapY = 2;
+  const sevH = 6;
+  const minCardH = imgH + padX * 2 + 4; // image-driven floor
+
+  let y = 78;
 
   for (const photo of photos) {
+    // Pre-measure caption + tags so the card hugs its content.
+    setBodyFont(pdf, 9.5, "bold");
+    const captionRaw = photo.caption || "Reference photo";
+    const captionLines: string[] = pdf.splitTextToSize(captionRaw, tw).slice(0, 4);
+
+    setDisplayFont(pdf, 7);
+    const tagPieces = (photo.tags || []).map((t) => {
+      const label = prettyTag(t).toUpperCase();
+      return { label, w: Math.min(pdf.getTextWidth(label) + 7, tw) };
+    });
+
+    // Lay tag rows
+    const tagRows: { label: string; w: number; x: number }[][] = [];
+    let row: typeof tagRows[number] = [];
+    let rowW = 0;
+    const maxTagRows = 3;
+    let overflow = 0;
+    for (let i = 0; i < tagPieces.length; i++) {
+      const p = tagPieces[i];
+      const next = rowW === 0 ? p.w : rowW + tagGapX + p.w;
+      if (next > tw) {
+        if (row.length) tagRows.push(row);
+        if (tagRows.length >= maxTagRows) { overflow = tagPieces.length - i; break; }
+        row = [{ ...p, x: 0 }];
+        rowW = p.w;
+      } else {
+        row.push({ ...p, x: rowW === 0 ? 0 : rowW + tagGapX });
+        rowW = next;
+      }
+    }
+    if (row.length && tagRows.length < maxTagRows) tagRows.push(row);
+
+    const captionH = captionLines.length * captionLine;
+    const tagsBlockH = tagRows.length * tagH + Math.max(0, tagRows.length - 1) * tagGapY;
+    const textBlockH = sevH + 4 + captionH + (tagRows.length ? 4 + tagsBlockH : 0);
+    const cardH = Math.max(minCardH, padX * 2 + textBlockH);
+
     if (y + cardH > PH - 24) {
       pdf.addPage();
       pageBg(pdf);
       y = 22;
     }
-    rounded(pdf, 22, y, cardW, cardH, 2, CARD, MIST);
+
+    // Card shell
+    rounded(pdf, cardX, y, cardW, cardH, 2.4, CARD, MIST);
 
     // Image
     try {
       if (photo.signedUrl) {
         const dataUrl = await loadImageDataUrl(photo.signedUrl);
-        if (dataUrl) pdf.addImage(dataUrl, "JPEG", 26, y + 7.5, imgW, imgH, undefined, "FAST");
+        if (dataUrl) pdf.addImage(dataUrl, "JPEG", cardX + padX, y + padX, imgW, imgH, undefined, "FAST");
       }
     } catch (e) {
       console.warn("photo failed to render", e);
     }
 
-    const tx = 26 + imgW + 8;
-    const tw = cardW - imgW - 16;
+    let cursorY = y + padX;
 
     // Severity badge
     if (photo.severity) {
       const sevColor = SEV_COLOR[photo.severity];
+      const badgeW = 26;
       setFill(pdf, sevColor);
-      pdf.roundedRect(tx, y + 7, 22, 5.5, 1.4, 1.4, "F");
-      setDisplayFont(pdf, 6.5);
+      pdf.roundedRect(tx, cursorY, badgeW, sevH, 1.6, 1.6, "F");
+      setDisplayFont(pdf, 7);
       setColor(pdf, WHITE);
-      trackedText(pdf, SEV_LABEL[photo.severity], tx + 11, y + 10.8, { align: "center", charSpace: 0.4 });
-    }
-
-    // Caption
-    setBodyFont(pdf, 9, "bold");
-    setColor(pdf, INK);
-    const captionLines = pdf.splitTextToSize(photo.caption || "Reference photo", tw);
-    captionLines.slice(0, 3).forEach((ln: string, i: number) => pdf.text(ln, tx, y + 20 + i * 4.6));
-
-    // Tags
-    if (photo.tags.length > 0) {
-      let tagY = y + 20 + Math.min(captionLines.length, 3) * 4.6 + 4;
-      let tagX = tx;
-      setDisplayFont(pdf, 6.5);
-      photo.tags.slice(0, 6).forEach((tag) => {
-        const label = prettyTag(tag).toUpperCase();
-        const w = pdf.getTextWidth(label) + 6;
-        if (tagX + w > tx + tw) {
-          tagX = tx;
-          tagY += 6;
-        }
-        rounded(pdf, tagX, tagY - 3.6, w, 4.6, 1, CREAM, MIST);
-        setColor(pdf, LIME_DEEP);
-        trackedText(pdf, label, tagX + 3, tagY, { charSpace: 0.35 });
-        tagX += w + 2;
+      trackedText(pdf, SEV_LABEL[photo.severity], tx + badgeW / 2, cursorY + 4.1, {
+        align: "center", charSpace: 0.5,
       });
     }
+    cursorY += sevH + 4;
 
-    y += cardH + 5;
+    // Caption
+    setBodyFont(pdf, 9.5, "bold");
+    setColor(pdf, INK);
+    captionLines.forEach((ln, i) => pdf.text(ln, tx, cursorY + 3.6 + i * captionLine));
+    cursorY += captionH;
+
+    // Tags
+    if (tagRows.length) {
+      cursorY += 4;
+      setDisplayFont(pdf, 7);
+      tagRows.forEach((rw, ri) => {
+        const ry2 = cursorY + ri * (tagH + tagGapY);
+        rw.forEach((chip) => {
+          rounded(pdf, tx + chip.x, ry2, chip.w, tagH, 1.2, CREAM, MIST);
+          setColor(pdf, LIME_DEEP);
+          trackedText(pdf, chip.label, tx + chip.x + 3.5, ry2 + 3.6, { charSpace: 0.4 });
+        });
+      });
+      if (overflow > 0) {
+        const lastRow = tagRows[tagRows.length - 1];
+        const usedW = lastRow.reduce((acc, c) => Math.max(acc, c.x + c.w), 0);
+        const overflowLabel = `+${overflow}`;
+        setDisplayFont(pdf, 7);
+        const ow = pdf.getTextWidth(overflowLabel) + 6;
+        if (usedW + tagGapX + ow <= tw) {
+          const ry2 = cursorY + (tagRows.length - 1) * (tagH + tagGapY);
+          setColor(pdf, SLATE);
+          trackedText(pdf, overflowLabel, tx + usedW + tagGapX + 1, ry2 + 3.6, { charSpace: 0.3 });
+        }
+      }
+    }
+
+    y += cardH + 6;
   }
 }
 
@@ -245,11 +305,11 @@ function drawBlock(pdf: jsPDF, heading: string, text: string, y: number): number
     pageBg(pdf);
     y = 22;
   }
-  eyebrow(pdf, heading, 22, y, LIME_DEEP, 7);
-  setBodyFont(pdf, 9.5);
+  eyebrow(pdf, heading, 22, y, LIME_DEEP, 7.5);
+  setBodyFont(pdf, 10);
   setColor(pdf, GRAPHITE);
   const lines = pdf.splitTextToSize(text, PW - 44);
-  let cy = y + 6;
+  let cy = y + 7;
   for (const ln of lines) {
     if (cy > PH - 22) {
       pdf.addPage();
@@ -257,9 +317,9 @@ function drawBlock(pdf: jsPDF, heading: string, text: string, y: number): number
       cy = 22;
     }
     pdf.text(ln, 22, cy);
-    cy += 5;
+    cy += 5.4;
   }
-  return cy + 6;
+  return cy + 7;
 }
 
 function drawFooters(pdf: jsPDF) {
