@@ -222,6 +222,9 @@ export function useDashboardStats() {
         totalDeals: deals.length,
         totalWon,
         allTimeRevenue,
+        inspectionReportsCount,
+        inspectionAdoptionPct,
+        inspectionReportsThisMonth,
       };
     },
   });
