@@ -161,9 +161,15 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
     const captionLines: string[] = pdf.splitTextToSize(captionRaw, tw).slice(0, 4);
 
     setDisplayFont(pdf, 7);
+    const TAG_CHAR_SPACE = 0.4;
+    const TAG_PAD_X = 4; // mm per side inside chip
     const tagPieces = (photo.tags || []).map((t) => {
       const label = prettyTag(t).toUpperCase();
-      return { label, w: Math.min(pdf.getTextWidth(label) + 7, tw) };
+      // getTextWidth ignores charSpace, so add it back per gap so the chip
+      // border actually wraps the rendered glyphs.
+      const trackedW =
+        pdf.getTextWidth(label) + Math.max(0, label.length - 1) * TAG_CHAR_SPACE;
+      return { label, w: Math.min(trackedW + TAG_PAD_X * 2, tw) };
     });
 
     // Lay tag rows
@@ -242,7 +248,9 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
         rw.forEach((chip) => {
           rounded(pdf, tx + chip.x, ry2, chip.w, tagH, 1.2, CREAM, MIST);
           setColor(pdf, LIME_DEEP);
-          trackedText(pdf, chip.label, tx + chip.x + 3.5, ry2 + 3.6, { charSpace: 0.4 });
+          trackedText(pdf, chip.label, tx + chip.x + TAG_PAD_X, ry2 + 3.6, {
+            charSpace: TAG_CHAR_SPACE,
+          });
         });
       });
       if (overflow > 0) {
@@ -250,11 +258,16 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
         const usedW = lastRow.reduce((acc, c) => Math.max(acc, c.x + c.w), 0);
         const overflowLabel = `+${overflow}`;
         setDisplayFont(pdf, 7);
-        const ow = pdf.getTextWidth(overflowLabel) + 6;
+        const ow =
+          pdf.getTextWidth(overflowLabel) +
+          Math.max(0, overflowLabel.length - 1) * 0.3 +
+          TAG_PAD_X * 2;
         if (usedW + tagGapX + ow <= tw) {
           const ry2 = cursorY + (tagRows.length - 1) * (tagH + tagGapY);
           setColor(pdf, SLATE);
-          trackedText(pdf, overflowLabel, tx + usedW + tagGapX + 1, ry2 + 3.6, { charSpace: 0.3 });
+          trackedText(pdf, overflowLabel, tx + usedW + tagGapX + TAG_PAD_X, ry2 + 3.6, {
+            charSpace: 0.3,
+          });
         }
       }
     }
@@ -282,7 +295,17 @@ function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string)
     }
     rounded(pdf, 22, y, PW - 44, 26, 2, FOREST_INK);
     try {
-      if (logoDataUrl) pdf.addImage(logoDataUrl, "PNG", 27, y + 5, 16, 16);
+      if (logoDataUrl) {
+        // Preserve native aspect so the wordmark doesn't squish into a square.
+        const props = pdf.getImageProperties(logoDataUrl);
+        const maxH = 14;
+        const maxW = 22;
+        const ratio = props.width / props.height;
+        let lw = maxH * ratio;
+        let lh = maxH;
+        if (lw > maxW) { lw = maxW; lh = maxW / ratio; }
+        pdf.addImage(logoDataUrl, "PNG", 27, y + (26 - lh) / 2, lw, lh);
+      }
     } catch { /* ignore */ }
     setDisplayFont(pdf, 9);
     setColor(pdf, LIME);
