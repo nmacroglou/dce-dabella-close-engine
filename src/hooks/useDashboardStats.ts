@@ -67,16 +67,25 @@ export function useDashboardStats() {
     queryFn: async (): Promise<DashboardStats> => {
       let dealsQ = supabase.from("deals").select("*");
       let objQ = supabase.from("deal_objections").select("*");
+      let photosQ = supabase
+        .from("deal_photos")
+        .select("deal_id, inspection_tags, created_at")
+        .not("inspection_tags", "is", null);
       if (effectiveRepId) {
         dealsQ = dealsQ.eq("rep_id", effectiveRepId);
         objQ = objQ.eq("rep_id", effectiveRepId);
+        photosQ = photosQ.eq("rep_id", effectiveRepId);
       }
-      const [dealsRes, objectionsRes] = await Promise.all([dealsQ, objQ]);
+      const [dealsRes, objectionsRes, photosRes] = await Promise.all([dealsQ, objQ, photosQ]);
       if (dealsRes.error) throw dealsRes.error;
       if (objectionsRes.error) throw objectionsRes.error;
+      if (photosRes.error) throw photosRes.error;
 
       const deals = (dealsRes.data ?? []) as unknown as Deal[];
       const objections = (objectionsRes.data ?? []) as DealObjection[];
+      const taggedPhotos = (photosRes.data ?? []) as {
+        deal_id: string; inspection_tags: string[] | null; created_at: string;
+      }[];
 
       const monthStart = startOfMonth();
       const weekStart = daysAgo(7);
