@@ -295,7 +295,17 @@ function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string)
     }
     rounded(pdf, 22, y, PW - 44, 26, 2, FOREST_INK);
     try {
-      if (logoDataUrl) pdf.addImage(logoDataUrl, "PNG", 27, y + 5, 16, 16);
+      if (logoDataUrl) {
+        // Preserve native aspect so the wordmark doesn't squish into a square.
+        const props = pdf.getImageProperties(logoDataUrl);
+        const maxH = 14;
+        const maxW = 22;
+        const ratio = props.width / props.height;
+        let lw = maxH * ratio;
+        let lh = maxH;
+        if (lw > maxW) { lw = maxW; lh = maxW / ratio; }
+        pdf.addImage(logoDataUrl, "PNG", 27, y + (26 - lh) / 2, lw, lh);
+      }
     } catch { /* ignore */ }
     setDisplayFont(pdf, 9);
     setColor(pdf, LIME);
