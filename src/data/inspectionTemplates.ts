@@ -10,6 +10,24 @@ export const REPORT_TYPE_LABELS: Record<InspectionReportType, string> = {
   paint: "Paint Inspection",
 };
 
+/** Short trade name without the "Inspection" suffix, used when combining multiple report types. */
+export const REPORT_TYPE_SHORT: Record<InspectionReportType, string> = {
+  roof: "Roof",
+  windows: "Windows",
+  bath: "Bath",
+  solar: "Solar",
+  siding: "Siding",
+  stucco: "Stucco",
+  paint: "Paint",
+};
+
+/** Join one or more report types into a single human label, e.g. "Roof + Siding Inspection". */
+export function combinedReportLabel(types: InspectionReportType[]): string {
+  const list = (types && types.length ? types : ["roof" as InspectionReportType]);
+  if (list.length === 1) return REPORT_TYPE_LABELS[list[0]];
+  return `${list.map((t) => REPORT_TYPE_SHORT[t]).join(" + ")} Inspection`;
+}
+
 export interface InspectionSections {
   executive_summary: string;
   inspection_scope: string;
