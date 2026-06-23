@@ -62,13 +62,11 @@ export default function InspectionPanel({ dealId }: Props) {
   const [draft, setDraft] = useState<InspectionSections | null>(null);
   const sections = draft ?? inspection?.sections ?? TEMPLATES[reportType];
 
-  const filteredPhotos = useMemo(
-    () => photos.filter((p) => {
-      const rt = (p as { inspection_report_type?: string | null }).inspection_report_type;
-      return !rt || rt === reportType;
-    }),
-    [photos, reportType],
-  );
+  // Photos are agnostic to report type — every photo on the deal is available
+  // regardless of which report the rep is currently editing. The rep can still
+  // tag/exclude per photo, and `inspection_report_type` is set on auto-tag for
+  // record-keeping, but it never hides photos from the panel.
+  const filteredPhotos = photos;
 
   const setField = useCallback((key: keyof InspectionSections, v: string) => {
     setDraft((prev) => ({ ...(prev ?? sections), [key]: v }));
