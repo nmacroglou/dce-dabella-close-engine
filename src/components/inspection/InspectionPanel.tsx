@@ -111,13 +111,13 @@ export default function InspectionPanel({ dealId }: Props) {
     for (const p of filteredPhotos) {
       try {
         const res = await analyze.mutateAsync({
-          photo_id: p.id, storage_path: p.storage_path, report_type: reportType,
+          photo_id: p.id, storage_path: p.storage_path, report_type: primaryType,
         });
         await updatePhoto.mutateAsync({
           photo_id: p.id, deal_id: dealId,
           patch: {
             inspection_tags: res.tags, severity: res.severity, caption: res.caption,
-            inspection_report_type: reportType,
+            inspection_report_type: primaryType,
           },
         });
       } catch (e) {
