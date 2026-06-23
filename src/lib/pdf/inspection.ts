@@ -11,7 +11,8 @@ import {
   setBodyFont, setColor, setDisplayFont, setFill, trackedText, vGradient,
 } from "./primitives";
 import {
-  REPORT_TYPE_LABELS, prettyTag, type InspectionReportType, type InspectionSections,
+  REPORT_TYPE_LABELS, combinedReportLabel, prettyTag,
+  type InspectionReportType, type InspectionSections,
 } from "@/data/inspectionTemplates";
 import type { RepInfo } from "./build";
 
@@ -25,10 +26,18 @@ export interface InspectionPhoto {
 export interface InspectionPdfInput {
   customerName: string;
   address: string;
-  reportType: InspectionReportType;
+  /** Single report type (legacy) — pass `reportTypes` for multi-trade reports. */
+  reportType?: InspectionReportType;
+  reportTypes?: InspectionReportType[];
   sections: InspectionSections;
   photos: InspectionPhoto[];
   rep?: RepInfo;
+}
+
+function resolveReportTypes(input: InspectionPdfInput): InspectionReportType[] {
+  if (input.reportTypes && input.reportTypes.length) return input.reportTypes;
+  if (input.reportType) return [input.reportType];
+  return ["roof"];
 }
 
 const SEV_COLOR = { low: SLATE, moderate: ACCENT, high: NEGATIVE } as const;
@@ -82,10 +91,15 @@ function drawCover(pdf: jsPDF, input: InspectionPdfInput) {
   setColor(pdf, LIME);
   trackedText(pdf, "PROFESSIONAL INSPECTION REPORT", 22, 100, { charSpace: 0.6 });
 
-  setDisplayFont(pdf, 38);
+  const titleTypes = resolveReportTypes(input);
+  const title = combinedReportLabel(titleTypes);
+  // Scale down the headline when multiple trades are combined so it fits on one line.
+  const titleSize = title.length > 28 ? 26 : title.length > 22 ? 30 : 38;
+  setDisplayFont(pdf, titleSize);
   setColor(pdf, WHITE);
-  pdf.text(REPORT_TYPE_LABELS[input.reportType], 22, 132);
+  pdf.text(title, 22, 132);
   pdf.text("& Home Protection", 22, 154);
+  void REPORT_TYPE_LABELS;
 
   setFill(pdf, ACCENT);
   pdf.rect(22, 162, 30, 1.2, "F");

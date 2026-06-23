@@ -9,7 +9,8 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  REPORT_TYPE_LABELS, type InspectionReportType, type InspectionSections,
+  combinedReportLabel,
+  type InspectionReportType, type InspectionSections,
 } from "@/data/inspectionTemplates";
 import type { InspectionPhoto } from "@/lib/pdf/inspection";
 
@@ -20,7 +21,7 @@ interface Props {
   onOpenChange: (o: boolean) => void;
   customerName: string;
   address: string;
-  reportType: InspectionReportType;
+  reportTypes: InspectionReportType[];
   sections: InspectionSections;
   photos: InspectionPhoto[];
 }
@@ -28,7 +29,7 @@ interface Props {
 type Mode = "menu" | "email" | "sms";
 
 export default function ShareInspectionPdfDialog({
-  open, onOpenChange, customerName, address, reportType, sections, photos,
+  open, onOpenChange, customerName, address, reportTypes, sections, photos,
 }: Props) {
   const { user } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
@@ -72,11 +73,12 @@ export default function ShareInspectionPdfDialog({
 
   const rep = { name: repName.trim(), email: repEmail.trim(), phone: repPhone.trim() };
   const safeName = (customerName || "Homeowner").replace(/\s+/g, "_");
-  const filename = `${safeName}_${REPORT_TYPE_LABELS[reportType].replace(/\s+/g, "_")}.pdf`;
+  const combinedLabel = combinedReportLabel(reportTypes);
+  const filename = `${safeName}_${combinedLabel.replace(/\s+/g, "_")}.pdf`;
 
   async function build() {
     const builder = await loadPdfBuilder();
-    return builder({ customerName, address, reportType, sections, photos, rep });
+    return builder({ customerName, address, reportTypes, sections, photos, rep });
   }
 
   async function ensureUpload(): Promise<string | null> {
@@ -133,7 +135,7 @@ export default function ShareInspectionPdfDialog({
     if (!email) return;
     const url = await ensureUpload();
     if (!url) return;
-    const subject = `Your DaBella ${REPORT_TYPE_LABELS[reportType]} Inspection Report`;
+    const subject = `Your DaBella ${combinedLabel} Report`;
     const body = `Hi ${customerName},\n\nThank you for your time today. Here is your personalized DaBella inspection report:\n\n${url}\n\nLet me know if you have any questions.\n\n— ${rep.name || "Your DaBella Team"}${rep.phone ? `\n${rep.phone}` : ""}`;
     window.location.href = buildEmailLink(email, subject, body);
   }
@@ -161,7 +163,7 @@ export default function ShareInspectionPdfDialog({
         <DialogHeader>
           <DialogTitle>Share Inspection Report</DialogTitle>
           <DialogDescription>
-            Send {customerName}'s {REPORT_TYPE_LABELS[reportType].toLowerCase()} inspection via email, text, or download.
+            Send {customerName}'s {combinedLabel.toLowerCase()} via email, text, or download.
           </DialogDescription>
         </DialogHeader>
 

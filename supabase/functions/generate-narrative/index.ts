@@ -11,10 +11,31 @@ interface PhotoFinding {
 
 interface ReqBody {
   report_type?: ReportType;
+  report_types?: ReportType[];
   photos?: PhotoFinding[];
   tweak?: string;
   current_sections?: Record<string, string>;
 }
+
+const TRADE_LABEL: Record<ReportType, string> = {
+  roof: "roofing",
+  windows: "window",
+  bath: "bath / wet-area",
+  solar: "GAF Energy Roof",
+  siding: "siding",
+  stucco: "stucco / exterior coating",
+  paint: "exterior paint",
+};
+
+const VOICE: Record<ReportType, string> = {
+  roof: "Use roofer's language: shingles, underlayment, flashing, valleys, ridge caps, boot flashing, granule loss, deck. Frame findings around water-entry risk and system longevity. When relevant, frame solar as part of the GAF Energy Roof — a complete roofing system.",
+  windows: "Use fenestration language: sash, jamb, sill, IGU seal, weatherstripping, egress, U-value, low-E. Frame findings around air/water infiltration, energy loss, and operation.",
+  bath: "Use wet-area language: pan, surround, valve, drain, grout, caulk joint, ventilation. Frame findings around water management, mold risk, and longevity.",
+  solar: "Treat the array as part of the GAF Energy Roof — a complete roofing system. Use roofing language for the roof plane plus PV-integrated shingle language. Frame findings around the roof envelope first, generation second.",
+  siding: "Use cladding language: panels, trim, J-channel, housewrap, flashing, fastener pattern. Frame findings around water management, structural protection, and curb appeal.",
+  stucco: "Frame the report around chips, cracks, fading, staining, and surface imperfections that DaBella's Forever Paint system can correct and protect. Every finding is a cosmetic condition the Forever Paint system is built to solve — speak in those terms, not in moisture-intrusion language.",
+  paint: "Use coatings language: substrate, prep, primer, top coat, mil thickness, adhesion. Frame findings around why the finish is failing and what proper prep + product solves.",
+};
 
 const PERSONA: Record<ReportType, string> = {
   roof: "You are a grand master roofing inspector with 100 years of cumulative trade lineage — asphalt, tile, metal, low-slope, and the GAF Energy Roof solar-shingle system (treated as a complete roofing system, never a bolt-on solar array). You speak plainly to homeowners — confident, calm, never alarmist, never salesy.",
@@ -40,11 +61,17 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     const body = (await req.json()) as ReqBody;
-    const rt = body.report_type;
-    if (!rt || !["roof", "windows", "bath", "solar", "siding", "stucco", "paint"].includes(rt)) {
-      return new Response(JSON.stringify({ error: "invalid report_type" }),
+    const VALID: ReportType[] = ["roof", "windows", "bath", "solar", "siding", "stucco", "paint"];
+    // Accept either `report_types: ReportType[]` (multi-select) or legacy `report_type: ReportType`.
+    const rawTypes = (body.report_types && body.report_types.length)
+      ? body.report_types
+      : (body.report_type ? [body.report_type] : []);
+    const types = Array.from(new Set(rawTypes.filter((t): t is ReportType => VALID.includes(t as ReportType))));
+    if (types.length === 0) {
+      return new Response(JSON.stringify({ error: "invalid report_type(s)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    const primary = types[0];
     const photos = body.photos ?? [];
     const tweak = (body.tweak ?? "").trim();
 
@@ -60,16 +87,26 @@ Deno.serve(async (req) => {
         }).join("\n")
       : "(no tagged photos provided)";
 
-    const system = `${PERSONA[rt]}
+    const personaBlock = types.map((t) => `• ${PERSONA[t]}`).join("\n");
+    const voiceBlock = types.map((t) => `• ${TRADE_LABEL[t].toUpperCase()}: ${VOICE[t]}`).join("\n");
+    const tradeList = types.map((t) => TRADE_LABEL[t]).join(" + ");
 
-You are drafting a homeowner-facing ${rt} inspection report. Write each section in the inspector's voice — plainspoken, specific, evidence-first. Anchor every claim in the photo findings provided. Do NOT invent defects that are not represented in the findings. Do NOT use marketing language or hedging filler ("appears to", "may possibly"). Keep each section concise (2–5 sentences except next_steps which can be a short numbered list).`;
+    const system = `You are speaking as a single, unified DaBella inspector who carries every one of the following trade lineages at once. Do not introduce yourself — write the report straight.
 
-    const user = `Report type: ${rt}
+${personaBlock}
+
+You are drafting a homeowner-facing ${tradeList} inspection report${types.length > 1 ? " (multiple trades combined into one report)" : ""}. Write each section in the inspector's voice — plainspoken, specific, evidence-first. Anchor every claim in the photo findings provided. Do NOT invent defects that are not represented in the findings. Do NOT use marketing language or hedging filler ("appears to", "may possibly"). Keep each section concise (2–5 sentences except next_steps which can be a short numbered list).
+
+Trade-specific voice and terminology to use throughout:
+${voiceBlock}`;
+
+    const user = `Report type(s): ${types.join(", ")}
 
 Photo findings (use these as the factual basis — synthesize across photos, do not just list them):
 ${findingsBlock}
 ${tweak ? `\nHomeowner / job context to incorporate (treat as authoritative — material, age, prior repairs, etc.):\n${tweak}\n` : ""}
-Write the seven report sections. Cite the conditions you see in the findings (e.g. "boot flashing cracked at the plumbing vent, granule loss across the south slope"). The executive summary and professional opinion should reference the strongest observed conditions. Recommended scope should match the severity pattern.`;
+Write the seven report sections. Cite the conditions you see in the findings using the trade-specific vocabulary above (e.g. roofing terms for roof findings, fenestration terms for window findings, Forever Paint framing for stucco findings). The executive summary and professional opinion should reference the strongest observed conditions across ${types.length > 1 ? "all selected trades" : "the trade"}. Recommended scope should match the severity pattern${types.length > 1 ? " and explicitly cover each trade involved (" + tradeList + ")" : ""}.`;
+    void primary;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

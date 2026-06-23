@@ -1,11 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, Loader2, Sparkles, FileText, Wand2, Share2 } from "lucide-react";
+import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -14,8 +11,8 @@ import {
   useAnalyzePhoto, useGenerateNarrative, useInspection, useSaveInspection, useUpdatePhotoTags,
 } from "@/hooks/useInspection";
 import {
-  REPORT_TYPE_LABELS, TEMPLATES, type InspectionReportType,
-  type InspectionSections,
+  REPORT_TYPE_LABELS, REPORT_TYPE_SHORT, TEMPLATES,
+  type InspectionReportType, type InspectionSections,
 } from "@/data/inspectionTemplates";
 import PhotoTagCard from "./PhotoTagCard";
 import { useDeals } from "@/hooks/useDeals";
@@ -40,12 +37,30 @@ const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
 ];
 
 export default function InspectionPanel({ dealId }: Props) {
-  const [reportType, setReportType] = useState<InspectionReportType>("roof");
+  // Multi-select: rep can pick one or more trades for a single combined report.
+  const [reportTypes, setReportTypes] = useState<InspectionReportType[]>(["roof"]);
+  const primaryType = reportTypes[0] ?? "roof";
+
+  // Local override for sections so the textarea stays responsive while typing.
+  const [draft, setDraft] = useState<InspectionSections | null>(null);
+
+  const toggleReportType = useCallback((rt: InspectionReportType) => {
+    setDraft(null);
+    setReportTypes((prev) => {
+      if (prev.includes(rt)) {
+        // Always keep at least one selected.
+        const next = prev.filter((t) => t !== rt);
+        return next.length ? next : prev;
+      }
+      return [...prev, rt];
+    });
+  }, []);
 
   const { data: deals = [] } = useDeals();
   const deal = useMemo(() => deals.find((d) => d.id === dealId), [deals, dealId]);
 
-  const { data: inspection } = useInspection(dealId, reportType);
+  // Sections persist per-primary type. Switching trades re-loads from the primary.
+  const { data: inspection } = useInspection(dealId, primaryType);
   const { data: photos = [] } = useDealPhotos(dealId);
   const upload = useUploadDealPhoto();
   const save = useSaveInspection();
@@ -58,14 +73,10 @@ export default function InspectionPanel({ dealId }: Props) {
   const [tweakOpen, setTweakOpen] = useState(false);
   const [tweakText, setTweakText] = useState("");
 
-  // Local override for sections so the textarea stays responsive while typing.
-  const [draft, setDraft] = useState<InspectionSections | null>(null);
-  const sections = draft ?? inspection?.sections ?? TEMPLATES[reportType];
+  const sections = draft ?? inspection?.sections ?? TEMPLATES[primaryType];
 
   // Photos are agnostic to report type — every photo on the deal is available
-  // regardless of which report the rep is currently editing. The rep can still
-  // tag/exclude per photo, and `inspection_report_type` is set on auto-tag for
-  // record-keeping, but it never hides photos from the panel.
+  // regardless of which trades are currently selected.
   const filteredPhotos = photos;
 
   const setField = useCallback((key: keyof InspectionSections, v: string) => {
@@ -73,9 +84,13 @@ export default function InspectionPanel({ dealId }: Props) {
   }, [sections]);
 
   async function handleSave() {
-    await save.mutateAsync({ deal_id: dealId, report_type: reportType, sections });
+    // Save the same narrative under every selected trade so re-opening any one of
+    // them rehydrates the combined report.
+    for (const rt of reportTypes) {
+      await save.mutateAsync({ deal_id: dealId, report_type: rt, sections });
+    }
     setDraft(null);
-    toast.success("Inspection saved");
+    toast.success(reportTypes.length > 1 ? `Saved across ${reportTypes.length} trades` : "Inspection saved");
   }
 
   async function handleUpload(files: FileList | null) {
@@ -96,13 +111,13 @@ export default function InspectionPanel({ dealId }: Props) {
     for (const p of filteredPhotos) {
       try {
         const res = await analyze.mutateAsync({
-          photo_id: p.id, storage_path: p.storage_path, report_type: reportType,
+          photo_id: p.id, storage_path: p.storage_path, report_type: primaryType,
         });
         await updatePhoto.mutateAsync({
           photo_id: p.id, deal_id: dealId,
           patch: {
             inspection_tags: res.tags, severity: res.severity, caption: res.caption,
-            inspection_report_type: reportType,
+            inspection_report_type: primaryType,
           },
         });
       } catch (e) {
@@ -146,7 +161,7 @@ export default function InspectionPanel({ dealId }: Props) {
     const toastId = toast.loading("Drafting narrative from photos…");
     try {
       const res = await generateNarrative.mutateAsync({
-        report_type: reportType,
+        report_types: reportTypes,
         photos: tagged,
         tweak,
       });
@@ -185,18 +200,31 @@ export default function InspectionPanel({ dealId }: Props) {
   return (
     <div className="space-y-6">
       <div className="card-premium p-5 flex flex-wrap items-end gap-4">
-        <div className="flex-1 min-w-[180px]">
+        <div className="flex-1 min-w-[260px]">
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Report Type
+            Report Type{reportTypes.length > 1 ? "s" : ""} <span className="text-muted-foreground/70 font-normal normal-case tracking-normal">— select all that apply</span>
           </Label>
-          <Select value={reportType} onValueChange={(v) => { setDraft(null); setReportType(v as InspectionReportType); }}>
-            <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {REPORT_OPTIONS.map((rt) => (
-                <SelectItem key={rt} value={rt}>{REPORT_TYPE_LABELS[rt]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {REPORT_OPTIONS.map((rt) => {
+              const active = reportTypes.includes(rt);
+              return (
+                <button
+                  type="button"
+                  key={rt}
+                  onClick={() => toggleReportType(rt)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                    active
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-card text-foreground/80 border-border hover:border-primary/40 hover:bg-muted"
+                  }`}
+                  aria-pressed={active}
+                >
+                  {active && <Check className="h-3 w-3" />}
+                  {REPORT_TYPE_SHORT[rt]}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <input
@@ -241,7 +269,7 @@ export default function InspectionPanel({ dealId }: Props) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredPhotos.map((p) => (
-              <PhotoTagCard key={p.id} photo={p} reportType={reportType} />
+              <PhotoTagCard key={p.id} photo={p} reportType={primaryType} />
             ))}
           </div>
         )}
@@ -277,7 +305,7 @@ export default function InspectionPanel({ dealId }: Props) {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Pre-filled with a {REPORT_TYPE_LABELS[reportType].toLowerCase()} template. Use <span className="font-semibold text-foreground">Draft from photos</span> to synthesize the narrative from the tagged photos above, or <span className="font-semibold text-foreground">Tweak</span> to steer it (material, age, prior repairs, etc.).
+          Drafted in the voice of {reportTypes.length > 1 ? "the combined " + reportTypes.map((t) => REPORT_TYPE_SHORT[t]).join(" + ") + " inspectors" : "a " + REPORT_TYPE_LABELS[primaryType].toLowerCase() + " inspector"}. Use <span className="font-semibold text-foreground">Draft from photos</span> to synthesize the narrative from the tagged photos above, or <span className="font-semibold text-foreground">Tweak</span> to steer it (material, age, prior repairs, etc.).
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {SECTION_FIELDS.map(({ key, label }) => (
@@ -305,7 +333,7 @@ export default function InspectionPanel({ dealId }: Props) {
           <Textarea
             rows={5}
             placeholder={
-              reportType === "roof"
+              reportTypes.includes("roof")
                 ? "e.g. 3-tab asphalt shingle, ~22 years old, prior patch over the south valley, homeowner reports staining in the master bedroom ceiling."
                 : "e.g. material, age, prior repairs, homeowner concerns…"
             }
@@ -335,7 +363,7 @@ export default function InspectionPanel({ dealId }: Props) {
         onOpenChange={setShareOpen}
         customerName={customerName}
         address={deal?.address ?? ""}
-        reportType={reportType}
+        reportTypes={reportTypes}
         sections={sections}
         photos={sharePhotos}
       />
