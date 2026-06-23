@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  REPORT_TYPE_LABELS, combinedReportLabel,
+  combinedReportLabel,
   type InspectionReportType, type InspectionSections,
 } from "@/data/inspectionTemplates";
 import type { InspectionPhoto } from "@/lib/pdf/inspection";
