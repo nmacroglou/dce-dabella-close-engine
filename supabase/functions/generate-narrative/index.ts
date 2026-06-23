@@ -61,11 +61,17 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
     const body = (await req.json()) as ReqBody;
-    const rt = body.report_type;
-    if (!rt || !["roof", "windows", "bath", "solar", "siding", "stucco", "paint"].includes(rt)) {
-      return new Response(JSON.stringify({ error: "invalid report_type" }),
+    const VALID: ReportType[] = ["roof", "windows", "bath", "solar", "siding", "stucco", "paint"];
+    // Accept either `report_types: ReportType[]` (multi-select) or legacy `report_type: ReportType`.
+    const rawTypes = (body.report_types && body.report_types.length)
+      ? body.report_types
+      : (body.report_type ? [body.report_type] : []);
+    const types = Array.from(new Set(rawTypes.filter((t): t is ReportType => VALID.includes(t as ReportType))));
+    if (types.length === 0) {
+      return new Response(JSON.stringify({ error: "invalid report_type(s)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    const primary = types[0];
     const photos = body.photos ?? [];
     const tweak = (body.tweak ?? "").trim();
 
@@ -81,16 +87,26 @@ Deno.serve(async (req) => {
         }).join("\n")
       : "(no tagged photos provided)";
 
-    const system = `${PERSONA[rt]}
+    const personaBlock = types.map((t) => `• ${PERSONA[t]}`).join("\n");
+    const voiceBlock = types.map((t) => `• ${TRADE_LABEL[t].toUpperCase()}: ${VOICE[t]}`).join("\n");
+    const tradeList = types.map((t) => TRADE_LABEL[t]).join(" + ");
 
-You are drafting a homeowner-facing ${rt} inspection report. Write each section in the inspector's voice — plainspoken, specific, evidence-first. Anchor every claim in the photo findings provided. Do NOT invent defects that are not represented in the findings. Do NOT use marketing language or hedging filler ("appears to", "may possibly"). Keep each section concise (2–5 sentences except next_steps which can be a short numbered list).`;
+    const system = `You are speaking as a single, unified DaBella inspector who carries every one of the following trade lineages at once. Do not introduce yourself — write the report straight.
 
-    const user = `Report type: ${rt}
+${personaBlock}
+
+You are drafting a homeowner-facing ${tradeList} inspection report${types.length > 1 ? " (multiple trades combined into one report)" : ""}. Write each section in the inspector's voice — plainspoken, specific, evidence-first. Anchor every claim in the photo findings provided. Do NOT invent defects that are not represented in the findings. Do NOT use marketing language or hedging filler ("appears to", "may possibly"). Keep each section concise (2–5 sentences except next_steps which can be a short numbered list).
+
+Trade-specific voice and terminology to use throughout:
+${voiceBlock}`;
+
+    const user = `Report type(s): ${types.join(", ")}
 
 Photo findings (use these as the factual basis — synthesize across photos, do not just list them):
 ${findingsBlock}
 ${tweak ? `\nHomeowner / job context to incorporate (treat as authoritative — material, age, prior repairs, etc.):\n${tweak}\n` : ""}
-Write the seven report sections. Cite the conditions you see in the findings (e.g. "boot flashing cracked at the plumbing vent, granule loss across the south slope"). The executive summary and professional opinion should reference the strongest observed conditions. Recommended scope should match the severity pattern.`;
+Write the seven report sections. Cite the conditions you see in the findings using the trade-specific vocabulary above (e.g. roofing terms for roof findings, fenestration terms for window findings, Forever Paint framing for stucco findings). The executive summary and professional opinion should reference the strongest observed conditions across ${types.length > 1 ? "all selected trades" : "the trade"}. Recommended scope should match the severity pattern${types.length > 1 ? " and explicitly cover each trade involved (" + tradeList + ")" : ""}.`;
+    void primary;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
