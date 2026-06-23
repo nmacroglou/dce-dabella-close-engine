@@ -163,7 +163,7 @@ export default function ShareInspectionPdfDialog({
         <DialogHeader>
           <DialogTitle>Share Inspection Report</DialogTitle>
           <DialogDescription>
-            Send {customerName}'s {REPORT_TYPE_LABELS[reportType].toLowerCase()} inspection via email, text, or download.
+            Send {customerName}'s {combinedLabel.toLowerCase()} via email, text, or download.
           </DialogDescription>
         </DialogHeader>
 
