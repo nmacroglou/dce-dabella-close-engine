@@ -1,11 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, Loader2, Sparkles, FileText, Wand2, Share2 } from "lucide-react";
+import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -14,8 +11,8 @@ import {
   useAnalyzePhoto, useGenerateNarrative, useInspection, useSaveInspection, useUpdatePhotoTags,
 } from "@/hooks/useInspection";
 import {
-  REPORT_TYPE_LABELS, TEMPLATES, type InspectionReportType,
-  type InspectionSections,
+  REPORT_TYPE_LABELS, REPORT_TYPE_SHORT, TEMPLATES,
+  type InspectionReportType, type InspectionSections,
 } from "@/data/inspectionTemplates";
 import PhotoTagCard from "./PhotoTagCard";
 import { useDeals } from "@/hooks/useDeals";
