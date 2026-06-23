@@ -11,10 +11,31 @@ interface PhotoFinding {
 
 interface ReqBody {
   report_type?: ReportType;
+  report_types?: ReportType[];
   photos?: PhotoFinding[];
   tweak?: string;
   current_sections?: Record<string, string>;
 }
+
+const TRADE_LABEL: Record<ReportType, string> = {
+  roof: "roofing",
+  windows: "window",
+  bath: "bath / wet-area",
+  solar: "GAF Energy Roof",
+  siding: "siding",
+  stucco: "stucco / exterior coating",
+  paint: "exterior paint",
+};
+
+const VOICE: Record<ReportType, string> = {
+  roof: "Use roofer's language: shingles, underlayment, flashing, valleys, ridge caps, boot flashing, granule loss, deck. Frame findings around water-entry risk and system longevity. When relevant, frame solar as part of the GAF Energy Roof — a complete roofing system.",
+  windows: "Use fenestration language: sash, jamb, sill, IGU seal, weatherstripping, egress, U-value, low-E. Frame findings around air/water infiltration, energy loss, and operation.",
+  bath: "Use wet-area language: pan, surround, valve, drain, grout, caulk joint, ventilation. Frame findings around water management, mold risk, and longevity.",
+  solar: "Treat the array as part of the GAF Energy Roof — a complete roofing system. Use roofing language for the roof plane plus PV-integrated shingle language. Frame findings around the roof envelope first, generation second.",
+  siding: "Use cladding language: panels, trim, J-channel, housewrap, flashing, fastener pattern. Frame findings around water management, structural protection, and curb appeal.",
+  stucco: "Frame the report around chips, cracks, fading, staining, and surface imperfections that DaBella's Forever Paint system can correct and protect. Every finding is a cosmetic condition the Forever Paint system is built to solve — speak in those terms, not in moisture-intrusion language.",
+  paint: "Use coatings language: substrate, prep, primer, top coat, mil thickness, adhesion. Frame findings around why the finish is failing and what proper prep + product solves.",
+};
 
 const PERSONA: Record<ReportType, string> = {
   roof: "You are a grand master roofing inspector with 100 years of cumulative trade lineage — asphalt, tile, metal, low-slope, and the GAF Energy Roof solar-shingle system (treated as a complete roofing system, never a bolt-on solar array). You speak plainly to homeowners — confident, calm, never alarmist, never salesy.",
