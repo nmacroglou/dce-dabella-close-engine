@@ -135,7 +135,7 @@ export default function ShareInspectionPdfDialog({
     if (!email) return;
     const url = await ensureUpload();
     if (!url) return;
-    const subject = `Your DaBella ${REPORT_TYPE_LABELS[reportType]} Inspection Report`;
+    const subject = `Your DaBella ${combinedLabel} Report`;
     const body = `Hi ${customerName},\n\nThank you for your time today. Here is your personalized DaBella inspection report:\n\n${url}\n\nLet me know if you have any questions.\n\n— ${rep.name || "Your DaBella Team"}${rep.phone ? `\n${rep.phone}` : ""}`;
     window.location.href = buildEmailLink(email, subject, body);
   }
