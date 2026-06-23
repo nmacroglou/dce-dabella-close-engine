@@ -305,7 +305,7 @@ export default function InspectionPanel({ dealId }: Props) {
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Pre-filled with a {REPORT_TYPE_LABELS[reportType].toLowerCase()} template. Use <span className="font-semibold text-foreground">Draft from photos</span> to synthesize the narrative from the tagged photos above, or <span className="font-semibold text-foreground">Tweak</span> to steer it (material, age, prior repairs, etc.).
+          Drafted in the voice of {reportTypes.length > 1 ? "the combined " + reportTypes.map((t) => REPORT_TYPE_SHORT[t]).join(" + ") + " inspectors" : "a " + REPORT_TYPE_LABELS[primaryType].toLowerCase() + " inspector"}. Use <span className="font-semibold text-foreground">Draft from photos</span> to synthesize the narrative from the tagged photos above, or <span className="font-semibold text-foreground">Tweak</span> to steer it (material, age, prior repairs, etc.).
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {SECTION_FIELDS.map(({ key, label }) => (
