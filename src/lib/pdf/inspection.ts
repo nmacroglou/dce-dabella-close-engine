@@ -91,10 +91,15 @@ function drawCover(pdf: jsPDF, input: InspectionPdfInput) {
   setColor(pdf, LIME);
   trackedText(pdf, "PROFESSIONAL INSPECTION REPORT", 22, 100, { charSpace: 0.6 });
 
-  setDisplayFont(pdf, 38);
+  const titleTypes = resolveReportTypes(input);
+  const title = combinedReportLabel(titleTypes);
+  // Scale down the headline when multiple trades are combined so it fits on one line.
+  const titleSize = title.length > 28 ? 26 : title.length > 22 ? 30 : 38;
+  setDisplayFont(pdf, titleSize);
   setColor(pdf, WHITE);
-  pdf.text(REPORT_TYPE_LABELS[input.reportType], 22, 132);
+  pdf.text(title, 22, 132);
   pdf.text("& Home Protection", 22, 154);
+  void REPORT_TYPE_LABELS;
 
   setFill(pdf, ACCENT);
   pdf.rect(22, 162, 30, 1.2, "F");
