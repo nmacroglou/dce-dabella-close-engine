@@ -200,18 +200,31 @@ export default function InspectionPanel({ dealId }: Props) {
   return (
     <div className="space-y-6">
       <div className="card-premium p-5 flex flex-wrap items-end gap-4">
-        <div className="flex-1 min-w-[180px]">
+        <div className="flex-1 min-w-[260px]">
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Report Type
+            Report Type{reportTypes.length > 1 ? "s" : ""} <span className="text-muted-foreground/70 font-normal normal-case tracking-normal">— select all that apply</span>
           </Label>
-          <Select value={reportType} onValueChange={(v) => { setDraft(null); setReportType(v as InspectionReportType); }}>
-            <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {REPORT_OPTIONS.map((rt) => (
-                <SelectItem key={rt} value={rt}>{REPORT_TYPE_LABELS[rt]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {REPORT_OPTIONS.map((rt) => {
+              const active = reportTypes.includes(rt);
+              return (
+                <button
+                  type="button"
+                  key={rt}
+                  onClick={() => toggleReportType(rt)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                    active
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-card text-foreground/80 border-border hover:border-primary/40 hover:bg-muted"
+                  }`}
+                  aria-pressed={active}
+                >
+                  {active && <Check className="h-3 w-3" />}
+                  {REPORT_TYPE_SHORT[rt]}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <input
