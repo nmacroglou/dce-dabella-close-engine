@@ -161,7 +161,7 @@ export default function InspectionPanel({ dealId }: Props) {
     const toastId = toast.loading("Drafting narrative from photos…");
     try {
       const res = await generateNarrative.mutateAsync({
-        report_type: reportType,
+        report_types: reportTypes,
         photos: tagged,
         tweak,
       });
