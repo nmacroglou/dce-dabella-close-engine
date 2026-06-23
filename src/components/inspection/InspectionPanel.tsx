@@ -363,7 +363,7 @@ export default function InspectionPanel({ dealId }: Props) {
         onOpenChange={setShareOpen}
         customerName={customerName}
         address={deal?.address ?? ""}
-        reportType={reportType}
+        reportTypes={reportTypes}
         sections={sections}
         photos={sharePhotos}
       />
