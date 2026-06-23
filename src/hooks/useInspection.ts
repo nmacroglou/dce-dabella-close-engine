@@ -183,7 +183,8 @@ export function useAnalyzePhoto() {
 export function useGenerateNarrative() {
   return useMutation({
     mutationFn: async (input: {
-      report_type: InspectionReportType;
+      report_type?: InspectionReportType;
+      report_types?: InspectionReportType[];
       photos: { caption?: string | null; tags?: string[] | null; severity?: "low" | "moderate" | "high" | null }[];
       tweak?: string;
     }) => {
