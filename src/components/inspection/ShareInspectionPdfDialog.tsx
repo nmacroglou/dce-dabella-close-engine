@@ -9,7 +9,8 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  REPORT_TYPE_LABELS, type InspectionReportType, type InspectionSections,
+  REPORT_TYPE_LABELS, combinedReportLabel,
+  type InspectionReportType, type InspectionSections,
 } from "@/data/inspectionTemplates";
 import type { InspectionPhoto } from "@/lib/pdf/inspection";
 
@@ -20,7 +21,7 @@ interface Props {
   onOpenChange: (o: boolean) => void;
   customerName: string;
   address: string;
-  reportType: InspectionReportType;
+  reportTypes: InspectionReportType[];
   sections: InspectionSections;
   photos: InspectionPhoto[];
 }
@@ -28,7 +29,7 @@ interface Props {
 type Mode = "menu" | "email" | "sms";
 
 export default function ShareInspectionPdfDialog({
-  open, onOpenChange, customerName, address, reportType, sections, photos,
+  open, onOpenChange, customerName, address, reportTypes, sections, photos,
 }: Props) {
   const { user } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
