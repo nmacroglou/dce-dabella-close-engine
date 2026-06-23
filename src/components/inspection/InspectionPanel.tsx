@@ -333,7 +333,7 @@ export default function InspectionPanel({ dealId }: Props) {
           <Textarea
             rows={5}
             placeholder={
-              reportType === "roof"
+              reportTypes.includes("roof")
                 ? "e.g. 3-tab asphalt shingle, ~22 years old, prior patch over the south valley, homeowner reports staining in the master bedroom ceiling."
                 : "e.g. material, age, prior repairs, homeowner concerns…"
             }
