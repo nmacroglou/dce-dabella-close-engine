@@ -73,11 +73,12 @@ export default function ShareInspectionPdfDialog({
 
   const rep = { name: repName.trim(), email: repEmail.trim(), phone: repPhone.trim() };
   const safeName = (customerName || "Homeowner").replace(/\s+/g, "_");
-  const filename = `${safeName}_${REPORT_TYPE_LABELS[reportType].replace(/\s+/g, "_")}.pdf`;
+  const combinedLabel = combinedReportLabel(reportTypes);
+  const filename = `${safeName}_${combinedLabel.replace(/\s+/g, "_")}.pdf`;
 
   async function build() {
     const builder = await loadPdfBuilder();
-    return builder({ customerName, address, reportType, sections, photos, rep });
+    return builder({ customerName, address, reportTypes, sections, photos, rep });
   }
 
   async function ensureUpload(): Promise<string | null> {
