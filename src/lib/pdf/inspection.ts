@@ -11,7 +11,8 @@ import {
   setBodyFont, setColor, setDisplayFont, setFill, trackedText, vGradient,
 } from "./primitives";
 import {
-  REPORT_TYPE_LABELS, prettyTag, type InspectionReportType, type InspectionSections,
+  REPORT_TYPE_LABELS, combinedReportLabel, prettyTag,
+  type InspectionReportType, type InspectionSections,
 } from "@/data/inspectionTemplates";
 import type { RepInfo } from "./build";
 
@@ -25,10 +26,18 @@ export interface InspectionPhoto {
 export interface InspectionPdfInput {
   customerName: string;
   address: string;
-  reportType: InspectionReportType;
+  /** Single report type (legacy) — pass `reportTypes` for multi-trade reports. */
+  reportType?: InspectionReportType;
+  reportTypes?: InspectionReportType[];
   sections: InspectionSections;
   photos: InspectionPhoto[];
   rep?: RepInfo;
+}
+
+function resolveReportTypes(input: InspectionPdfInput): InspectionReportType[] {
+  if (input.reportTypes && input.reportTypes.length) return input.reportTypes;
+  if (input.reportType) return [input.reportType];
+  return ["roof"];
 }
 
 const SEV_COLOR = { low: SLATE, moderate: ACCENT, high: NEGATIVE } as const;
