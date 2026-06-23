@@ -18,7 +18,7 @@ const TAXONOMY: Record<ReportType, string> = {
   bath: "tile_cracking, grout_failure, caulk_failure, mold_growth, water_staining, soft_subfloor, leak_at_valve, leak_at_drain, fixture_corrosion, glass_door_seal_worn, shower_pan_failure, ventilation_inadequate, tub_chip, surround_separation, accessibility_concern",
   solar: "panel_cracking, hotspot_discoloration, micro_crack, debris_shading, soiling, vegetation_shading, wiring_exposed, conduit_damage, mounting_loose, flashing_at_mount, inverter_fault_light, ground_wire_disconnect, junction_box_damaged, snow_load_concern, animal_intrusion",
   siding: "cracked_panel, loose_panel, missing_panel, buckling, warping, faded_finish, hail_damage, wind_damage, water_staining, rot_at_trim, fastener_pops, seam_gap, corner_post_damage, soffit_damage, fascia_damage, insect_damage, mold_or_mildew, housewrap_visible",
-  stucco: "hairline_crack, pattern_cracking, delamination, efflorescence, water_staining, dark_streaks, blistering, missing_sealant, flashing_gap, weep_screed_issue, control_joint_failure, spalling, soft_substrate, exposed_lath, impact_damage",
+  stucco: "chip, chipped_edge, hairline_crack, pattern_cracking, spider_cracking, structural_crack, surface_pitting, pockmark, fade, discoloration, sun_bleaching, dark_streaks, water_staining, dirt_accumulation, mildew_staining, efflorescence, blistering, peeling_coating, chalking, missing_sealant, caulk_failure, patch_mismatch, prior_repair_visible, impact_damage, scuff",
   paint: "peeling_paint, cracking_paint, blistering, chalking, fade, exposed_substrate, water_staining, caulk_failure, trim_decay, scuffs_or_scratches, inconsistent_finish, overspray, nail_pops_visible, mildew_growth",
 };
 
