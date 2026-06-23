@@ -37,12 +37,30 @@ const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
 ];
 
 export default function InspectionPanel({ dealId }: Props) {
-  const [reportType, setReportType] = useState<InspectionReportType>("roof");
+  // Multi-select: rep can pick one or more trades for a single combined report.
+  const [reportTypes, setReportTypes] = useState<InspectionReportType[]>(["roof"]);
+  const primaryType = reportTypes[0] ?? "roof";
+
+  // Local override for sections so the textarea stays responsive while typing.
+  const [draft, setDraft] = useState<InspectionSections | null>(null);
+
+  const toggleReportType = useCallback((rt: InspectionReportType) => {
+    setDraft(null);
+    setReportTypes((prev) => {
+      if (prev.includes(rt)) {
+        // Always keep at least one selected.
+        const next = prev.filter((t) => t !== rt);
+        return next.length ? next : prev;
+      }
+      return [...prev, rt];
+    });
+  }, []);
 
   const { data: deals = [] } = useDeals();
   const deal = useMemo(() => deals.find((d) => d.id === dealId), [deals, dealId]);
 
-  const { data: inspection } = useInspection(dealId, reportType);
+  // Sections persist per-primary type. Switching trades re-loads from the primary.
+  const { data: inspection } = useInspection(dealId, primaryType);
   const { data: photos = [] } = useDealPhotos(dealId);
   const upload = useUploadDealPhoto();
   const save = useSaveInspection();
@@ -55,14 +73,10 @@ export default function InspectionPanel({ dealId }: Props) {
   const [tweakOpen, setTweakOpen] = useState(false);
   const [tweakText, setTweakText] = useState("");
 
-  // Local override for sections so the textarea stays responsive while typing.
-  const [draft, setDraft] = useState<InspectionSections | null>(null);
-  const sections = draft ?? inspection?.sections ?? TEMPLATES[reportType];
+  const sections = draft ?? inspection?.sections ?? TEMPLATES[primaryType];
 
   // Photos are agnostic to report type — every photo on the deal is available
-  // regardless of which report the rep is currently editing. The rep can still
-  // tag/exclude per photo, and `inspection_report_type` is set on auto-tag for
-  // record-keeping, but it never hides photos from the panel.
+  // regardless of which trades are currently selected.
   const filteredPhotos = photos;
 
   const setField = useCallback((key: keyof InspectionSections, v: string) => {
@@ -70,9 +84,13 @@ export default function InspectionPanel({ dealId }: Props) {
   }, [sections]);
 
   async function handleSave() {
-    await save.mutateAsync({ deal_id: dealId, report_type: reportType, sections });
+    // Save the same narrative under every selected trade so re-opening any one of
+    // them rehydrates the combined report.
+    for (const rt of reportTypes) {
+      await save.mutateAsync({ deal_id: dealId, report_type: rt, sections });
+    }
     setDraft(null);
-    toast.success("Inspection saved");
+    toast.success(reportTypes.length > 1 ? `Saved across ${reportTypes.length} trades` : "Inspection saved");
   }
 
   async function handleUpload(files: FileList | null) {
