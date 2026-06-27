@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Sparkles, X, Loader2, Trash2, Wand2 } from "lucide-react";
 import type { DealPhoto } from "@/hooks/useDealPhotos";
 import { useDeleteDealPhoto } from "@/hooks/useDealPhotos";
