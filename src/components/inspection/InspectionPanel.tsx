@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp } from "lucide-react";
+import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
