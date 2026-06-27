@@ -406,10 +406,10 @@ export default function InspectionPanel({ dealId }: Props) {
       recommended_scope: baseScope ? `${baseScope}\n\n${scopeAdd}` : scopeAdd,
     });
 
-    // Cascade ONLY to FLIR photos — detect via tag, caption hint, or
-    // filename so non-thermal inspection photos are left exactly as the
-    // rep wrote them.
-    const captionLine = `FLIR thermal: wall surface running ~${avgDelta}°F over ambient. Projected post-Cool Series surface drop ~${avgReduction}°F (~${avgLoad}% cooling-load reduction on this elevation).`;
+    // Cascade ONLY to FLIR photos — this caption IS the Cool Series tie-down.
+    // The FLIR shot is the proof point that justifies the whole Cool Series
+    // recommendation, so the caption tells that full story (not just numbers).
+    const captionLine = `FLIR thermal proof — Cool Series tie-down. The thermal camera caught this wall running ~${avgDelta}°F over today's ambient — that's the radiant solar load being driven straight into the framing, sheathing, and conditioned interior, and it's exactly what the homeowner's AC is fighting through every peak hour. Faded, UV-burned stucco has lost its reflectivity, so virtually all of that energy transfers through the wall assembly.\n\nThis is precisely what DaBella's Cool Series Forever Paint is engineered to stop: independent reflectance testing supports a surface-temperature knockdown of roughly ${avgReduction}°F on the measured elevations, which translates to an estimated ${avgLoad}% reduction in cooling load on those walls. Cooler walls to the touch, shorter AC runtimes, and a measurably more comfortable home — this FLIR image is the documented, on-site evidence behind every Cool Series recommendation in this report.`;
     const isFlirPhoto = (p: typeof filteredPhotos[number]) => {
       const ext = p as { inspection_tags?: string[]; file_name?: string | null; storage_path?: string | null };
       const tagHit = (ext.inspection_tags ?? []).some((t) => /flir|thermal/i.test(t));
