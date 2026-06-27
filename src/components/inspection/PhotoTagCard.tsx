@@ -29,7 +29,7 @@ const SEV_TONE: Record<"low" | "moderate" | "high", string> = {
   high: "bg-destructive/10 text-destructive border-destructive/30",
 };
 
-function PhotoTagCardImpl({ photo, reportType }: Props) {
+function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
   const analyze = useAnalyzePhoto();
   const update = useUpdatePhotoTags();
   const del = useDeleteDealPhoto();
