@@ -41,6 +41,9 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
   // Local caption state so typing stays snappy on the tablet and the wand can use the in-progress text.
   const [caption, setCaption] = useState(dbCaption);
   const [newTag, setNewTag] = useState("");
+  // Per-photo cancel flag: when the user clicks the X mid-flight we ignore the
+  // returned result instead of writing it back to the photo.
+  const cancelRef = useRef(false);
 
   // Pull in updates from the server when not actively editing the same value.
   useEffect(() => {
@@ -53,42 +56,59 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
     patch({ caption: next });
   }
 
+  function cancelAnalyze() {
+    cancelRef.current = true;
+  }
+
   async function handleAnalyze() {
-    const res = await analyze.mutateAsync({
-      photo_id: photo.id,
-      storage_path: photo.storage_path,
-      report_type: reportType,
-      user_hint: caption.trim() || undefined,
-      existing_tags: tags,
-    });
-    setCaption(res.caption);
-    await update.mutateAsync({
-      photo_id: photo.id,
-      deal_id: photo.deal_id,
-      patch: {
-        inspection_tags: res.tags,
-        severity: res.severity,
-        caption: res.caption,
-        inspection_report_type: reportType,
-      },
-    });
+    cancelRef.current = false;
+    try {
+      const res = await analyze.mutateAsync({
+        photo_id: photo.id,
+        storage_path: photo.storage_path,
+        report_type: reportType,
+        user_hint: caption.trim() || undefined,
+        existing_tags: tags,
+      });
+      if (cancelRef.current) return;
+      setCaption(res.caption);
+      await update.mutateAsync({
+        photo_id: photo.id,
+        deal_id: photo.deal_id,
+        patch: {
+          inspection_tags: res.tags,
+          severity: res.severity,
+          caption: res.caption,
+          inspection_report_type: reportType,
+        },
+      });
+    } catch {
+      /* toast handled in hook */
+    }
   }
 
   async function handleCaptionOnly() {
-    const res = await analyze.mutateAsync({
-      photo_id: photo.id,
-      storage_path: photo.storage_path,
-      report_type: reportType,
-      user_hint: caption.trim() || undefined,
-      existing_tags: tags,
-    });
-    setCaption(res.caption);
-    await update.mutateAsync({
-      photo_id: photo.id,
-      deal_id: photo.deal_id,
-      patch: { caption: res.caption },
-    });
+    cancelRef.current = false;
+    try {
+      const res = await analyze.mutateAsync({
+        photo_id: photo.id,
+        storage_path: photo.storage_path,
+        report_type: reportType,
+        user_hint: caption.trim() || undefined,
+        existing_tags: tags,
+      });
+      if (cancelRef.current) return;
+      setCaption(res.caption);
+      await update.mutateAsync({
+        photo_id: photo.id,
+        deal_id: photo.deal_id,
+        patch: { caption: res.caption },
+      });
+    } catch {
+      /* toast handled in hook */
+    }
   }
+
 
   function patch(p: Parameters<typeof update.mutateAsync>[0]["patch"]) {
     update.mutate({ photo_id: photo.id, deal_id: photo.deal_id, patch: p });
