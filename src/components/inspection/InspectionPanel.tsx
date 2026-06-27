@@ -224,11 +224,15 @@ export default function InspectionPanel({ dealId }: Props) {
       return;
     }
     const toastId = toast.loading("Drafting narrative from photos…");
+    const finishNote = reportTypes.includes("stucco") && stuccoFinish
+      ? `Existing stucco finish texture confirmed by the rep: ${stuccoFinish}. Reference this finish by name throughout the report and do not mention any other finish.`
+      : "";
+    const mergedTweak = [tweak?.trim(), finishNote].filter(Boolean).join("\n\n");
     try {
       const res = await generateNarrative.mutateAsync({
         report_types: reportTypes,
         photos: tagged,
-        tweak,
+        tweak: mergedTweak || undefined,
       });
       setDraft(res.sections);
       toast.success("Narrative drafted — review and Save", { id: toastId });
