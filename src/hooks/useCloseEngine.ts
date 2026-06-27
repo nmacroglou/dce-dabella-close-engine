@@ -14,6 +14,8 @@ import {
   BATH_OPTION_NAME_DEFAULTS,
   SOLAR_OPTION_NAME_DEFAULTS,
   GUTTER_OPTION_NAME_DEFAULTS,
+  STUCCO_OPTION_NAME_DEFAULTS,
+  PAINT_OPTION_NAME_DEFAULTS,
   ALL_DEFAULT_OPTION_NAMES,
   isKnownDefaultFeatureSet,
 } from "@/components/engine/presentation/constants";
