@@ -210,13 +210,13 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
       <div className="flex items-center gap-2">
         <Button
           size="sm"
-          variant="outline"
+          variant={analyze.isPending ? "destructive" : "outline"}
           className="flex-1 h-8 text-xs"
-          onClick={handleAnalyze}
-          disabled={analyze.isPending}
+          onClick={analyze.isPending ? cancelAnalyze : handleAnalyze}
         >
-          {analyze.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <Sparkles className="h-3 w-3 mr-1.5" />}
-          {tags.length === 0 ? "Auto-tag" : "Re-analyze"}
+          {analyze.isPending
+            ? <><X className="h-3 w-3 mr-1.5" />Cancel</>
+            : <><Sparkles className="h-3 w-3 mr-1.5" />{tags.length === 0 ? "Auto-tag" : "Re-analyze"}</>}
         </Button>
         <Button
           size="sm"
