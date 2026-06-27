@@ -277,6 +277,16 @@ export default function InspectionPanel({ dealId }: Props) {
           {tagProgress ? `Tagging ${tagProgress.done}/${tagProgress.total}` : `Auto-tag all (${filteredPhotos.length})`}
         </Button>
 
+        <Button
+          variant="outline"
+          onClick={handleAmpUrgency}
+          disabled={ampPending || filteredPhotos.length === 0}
+          title="Adds +30% weight to every tag — bumps each photo one severity tier (low→moderate→high)."
+        >
+          {ampPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <TrendingUp className="h-4 w-4 mr-2" />}
+          Amp urgency +30%
+        </Button>
+
 
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
           {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
