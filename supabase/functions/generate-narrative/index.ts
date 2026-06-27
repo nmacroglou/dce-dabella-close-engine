@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
 
 ${personaBlock}
 
-You are drafting a homeowner-facing ${tradeList} inspection report${types.length > 1 ? " (multiple trades combined into one report)" : ""}. Write each section in the inspector's voice — plainspoken, specific, evidence-first. Anchor every claim in the photo findings provided. Do NOT invent defects that are not represented in the findings. Do NOT use marketing language or hedging filler ("appears to", "may possibly"). Keep each section concise (2–5 sentences except next_steps which can be a short numbered list).
+You are drafting a homeowner-facing ${tradeList} inspection report${types.length > 1 ? " (multiple trades combined into one report)" : ""}. Write tight. Each section: 2–3 short sentences max (next_steps can be a 3–5 item numbered list, one short line each). No marketing language, no hedging ("appears to", "may possibly"), no compound run-ons. Plainspoken, specific, evidence-first. Anchor every claim in the photo findings provided. Do NOT invent defects that are not represented in the findings. Prefer short declarative sentences over long qualified ones.
 
 Trade-specific voice and terminology to use throughout:
 ${voiceBlock}`;
