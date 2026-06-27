@@ -33,7 +33,7 @@ const VOICE: Record<ReportType, string> = {
   bath: "Use wet-area language: pan, surround, valve, drain, grout, caulk joint, ventilation. Frame findings around water management, mold risk, and longevity.",
   solar: "Treat the array as part of the GAF Energy Roof — a complete roofing system. Use roofing language for the roof plane plus PV-integrated shingle language. Frame findings around the roof envelope first, generation second.",
   siding: "Use cladding language: panels, trim, J-channel, housewrap, flashing, fastener pattern. Frame findings around water management, structural protection, and curb appeal.",
-  stucco: "Frame the report around chips, cracks, fading, staining, and surface imperfections that DaBella's Forever Paint system can correct and protect. Every finding is a cosmetic condition the Forever Paint system is built to solve — speak in those terms, not in moisture-intrusion language.",
+  stucco: "Frame the report around chips, cracks, fading, staining, and surface imperfections that DaBella's Forever Paint system can correct and protect. Always identify the existing stucco finish texture by name when the photos show it — Santa Barbara (smooth troweled), Lace, Light Lace, Heavy Lace, Light Dash, Medium Dash, Heavy Dash, or Sand — so the homeowner knows what they have and how the Forever Paint system matches it. Every finding is a cosmetic condition the Forever Paint system is built to solve — speak in those terms, not in moisture-intrusion language.",
   paint: "Use coatings language: substrate, prep, primer, top coat, mil thickness, adhesion. Frame findings around why the finish is failing and what proper prep + product solves.",
 };
 
