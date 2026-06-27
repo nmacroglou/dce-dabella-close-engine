@@ -359,16 +359,15 @@ export default function InspectionPanel({ dealId }: Props) {
           {tagProgress ? `Tagging ${tagProgress.done}/${tagProgress.total}` : `Auto-tag all (${filteredPhotos.length})`}
         </Button>
 
-        {tagProgress && (
-          <Button
-            variant="destructive"
-            onClick={handleCancelAutoTag}
-            title="Stop the auto-tag run. Photos already tagged are kept."
-          >
-            <X className="h-4 w-4 mr-2" />
-            Cancel tagging
-          </Button>
-        )}
+        <Button
+          variant="destructive"
+          onClick={handleCancelAutoTag}
+          disabled={!tagProgress}
+          title={tagProgress ? "Stop the auto-tag run. Photos already tagged are kept." : "Only active during an Auto-tag run."}
+        >
+          <X className="h-4 w-4 mr-2" />
+          Cancel tagging
+        </Button>
 
         <Button
           variant="outline"
