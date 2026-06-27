@@ -499,6 +499,66 @@ export default function InspectionPanel({ dealId }: Props) {
           </div>
         )}
 
+        {(reportTypes.includes("stucco") || reportTypes.includes("paint")) && (
+          <div className="w-full basis-full rounded-xl border border-border bg-muted/30 p-4 space-y-3">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Thermometer className="h-4 w-4 text-primary" />
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  FLIR Thermal Readings <span className="text-muted-foreground/70 font-normal normal-case tracking-normal">— wall surface vs. ambient (°F). We project the Cool Series drop and cooling-load savings.</span>
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="ghost" onClick={addFlir}>
+                  <Plus className="h-4 w-4 mr-1" /> Add reading
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleApplyFlir}>
+                  <Sparkles className="h-4 w-4 mr-1" /> Calculate &amp; add to report
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {flirReadings.map((r) => {
+                const c = computeFlir(r.wall, r.ambient);
+                return (
+                  <div key={r.id} className="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1fr_auto_auto] gap-2 items-center">
+                    <Input
+                      placeholder="Location (e.g. South wall)"
+                      value={r.location}
+                      onChange={(e) => updateFlir(r.id, { location: e.target.value })}
+                    />
+                    <Input
+                      type="number" inputMode="decimal" placeholder="Wall °F"
+                      value={r.wall}
+                      onChange={(e) => updateFlir(r.id, { wall: e.target.value })}
+                    />
+                    <Input
+                      type="number" inputMode="decimal" placeholder="Ambient °F"
+                      value={r.ambient}
+                      onChange={(e) => updateFlir(r.id, { ambient: e.target.value })}
+                    />
+                    <div className="text-xs text-muted-foreground min-w-[180px]">
+                      {c
+                        ? <>Δ +{c.delta}°F → <span className="font-semibold text-foreground">~{c.projected}°F</span> after Cool Series (−{c.reduction}°F, ~{c.loadDrop}% load)</>
+                        : <span className="opacity-60">Δ — enter both temps</span>}
+                    </div>
+                    <Button
+                      size="icon" variant="ghost"
+                      onClick={() => removeFlir(r.id)}
+                      disabled={flirReadings.length === 1}
+                      title="Remove reading"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+
+
         <input
           ref={fileRef}
           type="file"
