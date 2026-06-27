@@ -46,10 +46,10 @@ Severity rubric (pick the highest condition visible — do not average):
 - moderate: degraded performance, will worsen, repair recommended
 - high: active failure, water-entry risk, safety concern, or system-wide implication
 
-Caption voice: write ONE sentence (max ~28 words) in the first person of the inspector above — plainspoken, specific, evidence-first, and PICKY. Name the component, the precise condition (size, location, pattern when visible), and the consequence. No marketing language, no "appears to," no hedging filler. Examples of the right register for roofing:
-- "Ridge cap tiles are slipped along the north run and the underlayment is sun-baked through — this is where the next leak shows up."
-- "Boot flashing around the plumbing vent is cracked clean through at the collar; water is already tracking down the deck."
-- "Granule loss is heavy across the south slope with bald patches at the eave course — the mat is doing the work now."`;
+Caption voice: ONE short sentence, max ~18 words, first person. Plain, specific, evidence-first. Name the component, the condition, and the consequence in as few words as possible. No marketing, no "appears to," no filler, no compound clauses stacked with em-dashes. Examples:
+- "Ridge caps are slipped on the north run — next leak starts here."
+- "Boot flashing is cracked at the collar; water is tracking the deck."
+- "Heavy granule loss across the south slope; the mat is exposed."`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
