@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp, X } from "lucide-react";
+import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp, X, Eraser } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -221,6 +221,38 @@ export default function InspectionPanel({ dealId }: Props) {
     toast.success(`Bumped ${bumped} photo${bumped === 1 ? "" : "s"} +1 severity tier (+30% weight)`, { id: toastId });
   }
 
+  // Wipe every photo's tags, severity, and caption so the rep can start a clean re-tag pass.
+  const [clearPending, setClearPending] = useState(false);
+  async function handleClearAll() {
+    const targets = filteredPhotos.filter((p) => {
+      const ext = p as { inspection_tags?: string[]; severity?: string | null };
+      return (p.caption && p.caption.length > 0)
+        || (ext.inspection_tags && ext.inspection_tags.length > 0)
+        || ext.severity;
+    });
+    if (targets.length === 0) {
+      toast.message("Nothing to clear — no captions or tags yet.");
+      return;
+    }
+    if (!confirm(`Clear captions, tags, and severity on ${targets.length} photo${targets.length === 1 ? "" : "s"}? The photos themselves stay.`)) return;
+    setClearPending(true);
+    const toastId = toast.loading(`Clearing ${targets.length}…`);
+    let cleared = 0;
+    for (const p of targets) {
+      try {
+        await updatePhoto.mutateAsync({
+          photo_id: p.id, deal_id: dealId,
+          patch: { inspection_tags: [], severity: null, caption: "" },
+        });
+        cleared++;
+      } catch (e) {
+        console.error("clear failed", p.id, e);
+      }
+    }
+    setClearPending(false);
+    toast.success(`Cleared ${cleared} photo${cleared === 1 ? "" : "s"} — ready for a fresh re-tag`, { id: toastId });
+  }
+
 
   async function handleGenerateNarrative(tweak?: string) {
     const findings = filteredPhotos.map((p) => {
@@ -378,6 +410,18 @@ export default function InspectionPanel({ dealId }: Props) {
           {ampPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <TrendingUp className="h-4 w-4 mr-2" />}
           Amp urgency +30%
         </Button>
+
+        <Button
+          variant="outline"
+          onClick={handleClearAll}
+          disabled={clearPending || !!tagProgress || filteredPhotos.length === 0}
+          title="Wipe captions, tags, and severity on every photo so you can run a fresh tag pass. Photos stay."
+        >
+          {clearPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eraser className="h-4 w-4 mr-2" />}
+          Clear & re-tag
+        </Button>
+
+
 
 
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
