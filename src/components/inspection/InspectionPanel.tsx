@@ -150,8 +150,12 @@ export default function InspectionPanel({ dealId }: Props) {
         return;
       }
       try {
+        const finishHint = reportTypes.includes("stucco") && stuccoFinish
+          ? `Existing stucco finish on this home is ${stuccoFinish}. Name this finish in the caption and use a tag like finish_${stuccoFinish.toLowerCase().replace(/\s+/g, "_")}. Do not mention any other finish.`
+          : undefined;
         const res = await analyze.mutateAsync({
           photo_id: p.id, storage_path: p.storage_path, report_type: primaryType,
+          user_hint: finishHint,
         });
         if (cancelTagRef.current) {
           toast.message(`Canceled — tagged ${done} of ${total}`, { id: toastId });
