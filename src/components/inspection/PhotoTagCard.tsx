@@ -61,6 +61,18 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
     cancelRef.current = true;
   }
 
+  function buildHint(): string | undefined {
+    const parts: string[] = [];
+    if (caption.trim()) parts.push(caption.trim());
+    if (stuccoFinish) {
+      const slug = stuccoFinish.toLowerCase().replace(/\s+/g, "_");
+      parts.push(
+        `Existing stucco finish on this home is ${stuccoFinish}. Name this finish in the caption and include a tag like finish_${slug}. Do not mention any other finish.`,
+      );
+    }
+    return parts.length ? parts.join("\n\n") : undefined;
+  }
+
   async function handleAnalyze() {
     cancelRef.current = false;
     try {
@@ -68,7 +80,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         photo_id: photo.id,
         storage_path: photo.storage_path,
         report_type: reportType,
-        user_hint: caption.trim() || undefined,
+        user_hint: buildHint(),
         existing_tags: tags,
       });
       if (cancelRef.current) return;
@@ -95,7 +107,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         photo_id: photo.id,
         storage_path: photo.storage_path,
         report_type: reportType,
-        user_hint: caption.trim() || undefined,
+        user_hint: buildHint(),
         existing_tags: tags,
       });
       if (cancelRef.current) return;
@@ -109,6 +121,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
       /* toast handled in hook */
     }
   }
+
 
 
   function patch(p: Parameters<typeof update.mutateAsync>[0]["patch"]) {
