@@ -197,10 +197,11 @@ export default function InspectionPanel({ dealId }: Props) {
   // Amp urgency: applies a +30% severity weight across every photo.
   // Weights: low=1, moderate=2, high=3. Bumped weight = current * 1.3, rounded,
   // which deterministically pushes low→moderate, moderate→high, high stays high.
-  // When Stucco is in play, also layers in the hidden-water / dry-rot / Cool Series
-  // verbiage so the urgency reads with the right "why it matters" framing.
-  const STUCCO_AMP_CAPTION = "Surface telltales here often signal water that has already wicked behind the cladding — even when the sheathing and framing look fine from the outside, hairline checks like these are the path for moisture, which is how dry rot quietly takes hold in the wood you can't see. The same UV load that's faded this finish has been baking the wall assembly for years. Our Cool Series Forever Paint seals the envelope, reflects that heat load, and neutralizes the thermal transfer through the wall so the home stays cooler and the substrate stays dry.";
-  const STUCCO_AMP_OPINION = "\n\nUrgency note: the conditions visible on the surface are the leading indicator, not the full story. Stucco hides what's behind it — water that finds a hairline crack or a tired finish doesn't show until the framing is already compromised by dry rot. Compounding that, sun-faded and chalking paint has lost its ability to shed water or reflect heat, which accelerates both moisture intrusion and thermal load on the wall assembly. Our Cool Series Forever Paint system re-seals the envelope, reflects solar heat, and neutralizes the heat transfer through the walls — protecting the wood you can't see and lowering the cooling load on the home.";
+  // When Stucco is in play, also layers in the Cool Series / radiant-heat framing
+  // so the urgency reads as a thermal-performance story (not a water-intrusion one).
+  const STUCCO_AMP_CAPTION = "Even on a mild ~93°F day, a sun-loaded stucco wall like this is typically running 40–60°F hotter than ambient at the surface — that radiant heat is what your framing, sheathing, and conditioned interior are absorbing all afternoon, and it's what's driving your AC to run long past sundown. The faded, chalky finish has lost whatever reflectivity it had from the factory, so every degree of solar load is going straight into the wall. DaBella's Cool Series Forever Paint reflects that solar energy back off the wall, drops the surface temperature significantly, and neutralizes the heat transfer through the assembly so the home stays measurably cooler and the HVAC stops fighting the sun.";
+  const STUCCO_AMP_OPINION = "\n\nUrgency note: this isn't a cosmetic conversation, it's a thermal one. On a ~93°F day the south- and west-facing stucco on this home is almost certainly running 40–60°F over ambient at the surface — that's the radiant load your walls, framing, and AC are absorbing hour after hour. Faded, chalking, UV-burned finish has zero reflectivity left, so 100% of that solar energy is being driven into the wall assembly. DaBella's Cool Series Forever Paint is engineered to reflect solar heat off the surface, knock the wall-surface temperature down significantly, and neutralize the heat transfer through the walls — the homeowner feels cooler walls to the touch and a noticeably shorter AC runtime through the peak hours.";
+
   const [ampPending, setAmpPending] = useState(false);
   async function handleAmpUrgency() {
     const targets = filteredPhotos.filter((p) => {
@@ -245,7 +246,7 @@ export default function InspectionPanel({ dealId }: Props) {
       const nextOpinion = opinion.includes("Cool Series Forever Paint system")
         ? opinion
         : `${opinion}${STUCCO_AMP_OPINION}`;
-      const scopeAdd = "Apply DaBella Cool Series Forever Paint over a properly prepped and sealed stucco envelope — addressing hairline cracks, chalking, and faded finish so the wall sheds water, resists UV, and neutralizes heat transfer through the assembly to protect the framing behind it.";
+      const scopeAdd = "Apply DaBella Cool Series Forever Paint as a heat-reflective envelope across the sun-loaded elevations — engineered to bounce solar energy off the wall, drop surface temperature significantly, and neutralize radiant heat transfer through the stucco assembly so the home stays cooler and the cooling load drops.";
       const nextScope = scope.includes("Cool Series Forever Paint")
         ? scope
         : (scope ? `${scope}\n\n${scopeAdd}` : scopeAdd);
