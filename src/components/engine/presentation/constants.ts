@@ -607,6 +607,20 @@ export function getDefaultFeatureTexts(
     return GUTTERS_C.slice();
   }
 
+  // Stucco as primary product: per-option Forever Paint tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && !has("Bath") && !has("Solar") && !has("Gutter") && has("Stucco") && optKey) {
+    if (optKey === "A") return STUCCO_A.slice();
+    if (optKey === "B") return STUCCO_B.slice();
+    return STUCCO_C.slice();
+  }
+
+  // Paint as primary product: per-option Forever Paint tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && !has("Bath") && !has("Solar") && !has("Gutter") && !has("Stucco") && has("Paint") && optKey) {
+    if (optKey === "A") return PAINT_A.slice();
+    if (optKey === "B") return PAINT_B.slice();
+    return PAINT_C.slice();
+  }
+
   const buckets: string[][] = [];
   if (has("Roof")) {
     buckets.push(
@@ -617,6 +631,8 @@ export function getDefaultFeatureTexts(
   }
   if (has("Window")) buckets.push(WINDOWS);
   if (has("Siding")) buckets.push(SIDING);
+  if (has("Stucco")) buckets.push(STUCCO);
+  if (has("Paint")) buckets.push(PAINT);
   if (has("Bath")) buckets.push(BATH);
   if (has("Gutter")) buckets.push(GUTTERS);
   if (has("Solar")) buckets.push(SOLAR);
