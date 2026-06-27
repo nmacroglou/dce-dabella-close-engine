@@ -97,6 +97,20 @@ export const GUTTER_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = 
   C: "Standard K-Style Gutters",
 };
 
+/** Default option names when Stucco is the primary product (Forever Paint / Cool Series tiers). */
+export const STUCCO_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Forever Paint Cool Series — Full Restoration",
+  B: "Forever Paint Premium — Crack Repair & Recoat",
+  C: "Forever Paint Essential — Refresh & Seal",
+};
+
+/** Default option names when Paint is the primary product (Forever Paint tiers). */
+export const PAINT_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Forever Paint Cool Series — Full Exterior",
+  B: "Forever Paint Premium — Full Exterior",
+  C: "Forever Paint Essential — Full Exterior",
+};
+
 /** All known default option names — used to detect "untouched" names safely. */
 export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   ...Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C]),
