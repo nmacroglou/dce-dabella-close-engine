@@ -587,7 +587,7 @@ export default function InspectionPanel({ dealId }: Props) {
               <div className="flex items-center gap-2">
                 <Thermometer className="h-4 w-4 text-primary" />
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  FLIR Thermal Readings <span className="text-muted-foreground/70 font-normal normal-case tracking-normal">— wall surface vs. ambient (°F). We project the Cool Series drop and cooling-load savings.</span>
+                  FLIR Thermal Readings <span className="text-muted-foreground/70 font-normal normal-case tracking-normal">— auto-cascades Cool Series heat-transfer savings into the narrative + every photo caption as you type.</span>
                 </Label>
               </div>
               <div className="flex items-center gap-2">
@@ -595,8 +595,9 @@ export default function InspectionPanel({ dealId }: Props) {
                   <Plus className="h-4 w-4 mr-1" /> Add reading
                 </Button>
                 <Button size="sm" variant="outline" onClick={handleApplyFlir}>
-                  <Sparkles className="h-4 w-4 mr-1" /> Calculate &amp; add to report
+                  <Sparkles className="h-4 w-4 mr-1" /> Re-apply now
                 </Button>
+
               </div>
             </div>
             <div className="space-y-2">
