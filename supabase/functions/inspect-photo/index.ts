@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
                     : "",
                 ].filter(Boolean).join("\n"),
               },
-              { type: "image_url", image_url: { url: imageUrl, detail: "low" } },
+              { type: "image_url", image_url: { url: imageUrl, detail: "high" } },
             ],
           },
         ],
