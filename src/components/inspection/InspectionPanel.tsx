@@ -340,7 +340,7 @@ export default function InspectionPanel({ dealId }: Props) {
     };
   }
 
-  function handleApplyFlir() {
+  async function handleApplyFlir() {
     const valid = flirReadings
       .map((r) => ({ r, c: computeFlir(r.wall, r.ambient) }))
       .filter((x): x is { r: FlirReading; c: NonNullable<ReturnType<typeof computeFlir>> } => x.c !== null);
