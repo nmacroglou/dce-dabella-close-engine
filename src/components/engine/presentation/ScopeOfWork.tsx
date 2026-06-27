@@ -79,10 +79,25 @@ export default function ScopeOfWork({ products = [] }: Props) {
             </h2>
           </div>
           <p className="text-primary-foreground/70 text-sm font-medium">
-            {isWindows
+            {isRoofing
+              ? "Your complete scope of work — everything included in your project"
+              : isWindows
               ? "Your complete window project scope — from measure to final walkthrough"
+              : isStucco
+              ? "Your complete stucco restoration — from prep to final coat"
+              : isPaint
+              ? "Your complete exterior paint project — from prep to final coat"
+              : isSiding
+              ? "Your complete siding replacement — from tear-off to trim-out"
+              : isBath
+              ? "Your complete bath remodel — from demo to final walkthrough"
+              : isSolar
+              ? "Your complete solar installation — from permit to PTO"
+              : isGutters
+              ? "Your complete gutter project — from tear-off to clean-up"
               : "Your complete scope of work — everything included in your project"}
           </p>
+
         </div>
 
         {/* Progress */}
