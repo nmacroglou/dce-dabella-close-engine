@@ -3,6 +3,8 @@ export const PRODUCT_OPTIONS = [
   "Roofing System",
   "Windows",
   "Siding",
+  "Stucco",
+  "Paint",
   "Solar",
   "Gutters",
   "Bath",
