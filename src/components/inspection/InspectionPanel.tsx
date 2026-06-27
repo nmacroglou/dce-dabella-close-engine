@@ -197,73 +197,39 @@ export default function InspectionPanel({ dealId }: Props) {
   // Amp urgency: applies a +30% severity weight across every photo.
   // Weights: low=1, moderate=2, high=3. Bumped weight = current * 1.3, rounded,
   // which deterministically pushes low→moderate, moderate→high, high stays high.
-  // When Stucco is in play, also layers in the Cool Series / radiant-heat framing
-  // so the urgency reads as a thermal-performance story (not a water-intrusion one).
-  const STUCCO_AMP_CAPTION = "Even on a mild ~93°F day, a sun-loaded stucco wall like this is typically running 40–60°F hotter than ambient at the surface — that radiant heat is what your framing, sheathing, and conditioned interior are absorbing all afternoon, and it's what's driving your AC to run long past sundown. The faded, chalky finish has lost whatever reflectivity it had from the factory, so every degree of solar load is going straight into the wall. DaBella's Cool Series Forever Paint reflects that solar energy back off the wall, drops the surface temperature significantly, and neutralizes the heat transfer through the assembly so the home stays measurably cooler and the HVAC stops fighting the sun.";
-  const STUCCO_AMP_OPINION = "\n\nUrgency note: this isn't a cosmetic conversation, it's a thermal one. On a ~93°F day the south- and west-facing stucco on this home is almost certainly running 40–60°F over ambient at the surface — that's the radiant load your walls, framing, and AC are absorbing hour after hour. Faded, chalking, UV-burned finish has zero reflectivity left, so 100% of that solar energy is being driven into the wall assembly. DaBella's Cool Series Forever Paint is engineered to reflect solar heat off the surface, knock the wall-surface temperature down significantly, and neutralize the heat transfer through the walls — the homeowner feels cooler walls to the touch and a noticeably shorter AC runtime through the peak hours.";
-
   const [ampPending, setAmpPending] = useState(false);
   async function handleAmpUrgency() {
     const targets = filteredPhotos.filter((p) => {
       const sev = (p as { severity?: string | null }).severity;
       return sev === "low" || sev === "moderate"; // high is already topped out
     });
-    if (targets.length === 0 && !reportTypes.includes("stucco")) {
+    if (targets.length === 0) {
       toast.message("Severity is already at the top across the board.");
       return;
     }
     setAmpPending(true);
     const toastId = toast.loading(`Amping urgency on ${targets.length} photo${targets.length === 1 ? "" : "s"}…`);
     let bumped = 0;
-    const isStucco = reportTypes.includes("stucco");
     for (const p of targets) {
       const sev = (p as { severity?: "low" | "moderate" | "high" | null }).severity;
       const next: "moderate" | "high" = sev === "low" ? "moderate" : "high";
-      const patch: { severity: "moderate" | "high"; caption?: string } = { severity: next };
-      if (isStucco) {
-        const existing = (p.caption ?? "").trim();
-        if (!existing.includes("Cool Series")) {
-          patch.caption = existing
-            ? `${existing}\n\n${STUCCO_AMP_CAPTION}`
-            : STUCCO_AMP_CAPTION;
-        }
-      }
       try {
         await updatePhoto.mutateAsync({
-          photo_id: p.id, deal_id: dealId, patch,
+          photo_id: p.id, deal_id: dealId, patch: { severity: next },
         });
         bumped++;
       } catch (e) {
         console.error("amp severity failed", p.id, e);
       }
     }
-    // For stucco, also layer the urgency framing into the live narrative draft
-    // so Professional Opinion + Recommended Scope carry the hidden-water + Cool
-    // Series message without needing a re-draft.
-    if (isStucco) {
-      const opinion = sections.professional_opinion ?? "";
-      const scope = sections.recommended_scope ?? "";
-      const nextOpinion = opinion.includes("Cool Series Forever Paint system")
-        ? opinion
-        : `${opinion}${STUCCO_AMP_OPINION}`;
-      const scopeAdd = "Apply DaBella Cool Series Forever Paint as a heat-reflective envelope across the sun-loaded elevations — engineered to bounce solar energy off the wall, drop surface temperature significantly, and neutralize radiant heat transfer through the stucco assembly so the home stays cooler and the cooling load drops.";
-      const nextScope = scope.includes("Cool Series Forever Paint")
-        ? scope
-        : (scope ? `${scope}\n\n${scopeAdd}` : scopeAdd);
-      setDraft({
-        ...sections,
-        professional_opinion: nextOpinion,
-        recommended_scope: nextScope,
-      });
-    }
     setAmpPending(false);
     toast.success(
-      isStucco
-        ? `Bumped ${bumped} photo${bumped === 1 ? "" : "s"} + layered Cool Series urgency into captions and narrative`
-        : `Bumped ${bumped} photo${bumped === 1 ? "" : "s"} +1 severity tier (+30% weight)`,
+      `Bumped ${bumped} photo${bumped === 1 ? "" : "s"} +1 severity tier (+30% weight)`,
       { id: toastId },
     );
   }
+
+
 
   // Wipe every photo's tags, severity, and caption so the rep can start a clean re-tag pass.
   const [clearPending, setClearPending] = useState(false);
