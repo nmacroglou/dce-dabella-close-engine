@@ -296,6 +296,35 @@ export default function InspectionPanel({ dealId }: Props) {
           </div>
         </div>
 
+        {reportTypes.includes("stucco") && (
+          <div className="w-full basis-full">
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Stucco Finish <span className="text-muted-foreground/70 font-normal normal-case tracking-normal">— pick the texture on this home; we'll thread it through the report</span>
+            </Label>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {STUCCO_FINISHES.map((f) => {
+                const active = stuccoFinish === f;
+                return (
+                  <button
+                    type="button"
+                    key={f}
+                    onClick={() => pickStuccoFinish(f)}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                      active
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-card text-foreground/80 border-border hover:border-primary/40 hover:bg-muted"
+                    }`}
+                    aria-pressed={active}
+                  >
+                    {active && <Check className="h-3 w-3" />}
+                    {f}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <input
           ref={fileRef}
           type="file"
