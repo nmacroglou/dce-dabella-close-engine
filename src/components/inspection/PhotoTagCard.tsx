@@ -20,6 +20,7 @@ interface Props {
     inspection_report_type?: InspectionReportType | null;
   };
   reportType: InspectionReportType;
+  stuccoFinish?: string | null;
 }
 
 const SEV_TONE: Record<"low" | "moderate" | "high", string> = {
