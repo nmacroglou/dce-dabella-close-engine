@@ -1,0 +1,2 @@
+ALTER TABLE public.deal_photos DROP CONSTRAINT IF EXISTS deal_photos_inspection_report_type_check;
+ALTER TABLE public.deal_photos ADD CONSTRAINT deal_photos_inspection_report_type_check CHECK (inspection_report_type = ANY (ARRAY['roof','windows','bath','siding','stucco','paint']));
