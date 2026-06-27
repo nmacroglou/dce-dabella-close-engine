@@ -115,10 +115,10 @@ export const TEMPLATES: Record<InspectionReportType, InspectionSections> = {
   },
   stucco: {
     executive_summary:
-      "A professional stucco condition review was performed. The photos document cracking, discoloration, and moisture-related symptoms that affect the home's weather barrier and long-term durability. Stucco problems tend to spread when the drainage plane or control joints are compromised.",
+      "A professional stucco condition review was performed. The photos document the existing stucco finish texture along with cracking, discoloration, and surface imperfections that affect curb appeal and the long-term protection of the cladding. DaBella's Forever Paint system is designed to seal these conditions and color-match the existing finish — Santa Barbara, Lace, Light Lace, Heavy Lace, Light Dash, Medium Dash, Heavy Dash, or Sand — so the home looks intentional, not patched.",
     inspection_scope: COMMON_SCOPE,
     measurements:
-      "Total square footage of stucco, number of cracks and repair patches, and areas requiring moisture-intrusion testing should be confirmed during the physical inspection.",
+      "Total square footage of stucco, the existing finish texture (Santa Barbara, Lace, Light Lace, Heavy Lace, Light Dash, Medium Dash, Heavy Dash, or Sand), number of cracks and repair patches, and areas requiring touch-up should be confirmed during the physical inspection.",
     professional_opinion:
       "Patch-and-paint is a temporary fix when the underlying moisture management is failing. Repair or reclad the affected elevations with proper drainage, control joints, and flashing to stop ongoing damage.",
     recommended_scope:
