@@ -151,13 +151,16 @@ function PhotoTagCardImpl({ photo, reportType }: Props) {
         />
         <Button
           size="sm"
-          variant="secondary"
+          variant={analyze.isPending ? "destructive" : "secondary"}
           className="h-10 w-10 p-0 shrink-0"
-          onClick={handleCaptionOnly}
-          disabled={analyze.isPending}
-          title={caption.trim() ? "Refine my note with the photo" : "AI write caption from photo"}
+          onClick={analyze.isPending ? cancelAnalyze : handleCaptionOnly}
+          title={
+            analyze.isPending
+              ? "Cancel — discard this AI run"
+              : caption.trim() ? "Refine my note with the photo" : "AI write caption from photo"
+          }
         >
-          {analyze.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4 text-primary" />}
+          {analyze.isPending ? <X className="h-4 w-4" /> : <Wand2 className="h-4 w-4 text-primary" />}
         </Button>
       </div>
 
