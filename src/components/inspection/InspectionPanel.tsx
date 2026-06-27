@@ -246,7 +246,7 @@ export default function InspectionPanel({ dealId }: Props) {
       const nextOpinion = opinion.includes("Cool Series Forever Paint system")
         ? opinion
         : `${opinion}${STUCCO_AMP_OPINION}`;
-      const scopeAdd = "Apply DaBella Cool Series Forever Paint over a properly prepped and sealed stucco envelope — addressing hairline cracks, chalking, and faded finish so the wall sheds water, resists UV, and neutralizes heat transfer through the assembly to protect the framing behind it.";
+      const scopeAdd = "Apply DaBella Cool Series Forever Paint as a heat-reflective envelope across the sun-loaded elevations — engineered to bounce solar energy off the wall, drop surface temperature significantly, and neutralize radiant heat transfer through the stucco assembly so the home stays cooler and the cooling load drops.";
       const nextScope = scope.includes("Cool Series Forever Paint")
         ? scope
         : (scope ? `${scope}\n\n${scopeAdd}` : scopeAdd);
