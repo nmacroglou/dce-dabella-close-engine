@@ -26,6 +26,12 @@ interface Props {
 
 const REPORT_OPTIONS: InspectionReportType[] = ["roof", "windows", "bath", "siding", "stucco", "paint"];
 
+const STUCCO_FINISHES = [
+  "Santa Barbara", "Lace", "Light Lace", "Heavy Lace",
+  "Light Dash", "Medium Dash", "Heavy Dash", "Sand",
+] as const;
+type StuccoFinish = typeof STUCCO_FINISHES[number];
+
 const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
   { key: "executive_summary", label: "Executive Summary" },
   { key: "inspection_scope", label: "Inspection Scope" },
