@@ -14,6 +14,8 @@ import {
   BATH_OPTION_NAME_DEFAULTS,
   SOLAR_OPTION_NAME_DEFAULTS,
   GUTTER_OPTION_NAME_DEFAULTS,
+  STUCCO_OPTION_NAME_DEFAULTS,
+  PAINT_OPTION_NAME_DEFAULTS,
   ALL_DEFAULT_OPTION_NAMES,
   isKnownDefaultFeatureSet,
 } from "@/components/engine/presentation/constants";
@@ -123,6 +125,8 @@ export function useCloseEngine() {
         const hasRoof = prods.some((p) => p.toLowerCase().includes("roof"));
         const hasWindows = prods.some((p) => p.toLowerCase().includes("window"));
         const hasSiding = prods.some((p) => p.toLowerCase().includes("siding"));
+        const hasStucco = prods.some((p) => p.toLowerCase().includes("stucco"));
+        const hasPaint = prods.some((p) => p.toLowerCase() === "paint" || p.toLowerCase().includes("paint"));
         const hasBath = prods.some((p) => p.toLowerCase().includes("bath"));
         const hasSolar = prods.some((p) => p.toLowerCase().includes("solar"));
         const hasGutters = prods.some((p) => p.toLowerCase().includes("gutter"));
@@ -133,6 +137,10 @@ export function useCloseEngine() {
           defaults = WINDOW_OPTION_NAME_DEFAULTS;
         } else if (hasSiding) {
           defaults = SIDING_OPTION_NAME_DEFAULTS;
+        } else if (hasStucco) {
+          defaults = STUCCO_OPTION_NAME_DEFAULTS;
+        } else if (hasPaint) {
+          defaults = PAINT_OPTION_NAME_DEFAULTS;
         } else if (hasBath) {
           defaults = BATH_OPTION_NAME_DEFAULTS;
         } else if (hasSolar) {

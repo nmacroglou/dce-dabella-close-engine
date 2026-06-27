@@ -97,6 +97,20 @@ export const GUTTER_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = 
   C: "Standard K-Style Gutters",
 };
 
+/** Default option names when Stucco is the primary product (Forever Paint / Cool Series tiers). */
+export const STUCCO_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Forever Paint Cool Series — Full Restoration",
+  B: "Forever Paint Premium — Crack Repair & Recoat",
+  C: "Forever Paint Essential — Refresh & Seal",
+};
+
+/** Default option names when Paint is the primary product (Forever Paint tiers). */
+export const PAINT_OPTION_NAME_DEFAULTS: { A: string; B: string; C: string } = {
+  A: "Forever Paint Cool Series — Full Exterior",
+  B: "Forever Paint Premium — Full Exterior",
+  C: "Forever Paint Essential — Full Exterior",
+};
+
 /** All known default option names — used to detect "untouched" names safely. */
 export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   ...Object.values(OPTION_NAME_DEFAULTS).flatMap((d) => [d.A, d.B, d.C]),
@@ -115,6 +129,12 @@ export const ALL_DEFAULT_OPTION_NAMES: Set<string> = new Set([
   GUTTER_OPTION_NAME_DEFAULTS.A,
   GUTTER_OPTION_NAME_DEFAULTS.B,
   GUTTER_OPTION_NAME_DEFAULTS.C,
+  STUCCO_OPTION_NAME_DEFAULTS.A,
+  STUCCO_OPTION_NAME_DEFAULTS.B,
+  STUCCO_OPTION_NAME_DEFAULTS.C,
+  PAINT_OPTION_NAME_DEFAULTS.A,
+  PAINT_OPTION_NAME_DEFAULTS.B,
+  PAINT_OPTION_NAME_DEFAULTS.C,
 ]);
 
 /* ---------- Per-product default "What's Included" sets ---------- */
@@ -418,6 +438,83 @@ const SOLAR_C: string[] = [
 ];
 
 
+const STUCCO: string[] = [
+  "Crack repair & elastomeric patching",
+  "Power wash & full surface prep",
+  "Forever Paint Cool Series coating",
+  "Heat-reflective thermal barrier",
+  "Factory-Trained Certified Applicators",
+  "Lifetime coating warranty",
+];
+
+const STUCCO_A: string[] = [
+  "Forever Paint Cool Series Elastomeric Coating",
+  "Full Hairline & Structural Crack Repair",
+  "Heat-Reflective Thermal Barrier (Cool Series)",
+  "Pressure Wash & Full Surface Prep",
+  "Algae, Mildew & Stain Treatment",
+  "Lifetime Transferable Coating Warranty",
+  "Factory-Trained Certified Applicators",
+  "Best Long-Term ROI",
+];
+
+const STUCCO_B: string[] = [
+  "Forever Paint Premium Elastomeric Coating",
+  "Crack Repair & Patching",
+  "Pressure Wash & Surface Prep",
+  "UV & Fade Resistance Package",
+  "Lifetime Transferable Coating Warranty",
+  "Factory-Trained Certified Applicators",
+  "Exceptional Long-Term Value",
+];
+
+const STUCCO_C: string[] = [
+  "Forever Paint Essential Coating",
+  "Spot Crack Repair",
+  "Pressure Wash & Prep",
+  "Manufacturer Coating Warranty",
+  "Professional Installation",
+  "Reliable Weather Protection",
+];
+
+const PAINT: string[] = [
+  "Forever Paint Cool Series exterior coating",
+  "Full prep, scrape, prime & two coats",
+  "Heat-reflective formula",
+  "Factory-Trained Certified Applicators",
+  "Lifetime coating warranty",
+  "Best long-term ROI",
+];
+
+const PAINT_A: string[] = [
+  "Forever Paint Cool Series Exterior Coating",
+  "Full Scrape, Sand, Prime & Two Coats",
+  "Heat-Reflective Thermal Barrier",
+  "Caulking & Trim Detail Package",
+  "Lifetime Transferable Coating Warranty",
+  "Factory-Trained Certified Applicators",
+  "Best Long-Term ROI",
+];
+
+const PAINT_B: string[] = [
+  "Forever Paint Premium Exterior Coating",
+  "Scrape, Prime & Two Coats",
+  "UV & Fade Resistance Package",
+  "Caulking & Touch-Up Detail",
+  "Lifetime Transferable Coating Warranty",
+  "Factory-Trained Certified Applicators",
+  "Exceptional Long-Term Value",
+];
+
+const PAINT_C: string[] = [
+  "Forever Paint Essential Exterior Coating",
+  "Prime & Two Coats",
+  "Standard Prep Package",
+  "Manufacturer Coating Warranty",
+  "Professional Installation",
+  "Reliable Weather Protection",
+];
+
 const SHARED_FALLBACK: string[] = [
   "Golden Pledge® Lifetime Warranty",
   "Factory-Trained Certified Installers",
@@ -436,6 +533,8 @@ const ALL_PRESET_FEATURE_LISTS: string[][] = [
   BATH, BATH_A, BATH_B, BATH_C,
   GUTTERS, GUTTERS_A, GUTTERS_B, GUTTERS_C,
   SOLAR, SOLAR_A, SOLAR_B, SOLAR_C,
+  STUCCO, STUCCO_A, STUCCO_B, STUCCO_C,
+  PAINT, PAINT_A, PAINT_B, PAINT_C,
   SHARED_FALLBACK,
 ];
 const PRESET_FEATURE_SIGNATURES = new Set(
@@ -508,6 +607,20 @@ export function getDefaultFeatureTexts(
     return GUTTERS_C.slice();
   }
 
+  // Stucco as primary product: per-option Forever Paint tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && !has("Bath") && !has("Solar") && !has("Gutter") && has("Stucco") && optKey) {
+    if (optKey === "A") return STUCCO_A.slice();
+    if (optKey === "B") return STUCCO_B.slice();
+    return STUCCO_C.slice();
+  }
+
+  // Paint as primary product: per-option Forever Paint tiers
+  if (!has("Roof") && !has("Window") && !has("Siding") && !has("Bath") && !has("Solar") && !has("Gutter") && !has("Stucco") && has("Paint") && optKey) {
+    if (optKey === "A") return PAINT_A.slice();
+    if (optKey === "B") return PAINT_B.slice();
+    return PAINT_C.slice();
+  }
+
   const buckets: string[][] = [];
   if (has("Roof")) {
     buckets.push(
@@ -518,6 +631,8 @@ export function getDefaultFeatureTexts(
   }
   if (has("Window")) buckets.push(WINDOWS);
   if (has("Siding")) buckets.push(SIDING);
+  if (has("Stucco")) buckets.push(STUCCO);
+  if (has("Paint")) buckets.push(PAINT);
   if (has("Bath")) buckets.push(BATH);
   if (has("Gutter")) buckets.push(GUTTERS);
   if (has("Solar")) buckets.push(SOLAR);
