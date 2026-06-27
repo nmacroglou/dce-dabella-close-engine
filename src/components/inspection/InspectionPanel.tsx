@@ -341,12 +341,41 @@ export default function InspectionPanel({ dealId }: Props) {
     };
   }
 
-  async function handleApplyFlir() {
+  // Strip helpers — let us re-apply FLIR cleanly when readings change.
+  // We match the unique opening phrases of our injected blocks and remove
+  // through the end of that paragraph (incl. trailing • bullet lines).
+  function stripFlirNarrative(text: string): string {
+    if (!text) return text;
+    let out = text;
+    // Opinion paragraph + bullets (bullets are lines starting with "•")
+    out = out.replace(
+      /\n*FLIR thermal reading — fly-by calculation[\s\S]*?(?=\n{2,}(?!•)|$)/g,
+      "",
+    );
+    // Executive-summary single line
+    out = out.replace(/\n*Thermal verification: FLIR readings[^\n]*/g, "");
+    // Recommended-scope addition
+    out = out.replace(
+      /\n*Apply DaBella Cool Series Forever Paint as a heat-reflective envelope on the elevations measured above[\s\S]*?(?=\n{2,}|$)/g,
+      "",
+    );
+    return out.replace(/\n{3,}/g, "\n\n").trim();
+  }
+  function stripFlirCaption(text: string): string {
+    if (!text) return text;
+    return text
+      .replace(/\n*FLIR thermal:[^\n]*/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  const applyFlirRef = useRef<(silent?: boolean) => Promise<void>>(async () => {});
+  applyFlirRef.current = async (silent = false) => {
     const valid = flirReadings
       .map((r) => ({ r, c: computeFlir(r.wall, r.ambient) }))
       .filter((x): x is { r: FlirReading; c: NonNullable<ReturnType<typeof computeFlir>> } => x.c !== null);
     if (valid.length === 0) {
-      toast.error("Enter wall and ambient temps (wall must be hotter than ambient).");
+      if (!silent) toast.error("Enter wall and ambient temps (wall must be hotter than ambient).");
       return;
     }
     const avg = (key: "delta" | "reduction" | "projected" | "loadDrop") =>
@@ -362,37 +391,36 @@ export default function InspectionPanel({ dealId }: Props) {
       })
       .join("\n");
 
-    const opinionPara = `\n\nFLIR thermal reading — fly-by calculation. We measured the wall surface running ${avgDelta}°F over ambient today. That heat is what your wall framing, sheathing, and conditioned interior are absorbing all afternoon — every degree above ambient is load your HVAC has to fight. With DaBella's Cool Series Forever Paint, independent reflectance testing supports knocking that surface delta down by roughly ${avgReduction}°F on average, which translates to an estimated ${avgLoad}% reduction in cooling load on the affected elevations. The homeowner feels it two ways: cooler walls to the touch and a notably shorter AC runtime through the peak hours.\n${bullets}`;
-
+    const opinionPara = `FLIR thermal reading — fly-by calculation. We measured the wall surface running ${avgDelta}°F over ambient today. That heat is what your wall framing, sheathing, and conditioned interior are absorbing all afternoon — every degree above ambient is load your HVAC has to fight. With DaBella's Cool Series Forever Paint, independent reflectance testing supports knocking that surface delta down by roughly ${avgReduction}°F on average, which translates to an estimated ${avgLoad}% reduction in cooling load on the affected elevations. The homeowner feels it two ways: cooler walls to the touch and a notably shorter AC runtime through the peak hours.\n${bullets}`;
     const scopeAdd = "Apply DaBella Cool Series Forever Paint as a heat-reflective envelope on the elevations measured above — the same coating system that drove the projected surface-temperature drop in the FLIR readings, neutralizing radiant transfer through the walls and lowering the cooling load on the home.";
     const sumLine = `Thermal verification: FLIR readings show the wall is currently running ~${avgDelta}°F over ambient. Cool Series Forever Paint is projected to drop that delta by ~${avgReduction}°F, an estimated ~${avgLoad}% cooling-load reduction on the affected walls.`;
 
-    const opinion = sections.professional_opinion ?? "";
-    const scope = sections.recommended_scope ?? "";
-    const summary = sections.executive_summary ?? "";
+    // Strip any prior FLIR block, then re-insert the freshly computed one.
+    const baseOpinion = stripFlirNarrative(sections.professional_opinion ?? "");
+    const baseScope = stripFlirNarrative(sections.recommended_scope ?? "");
+    const baseSummary = stripFlirNarrative(sections.executive_summary ?? "");
     setDraft({
       ...sections,
-      executive_summary: summary.includes("FLIR readings") ? summary : (summary ? `${summary}\n\n${sumLine}` : sumLine),
-      professional_opinion: opinion.includes("FLIR thermal reading") ? opinion : `${opinion}${opinionPara}`,
-      recommended_scope: scope.includes("FLIR readings") ? scope : (scope ? `${scope}\n\n${scopeAdd}` : scopeAdd),
+      executive_summary: baseSummary ? `${baseSummary}\n\n${sumLine}` : sumLine,
+      professional_opinion: baseOpinion ? `${baseOpinion}\n\n${opinionPara}` : opinionPara,
+      recommended_scope: baseScope ? `${baseScope}\n\n${scopeAdd}` : scopeAdd,
     });
 
-    // Cascade to photo captions — append a concise thermal line to every
-    // included photo so the FLIR story shows up next to the imagery in the
-    // PDF, not just in the narrative. Idempotent: skips any caption that
-    // already carries the FLIR note.
+    // Cascade to photo captions — always rewrite the FLIR line so edits
+    // upstairs flow through every included photo automatically.
     const captionLine = `FLIR thermal: wall surface running ~${avgDelta}°F over ambient. Projected post-Cool Series surface drop ~${avgReduction}°F (~${avgLoad}% cooling-load reduction on this elevation).`;
     const captionTargets = filteredPhotos.filter(
       (p) => (p as { include_in_report?: boolean }).include_in_report !== false,
     );
     let cascaded = 0;
     for (const p of captionTargets) {
-      const existing = (p.caption ?? "").trim();
-      if (existing.includes("FLIR thermal")) continue;
+      const base = stripFlirCaption(p.caption ?? "");
+      const next = base ? `${base}\n\n${captionLine}` : captionLine;
+      if (next === (p.caption ?? "").trim()) continue;
       try {
         await updatePhoto.mutateAsync({
           photo_id: p.id, deal_id: dealId,
-          patch: { caption: existing ? `${existing}\n\n${captionLine}` : captionLine },
+          patch: { caption: next },
         });
         cascaded++;
       } catch (e) {
@@ -400,12 +428,36 @@ export default function InspectionPanel({ dealId }: Props) {
       }
     }
 
-    toast.success(
-      cascaded > 0
-        ? `Applied ${valid.length} FLIR reading${valid.length === 1 ? "" : "s"} — narrative + ${cascaded} photo caption${cascaded === 1 ? "" : "s"}`
-        : `Applied ${valid.length} FLIR reading${valid.length === 1 ? "" : "s"} to the narrative`,
-    );
+    if (!silent) {
+      toast.success(
+        cascaded > 0
+          ? `Applied ${valid.length} FLIR reading${valid.length === 1 ? "" : "s"} — narrative + ${cascaded} photo caption${cascaded === 1 ? "" : "s"}`
+          : `Applied ${valid.length} FLIR reading${valid.length === 1 ? "" : "s"} to the narrative`,
+      );
+    }
+  };
+
+  async function handleApplyFlir() {
+    await applyFlirRef.current(false);
   }
+
+  // Auto-cascade: as soon as any reading is valid (and whenever readings or
+  // selected trades change), debounce and silently push the Cool Series
+  // heat-transfer story into the narrative + captions. No button needed.
+  const flirEligible = reportTypes.includes("stucco") || reportTypes.includes("paint");
+  const flirSignature = useMemo(
+    () => flirReadings.map((r) => `${r.location}|${r.wall}|${r.ambient}`).join("~"),
+    [flirReadings],
+  );
+  useEffect(() => {
+    if (!flirEligible) return;
+    const hasValid = flirReadings.some((r) => computeFlir(r.wall, r.ambient) !== null);
+    if (!hasValid) return;
+    const t = setTimeout(() => { void applyFlirRef.current(true); }, 700);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flirSignature, flirEligible]);
+
 
 
 
