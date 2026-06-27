@@ -1,7 +1,15 @@
 import type { jsPDF } from "jspdf";
 import type { EngineState } from "@/types/engine";
 import { hasProduct } from "@/lib/engineHelpers";
-import { SCOPE_ITEMS } from "@/data/scopeItems";
+import {
+  SCOPE_ITEMS,
+  STUCCO_SCOPE_ITEMS,
+  PAINT_SCOPE_ITEMS,
+  SIDING_SCOPE_ITEMS,
+  BATH_SCOPE_ITEMS,
+  SOLAR_SCOPE_ITEMS,
+  GUTTER_SCOPE_ITEMS,
+} from "@/data/scopeItems";
 import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { ACCENT, FOREST_INK, INK, LIME, MIST, PH, PW, SLATE } from "../theme";
 import {
@@ -12,16 +20,48 @@ import {
 export function drawScope(pdf: jsPDF, state: EngineState) {
   pageBg(pdf);
   const isWindows = hasProduct(state.products, "Windows");
-  const items = isWindows ? [...WINDOW_SCOPE_ITEMS] : [...SCOPE_ITEMS];
+  const isRoofing = hasProduct(state.products, "Roofing System");
+  const isStucco = hasProduct(state.products, "Stucco");
+  const isPaint = hasProduct(state.products, "Paint");
+  const isSiding = hasProduct(state.products, "Siding");
+  const isBath = hasProduct(state.products, "Bath");
+  const isSolar = hasProduct(state.products, "Solar");
+  const isGutters = hasProduct(state.products, "Gutters");
 
-  sectionHeader(
-    pdf,
-    "Scope of Work",
-    "What to Expect.",
-    isWindows
-      ? "Your complete window project — from measure to final walkthrough."
-      : "Every step we will take, in order, to bring your project home.",
-  );
+  const items: string[] = [];
+  const pushUnique = (arr: readonly string[]) => {
+    for (const it of arr) if (!items.includes(it)) items.push(it);
+  };
+  if (isRoofing) pushUnique(SCOPE_ITEMS);
+  if (isWindows) pushUnique(WINDOW_SCOPE_ITEMS);
+  if (isStucco) pushUnique(STUCCO_SCOPE_ITEMS);
+  if (isPaint) pushUnique(PAINT_SCOPE_ITEMS);
+  if (isSiding) pushUnique(SIDING_SCOPE_ITEMS);
+  if (isBath) pushUnique(BATH_SCOPE_ITEMS);
+  if (isSolar) pushUnique(SOLAR_SCOPE_ITEMS);
+  if (isGutters) pushUnique(GUTTER_SCOPE_ITEMS);
+  if (items.length === 0) pushUnique(SCOPE_ITEMS);
+
+  const subtitle = isRoofing
+    ? "Every step we will take, in order, to bring your project home."
+    : isWindows
+    ? "Your complete window project — from measure to final walkthrough."
+    : isStucco
+    ? "Your complete stucco restoration — from prep to final coat."
+    : isPaint
+    ? "Your complete exterior paint project — from prep to final coat."
+    : isSiding
+    ? "Your complete siding replacement — from tear-off to trim-out."
+    : isBath
+    ? "Your complete bath remodel — from demo to final walkthrough."
+    : isSolar
+    ? "Your complete solar installation — from permit to PTO."
+    : isGutters
+    ? "Your complete gutter project — from tear-off to clean-up."
+    : "Every step we will take, in order, to bring your project home.";
+
+  sectionHeader(pdf, "Scope of Work", "What to Expect.", subtitle);
+
 
   const y = 78;
   const colW = (PW - 44 - 10) / 2;
