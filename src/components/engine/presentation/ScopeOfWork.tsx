@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Check, ClipboardCheck } from "lucide-react";
-import { SCOPE_ITEMS } from "@/data/scopeItems";
+import {
+  SCOPE_ITEMS,
+  STUCCO_SCOPE_ITEMS,
+  PAINT_SCOPE_ITEMS,
+  SIDING_SCOPE_ITEMS,
+  BATH_SCOPE_ITEMS,
+  SOLAR_SCOPE_ITEMS,
+  GUTTER_SCOPE_ITEMS,
+} from "@/data/scopeItems";
 import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 
 import { hasProduct } from "@/lib/engineHelpers";
@@ -12,13 +20,29 @@ interface Props {
 export default function ScopeOfWork({ products = [] }: Props) {
   const isWindows = hasProduct(products, "Windows");
   const isRoofing = hasProduct(products, "Roofing System");
+  const isStucco = hasProduct(products, "Stucco");
+  const isPaint = hasProduct(products, "Paint");
+  const isSiding = hasProduct(products, "Siding");
+  const isBath = hasProduct(products, "Bath");
+  const isSolar = hasProduct(products, "Solar");
+  const isGutters = hasProduct(products, "Gutters");
 
-  // Combine scope items from all selected products
+  // Combine scope items from all selected products (de-duped, order preserved)
   const items: string[] = [];
-  if (isRoofing) items.push(...SCOPE_ITEMS);
-  if (isWindows) items.push(...WINDOW_SCOPE_ITEMS);
-  // Fallback if neither matched (e.g. other products only)
-  if (items.length === 0) items.push(...SCOPE_ITEMS);
+  const pushUnique = (arr: readonly string[]) => {
+    for (const it of arr) if (!items.includes(it)) items.push(it);
+  };
+  if (isRoofing) pushUnique(SCOPE_ITEMS);
+  if (isWindows) pushUnique(WINDOW_SCOPE_ITEMS);
+  if (isStucco) pushUnique(STUCCO_SCOPE_ITEMS);
+  if (isPaint) pushUnique(PAINT_SCOPE_ITEMS);
+  if (isSiding) pushUnique(SIDING_SCOPE_ITEMS);
+  if (isBath) pushUnique(BATH_SCOPE_ITEMS);
+  if (isSolar) pushUnique(SOLAR_SCOPE_ITEMS);
+  if (isGutters) pushUnique(GUTTER_SCOPE_ITEMS);
+  // Fallback only if nothing matched
+  if (items.length === 0) pushUnique(SCOPE_ITEMS);
+
 
   const [checked, setChecked] = useState<boolean[]>(new Array(items.length).fill(false));
   const [animating, setAnimating] = useState(false);
@@ -55,10 +79,25 @@ export default function ScopeOfWork({ products = [] }: Props) {
             </h2>
           </div>
           <p className="text-primary-foreground/70 text-sm font-medium">
-            {isWindows
+            {isRoofing
+              ? "Your complete scope of work — everything included in your project"
+              : isWindows
               ? "Your complete window project scope — from measure to final walkthrough"
+              : isStucco
+              ? "Your complete stucco restoration — from prep to final coat"
+              : isPaint
+              ? "Your complete exterior paint project — from prep to final coat"
+              : isSiding
+              ? "Your complete siding replacement — from tear-off to trim-out"
+              : isBath
+              ? "Your complete bath remodel — from demo to final walkthrough"
+              : isSolar
+              ? "Your complete solar installation — from permit to PTO"
+              : isGutters
+              ? "Your complete gutter project — from tear-off to clean-up"
               : "Your complete scope of work — everything included in your project"}
           </p>
+
         </div>
 
         {/* Progress */}
