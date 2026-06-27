@@ -91,6 +91,31 @@ export default function InspectionPanel({ dealId }: Props) {
     setDraft((prev) => ({ ...(prev ?? sections), [key]: v }));
   }, [sections]);
 
+  // Pick a stucco finish and sweep the sections so every other finish name is
+  // replaced with the chosen one — keeps the narrative consistent end to end.
+  function pickStuccoFinish(finish: StuccoFinish) {
+    setStuccoFinish(finish);
+    const others = STUCCO_FINISHES.filter((f) => f !== finish);
+    const swap = (text: string) => {
+      let out = text;
+      for (const o of others) {
+        const re = new RegExp(`\\b${o.replace(/\s+/g, "\\s+")}\\b`, "gi");
+        out = out.replace(re, finish);
+      }
+      return out;
+    };
+    setDraft({
+      executive_summary: swap(sections.executive_summary),
+      inspection_scope: swap(sections.inspection_scope),
+      measurements: swap(sections.measurements),
+      professional_opinion: swap(sections.professional_opinion),
+      recommended_scope: swap(sections.recommended_scope),
+      next_steps: swap(sections.next_steps),
+      limitations: swap(sections.limitations),
+    });
+    toast.success(`Stucco finish set to ${finish} — narrative updated`);
+  }
+
   async function handleSave() {
     // Save the same narrative under every selected trade so re-opening any one of
     // them rehydrates the combined report.
