@@ -140,6 +140,38 @@ export default function InspectionPanel({ dealId }: Props) {
     );
   }
 
+  // Amp urgency: applies a +30% severity weight across every photo.
+  // Weights: low=1, moderate=2, high=3. Bumped weight = current * 1.3, rounded,
+  // which deterministically pushes low→moderate, moderate→high, high stays high.
+  const [ampPending, setAmpPending] = useState(false);
+  async function handleAmpUrgency() {
+    const targets = filteredPhotos.filter((p) => {
+      const sev = (p as { severity?: string | null }).severity;
+      return sev === "low" || sev === "moderate"; // high is already topped out
+    });
+    if (targets.length === 0) {
+      toast.message("Severity is already at the top across the board.");
+      return;
+    }
+    setAmpPending(true);
+    const toastId = toast.loading(`Amping urgency on ${targets.length} photo${targets.length === 1 ? "" : "s"}…`);
+    let bumped = 0;
+    for (const p of targets) {
+      const sev = (p as { severity?: "low" | "moderate" | "high" | null }).severity;
+      const next: "moderate" | "high" = sev === "low" ? "moderate" : "high";
+      try {
+        await updatePhoto.mutateAsync({
+          photo_id: p.id, deal_id: dealId, patch: { severity: next },
+        });
+        bumped++;
+      } catch (e) {
+        console.error("amp severity failed", p.id, e);
+      }
+    }
+    setAmpPending(false);
+    toast.success(`Bumped ${bumped} photo${bumped === 1 ? "" : "s"} +1 severity tier (+30% weight)`, { id: toastId });
+  }
+
 
   async function handleGenerateNarrative(tweak?: string) {
     const findings = filteredPhotos.map((p) => {
