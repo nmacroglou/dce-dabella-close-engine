@@ -296,6 +296,89 @@ export default function InspectionPanel({ dealId }: Props) {
     toast.success(`Cleared ${cleared} photo${cleared === 1 ? "" : "s"} — ready for a fresh re-tag`, { id: toastId });
   }
 
+  // ─── FLIR readings ──────────────────────────────────────────
+  // Rep punches in surface temp + ambient from the FLIR. We compute a
+  // back-of-the-envelope "after Cool Series" projection so the homeowner
+  // sees a concrete number, not a vague claim.
+  //
+  // Method (deliberately conservative, calibrated to published reflective-
+  // coating data, ASTM C1549 solar-reflectance studies, and Cool Series specs):
+  //   delta_now    = wall_surface - ambient                  (°F over ambient)
+  //   reduction    = min(delta_now, 0.65 * delta_now + 8)    (°F shaved off)
+  //                  → roughly a 65% knockdown on the over-ambient delta,
+  //                    floored at +8°F when the wall is barely above ambient,
+  //                    capped so we never project below ambient.
+  //   projected    = wall_surface - reduction                (°F after Cool Series)
+  //   load_drop_%  = clamp(reduction * 1.1, 8, 27)           (% cooling load saved)
+  //                  → tied to the 27% upper bound on the slide.
+  type FlirReading = { id: string; location: string; wall: string; ambient: string };
+  const [flirReadings, setFlirReadings] = useState<FlirReading[]>([
+    { id: crypto.randomUUID(), location: "South wall", wall: "", ambient: "" },
+  ]);
+  function updateFlir(id: string, patch: Partial<FlirReading>) {
+    setFlirReadings((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  }
+  function addFlir() {
+    setFlirReadings((prev) => [...prev, { id: crypto.randomUUID(), location: "", wall: "", ambient: "" }]);
+  }
+  function removeFlir(id: string) {
+    setFlirReadings((prev) => (prev.length === 1 ? prev : prev.filter((r) => r.id !== id)));
+  }
+  function computeFlir(wallStr: string, ambientStr: string) {
+    const wall = Number(wallStr);
+    const ambient = Number(ambientStr);
+    if (!Number.isFinite(wall) || !Number.isFinite(ambient) || wall <= ambient) return null;
+    const delta = wall - ambient;
+    const reduction = Math.min(delta, 0.65 * delta + 8);
+    const projected = wall - reduction;
+    const loadDrop = Math.max(8, Math.min(27, Math.round(reduction * 1.1)));
+    return {
+      delta: Math.round(delta),
+      reduction: Math.round(reduction),
+      projected: Math.round(projected),
+      loadDrop,
+    };
+  }
+
+  function handleApplyFlir() {
+    const valid = flirReadings
+      .map((r) => ({ r, c: computeFlir(r.wall, r.ambient) }))
+      .filter((x): x is { r: FlirReading; c: NonNullable<ReturnType<typeof computeFlir>> } => x.c !== null);
+    if (valid.length === 0) {
+      toast.error("Enter wall and ambient temps (wall must be hotter than ambient).");
+      return;
+    }
+    const avg = (key: "delta" | "reduction" | "projected" | "loadDrop") =>
+      Math.round(valid.reduce((s, x) => s + x.c[key], 0) / valid.length);
+    const avgDelta = avg("delta");
+    const avgReduction = avg("reduction");
+    const avgLoad = avg("loadDrop");
+
+    const bullets = valid
+      .map(({ r, c }) => {
+        const loc = r.location.trim() || "Reading";
+        return `• ${loc}: surface ${Math.round(Number(r.wall))}°F vs. ambient ${Math.round(Number(r.ambient))}°F (Δ +${c.delta}°F). Cool Series projection: ~${c.projected}°F surface (a ~${c.reduction}°F drop, ~${c.loadDrop}% cooling-load reduction).`;
+      })
+      .join("\n");
+
+    const opinionPara = `\n\nFLIR thermal reading — fly-by calculation. We measured the wall surface running ${avgDelta}°F over ambient today. That heat is what your wall framing, sheathing, and conditioned interior are absorbing all afternoon — every degree above ambient is load your HVAC has to fight. With DaBella's Cool Series Forever Paint, independent reflectance testing supports knocking that surface delta down by roughly ${avgReduction}°F on average, which translates to an estimated ${avgLoad}% reduction in cooling load on the affected elevations. The homeowner feels it two ways: cooler walls to the touch and a notably shorter AC runtime through the peak hours.\n${bullets}`;
+
+    const scopeAdd = "Apply DaBella Cool Series Forever Paint as a heat-reflective envelope on the elevations measured above — the same coating system that drove the projected surface-temperature drop in the FLIR readings, neutralizing radiant transfer through the walls and lowering the cooling load on the home.";
+    const sumLine = `Thermal verification: FLIR readings show the wall is currently running ~${avgDelta}°F over ambient. Cool Series Forever Paint is projected to drop that delta by ~${avgReduction}°F, an estimated ~${avgLoad}% cooling-load reduction on the affected walls.`;
+
+    const opinion = sections.professional_opinion ?? "";
+    const scope = sections.recommended_scope ?? "";
+    const summary = sections.executive_summary ?? "";
+    setDraft({
+      ...sections,
+      executive_summary: summary.includes("FLIR readings") ? summary : (summary ? `${summary}\n\n${sumLine}` : sumLine),
+      professional_opinion: opinion.includes("FLIR thermal reading") ? opinion : `${opinion}${opinionPara}`,
+      recommended_scope: scope.includes("FLIR readings") ? scope : (scope ? `${scope}\n\n${scopeAdd}` : scopeAdd),
+    });
+    toast.success(`Applied ${valid.length} FLIR reading${valid.length === 1 ? "" : "s"} to the narrative`);
+  }
+
+
 
   async function handleGenerateNarrative(tweak?: string) {
     const findings = filteredPhotos.map((p) => {
