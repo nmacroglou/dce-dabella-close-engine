@@ -411,6 +411,18 @@ export default function InspectionPanel({ dealId }: Props) {
           Amp urgency +30%
         </Button>
 
+        <Button
+          variant="outline"
+          onClick={handleClearAll}
+          disabled={clearPending || !!tagProgress || filteredPhotos.length === 0}
+          title="Wipe captions, tags, and severity on every photo so you can run a fresh tag pass. Photos stay."
+        >
+          {clearPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eraser className="h-4 w-4 mr-2" />}
+          Clear & re-tag
+        </Button>
+
+
+
 
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
           {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
