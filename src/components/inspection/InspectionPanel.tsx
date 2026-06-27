@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp } from "lucide-react";
+import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -134,18 +134,30 @@ export default function InspectionPanel({ dealId }: Props) {
   }
 
   const [tagProgress, setTagProgress] = useState<{ done: number; total: number } | null>(null);
+  const cancelTagRef = useRef(false);
   async function handleAutoTagAll() {
     if (filteredPhotos.length === 0) return;
     const total = filteredPhotos.length;
+    cancelTagRef.current = false;
     setTagProgress({ done: 0, total });
     const toastId = toast.loading(`Auto-tagging 0 / ${total}…`);
     let done = 0;
     let failures = 0;
     for (const p of filteredPhotos) {
+      if (cancelTagRef.current) {
+        toast.message(`Canceled — tagged ${done} of ${total}`, { id: toastId });
+        setTagProgress(null);
+        return;
+      }
       try {
         const res = await analyze.mutateAsync({
           photo_id: p.id, storage_path: p.storage_path, report_type: primaryType,
         });
+        if (cancelTagRef.current) {
+          toast.message(`Canceled — tagged ${done} of ${total}`, { id: toastId });
+          setTagProgress(null);
+          return;
+        }
         await updatePhoto.mutateAsync({
           photo_id: p.id, deal_id: dealId,
           patch: {
@@ -172,6 +184,10 @@ export default function InspectionPanel({ dealId }: Props) {
       { id: toastId },
     );
   }
+  function handleCancelAutoTag() {
+    cancelTagRef.current = true;
+  }
+
 
   // Amp urgency: applies a +30% severity weight across every photo.
   // Weights: low=1, moderate=2, high=3. Bumped weight = current * 1.3, rounded,
@@ -342,6 +358,17 @@ export default function InspectionPanel({ dealId }: Props) {
           {tagProgress ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
           {tagProgress ? `Tagging ${tagProgress.done}/${tagProgress.total}` : `Auto-tag all (${filteredPhotos.length})`}
         </Button>
+
+        {tagProgress && (
+          <Button
+            variant="destructive"
+            onClick={handleCancelAutoTag}
+            title="Stop the auto-tag run. Photos already tagged are kept."
+          >
+            <X className="h-4 w-4 mr-2" />
+            Cancel tagging
+          </Button>
+        )}
 
         <Button
           variant="outline"
