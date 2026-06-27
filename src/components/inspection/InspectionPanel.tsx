@@ -196,33 +196,71 @@ export default function InspectionPanel({ dealId }: Props) {
   // Amp urgency: applies a +30% severity weight across every photo.
   // Weights: low=1, moderate=2, high=3. Bumped weight = current * 1.3, rounded,
   // which deterministically pushes low→moderate, moderate→high, high stays high.
+  // When Stucco is in play, also layers in the hidden-water / dry-rot / Cool Series
+  // verbiage so the urgency reads with the right "why it matters" framing.
+  const STUCCO_AMP_CAPTION = "Surface telltales here often signal water that has already wicked behind the cladding — even when the sheathing and framing look fine from the outside, hairline checks like these are the path for moisture, which is how dry rot quietly takes hold in the wood you can't see. The same UV load that's faded this finish has been baking the wall assembly for years. Our Cool Series Forever Paint seals the envelope, reflects that heat load, and neutralizes the thermal transfer through the wall so the home stays cooler and the substrate stays dry.";
+  const STUCCO_AMP_OPINION = "\n\nUrgency note: the conditions visible on the surface are the leading indicator, not the full story. Stucco hides what's behind it — water that finds a hairline crack or a tired finish doesn't show until the framing is already compromised by dry rot. Compounding that, sun-faded and chalking paint has lost its ability to shed water or reflect heat, which accelerates both moisture intrusion and thermal load on the wall assembly. Our Cool Series Forever Paint system re-seals the envelope, reflects solar heat, and neutralizes the heat transfer through the walls — protecting the wood you can't see and lowering the cooling load on the home.";
   const [ampPending, setAmpPending] = useState(false);
   async function handleAmpUrgency() {
     const targets = filteredPhotos.filter((p) => {
       const sev = (p as { severity?: string | null }).severity;
       return sev === "low" || sev === "moderate"; // high is already topped out
     });
-    if (targets.length === 0) {
+    if (targets.length === 0 && !reportTypes.includes("stucco")) {
       toast.message("Severity is already at the top across the board.");
       return;
     }
     setAmpPending(true);
     const toastId = toast.loading(`Amping urgency on ${targets.length} photo${targets.length === 1 ? "" : "s"}…`);
     let bumped = 0;
+    const isStucco = reportTypes.includes("stucco");
     for (const p of targets) {
       const sev = (p as { severity?: "low" | "moderate" | "high" | null }).severity;
       const next: "moderate" | "high" = sev === "low" ? "moderate" : "high";
+      const patch: { severity: "moderate" | "high"; caption?: string } = { severity: next };
+      if (isStucco) {
+        const existing = (p.caption ?? "").trim();
+        if (!existing.includes("Cool Series")) {
+          patch.caption = existing
+            ? `${existing}\n\n${STUCCO_AMP_CAPTION}`
+            : STUCCO_AMP_CAPTION;
+        }
+      }
       try {
         await updatePhoto.mutateAsync({
-          photo_id: p.id, deal_id: dealId, patch: { severity: next },
+          photo_id: p.id, deal_id: dealId, patch,
         });
         bumped++;
       } catch (e) {
         console.error("amp severity failed", p.id, e);
       }
     }
+    // For stucco, also layer the urgency framing into the live narrative draft
+    // so Professional Opinion + Recommended Scope carry the hidden-water + Cool
+    // Series message without needing a re-draft.
+    if (isStucco) {
+      const opinion = sections.professional_opinion ?? "";
+      const scope = sections.recommended_scope ?? "";
+      const nextOpinion = opinion.includes("Cool Series Forever Paint system")
+        ? opinion
+        : `${opinion}${STUCCO_AMP_OPINION}`;
+      const scopeAdd = "Apply DaBella Cool Series Forever Paint over a properly prepped and sealed stucco envelope — addressing hairline cracks, chalking, and faded finish so the wall sheds water, resists UV, and neutralizes heat transfer through the assembly to protect the framing behind it.";
+      const nextScope = scope.includes("Cool Series Forever Paint")
+        ? scope
+        : (scope ? `${scope}\n\n${scopeAdd}` : scopeAdd);
+      setDraft({
+        ...sections,
+        professional_opinion: nextOpinion,
+        recommended_scope: nextScope,
+      });
+    }
     setAmpPending(false);
-    toast.success(`Bumped ${bumped} photo${bumped === 1 ? "" : "s"} +1 severity tier (+30% weight)`, { id: toastId });
+    toast.success(
+      isStucco
+        ? `Bumped ${bumped} photo${bumped === 1 ? "" : "s"} + layered Cool Series urgency into captions and narrative`
+        : `Bumped ${bumped} photo${bumped === 1 ? "" : "s"} +1 severity tier (+30% weight)`,
+      { id: toastId },
+    );
   }
 
   // Wipe every photo's tags, severity, and caption so the rep can start a clean re-tag pass.
