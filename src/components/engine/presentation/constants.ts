@@ -438,6 +438,83 @@ const SOLAR_C: string[] = [
 ];
 
 
+const STUCCO: string[] = [
+  "Crack repair & elastomeric patching",
+  "Power wash & full surface prep",
+  "Forever Paint Cool Series coating",
+  "Heat-reflective thermal barrier",
+  "Factory-Trained Certified Applicators",
+  "Lifetime coating warranty",
+];
+
+const STUCCO_A: string[] = [
+  "Forever Paint Cool Series Elastomeric Coating",
+  "Full Hairline & Structural Crack Repair",
+  "Heat-Reflective Thermal Barrier (Cool Series)",
+  "Pressure Wash & Full Surface Prep",
+  "Algae, Mildew & Stain Treatment",
+  "Lifetime Transferable Coating Warranty",
+  "Factory-Trained Certified Applicators",
+  "Best Long-Term ROI",
+];
+
+const STUCCO_B: string[] = [
+  "Forever Paint Premium Elastomeric Coating",
+  "Crack Repair & Patching",
+  "Pressure Wash & Surface Prep",
+  "UV & Fade Resistance Package",
+  "Lifetime Transferable Coating Warranty",
+  "Factory-Trained Certified Applicators",
+  "Exceptional Long-Term Value",
+];
+
+const STUCCO_C: string[] = [
+  "Forever Paint Essential Coating",
+  "Spot Crack Repair",
+  "Pressure Wash & Prep",
+  "Manufacturer Coating Warranty",
+  "Professional Installation",
+  "Reliable Weather Protection",
+];
+
+const PAINT: string[] = [
+  "Forever Paint Cool Series exterior coating",
+  "Full prep, scrape, prime & two coats",
+  "Heat-reflective formula",
+  "Factory-Trained Certified Applicators",
+  "Lifetime coating warranty",
+  "Best long-term ROI",
+];
+
+const PAINT_A: string[] = [
+  "Forever Paint Cool Series Exterior Coating",
+  "Full Scrape, Sand, Prime & Two Coats",
+  "Heat-Reflective Thermal Barrier",
+  "Caulking & Trim Detail Package",
+  "Lifetime Transferable Coating Warranty",
+  "Factory-Trained Certified Applicators",
+  "Best Long-Term ROI",
+];
+
+const PAINT_B: string[] = [
+  "Forever Paint Premium Exterior Coating",
+  "Scrape, Prime & Two Coats",
+  "UV & Fade Resistance Package",
+  "Caulking & Touch-Up Detail",
+  "Lifetime Transferable Coating Warranty",
+  "Factory-Trained Certified Applicators",
+  "Exceptional Long-Term Value",
+];
+
+const PAINT_C: string[] = [
+  "Forever Paint Essential Exterior Coating",
+  "Prime & Two Coats",
+  "Standard Prep Package",
+  "Manufacturer Coating Warranty",
+  "Professional Installation",
+  "Reliable Weather Protection",
+];
+
 const SHARED_FALLBACK: string[] = [
   "Golden Pledge® Lifetime Warranty",
   "Factory-Trained Certified Installers",
@@ -456,6 +533,8 @@ const ALL_PRESET_FEATURE_LISTS: string[][] = [
   BATH, BATH_A, BATH_B, BATH_C,
   GUTTERS, GUTTERS_A, GUTTERS_B, GUTTERS_C,
   SOLAR, SOLAR_A, SOLAR_B, SOLAR_C,
+  STUCCO, STUCCO_A, STUCCO_B, STUCCO_C,
+  PAINT, PAINT_A, PAINT_B, PAINT_C,
   SHARED_FALLBACK,
 ];
 const PRESET_FEATURE_SIGNATURES = new Set(
