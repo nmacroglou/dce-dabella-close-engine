@@ -51,26 +51,6 @@ export default function InspectionPanel({ dealId }: Props) {
   const [draft, setDraft] = useState<InspectionSections | null>(null);
   const [stuccoFinish, setStuccoFinish] = useState<StuccoFinish | null>(null);
 
-  // When the rep picks a finish, sweep the sections and swap any other finish names
-  // for the chosen one so the narrative reads consistently throughout.
-  const applyFinishToSections = useCallback((finish: StuccoFinish) => {
-    const current = draft ?? inspectionSectionsRef.current;
-    if (!current) return;
-    const others = STUCCO_FINISHES.filter((f) => f !== finish);
-    // Match each "other" finish name as a whole phrase, case-insensitive.
-    const swap = (text: string) => {
-      let out = text;
-      for (const o of others) {
-        const re = new RegExp(`\\b${o.replace(/\s+/g, "\\s+")}\\b`, "gi");
-        out = out.replace(re, finish);
-      }
-      return out;
-    };
-    const next = Object.fromEntries(
-      Object.entries(current).map(([k, v]) => [k, typeof v === "string" ? swap(v) : v]),
-    ) as InspectionSections;
-    setDraft(next);
-  }, [draft]);
 
   const toggleReportType = useCallback((rt: InspectionReportType) => {
     setDraft(null);
