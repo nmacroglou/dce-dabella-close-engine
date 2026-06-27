@@ -26,6 +26,12 @@ interface Props {
 
 const REPORT_OPTIONS: InspectionReportType[] = ["roof", "windows", "bath", "siding", "stucco", "paint"];
 
+const STUCCO_FINISHES = [
+  "Santa Barbara", "Lace", "Light Lace", "Heavy Lace",
+  "Light Dash", "Medium Dash", "Heavy Dash", "Sand",
+] as const;
+type StuccoFinish = typeof STUCCO_FINISHES[number];
+
 const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
   { key: "executive_summary", label: "Executive Summary" },
   { key: "inspection_scope", label: "Inspection Scope" },
@@ -43,6 +49,8 @@ export default function InspectionPanel({ dealId }: Props) {
 
   // Local override for sections so the textarea stays responsive while typing.
   const [draft, setDraft] = useState<InspectionSections | null>(null);
+  const [stuccoFinish, setStuccoFinish] = useState<StuccoFinish | null>(null);
+
 
   const toggleReportType = useCallback((rt: InspectionReportType) => {
     setDraft(null);
@@ -82,6 +90,31 @@ export default function InspectionPanel({ dealId }: Props) {
   const setField = useCallback((key: keyof InspectionSections, v: string) => {
     setDraft((prev) => ({ ...(prev ?? sections), [key]: v }));
   }, [sections]);
+
+  // Pick a stucco finish and sweep the sections so every other finish name is
+  // replaced with the chosen one — keeps the narrative consistent end to end.
+  function pickStuccoFinish(finish: StuccoFinish) {
+    setStuccoFinish(finish);
+    const others = STUCCO_FINISHES.filter((f) => f !== finish);
+    const swap = (text: string) => {
+      let out = text;
+      for (const o of others) {
+        const re = new RegExp(`\\b${o.replace(/\s+/g, "\\s+")}\\b`, "gi");
+        out = out.replace(re, finish);
+      }
+      return out;
+    };
+    setDraft({
+      executive_summary: swap(sections.executive_summary),
+      inspection_scope: swap(sections.inspection_scope),
+      measurements: swap(sections.measurements),
+      professional_opinion: swap(sections.professional_opinion),
+      recommended_scope: swap(sections.recommended_scope),
+      next_steps: swap(sections.next_steps),
+      limitations: swap(sections.limitations),
+    });
+    toast.success(`Stucco finish set to ${finish} — narrative updated`);
+  }
 
   async function handleSave() {
     // Save the same narrative under every selected trade so re-opening any one of
@@ -191,11 +224,15 @@ export default function InspectionPanel({ dealId }: Props) {
       return;
     }
     const toastId = toast.loading("Drafting narrative from photos…");
+    const finishNote = reportTypes.includes("stucco") && stuccoFinish
+      ? `Existing stucco finish texture confirmed by the rep: ${stuccoFinish}. Reference this finish by name throughout the report and do not mention any other finish.`
+      : "";
+    const mergedTweak = [tweak?.trim(), finishNote].filter(Boolean).join("\n\n");
     try {
       const res = await generateNarrative.mutateAsync({
         report_types: reportTypes,
         photos: tagged,
-        tweak,
+        tweak: mergedTweak || undefined,
       });
       setDraft(res.sections);
       toast.success("Narrative drafted — review and Save", { id: toastId });
@@ -258,6 +295,35 @@ export default function InspectionPanel({ dealId }: Props) {
             })}
           </div>
         </div>
+
+        {reportTypes.includes("stucco") && (
+          <div className="w-full basis-full">
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Stucco Finish <span className="text-muted-foreground/70 font-normal normal-case tracking-normal">— pick the texture on this home; we'll thread it through the report</span>
+            </Label>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {STUCCO_FINISHES.map((f) => {
+                const active = stuccoFinish === f;
+                return (
+                  <button
+                    type="button"
+                    key={f}
+                    onClick={() => pickStuccoFinish(f)}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                      active
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-card text-foreground/80 border-border hover:border-primary/40 hover:bg-muted"
+                    }`}
+                    aria-pressed={active}
+                  >
+                    {active && <Check className="h-3 w-3" />}
+                    {f}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <input
           ref={fileRef}
