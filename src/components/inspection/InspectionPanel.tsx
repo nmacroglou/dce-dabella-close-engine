@@ -406,11 +406,19 @@ export default function InspectionPanel({ dealId }: Props) {
       recommended_scope: baseScope ? `${baseScope}\n\n${scopeAdd}` : scopeAdd,
     });
 
-    // Cascade to photo captions — always rewrite the FLIR line so edits
-    // upstairs flow through every included photo automatically.
+    // Cascade ONLY to FLIR photos — detect via tag, caption hint, or
+    // filename so non-thermal inspection photos are left exactly as the
+    // rep wrote them.
     const captionLine = `FLIR thermal: wall surface running ~${avgDelta}°F over ambient. Projected post-Cool Series surface drop ~${avgReduction}°F (~${avgLoad}% cooling-load reduction on this elevation).`;
+    const isFlirPhoto = (p: typeof filteredPhotos[number]) => {
+      const ext = p as { inspection_tags?: string[]; file_name?: string | null; storage_path?: string | null };
+      const tagHit = (ext.inspection_tags ?? []).some((t) => /flir|thermal/i.test(t));
+      const nameHit = /flir|thermal/i.test(`${ext.file_name ?? ""} ${ext.storage_path ?? ""}`);
+      const capHit = /flir|thermal/i.test(p.caption ?? "");
+      return tagHit || nameHit || capHit;
+    };
     const captionTargets = filteredPhotos.filter(
-      (p) => (p as { include_in_report?: boolean }).include_in_report !== false,
+      (p) => (p as { include_in_report?: boolean }).include_in_report !== false && isFlirPhoto(p),
     );
     let cascaded = 0;
     for (const p of captionTargets) {
@@ -427,6 +435,7 @@ export default function InspectionPanel({ dealId }: Props) {
         console.error("flir caption cascade failed", p.id, e);
       }
     }
+
 
     if (!silent) {
       toast.success(
