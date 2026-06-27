@@ -375,8 +375,37 @@ export default function InspectionPanel({ dealId }: Props) {
       professional_opinion: opinion.includes("FLIR thermal reading") ? opinion : `${opinion}${opinionPara}`,
       recommended_scope: scope.includes("FLIR readings") ? scope : (scope ? `${scope}\n\n${scopeAdd}` : scopeAdd),
     });
-    toast.success(`Applied ${valid.length} FLIR reading${valid.length === 1 ? "" : "s"} to the narrative`);
+
+    // Cascade to photo captions — append a concise thermal line to every
+    // included photo so the FLIR story shows up next to the imagery in the
+    // PDF, not just in the narrative. Idempotent: skips any caption that
+    // already carries the FLIR note.
+    const captionLine = `FLIR thermal: wall surface running ~${avgDelta}°F over ambient. Projected post-Cool Series surface drop ~${avgReduction}°F (~${avgLoad}% cooling-load reduction on this elevation).`;
+    const captionTargets = filteredPhotos.filter(
+      (p) => (p as { include_in_report?: boolean }).include_in_report !== false,
+    );
+    let cascaded = 0;
+    for (const p of captionTargets) {
+      const existing = (p.caption ?? "").trim();
+      if (existing.includes("FLIR thermal")) continue;
+      try {
+        await updatePhoto.mutateAsync({
+          photo_id: p.id, deal_id: dealId,
+          patch: { caption: existing ? `${existing}\n\n${captionLine}` : captionLine },
+        });
+        cascaded++;
+      } catch (e) {
+        console.error("flir caption cascade failed", p.id, e);
+      }
+    }
+
+    toast.success(
+      cascaded > 0
+        ? `Applied ${valid.length} FLIR reading${valid.length === 1 ? "" : "s"} — narrative + ${cascaded} photo caption${cascaded === 1 ? "" : "s"}`
+        : `Applied ${valid.length} FLIR reading${valid.length === 1 ? "" : "s"} to the narrative`,
+    );
   }
+
 
 
 
