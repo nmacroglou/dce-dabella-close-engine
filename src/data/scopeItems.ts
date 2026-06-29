@@ -16,33 +16,31 @@ export const SCOPE_ITEMS = [
   "Haul away job debris, magnetically sweep yard, driveway, etc.",
 ] as const;
 
+// Cool Life® Wall Coating System — official 10-step application (Lifetime Plus Coatings)
 export const STUCCO_SCOPE_ITEMS = [
-  "Protect landscaping, windows, doors, and hardscape with masking & drop cloths",
-  "Pressure wash all stucco surfaces to remove dirt, chalking, and biological growth",
-  "Treat algae, mildew, and efflorescence staining",
-  "Scrape and remove any loose or failing existing coatings",
-  "Repair hairline and structural cracks with elastomeric patching compound",
-  "Re-caulk all windows, doors, penetrations, and dissimilar material transitions",
-  "Spot-prime all bare stucco and patched areas with bonding primer",
-  "Apply Forever Paint Cool Series elastomeric coating — first full coat",
-  "Apply second full coat to manufacturer-spec mil thickness",
-  "Match existing stucco finish texture on all patched areas (Lace / Dash / Sand / Santa Barbara)",
-  "Final walk-through with homeowner & touch-ups",
-  "Haul away all job debris and clean site",
+  "Pre-Inspection + Consultation — thorough in-home inspection by our experts",
+  "Trenching — 4–6 inch trenches dug around the home to block ground moisture",
+  "Hydroblasting — hydro-blast surface to remove dirt, stains, loose paint, and debris",
+  "Patch & Repair — caulk windows, seams, gaps in woodwork; patch masonry cracks to stop moisture and peeling",
+  "Masking — cover/mask shrubs, windows, and surrounding surfaces for full protection",
+  "Apply 970 / 975H Primer — advanced primer technology creating a permanent structural bond to the home",
+  "Primer Inspection — primed surfaces are carefully inspected before topcoat",
+  "Apply Cool Life® Wall Coating — breathable, heat-reflective, fire-retardant coating (two full coats to spec)",
+  "Detail Trim — 100% Acrylic Trim Coat applied to accent pieces (wide range of colors)",
+  "Clean Up + Final Inspection — final walk-through, touch-ups, and site cleanup",
 ] as const;
 
 export const PAINT_SCOPE_ITEMS = [
-  "Protect landscaping, windows, doors, roof, and hardscape with masking & drop cloths",
-  "Pressure wash all exterior surfaces to remove dirt, chalking, and mildew",
-  "Scrape and sand all loose, peeling, or failing paint",
-  "Repair minor wood damage, nail pops, and surface imperfections",
-  "Re-caulk all windows, doors, trim joints, and penetrations",
-  "Spot-prime all bare wood, stains, and repaired areas",
-  "Apply Forever Paint Cool Series exterior coating — first full coat",
-  "Apply second full coat to manufacturer-spec mil thickness",
-  "Cut-in and detail trim, fascia, soffits, and accent areas",
-  "Final walk-through with homeowner & touch-ups",
-  "Haul away all job debris and clean site",
+  "Pre-Inspection + Consultation — thorough in-home inspection by our experts",
+  "Trenching — 4–6 inch trenches around the home to block ground moisture",
+  "Hydroblasting — hydro-blast all surfaces to remove dirt, chalking, loose paint, and debris",
+  "Patch & Repair — caulk windows, seams, and gaps; repair wood and trim to stop moisture and peeling",
+  "Masking — cover/mask shrubs, windows, roof, and hardscape for full protection",
+  "Apply 970 / 975H Primer — advanced primer creating a permanent structural bond",
+  "Primer Inspection — primed surfaces are carefully inspected before topcoat",
+  "Apply Cool Life® Wall Coating — breathable, heat-reflective, fire-retardant topcoat (two full coats to spec)",
+  "Detail Trim — 100% Acrylic Trim Coat on fascia, trim, and accent pieces",
+  "Clean Up + Final Inspection — final walk-through, touch-ups, and site cleanup",
 ] as const;
 
 export const SIDING_SCOPE_ITEMS = [
