@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck,
-  ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen,
+  ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen, Target,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
@@ -44,6 +44,7 @@ const SELL_CLUSTER: NavEntry[] = [
 
 const INSIGHTS_CLUSTER: NavEntry[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: false },
+  { to: "/forecast", label: "Forecast", icon: Target, end: false },
   { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
   { to: "/energy-lens", label: "Energy", icon: SunIcon, end: false },
 ];
