@@ -16,8 +16,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import type { Deal } from "@/types/deal";
 
-
 const DAY_MS = 86_400_000;
+const RESOLVE_DAYS = 14;
 
 type PresetKey = "7d" | "30d" | "90d" | "mtd" | "qtd" | "ytd" | "all" | "custom";
 
@@ -51,48 +51,93 @@ function rangeFromPreset(key: PresetKey): { from: Date; to: Date } {
   return { from, to };
 }
 
+/** Won-deal contract value: closed_amount first, then selected option price, then largest of A/B/C. */
+function wonValue(d: Deal): number {
+  if (d.closed_amount && d.closed_amount > 0) return d.closed_amount;
+  const opt = d.selected_option;
+  const optPrice =
+    opt === "A" ? d.price_a : opt === "B" ? d.price_b : opt === "C" ? d.price_c : null;
+  if (optPrice && optPrice > 0) return optPrice;
+  return Math.max(d.price_a ?? 0, d.price_b ?? 0, d.price_c ?? 0);
+}
+
+/** A cancel proxy: deal ended in disqualified but had gotten far enough to pick an option
+ *  (or had a contract value on it). Those are the ones that were effectively sold-then-lost. */
+function isPostSaleCancel(d: Deal): boolean {
+  return d.stage === "disqualified" && (
+    !!d.selected_option || (d.closed_amount ?? 0) > 0 || d.was_demoed
+  );
+}
+
 export default function Forecast() {
   const { data: deals = [], isLoading } = useDeals();
   const [goal, setGoal] = useState(150_000);
-  const [retentionPct, setRetentionPct] = useState(95);
   const [preset, setPreset] = useState<PresetKey>("30d");
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
+  /** Strict lead = deals with was_demoed (real sit). Off = every deal card created. */
+  const [strictLeads, setStrictLeads] = useState(true);
 
   const range = useMemo(() => {
-    if (preset === "custom" && customFrom && customTo) {
-      return { from: customFrom, to: customTo };
-    }
+    if (preset === "custom" && customFrom && customTo) return { from: customFrom, to: customTo };
     return rangeFromPreset(preset);
   }, [preset, customFrom, customTo]);
 
-  const scoped = useMemo(() => {
+  const stats = useMemo(() => {
     const fromMs = range.from.getTime();
     const toMs = range.to.getTime();
-    return deals.filter((d) => {
+    const inRangeCreated = (d: Deal) => {
       const t = d.created_at ? new Date(d.created_at).getTime() : 0;
       return t >= fromMs && t <= toMs;
-    });
-  }, [deals, range]);
+    };
+    const inRangeClosed = (d: Deal) => {
+      const t = d.closed_at ? new Date(d.closed_at).getTime() : 0;
+      return t >= fromMs && t <= toMs;
+    };
 
-  const stats = useMemo(() => {
-    const leads = scoped.length;
-    const pitched = scoped.filter((d) => d.was_presented).length;
-    const won = scoped.filter((d) => d.stage === "won");
-    const lost = scoped.filter((d) => d.stage === "lost");
-    const finished = won.length + lost.length;
-    const gross = won.reduce((s, d) => s + (d.closed_amount ?? 0), 0);
-    const nis = gross * (retentionPct / 100);
+    // Leads: created_at based; strict mode requires was_demoed = true (a real sit).
+    const allCreated = deals.filter(inRangeCreated);
+    const leadDeals = strictLeads ? allCreated.filter((d) => d.was_demoed) : allCreated;
+    const leads = leadDeals.length;
+    const pitched = leadDeals.filter((d) => d.was_presented).length;
+    const dqInRange = allCreated.filter((d) => d.stage === "disqualified").length;
+    const pitchDenom = Math.max(0, leads - (strictLeads ? 0 : dqInRange));
+    const pitchRate = pitchDenom > 0 ? pitched / pitchDenom : 0;
 
+    // Wins & losses: closed_at based.
+    const wonInWin = deals.filter((d) => d.stage === "won" && inRangeClosed(d));
+    const lostInWin = deals.filter((d) => d.stage === "lost" && inRangeClosed(d));
+
+    // Sit-to-Close cohort (mirrors Dashboard): every presentation created in range that
+    // has had ≥14 days to resolve, or is already won/lost.
     const now = Date.now();
-    const spanEnd = Math.min(now, range.to.getTime());
-    const spanDays = Math.max(1, Math.ceil((spanEnd - range.from.getTime()) / DAY_MS));
+    const resolveCutoff = now - RESOLVE_DAYS * DAY_MS;
+    const presentationsInWin = allCreated.filter(
+      (d) => d.stage === "presented" || d.stage === "follow_up" || d.stage === "won" || d.stage === "lost",
+    );
+    const cohort = presentationsInWin.filter((d) => {
+      if (d.stage === "won" || d.stage === "lost") return true;
+      return new Date(d.stage_changed_at).getTime() <= resolveCutoff;
+    });
+    const cohortWon = cohort.filter((d) => d.stage === "won").length;
+    const closeRate = cohort.length > 0 ? cohortWon / cohort.length : 0;
+    const stillDeciding = presentationsInWin.length - cohort.length;
+
+    // Gross uses the option-price fallback.
+    const gross = wonInWin.reduce((s, d) => s + wonValue(d), 0);
+    const avgTicket = wonInWin.length > 0 ? gross / wonInWin.length : 0;
+
+    // Retention: computed from data. Cancels = disqualified deals in range (by created_at)
+    // that had actually been sold (option picked / demoed / had a $ amount).
+    const cancels = allCreated.filter(isPostSaleCancel).length;
+    const soldOrCancelled = wonInWin.length + cancels;
+    const retentionRate = soldOrCancelled > 0 ? wonInWin.length / soldOrCancelled : 1;
+    const nis = gross * retentionRate;
+
+    const spanEnd = Math.min(now, toMs);
+    const spanDays = Math.max(1, Math.ceil((spanEnd - fromMs) / DAY_MS));
     const weeksActive = spanDays / 7;
     const monthsActive = spanDays / 30;
-
-    const pitchRate = leads > 0 ? pitched / leads : 0;
-    const closeRate = finished > 0 ? won.length / finished : 0;
-    const avgTicket = won.length > 0 ? gross / won.length : 0;
 
     const leadsPerWeek = leads / weeksActive;
     const nisPerWeek = nis / weeksActive;
@@ -102,21 +147,27 @@ export default function Forecast() {
     const weeksToGoal = nisPerWeek > 0 ? remaining / nisPerWeek : Infinity;
 
     const dollarsPerLead =
-      leads > 0 ? pitchRate * closeRate * avgTicket * (retentionPct / 100) : 0;
+      leads > 0 ? pitchRate * closeRate * avgTicket * retentionRate : 0;
     const leadsNeededForGoal = dollarsPerLead > 0 ? goal / dollarsPerLead : Infinity;
     const leadsRemaining = Math.max(0, leadsNeededForGoal - leads);
 
     return {
-      leads, pitched, won: won.length, lost: lost.length, finished,
-      gross, nis, pitchRate, closeRate, avgTicket, retentionPct,
+      leads, pitched, pitchDenom, dqInRange,
+      won: wonInWin.length, lost: lostInWin.length,
+      cohortSize: cohort.length, cohortWon, stillDeciding,
+      gross, avgTicket, cancels, retentionRate, nis,
+      pitchRate, closeRate,
       spanDays, weeksActive, monthsActive,
       leadsPerWeek, nisPerWeek, nisPerMonth,
       remaining, weeksToGoal, dollarsPerLead, leadsNeededForGoal, leadsRemaining,
     };
-  }, [scoped, goal, retentionPct, range]);
+  }, [deals, goal, range, strictLeads]);
 
   const goalPct = Math.min(100, (stats.nis / goal) * 100);
   const onPace = stats.nisPerMonth >= goal;
+  const retentionPctDisplay = Math.round(stats.retentionRate * 100);
+  const confidenceLabel =
+    stats.cohortSize >= 20 ? "high" : stats.cohortSize >= 8 ? "med" : "low";
 
   return (
     <div className="min-h-screen bg-background">
@@ -142,17 +193,14 @@ export default function Forecast() {
                 className="mt-1 font-bold tabular-nums"
               />
             </div>
-            <div className="w-56">
-              <div className="flex justify-between text-xs">
-                <Label className="uppercase tracking-wider text-muted-foreground">Retention</Label>
-                <span className="font-bold tabular-nums">{retentionPct}%</span>
-              </div>
-              <Slider
-                value={[retentionPct]}
-                onValueChange={([v]) => setRetentionPct(v)}
-                min={70} max={100} step={1}
-                className="mt-2"
-              />
+            <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+              <Switch id="strict" checked={strictLeads} onCheckedChange={setStrictLeads} />
+              <Label htmlFor="strict" className="text-xs font-bold cursor-pointer">
+                Strict Leads
+                <div className="text-[10px] font-normal text-muted-foreground">
+                  {strictLeads ? "Only demoed sits count" : "Every deal card counts"}
+                </div>
+              </Label>
             </div>
           </div>
         </header>
@@ -210,17 +258,15 @@ export default function Forecast() {
           <div className="text-muted-foreground text-sm">Loading your pipeline…</div>
         ) : (
           <>
-            {/* KPI grid */}
             <section className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-              <StatTile icon={Users} label="Lead Count" value={formatCount(stats.leads)} accent="text-primary" sub={`${stats.leadsPerWeek.toFixed(1)}/wk`} />
-              <StatTile icon={Percent} label="Pitch %" value={pctNum(stats.pitchRate * 100)} accent="text-info" sub={`${stats.pitched} pitched`} />
-              <StatTile icon={Award} label="Close Rate" value={pctNum(stats.closeRate * 100)} accent="text-success" sub={`${stats.won}W / ${stats.lost}L`} />
+              <StatTile icon={Users} label="Lead Count" value={formatCount(stats.leads)} accent="text-primary" sub={`${stats.leadsPerWeek.toFixed(1)}/wk · ${strictLeads ? "sits" : "all"}`} />
+              <StatTile icon={Percent} label="Pitch %" value={pctNum(stats.pitchRate * 100)} accent="text-info" sub={`${stats.pitched} of ${stats.pitchDenom}`} />
+              <StatTile icon={Award} label="Close Rate" value={pctNum(stats.closeRate * 100)} accent="text-success" sub={`Sit-to-Close · ${confidenceLabel}`} />
               <StatTile icon={DollarSign} label="Gross Sales" value={formatCurrency(stats.gross)} accent="text-warning" sub={`${formatCurrency(stats.avgTicket)} avg`} />
-              <StatTile icon={TrendingUp} label="NIS" value={formatCurrency(stats.nis)} accent="text-primary" sub={`${retentionPct}% ret.`} />
-              <StatTile icon={Shield} label="Retention" value={`${retentionPct}%`} accent="text-info" sub="adjustable" />
+              <StatTile icon={TrendingUp} label="NIS" value={formatCurrency(stats.nis)} accent="text-primary" sub={`${retentionPctDisplay}% ret.`} />
+              <StatTile icon={Shield} label="Retention" value={`${retentionPctDisplay}%`} accent="text-info" sub={`${stats.cancels} cancels`} />
             </section>
 
-            {/* Goal progress */}
             <section className="card-elevated p-5 space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
@@ -234,10 +280,7 @@ export default function Forecast() {
                 </span>
               </div>
               <div className="h-4 w-full rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-primary to-success transition-all"
-                  style={{ width: `${goalPct}%` }}
-                />
+                <div className="h-full bg-gradient-to-r from-primary to-success transition-all" style={{ width: `${goalPct}%` }} />
               </div>
               <div className="flex justify-between text-xs tabular-nums text-muted-foreground">
                 <span>0</span>
@@ -246,15 +289,14 @@ export default function Forecast() {
               </div>
             </section>
 
-            {/* Forecast */}
             <section className="grid gap-4 md:grid-cols-2">
               <div className="card-elevated p-5 space-y-3">
                 <h3 className="font-display font-bold text-lg flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4 text-primary" /> Time-based forecast
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  At your current pace of <b className="text-foreground">{formatCurrency(stats.nisPerWeek)}/wk</b>{" "}
-                  ({formatCurrency(stats.nisPerMonth)}/mo NIS):
+                  Current pace: <b className="text-foreground">{formatCurrency(stats.nisPerWeek)}/wk</b>{" "}
+                  ({formatCurrency(stats.nisPerMonth)}/mo NIS)
                 </p>
                 <ul className="text-sm space-y-2">
                   <Row label="Weeks to hit goal" value={isFinite(stats.weeksToGoal) ? `${stats.weeksToGoal.toFixed(1)} wks` : "—"} />
@@ -281,7 +323,6 @@ export default function Forecast() {
               </div>
             </section>
 
-            {/* What-if levers */}
             <section className="card-elevated p-5 space-y-3">
               <h3 className="font-display font-bold text-lg">What would move the needle?</h3>
               <div className="grid gap-3 md:grid-cols-3 text-sm">
@@ -291,50 +332,56 @@ export default function Forecast() {
               </div>
             </section>
 
-            {/* Definitions panel */}
             <section className="card-elevated p-5 space-y-4">
               <h3 className="font-display font-bold text-lg flex items-center gap-2">
                 <Info className="h-4 w-4 text-primary" /> How these numbers are calculated
               </h3>
               <p className="text-xs text-muted-foreground">
-                All metrics use deals in the selected time range, filtered by <code>created_at</code> and scoped to your rep view.
+                Date basis: <b className="text-foreground">created_at</b> for leads/pitch, <b className="text-foreground">closed_at</b> for wins/losses/gross/NIS.
+                All numbers are scoped to your rep view and the selected time range.
               </p>
               <div className="grid gap-3 md:grid-cols-2">
                 <Definition
                   icon={Users} label="Lead Count" accent="text-primary"
-                  formula="count(deals where created_at ∈ range)"
-                  plain="Every deal card you created in this range — regardless of stage."
+                  formula={strictLeads
+                    ? "count(deals where was_demoed = true AND created_at ∈ range)"
+                    : "count(deals where created_at ∈ range)"}
+                  plain={strictLeads
+                    ? "Only counts real sits — deals where a demo actually happened. Toggle 'Strict Leads' off to include every deal card."
+                    : "Every deal card created in the range, regardless of stage or outcome."}
                   live={`= ${formatCount(stats.leads)} leads`}
                 />
                 <Definition
                   icon={Percent} label="Pitch %" accent="text-info"
-                  formula="pitched ÷ leads   where pitched = deals with was_presented = true"
-                  plain="Of your leads, the share you actually delivered a presentation to."
-                  live={`${stats.pitched} pitched ÷ ${stats.leads} leads = ${pctNum(stats.pitchRate * 100)}`}
+                  formula={strictLeads
+                    ? "pitched ÷ leads   (leads already exclude no-sits)"
+                    : "pitched ÷ (leads − disqualified)   — bad leads removed from denom"}
+                  plain="Of the qualified leads, the share that got a full presentation (was_presented = true)."
+                  live={`${stats.pitched} ÷ ${stats.pitchDenom} = ${pctNum(stats.pitchRate * 100)}`}
                 />
                 <Definition
-                  icon={Award} label="Close Rate" accent="text-success"
-                  formula="won ÷ (won + lost)   — disqualified and open deals are excluded"
-                  plain="Of the deals that reached a decision (won or lost), how many you closed."
-                  live={`${stats.won}W ÷ (${stats.won}W + ${stats.lost}L) = ${pctNum(stats.closeRate * 100)}`}
+                  icon={Award} label="Close Rate (Sit-to-Close)" accent="text-success"
+                  formula="cohort_wins ÷ cohort_size · cohort = presentations that are won/lost OR stuck in follow-up ≥ 14 days"
+                  plain="Industry-standard Sit-to-Close, matching the Dashboard. Deals still deciding are excluded so a hot week doesn't inflate the number on tiny sample sizes."
+                  live={`${stats.cohortWon} ÷ ${stats.cohortSize} = ${pctNum(stats.closeRate * 100)}  ·  ${stats.stillDeciding} still deciding  ·  confidence: ${confidenceLabel}`}
                 />
                 <Definition
                   icon={DollarSign} label="Gross Sales" accent="text-warning"
-                  formula="sum(closed_amount) for deals where stage = 'won'"
-                  plain="Contract value of every won deal in the range, before retention."
-                  live={`= ${formatCurrency(stats.gross)} (${stats.won} won · ${formatCurrency(stats.avgTicket)} avg ticket)`}
+                  formula="sum(price(d)) for won deals where closed_at ∈ range · price = closed_amount ?? price[selected_option] ?? max(price_a,b,c)"
+                  plain="Contract value of every won deal that closed in the range. Falls back to the selected option's price if closed_amount was left blank."
+                  live={`${stats.won} won · avg ${formatCurrency(stats.avgTicket)} · total ${formatCurrency(stats.gross)}`}
+                />
+                <Definition
+                  icon={Shield} label="Retention %" accent="text-info"
+                  formula="won ÷ (won + cancels)   · cancels = disqualified deals that had a selected_option / demo / $ amount"
+                  plain="Computed from data — a deal that made it to a sale but later ended in 'disqualified' is treated as a cancellation. Once a proper cancelled flag exists on deals, this will get more exact."
+                  live={`${stats.won} won ÷ (${stats.won} won + ${stats.cancels} cancels) = ${retentionPctDisplay}%`}
                 />
                 <Definition
                   icon={TrendingUp} label="NIS (Net Installed Sales)" accent="text-primary"
                   formula="Gross Sales × Retention %"
-                  plain="What actually sticks after cancellations — this is what counts toward your goal and commission tiers."
-                  live={`${formatCurrency(stats.gross)} × ${retentionPct}% = ${formatCurrency(stats.nis)}`}
-                />
-                <Definition
-                  icon={Shield} label="Retention %" accent="text-info"
-                  formula="Manual input (slider above) — default 95%"
-                  plain="Not yet tracked automatically in the app. Adjust the slider to match your latest board retention. Once cancellation data is captured on deals we can compute this from (won − cancelled) ÷ won."
-                  live={`Currently set to ${retentionPct}%`}
+                  plain="What actually installs after cancellations — this is what counts toward your goal and commission tiers."
+                  live={`${formatCurrency(stats.gross)} × ${retentionPctDisplay}% = ${formatCurrency(stats.nis)}`}
                 />
               </div>
               <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-xs text-muted-foreground">
@@ -385,7 +432,7 @@ function Definition({
         </span>
         <h4 className="font-display font-bold text-sm">{label}</h4>
       </div>
-      <code className="block text-[11px] font-mono bg-background/60 border border-border/40 rounded px-2 py-1.5 text-foreground/90 overflow-x-auto">
+      <code className="block text-[11px] font-mono bg-background/60 border border-border/40 rounded px-2 py-1.5 text-foreground/90 overflow-x-auto whitespace-pre-wrap">
         {formula}
       </code>
       <p className="text-xs text-muted-foreground">{plain}</p>
@@ -395,11 +442,11 @@ function Definition({
 }
 
 type S = {
-  leads: number; pitchRate: number; closeRate: number; avgTicket: number; retentionPct: number;
+  leads: number; pitchRate: number; closeRate: number; avgTicket: number; retentionRate: number;
 };
 function projectNIS(s: S, o: { close?: number; pitch?: number; extraLeads?: number }) {
   const leads = s.leads + (o.extraLeads ?? 0);
   const pitch = o.pitch ?? s.pitchRate;
   const close = o.close ?? s.closeRate;
-  return leads * pitch * close * s.avgTicket * (s.retentionPct / 100);
+  return leads * pitch * close * s.avgTicket * s.retentionRate;
 }
