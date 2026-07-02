@@ -315,21 +315,43 @@ export default function Forecast() {
 
             <section className="grid gap-4 md:grid-cols-2">
               <div className="card-elevated p-5 space-y-3">
-                <h3 className="font-display font-bold text-lg flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4 text-primary" /> Time-based forecast
-                </h3>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h3 className="font-display font-bold text-lg flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-primary" /> Time-based forecast
+                  </h3>
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                      confidenceLabel === "high" && "bg-success/15 text-success",
+                      confidenceLabel === "med" && "bg-warning/15 text-warning",
+                      confidenceLabel === "low" && "bg-destructive/15 text-destructive",
+                    )}
+                    title={`Cohort of ${stats.cohortSize} · band ±${Math.round(bandWidth * 100)}%`}
+                  >
+                    {confidenceLabel} confidence · ±{Math.round(bandWidth * 100)}%
+                  </span>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Current pace: <b className="text-foreground">{formatCurrency(stats.nisPerWeek)}/wk</b>{" "}
                   ({formatCurrency(stats.nisPerMonth)}/mo NIS)
                 </p>
-                <ul className="text-sm space-y-2">
-                  <Row label="Weeks to hit goal" value={isFinite(stats.weeksToGoal) ? `${stats.weeksToGoal.toFixed(1)} wks` : "—"} />
-                  <Row label="Projected date" value={isFinite(stats.weeksToGoal)
-                    ? new Date(Date.now() + stats.weeksToGoal * 7 * DAY_MS).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-                    : "—"} />
-                  <Row label="Monthly gap vs goal" value={formatCurrency(Math.max(0, goal - stats.nisPerMonth))} />
+
+                {/* Confidence band scenarios */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <ScenarioCard tone="worst" label="Worst" sc={scenarios.worst} />
+                  <ScenarioCard tone="likely" label="Likely" sc={scenarios.likely} />
+                  <ScenarioCard tone="best" label="Best" sc={scenarios.best} />
+                </div>
+
+                {/* Visual band bar */}
+                <ConfidenceBand best={scenarios.best} worst={scenarios.worst} likely={scenarios.likely} />
+
+                <ul className="text-sm space-y-2 pt-1">
+                  <Row label="Monthly gap vs goal (likely)" value={formatCurrency(Math.max(0, goal - stats.nisPerMonth))} />
+                  <Row label="NIS range / mo" value={`${formatCurrency(scenarios.worst.nisPerMonth)} – ${formatCurrency(scenarios.best.nisPerMonth)}`} />
                 </ul>
               </div>
+
 
               <div className="card-elevated p-5 space-y-3">
                 <h3 className="font-display font-bold text-lg flex items-center gap-2">
