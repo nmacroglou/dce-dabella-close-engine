@@ -166,8 +166,32 @@ export default function Forecast() {
   const goalPct = Math.min(100, (stats.nis / goal) * 100);
   const onPace = stats.nisPerMonth >= goal;
   const retentionPctDisplay = Math.round(stats.retentionRate * 100);
-  const confidenceLabel =
+  const confidenceLabel: "low" | "med" | "high" =
     stats.cohortSize >= 20 ? "high" : stats.cohortSize >= 8 ? "med" : "low";
+
+  // Confidence band: smaller cohort → wider swing on close rate.
+  // High = ±10%, Med = ±20%, Low = ±40% (multiplicative on close rate).
+  const bandWidth = confidenceLabel === "high" ? 0.10 : confidenceLabel === "med" ? 0.20 : 0.40;
+  const scenarios = (() => {
+    const scale = (mult: number) => {
+      const close = Math.max(0, Math.min(1, stats.closeRate * mult));
+      // NIS scales linearly with close rate in our forecast model.
+      const nisPerWeek = stats.nisPerWeek * mult;
+      const nisPerMonth = stats.nisPerMonth * mult;
+      const remaining = Math.max(0, goal - stats.nis);
+      const weeksToGoal = nisPerWeek > 0 ? remaining / nisPerWeek : Infinity;
+      const projectedDate = isFinite(weeksToGoal)
+        ? new Date(Date.now() + weeksToGoal * 7 * DAY_MS)
+        : null;
+      return { close, nisPerWeek, nisPerMonth, weeksToGoal, projectedDate };
+    };
+    return {
+      best: scale(1 + bandWidth),
+      likely: scale(1),
+      worst: scale(Math.max(0, 1 - bandWidth)),
+    };
+  })();
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -291,21 +315,43 @@ export default function Forecast() {
 
             <section className="grid gap-4 md:grid-cols-2">
               <div className="card-elevated p-5 space-y-3">
-                <h3 className="font-display font-bold text-lg flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4 text-primary" /> Time-based forecast
-                </h3>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h3 className="font-display font-bold text-lg flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-primary" /> Time-based forecast
+                  </h3>
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                      confidenceLabel === "high" && "bg-success/15 text-success",
+                      confidenceLabel === "med" && "bg-warning/15 text-warning",
+                      confidenceLabel === "low" && "bg-destructive/15 text-destructive",
+                    )}
+                    title={`Cohort of ${stats.cohortSize} · band ±${Math.round(bandWidth * 100)}%`}
+                  >
+                    {confidenceLabel} confidence · ±{Math.round(bandWidth * 100)}%
+                  </span>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Current pace: <b className="text-foreground">{formatCurrency(stats.nisPerWeek)}/wk</b>{" "}
                   ({formatCurrency(stats.nisPerMonth)}/mo NIS)
                 </p>
-                <ul className="text-sm space-y-2">
-                  <Row label="Weeks to hit goal" value={isFinite(stats.weeksToGoal) ? `${stats.weeksToGoal.toFixed(1)} wks` : "—"} />
-                  <Row label="Projected date" value={isFinite(stats.weeksToGoal)
-                    ? new Date(Date.now() + stats.weeksToGoal * 7 * DAY_MS).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-                    : "—"} />
-                  <Row label="Monthly gap vs goal" value={formatCurrency(Math.max(0, goal - stats.nisPerMonth))} />
+
+                {/* Confidence band scenarios */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <ScenarioCard tone="worst" label="Worst" sc={scenarios.worst} />
+                  <ScenarioCard tone="likely" label="Likely" sc={scenarios.likely} />
+                  <ScenarioCard tone="best" label="Best" sc={scenarios.best} />
+                </div>
+
+                {/* Visual band bar */}
+                <ConfidenceBand best={scenarios.best} worst={scenarios.worst} likely={scenarios.likely} />
+
+                <ul className="text-sm space-y-2 pt-1">
+                  <Row label="Monthly gap vs goal (likely)" value={formatCurrency(Math.max(0, goal - stats.nisPerMonth))} />
+                  <Row label="NIS range / mo" value={`${formatCurrency(scenarios.worst.nisPerMonth)} – ${formatCurrency(scenarios.best.nisPerMonth)}`} />
                 </ul>
               </div>
+
 
               <div className="card-elevated p-5 space-y-3">
                 <h3 className="font-display font-bold text-lg flex items-center gap-2">
@@ -449,4 +495,61 @@ function projectNIS(s: S, o: { close?: number; pitch?: number; extraLeads?: numb
   const pitch = o.pitch ?? s.pitchRate;
   const close = o.close ?? s.closeRate;
   return leads * pitch * close * s.avgTicket * s.retentionRate;
+}
+
+type Scenario = {
+  close: number;
+  nisPerWeek: number;
+  nisPerMonth: number;
+  weeksToGoal: number;
+  projectedDate: Date | null;
+};
+
+function ScenarioCard({ tone, label, sc }: { tone: "best" | "likely" | "worst"; label: string; sc: Scenario }) {
+  const toneCls =
+    tone === "best" ? "border-success/40 bg-success/5"
+    : tone === "worst" ? "border-destructive/40 bg-destructive/5"
+    : "border-primary/40 bg-primary/5";
+  const dateStr = sc.projectedDate
+    ? sc.projectedDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" })
+    : "—";
+  return (
+    <div className={cn("rounded-lg border p-2.5", toneCls)}>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-0.5 font-display text-base font-extrabold tabular-nums">{dateStr}</div>
+      <div className="text-[11px] text-muted-foreground tabular-nums">
+        {isFinite(sc.weeksToGoal) ? `${sc.weeksToGoal.toFixed(1)} wks` : "—"}
+      </div>
+      <div className="text-[11px] font-bold tabular-nums">{formatCurrency(sc.nisPerWeek)}/wk</div>
+    </div>
+  );
+}
+
+function ConfidenceBand({ best, worst, likely }: { best: Scenario; likely: Scenario; worst: Scenario }) {
+  if (!isFinite(best.weeksToGoal) && !isFinite(worst.weeksToGoal)) return null;
+  const worstW = isFinite(worst.weeksToGoal) ? worst.weeksToGoal : 52;
+  const bestW = isFinite(best.weeksToGoal) ? best.weeksToGoal : 0;
+  const likelyW = isFinite(likely.weeksToGoal) ? likely.weeksToGoal : (worstW + bestW) / 2;
+  const scaleMax = Math.max(worstW, 1);
+  const pct = (w: number) => Math.min(100, Math.max(0, (w / scaleMax) * 100));
+  return (
+    <div className="pt-1">
+      <div className="relative h-3 rounded-full bg-muted overflow-hidden">
+        <div
+          className="absolute top-0 h-full bg-gradient-to-r from-success/60 via-primary/70 to-destructive/60"
+          style={{ left: `${pct(bestW)}%`, width: `${Math.max(2, pct(worstW) - pct(bestW))}%` }}
+        />
+        <div
+          className="absolute top-0 h-full w-0.5 bg-foreground"
+          style={{ left: `calc(${pct(likelyW)}% - 1px)` }}
+          title={`Likely: ${likelyW.toFixed(1)} wks`}
+        />
+      </div>
+      <div className="flex justify-between text-[10px] text-muted-foreground mt-1 tabular-nums">
+        <span>{bestW.toFixed(1)}w (best)</span>
+        <span>{likelyW.toFixed(1)}w (likely)</span>
+        <span>{isFinite(worst.weeksToGoal) ? `${worstW.toFixed(1)}w (worst)` : "∞"}</span>
+      </div>
+    </div>
+  );
 }
