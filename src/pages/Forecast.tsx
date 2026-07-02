@@ -166,8 +166,32 @@ export default function Forecast() {
   const goalPct = Math.min(100, (stats.nis / goal) * 100);
   const onPace = stats.nisPerMonth >= goal;
   const retentionPctDisplay = Math.round(stats.retentionRate * 100);
-  const confidenceLabel =
+  const confidenceLabel: "low" | "med" | "high" =
     stats.cohortSize >= 20 ? "high" : stats.cohortSize >= 8 ? "med" : "low";
+
+  // Confidence band: smaller cohort → wider swing on close rate.
+  // High = ±10%, Med = ±20%, Low = ±40% (multiplicative on close rate).
+  const bandWidth = confidenceLabel === "high" ? 0.10 : confidenceLabel === "med" ? 0.20 : 0.40;
+  const scenarios = (() => {
+    const scale = (mult: number) => {
+      const close = Math.max(0, Math.min(1, stats.closeRate * mult));
+      // NIS scales linearly with close rate in our forecast model.
+      const nisPerWeek = stats.nisPerWeek * mult;
+      const nisPerMonth = stats.nisPerMonth * mult;
+      const remaining = Math.max(0, goal - stats.nis);
+      const weeksToGoal = nisPerWeek > 0 ? remaining / nisPerWeek : Infinity;
+      const projectedDate = isFinite(weeksToGoal)
+        ? new Date(Date.now() + weeksToGoal * 7 * DAY_MS)
+        : null;
+      return { close, nisPerWeek, nisPerMonth, weeksToGoal, projectedDate };
+    };
+    return {
+      best: scale(1 + bandWidth),
+      likely: scale(1),
+      worst: scale(Math.max(0, 1 - bandWidth)),
+    };
+  })();
+
 
   return (
     <div className="min-h-screen bg-background">
