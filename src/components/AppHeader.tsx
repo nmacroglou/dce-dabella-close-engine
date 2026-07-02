@@ -44,6 +44,7 @@ const SELL_CLUSTER: NavEntry[] = [
 
 const INSIGHTS_CLUSTER: NavEntry[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: false },
+  { to: "/forecast", label: "Forecast", icon: Target, end: false },
   { to: "/ledger", label: "Ledger", icon: Wallet, end: false },
   { to: "/energy-lens", label: "Energy", icon: SunIcon, end: false },
 ];
