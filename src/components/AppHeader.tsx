@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck,
-  ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen,
+  ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen, Target,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
