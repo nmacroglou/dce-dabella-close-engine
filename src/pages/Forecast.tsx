@@ -496,3 +496,60 @@ function projectNIS(s: S, o: { close?: number; pitch?: number; extraLeads?: numb
   const close = o.close ?? s.closeRate;
   return leads * pitch * close * s.avgTicket * s.retentionRate;
 }
+
+type Scenario = {
+  close: number;
+  nisPerWeek: number;
+  nisPerMonth: number;
+  weeksToGoal: number;
+  projectedDate: Date | null;
+};
+
+function ScenarioCard({ tone, label, sc }: { tone: "best" | "likely" | "worst"; label: string; sc: Scenario }) {
+  const toneCls =
+    tone === "best" ? "border-success/40 bg-success/5"
+    : tone === "worst" ? "border-destructive/40 bg-destructive/5"
+    : "border-primary/40 bg-primary/5";
+  const dateStr = sc.projectedDate
+    ? sc.projectedDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" })
+    : "—";
+  return (
+    <div className={cn("rounded-lg border p-2.5", toneCls)}>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-0.5 font-display text-base font-extrabold tabular-nums">{dateStr}</div>
+      <div className="text-[11px] text-muted-foreground tabular-nums">
+        {isFinite(sc.weeksToGoal) ? `${sc.weeksToGoal.toFixed(1)} wks` : "—"}
+      </div>
+      <div className="text-[11px] font-bold tabular-nums">{formatCurrency(sc.nisPerWeek)}/wk</div>
+    </div>
+  );
+}
+
+function ConfidenceBand({ best, worst, likely }: { best: Scenario; likely: Scenario; worst: Scenario }) {
+  if (!isFinite(best.weeksToGoal) && !isFinite(worst.weeksToGoal)) return null;
+  const worstW = isFinite(worst.weeksToGoal) ? worst.weeksToGoal : 52;
+  const bestW = isFinite(best.weeksToGoal) ? best.weeksToGoal : 0;
+  const likelyW = isFinite(likely.weeksToGoal) ? likely.weeksToGoal : (worstW + bestW) / 2;
+  const scaleMax = Math.max(worstW, 1);
+  const pct = (w: number) => Math.min(100, Math.max(0, (w / scaleMax) * 100));
+  return (
+    <div className="pt-1">
+      <div className="relative h-3 rounded-full bg-muted overflow-hidden">
+        <div
+          className="absolute top-0 h-full bg-gradient-to-r from-success/60 via-primary/70 to-destructive/60"
+          style={{ left: `${pct(bestW)}%`, width: `${Math.max(2, pct(worstW) - pct(bestW))}%` }}
+        />
+        <div
+          className="absolute top-0 h-full w-0.5 bg-foreground"
+          style={{ left: `calc(${pct(likelyW)}% - 1px)` }}
+          title={`Likely: ${likelyW.toFixed(1)} wks`}
+        />
+      </div>
+      <div className="flex justify-between text-[10px] text-muted-foreground mt-1 tabular-nums">
+        <span>{bestW.toFixed(1)}w (best)</span>
+        <span>{likelyW.toFixed(1)}w (likely)</span>
+        <span>{isFinite(worst.weeksToGoal) ? `${worstW.toFixed(1)}w (worst)` : "∞"}</span>
+      </div>
+    </div>
+  );
+}
