@@ -157,9 +157,11 @@ export default function SharePdfDialog({ open, onOpenChange, state, computed, se
     <Dialog open={open} onOpenChange={(o) => { if (!o) { setMode("menu"); } onOpenChange(o); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share Proposal</DialogTitle>
+          <DialogTitle>{selectedOption ? "Share Proposal" : "Share All 3 Options"}</DialogTitle>
           <DialogDescription>
-            Send {customerName}'s personalized proposal via email, text, or download.
+            {selectedOption
+              ? `Send ${customerName}'s personalized proposal via email, text, or download.`
+              : `Send ${customerName} all three options so they can review at home. Pick a plan later to lock it in.`}
           </DialogDescription>
         </DialogHeader>
 

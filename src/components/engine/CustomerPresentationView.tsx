@@ -129,16 +129,14 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
       {/* Top-right actions */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         <PromoTrigger tier={tier} onChange={setTier} />
-        {selectedOption && (
-          <button
-            onClick={() => setShareOpen(true)}
-            className="flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md px-4 py-2 hover:bg-primary/90 transition-colors text-sm font-semibold"
-            aria-label="Share proposal"
-          >
-            <Share2 className="h-4 w-4" />
-            Share Proposal
-          </button>
-        )}
+        <button
+          onClick={() => setShareOpen(true)}
+          className="flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md px-4 py-2 hover:bg-primary/90 transition-colors text-sm font-semibold"
+          aria-label="Share proposal"
+        >
+          <Share2 className="h-4 w-4" />
+          {selectedOption ? "Share Proposal" : "Share All 3 Options"}
+        </button>
         <button onClick={onClose} className="rounded-full bg-card border border-border shadow-md p-2 hover:bg-muted transition-colors" aria-label="Close presentation">
           <X className="h-5 w-5 text-muted-foreground" />
         </button>
