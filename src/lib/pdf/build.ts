@@ -45,7 +45,11 @@ export async function buildCustomerPdf(
   const chosenOpt = options.find((o) => o.key === chosenKey) || options[0];
 
   pdf.addPage();
-  drawSelectedOption(pdf, state, computed, chosenOpt, originalComputed);
+  if (selectedOption) {
+    drawSelectedOption(pdf, state, computed, chosenOpt, originalComputed);
+  } else {
+    drawAllOptions(pdf, state, computed, options, originalComputed);
+  }
 
   pdf.addPage();
   drawTClose(pdf, state, computed, chosenKey, originalComputed);
