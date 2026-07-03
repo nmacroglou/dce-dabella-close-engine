@@ -275,6 +275,46 @@ export default function Forecast() {
   const leadsNeededForGoal = dollarsPerLead > 0 ? goal / dollarsPerLead : Infinity;
   const leadsRemaining = Math.max(0, leadsNeededForGoal - stats.leads);
 
+  // Horizon plan — "what does the next N days need to look like?"
+  // Uses historical conversion rates to back-calc the volume you need.
+  const horizonPlan = useMemo(() => {
+    const remainingNIS = Math.max(0, goal - stats.nis);
+    const ret = stats.retentionRate > 0 ? stats.retentionRate : 1;
+    const avgT = stats.avgTicket > 0 ? stats.avgTicket : 0;
+    const pr = stats.pitchRate > 0 ? stats.pitchRate : 0;
+
+    const calc = (closeR: number) => {
+      const requiredGross = remainingNIS / ret;
+      const requiredWon = avgT > 0 ? requiredGross / avgT : Infinity;
+      const requiredPresentations = closeR > 0 ? requiredWon / closeR : Infinity;
+      const requiredLeads = pr > 0 ? requiredPresentations / pr : Infinity;
+      const weeks = horizonDays / 7;
+      return {
+        remainingNIS, requiredGross, requiredWon,
+        requiredPresentations, requiredLeads,
+        nisPerWeek: remainingNIS / weeks,
+        nisPerDay: remainingNIS / horizonDays,
+        leadsPerWeek: requiredLeads / weeks,
+        leadsPerDay: requiredLeads / horizonDays,
+        wonPerWeek: requiredWon / weeks,
+        presentationsPerWeek: requiredPresentations / weeks,
+      };
+    };
+    return {
+      likely: calc(stats.closeRate),
+      best:   calc(stats.closeRate * (1 + bandWidth)),
+      worst:  calc(Math.max(0.0001, stats.closeRate * (1 - bandWidth))),
+      // Pace deltas vs historical
+      leadsPaceDelta: (pr > 0 && stats.closeRate > 0 && avgT > 0)
+        ? (calc(stats.closeRate).leadsPerWeek - stats.leadsPerWeek)
+        : 0,
+      nisPaceDelta: (calc(stats.closeRate).nisPerWeek - stats.nisPerWeek),
+      feasible: remainingNIS > 0 && pr > 0 && stats.closeRate > 0 && avgT > 0,
+      done: remainingNIS <= 0,
+    };
+  }, [goal, stats, horizonDays, bandWidth]);
+
+
   const rangeLabel = `${format(range.from, "MMM d, yyyy")} → ${format(range.to, "MMM d, yyyy")}`;
 
   const summary = useMemo(() => [
