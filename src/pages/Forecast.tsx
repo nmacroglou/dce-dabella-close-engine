@@ -192,6 +192,11 @@ export default function Forecast() {
   const [targetDate, setTargetDate] = useState<Date | undefined>();
   const [horizonDays, setHorizonDays] = useState(30);
   const [planMode, setPlanMode] = useState<"full" | "remaining">("full");
+  // Plan assumption overrides — user can dial these to see "what if"
+  const [ovrRet, setOvrRet] = useState<number | null>(null);
+  const [ovrClose, setOvrClose] = useState<number | null>(null);
+  const [ovrPitch, setOvrPitch] = useState<number | null>(null);
+  const [ovrTicket, setOvrTicket] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const hydrated = useRef(false);
 
