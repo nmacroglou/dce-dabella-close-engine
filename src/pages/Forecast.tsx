@@ -581,9 +581,61 @@ export default function Forecast() {
                   Goal already hit — nothing left to book in this window.
                 </div>
               ) : !horizonPlan.feasible ? (
-                <div className="rounded-lg bg-warning/10 text-warning p-3 text-sm">
-                  Not enough historical data to project — need Pitch %, Close %, and Avg Ticket &gt; 0 in the selected range.
-                </div>
+                <>
+                  <div className="rounded-lg bg-warning/10 text-warning p-3 text-sm space-y-1">
+                    <div className="font-bold">Not enough historical data in the selected range.</div>
+                    <div className="text-xs">
+                      Missing:{" "}
+                      {[
+                        asm.pitch > 0 ? null : "Pitch %",
+                        asm.close > 0 ? null : "Close %",
+                        asm.ticket > 0 ? null : "Avg Ticket",
+                      ].filter(Boolean).join(", ") || "—"}. Widen the date range above, or type your own numbers into
+                      the assumptions below and the plan will calculate instantly.
+                    </div>
+                  </div>
+
+                  {/* Editable assumptions — also shown when infeasible so user can type values */}
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2 print:hidden">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="font-bold text-foreground text-[11px] uppercase tracking-wider">
+                        Plan assumptions <span className="text-muted-foreground font-normal normal-case">— type values to project</span>
+                      </div>
+                      {(ovrRet !== null || ovrClose !== null || ovrPitch !== null || ovrTicket !== null) && (
+                        <Button size="sm" variant="ghost" className="h-6 text-[10px]"
+                          onClick={() => { setOvrRet(null); setOvrClose(null); setOvrPitch(null); setOvrTicket(null); }}>
+                          Reset
+                        </Button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <AsmInput label="Retention %" suffix="%"
+                        value={Math.round(asm.retention * 1000) / 10}
+                        placeholder="90"
+                        overridden={ovrRet !== null}
+                        onChange={(v) => setOvrRet(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
+                      <AsmInput label="Close Rate %" suffix="%"
+                        value={Math.round(asm.close * 1000) / 10}
+                        placeholder="30"
+                        overridden={ovrClose !== null}
+                        onChange={(v) => setOvrClose(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
+                      <AsmInput label="Pitch Rate %" suffix="%"
+                        value={Math.round(asm.pitch * 1000) / 10}
+                        placeholder="70"
+                        overridden={ovrPitch !== null}
+                        onChange={(v) => setOvrPitch(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
+                      <AsmInput label="Avg Ticket $" suffix="$"
+                        value={Math.round(asm.ticket)}
+                        placeholder="25000"
+                        overridden={ovrTicket !== null}
+                        onChange={(v) => setOvrTicket(v === null ? null : Math.max(0, v))} />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Tip: industry defaults are Retention 90%, Close 30%, Pitch 70%, Avg Ticket $25k. Fill in the ones
+                      missing from history and the projection will appear.
+                    </p>
+                  </div>
+                </>
               ) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-5 grid-cols-2">
