@@ -281,13 +281,25 @@ export default function Forecast() {
   const leadsNeededForGoal = dollarsPerLead > 0 ? goal / dollarsPerLead : Infinity;
   const leadsRemaining = Math.max(0, leadsNeededForGoal - stats.leads);
 
-  // Effective assumptions (override falls back to historical)
-  const asm = useMemo(() => ({
-    retention: ovrRet ?? (stats.retentionRate > 0 ? stats.retentionRate : 1),
-    close:     ovrClose ?? stats.closeRate,
-    pitch:     ovrPitch ?? stats.pitchRate,
-    ticket:    ovrTicket ?? stats.avgTicket,
-  }), [ovrRet, ovrClose, ovrPitch, ovrTicket, stats]);
+  // Effective assumptions. Historical wins; then any user override; finally
+  // industry-default fallbacks so the plan can always project even in a range
+  // with zero closed deals. `usingDefault` flags which numbers are guessed
+  // so we can warn the user in the UI.
+  const DEFAULTS = { retention: 0.90, close: 0.30, pitch: 0.70, ticket: 25_000 };
+  const asm = useMemo(() => {
+    const pick = (ovr: number | null, hist: number, def: number) =>
+      ovr !== null ? { v: ovr, def: false } : hist > 0 ? { v: hist, def: false } : { v: def, def: true };
+    const r = pick(ovrRet,    stats.retentionRate, DEFAULTS.retention);
+    const c = pick(ovrClose,  stats.closeRate,     DEFAULTS.close);
+    const p = pick(ovrPitch,  stats.pitchRate,     DEFAULTS.pitch);
+    const t = pick(ovrTicket, stats.avgTicket,     DEFAULTS.ticket);
+    return {
+      retention: r.v, close: c.v, pitch: p.v, ticket: t.v,
+      usingDefault: { retention: r.def, close: c.def, pitch: p.def, ticket: t.def },
+      anyDefault: r.def || c.def || p.def || t.def,
+    };
+  }, [ovrRet, ovrClose, ovrPitch, ovrTicket, stats]);
+
 
   const horizonPlan = useMemo(() => {
     const targetNIS = planMode === "remaining" ? Math.max(0, goal - stats.nis) : goal;
