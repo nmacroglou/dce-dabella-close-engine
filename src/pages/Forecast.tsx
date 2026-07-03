@@ -281,13 +281,25 @@ export default function Forecast() {
   const leadsNeededForGoal = dollarsPerLead > 0 ? goal / dollarsPerLead : Infinity;
   const leadsRemaining = Math.max(0, leadsNeededForGoal - stats.leads);
 
-  // Effective assumptions (override falls back to historical)
-  const asm = useMemo(() => ({
-    retention: ovrRet ?? (stats.retentionRate > 0 ? stats.retentionRate : 1),
-    close:     ovrClose ?? stats.closeRate,
-    pitch:     ovrPitch ?? stats.pitchRate,
-    ticket:    ovrTicket ?? stats.avgTicket,
-  }), [ovrRet, ovrClose, ovrPitch, ovrTicket, stats]);
+  // Effective assumptions. Historical wins; then any user override; finally
+  // industry-default fallbacks so the plan can always project even in a range
+  // with zero closed deals. `usingDefault` flags which numbers are guessed
+  // so we can warn the user in the UI.
+  const DEFAULTS = { retention: 0.90, close: 0.30, pitch: 0.70, ticket: 25_000 };
+  const asm = useMemo(() => {
+    const pick = (ovr: number | null, hist: number, def: number) =>
+      ovr !== null ? { v: ovr, def: false } : hist > 0 ? { v: hist, def: false } : { v: def, def: true };
+    const r = pick(ovrRet,    stats.retentionRate, DEFAULTS.retention);
+    const c = pick(ovrClose,  stats.closeRate,     DEFAULTS.close);
+    const p = pick(ovrPitch,  stats.pitchRate,     DEFAULTS.pitch);
+    const t = pick(ovrTicket, stats.avgTicket,     DEFAULTS.ticket);
+    return {
+      retention: r.v, close: c.v, pitch: p.v, ticket: t.v,
+      usingDefault: { retention: r.def, close: c.def, pitch: p.def, ticket: t.def },
+      anyDefault: r.def || c.def || p.def || t.def,
+    };
+  }, [ovrRet, ovrClose, ovrPitch, ovrTicket, stats]);
+
 
   const horizonPlan = useMemo(() => {
     const targetNIS = planMode === "remaining" ? Math.max(0, goal - stats.nis) : goal;
@@ -580,64 +592,23 @@ export default function Forecast() {
                 <div className="rounded-lg bg-success/10 text-success p-3 text-sm font-bold">
                   Goal already hit — nothing left to book in this window.
                 </div>
-              ) : !horizonPlan.feasible ? (
-                <>
-                  <div className="rounded-lg bg-warning/10 text-warning p-3 text-sm space-y-1">
-                    <div className="font-bold">Not enough historical data in the selected range.</div>
-                    <div className="text-xs">
-                      Missing:{" "}
-                      {[
-                        asm.pitch > 0 ? null : "Pitch %",
-                        asm.close > 0 ? null : "Close %",
-                        asm.ticket > 0 ? null : "Avg Ticket",
-                      ].filter(Boolean).join(", ") || "—"}. Widen the date range above, or type your own numbers into
-                      the assumptions below and the plan will calculate instantly.
-                    </div>
-                  </div>
-
-                  {/* Editable assumptions — also shown when infeasible so user can type values */}
-                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2 print:hidden">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="font-bold text-foreground text-[11px] uppercase tracking-wider">
-                        Plan assumptions <span className="text-muted-foreground font-normal normal-case">— type values to project</span>
-                      </div>
-                      {(ovrRet !== null || ovrClose !== null || ovrPitch !== null || ovrTicket !== null) && (
-                        <Button size="sm" variant="ghost" className="h-6 text-[10px]"
-                          onClick={() => { setOvrRet(null); setOvrClose(null); setOvrPitch(null); setOvrTicket(null); }}>
-                          Reset
-                        </Button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      <AsmInput label="Retention %" suffix="%"
-                        value={Math.round(asm.retention * 1000) / 10}
-                        placeholder="90"
-                        overridden={ovrRet !== null}
-                        onChange={(v) => setOvrRet(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
-                      <AsmInput label="Close Rate %" suffix="%"
-                        value={Math.round(asm.close * 1000) / 10}
-                        placeholder="30"
-                        overridden={ovrClose !== null}
-                        onChange={(v) => setOvrClose(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
-                      <AsmInput label="Pitch Rate %" suffix="%"
-                        value={Math.round(asm.pitch * 1000) / 10}
-                        placeholder="70"
-                        overridden={ovrPitch !== null}
-                        onChange={(v) => setOvrPitch(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
-                      <AsmInput label="Avg Ticket $" suffix="$"
-                        value={Math.round(asm.ticket)}
-                        placeholder="25000"
-                        overridden={ovrTicket !== null}
-                        onChange={(v) => setOvrTicket(v === null ? null : Math.max(0, v))} />
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      Tip: industry defaults are Retention 90%, Close 30%, Pitch 70%, Avg Ticket $25k. Fill in the ones
-                      missing from history and the projection will appear.
-                    </p>
-                  </div>
-                </>
               ) : (
                 <>
+                  {asm.anyDefault && (
+                    <div className="rounded-lg bg-warning/10 text-warning p-3 text-xs space-y-1">
+                      <div className="font-bold">Using industry defaults for missing history</div>
+                      <div>
+                        Your selected range doesn't have enough closed deals to derive{" "}
+                        {[
+                          asm.usingDefault.pitch    ? "Pitch %"   : null,
+                          asm.usingDefault.close    ? "Close %"   : null,
+                          asm.usingDefault.ticket   ? "Avg Ticket": null,
+                          asm.usingDefault.retention? "Retention" : null,
+                        ].filter(Boolean).join(", ")}. Widen the date range above, or edit the assumptions
+                        below — the plan updates instantly.
+                      </div>
+                    </div>
+                  )}
                   <div className="grid gap-3 md:grid-cols-5 grid-cols-2">
                     <PlanTile label="NIS to book"
                       value={formatCurrency(horizonPlan.likely.targetNIS)}
