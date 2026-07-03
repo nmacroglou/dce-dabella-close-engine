@@ -192,6 +192,11 @@ export default function Forecast() {
   const [targetDate, setTargetDate] = useState<Date | undefined>();
   const [horizonDays, setHorizonDays] = useState(30);
   const [planMode, setPlanMode] = useState<"full" | "remaining">("full");
+  // Plan assumption overrides — user can dial these to see "what if"
+  const [ovrRet, setOvrRet] = useState<number | null>(null);
+  const [ovrClose, setOvrClose] = useState<number | null>(null);
+  const [ovrPitch, setOvrPitch] = useState<number | null>(null);
+  const [ovrTicket, setOvrTicket] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const hydrated = useRef(false);
 
@@ -276,13 +281,19 @@ export default function Forecast() {
   const leadsNeededForGoal = dollarsPerLead > 0 ? goal / dollarsPerLead : Infinity;
   const leadsRemaining = Math.max(0, leadsNeededForGoal - stats.leads);
 
-  // Horizon plan — "what does the next N days need to look like?"
-  // targetNIS = full goal (default) OR remaining after what's already booked.
+  // Effective assumptions (override falls back to historical)
+  const asm = useMemo(() => ({
+    retention: ovrRet ?? (stats.retentionRate > 0 ? stats.retentionRate : 1),
+    close:     ovrClose ?? stats.closeRate,
+    pitch:     ovrPitch ?? stats.pitchRate,
+    ticket:    ovrTicket ?? stats.avgTicket,
+  }), [ovrRet, ovrClose, ovrPitch, ovrTicket, stats]);
+
   const horizonPlan = useMemo(() => {
     const targetNIS = planMode === "remaining" ? Math.max(0, goal - stats.nis) : goal;
-    const ret = stats.retentionRate > 0 ? stats.retentionRate : 1;
-    const avgT = stats.avgTicket > 0 ? stats.avgTicket : 0;
-    const pr = stats.pitchRate > 0 ? stats.pitchRate : 0;
+    const ret = asm.retention > 0 ? asm.retention : 1;
+    const avgT = asm.ticket > 0 ? asm.ticket : 0;
+    const pr = asm.pitch > 0 ? asm.pitch : 0;
 
     const calc = (closeR: number) => {
       const requiredGross = targetNIS / ret;
@@ -304,18 +315,19 @@ export default function Forecast() {
       };
     };
     return {
-      likely: calc(stats.closeRate),
-      best:   calc(stats.closeRate * (1 + bandWidth)),
-      worst:  calc(Math.max(0.0001, stats.closeRate * (1 - bandWidth))),
-      leadsPaceDelta: (pr > 0 && stats.closeRate > 0 && avgT > 0)
-        ? (calc(stats.closeRate).leadsPerWeek - stats.leadsPerWeek)
+      likely: calc(asm.close),
+      best:   calc(asm.close * (1 + bandWidth)),
+      worst:  calc(Math.max(0.0001, asm.close * (1 - bandWidth))),
+      leadsPaceDelta: (pr > 0 && asm.close > 0 && avgT > 0)
+        ? (calc(asm.close).leadsPerWeek - stats.leadsPerWeek)
         : 0,
-      nisPaceDelta: (calc(stats.closeRate).nisPerWeek - stats.nisPerWeek),
-      feasible: targetNIS > 0 && pr > 0 && stats.closeRate > 0 && avgT > 0,
+      nisPaceDelta: (calc(asm.close).nisPerWeek - stats.nisPerWeek),
+      feasible: targetNIS > 0 && pr > 0 && asm.close > 0 && avgT > 0,
       done: targetNIS <= 0,
       targetNIS,
     };
-  }, [goal, stats, horizonDays, bandWidth, planMode]);
+  }, [goal, stats, horizonDays, bandWidth, planMode, asm]);
+
 
 
 
@@ -581,20 +593,64 @@ export default function Forecast() {
                       accent="text-primary" />
                     <PlanTile label="Gross to sell"
                       value={formatCurrency(horizonPlan.likely.requiredGross)}
-                      sub={`÷ ${retentionPctDisplay}% retention`}
+                      sub={`÷ ${Math.round(asm.retention * 100)}% retention`}
                       accent="text-warning" />
                     <PlanTile label="Deals to win"
                       value={isFinite(horizonPlan.likely.requiredWon) ? formatCount(Math.ceil(horizonPlan.likely.requiredWon)) : "—"}
-                      sub={`÷ ${formatCurrency(stats.avgTicket)} avg ticket`}
+                      sub={`÷ ${formatCurrency(asm.ticket)} avg ticket`}
                       accent="text-success" />
                     <PlanTile label="Sits to run"
                       value={isFinite(horizonPlan.likely.requiredPresentations) ? formatCount(Math.ceil(horizonPlan.likely.requiredPresentations)) : "—"}
-                      sub={`÷ ${pctNum(stats.closeRate * 100)} close rate`}
+                      sub={`÷ ${pctNum(asm.close * 100)} close rate`}
                       accent="text-info" />
                     <PlanTile label="Leads needed"
                       value={isFinite(horizonPlan.likely.requiredLeads) ? formatCount(Math.ceil(horizonPlan.likely.requiredLeads)) : "—"}
-                      sub={`÷ ${pctNum(stats.pitchRate * 100)} pitch rate`}
+                      sub={`÷ ${pctNum(asm.pitch * 100)} pitch rate`}
                       accent="text-primary" />
+                  </div>
+
+                  {/* Editable assumptions */}
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2 print:hidden">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="font-bold text-foreground text-[11px] uppercase tracking-wider">
+                        Plan assumptions <span className="text-muted-foreground font-normal normal-case">— tweak to see what changes</span>
+                      </div>
+                      {(ovrRet !== null || ovrClose !== null || ovrPitch !== null || ovrTicket !== null) && (
+                        <Button size="sm" variant="ghost" className="h-6 text-[10px]"
+                          onClick={() => { setOvrRet(null); setOvrClose(null); setOvrPitch(null); setOvrTicket(null); }}>
+                          Reset to historical
+                        </Button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <AsmInput label="Retention %" suffix="%"
+                        value={Math.round(asm.retention * 1000) / 10}
+                        placeholder={`${Math.round(stats.retentionRate * 100)}`}
+                        overridden={ovrRet !== null}
+                        onChange={(v) => setOvrRet(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
+                      <AsmInput label="Close Rate %" suffix="%"
+                        value={Math.round(asm.close * 1000) / 10}
+                        placeholder={`${Math.round(stats.closeRate * 100)}`}
+                        overridden={ovrClose !== null}
+                        onChange={(v) => setOvrClose(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
+                      <AsmInput label="Pitch Rate %" suffix="%"
+                        value={Math.round(asm.pitch * 1000) / 10}
+                        placeholder={`${Math.round(stats.pitchRate * 100)}`}
+                        overridden={ovrPitch !== null}
+                        onChange={(v) => setOvrPitch(v === null ? null : Math.max(0, Math.min(100, v)) / 100)} />
+                      <AsmInput label="Avg Ticket $" suffix="$"
+                        value={Math.round(asm.ticket)}
+                        placeholder={`${Math.round(stats.avgTicket)}`}
+                        overridden={ovrTicket !== null}
+                        onChange={(v) => setOvrTicket(v === null ? null : Math.max(0, v))} />
+                    </div>
+                    {stats.cancels + stats.won < 5 && (
+                      <p className="text-[10px] text-warning">
+                        Heads up: your retention is based on only {stats.won + stats.cancels} sold/cancelled deal(s) in range.
+                        With {stats.cancels} cancel(s) vs {stats.won} sale(s), the formula says Gross = NIS ÷ Retention.
+                        If you expect fewer cancels going forward, set Retention to something like 90–100% above.
+                      </p>
+                    )}
                   </div>
 
                   {/* Plain-english math walkthrough */}
@@ -606,18 +662,19 @@ export default function Forecast() {
                       calc={formatCurrency(horizonPlan.targetNIS)}
                       note={planMode === "full" ? "your full goal" : `${formatCurrency(goal)} goal − ${formatCurrency(stats.nis)} already booked`} />
                     <MathStep n={2} label="÷ Retention → Gross sales needed"
-                      calc={`${formatCurrency(horizonPlan.targetNIS)} ÷ ${retentionPctDisplay}% = ${formatCurrency(horizonPlan.likely.requiredGross)}`}
-                      note="what you have to sell before cancels" />
+                      calc={`${formatCurrency(horizonPlan.targetNIS)} ÷ ${Math.round(asm.retention * 100)}% = ${formatCurrency(horizonPlan.likely.requiredGross)}`}
+                      note={asm.retention < 1 ? `you have to sell more than ${formatCurrency(horizonPlan.targetNIS)} because ~${Math.round((1-asm.retention)*100)}% cancels after signing` : "no cancels assumed — gross = NIS"} />
                     <MathStep n={3} label="÷ Avg Ticket → Deals to win"
-                      calc={`${formatCurrency(horizonPlan.likely.requiredGross)} ÷ ${formatCurrency(stats.avgTicket)} = ${isFinite(horizonPlan.likely.requiredWon) ? Math.ceil(horizonPlan.likely.requiredWon) : "—"} deals`}
+                      calc={`${formatCurrency(horizonPlan.likely.requiredGross)} ÷ ${formatCurrency(asm.ticket)} = ${isFinite(horizonPlan.likely.requiredWon) ? Math.ceil(horizonPlan.likely.requiredWon) : "—"} deals`}
                       note="how many contracts you have to sign" />
                     <MathStep n={4} label="÷ Close Rate → Sits to run"
-                      calc={`${isFinite(horizonPlan.likely.requiredWon) ? Math.ceil(horizonPlan.likely.requiredWon) : "—"} ÷ ${pctNum(stats.closeRate * 100)} = ${isFinite(horizonPlan.likely.requiredPresentations) ? Math.ceil(horizonPlan.likely.requiredPresentations) : "—"} presentations`}
+                      calc={`${isFinite(horizonPlan.likely.requiredWon) ? Math.ceil(horizonPlan.likely.requiredWon) : "—"} ÷ ${pctNum(asm.close * 100)} = ${isFinite(horizonPlan.likely.requiredPresentations) ? Math.ceil(horizonPlan.likely.requiredPresentations) : "—"} presentations`}
                       note="full pitches you need to deliver" />
                     <MathStep n={5} label="÷ Pitch Rate → Leads to run"
-                      calc={`${isFinite(horizonPlan.likely.requiredPresentations) ? Math.ceil(horizonPlan.likely.requiredPresentations) : "—"} ÷ ${pctNum(stats.pitchRate * 100)} = ${isFinite(horizonPlan.likely.requiredLeads) ? Math.ceil(horizonPlan.likely.requiredLeads) : "—"} leads`}
+                      calc={`${isFinite(horizonPlan.likely.requiredPresentations) ? Math.ceil(horizonPlan.likely.requiredPresentations) : "—"} ÷ ${pctNum(asm.pitch * 100)} = ${isFinite(horizonPlan.likely.requiredLeads) ? Math.ceil(horizonPlan.likely.requiredLeads) : "—"} leads`}
                       note={`over ${horizonDays} days = ${horizonPlan.likely.leadsPerWeek.toFixed(1)}/wk`} />
                   </div>
+
 
                   <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-xs space-y-1.5">
                     <div className="font-bold text-foreground text-[11px] uppercase tracking-wider mb-1">
@@ -802,6 +859,38 @@ function PlanTile({ label, value, sub, accent }: { label: string; value: string;
       <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className={cn("mt-1 font-display text-xl font-extrabold tabular-nums", accent)}>{value}</div>
       {sub && <div className="text-[10px] text-muted-foreground tabular-nums mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+function AsmInput({ label, suffix, value, placeholder, overridden, onChange }: {
+  label: string; suffix: "%" | "$"; value: number; placeholder: string; overridden: boolean;
+  onChange: (v: number | null) => void;
+}) {
+  return (
+    <div>
+      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+        <span>{label}</span>
+        {overridden && <span className="text-primary text-[9px]">edited</span>}
+      </Label>
+      <div className="relative mt-0.5">
+        {suffix === "$" && <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>}
+        <Input
+          type="number" min={0} value={value} placeholder={placeholder}
+          onChange={(e) => {
+            const raw = e.target.value;
+            if (raw === "") { onChange(null); return; }
+            const n = +raw;
+            onChange(isFinite(n) ? n : null);
+          }}
+          className={cn(
+            "h-8 text-xs font-bold tabular-nums",
+            suffix === "$" ? "pl-5 pr-6" : "pr-6",
+            overridden && "border-primary/60"
+          )}
+        />
+        {suffix === "%" && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>}
+      </div>
     </div>
   );
 }
