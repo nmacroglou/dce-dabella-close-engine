@@ -647,7 +647,7 @@ export default function Forecast() {
                     {stats.cancels + stats.won < 5 && (
                       <p className="text-[10px] text-warning">
                         Heads up: your retention is based on only {stats.won + stats.cancels} sold/cancelled deal(s) in range.
-                        With {stats.cancels} cancel(s) vs {stats.won} sale(s), the math says you need ${'{'}gross{'}'} = NIS ÷ retention.
+                        With {stats.cancels} cancel(s) vs {stats.won} sale(s), the formula says Gross = NIS ÷ Retention.
                         If you expect fewer cancels going forward, set Retention to something like 90–100% above.
                       </p>
                     )}
