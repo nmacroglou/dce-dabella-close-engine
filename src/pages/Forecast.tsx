@@ -806,6 +806,20 @@ function PlanTile({ label, value, sub, accent }: { label: string; value: string;
   );
 }
 
+function MathStep({ n, label, calc, note }: { n: number; label: string; calc: string; note?: string }) {
+  return (
+    <div className="flex items-start gap-2 border-b border-border/40 pb-1.5 last:border-0">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-primary text-[10px] font-bold shrink-0">{n}</span>
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-foreground text-[11px]">{label}</div>
+        <div className="font-mono text-[11px] text-foreground/90 tabular-nums break-words">{calc}</div>
+        {note && <div className="text-[10px] text-muted-foreground italic">{note}</div>}
+      </div>
+    </div>
+  );
+}
+
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <li className="flex justify-between border-b border-border/50 pb-1.5">
