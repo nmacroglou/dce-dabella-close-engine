@@ -190,6 +190,7 @@ export default function Forecast() {
   const [customTo, setCustomTo] = useState<Date | undefined>();
   const [strictLeads, setStrictLeads] = useState(false);
   const [targetDate, setTargetDate] = useState<Date | undefined>();
+  const [horizonDays, setHorizonDays] = useState(30);
   const [copied, setCopied] = useState(false);
   const hydrated = useRef(false);
 
