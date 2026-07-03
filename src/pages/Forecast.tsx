@@ -190,6 +190,7 @@ export default function Forecast() {
   const [customTo, setCustomTo] = useState<Date | undefined>();
   const [strictLeads, setStrictLeads] = useState(false);
   const [targetDate, setTargetDate] = useState<Date | undefined>();
+  const [horizonDays, setHorizonDays] = useState(30);
   const [copied, setCopied] = useState(false);
   const hydrated = useRef(false);
 
@@ -273,6 +274,46 @@ export default function Forecast() {
   const dollarsPerLead = stats.leads > 0 ? stats.pitchRate * stats.closeRate * stats.avgTicket * stats.retentionRate : 0;
   const leadsNeededForGoal = dollarsPerLead > 0 ? goal / dollarsPerLead : Infinity;
   const leadsRemaining = Math.max(0, leadsNeededForGoal - stats.leads);
+
+  // Horizon plan — "what does the next N days need to look like?"
+  // Uses historical conversion rates to back-calc the volume you need.
+  const horizonPlan = useMemo(() => {
+    const remainingNIS = Math.max(0, goal - stats.nis);
+    const ret = stats.retentionRate > 0 ? stats.retentionRate : 1;
+    const avgT = stats.avgTicket > 0 ? stats.avgTicket : 0;
+    const pr = stats.pitchRate > 0 ? stats.pitchRate : 0;
+
+    const calc = (closeR: number) => {
+      const requiredGross = remainingNIS / ret;
+      const requiredWon = avgT > 0 ? requiredGross / avgT : Infinity;
+      const requiredPresentations = closeR > 0 ? requiredWon / closeR : Infinity;
+      const requiredLeads = pr > 0 ? requiredPresentations / pr : Infinity;
+      const weeks = horizonDays / 7;
+      return {
+        remainingNIS, requiredGross, requiredWon,
+        requiredPresentations, requiredLeads,
+        nisPerWeek: remainingNIS / weeks,
+        nisPerDay: remainingNIS / horizonDays,
+        leadsPerWeek: requiredLeads / weeks,
+        leadsPerDay: requiredLeads / horizonDays,
+        wonPerWeek: requiredWon / weeks,
+        presentationsPerWeek: requiredPresentations / weeks,
+      };
+    };
+    return {
+      likely: calc(stats.closeRate),
+      best:   calc(stats.closeRate * (1 + bandWidth)),
+      worst:  calc(Math.max(0.0001, stats.closeRate * (1 - bandWidth))),
+      // Pace deltas vs historical
+      leadsPaceDelta: (pr > 0 && stats.closeRate > 0 && avgT > 0)
+        ? (calc(stats.closeRate).leadsPerWeek - stats.leadsPerWeek)
+        : 0,
+      nisPaceDelta: (calc(stats.closeRate).nisPerWeek - stats.nisPerWeek),
+      feasible: remainingNIS > 0 && pr > 0 && stats.closeRate > 0 && avgT > 0,
+      done: remainingNIS <= 0,
+    };
+  }, [goal, stats, horizonDays, bandWidth]);
+
 
   const rangeLabel = `${format(range.from, "MMM d, yyyy")} → ${format(range.to, "MMM d, yyyy")}`;
 
@@ -479,6 +520,118 @@ export default function Forecast() {
               </section>
             )}
 
+            {/* Horizon plan — next N days playbook */}
+            <section className="card-elevated p-5 space-y-4 border-l-4 border-l-primary">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h3 className="font-display font-bold text-lg flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-primary" />
+                    Next {horizonDays} days to hit {formatCurrency(goal)} NIS
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Back-calculated from your historical Pitch %, Close %, Avg Ticket, and Retention.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 print:hidden">
+                  <Label htmlFor="horizon" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Horizon</Label>
+                  <div className="flex gap-1">
+                    {[7, 14, 30, 60, 90].map((d) => (
+                      <Button key={d} size="sm"
+                        variant={horizonDays === d ? "default" : "outline"}
+                        onClick={() => setHorizonDays(d)}
+                        className="h-7 px-2 text-[11px] font-bold">{d}d</Button>
+                    ))}
+                  </div>
+                  <Input id="horizon" type="number" min={1} max={365} value={horizonDays}
+                    onChange={(e) => setHorizonDays(Math.max(1, Math.min(365, +e.target.value || 30)))}
+                    className="h-7 w-16 text-xs font-bold tabular-nums" />
+                </div>
+              </div>
+
+              {horizonPlan.done ? (
+                <div className="rounded-lg bg-success/10 text-success p-3 text-sm font-bold">
+                  Goal already hit for this window. 
+                </div>
+              ) : !horizonPlan.feasible ? (
+                <div className="rounded-lg bg-warning/10 text-warning p-3 text-sm">
+                  Not enough historical data to project — need Pitch %, Close %, and Avg Ticket &gt; 0 in the selected range.
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-5 grid-cols-2">
+                    <PlanTile label="NIS to book"
+                      value={formatCurrency(horizonPlan.likely.remainingNIS)}
+                      sub={`${formatCurrency(horizonPlan.likely.nisPerWeek)}/wk · ${formatCurrency(horizonPlan.likely.nisPerDay)}/day`}
+                      accent="text-primary" />
+                    <PlanTile label="Gross to sell"
+                      value={formatCurrency(horizonPlan.likely.requiredGross)}
+                      sub={`retention ${retentionPctDisplay}%`}
+                      accent="text-warning" />
+                    <PlanTile label="Deals to win"
+                      value={isFinite(horizonPlan.likely.requiredWon) ? formatCount(Math.ceil(horizonPlan.likely.requiredWon)) : "—"}
+                      sub={`${horizonPlan.likely.wonPerWeek.toFixed(1)}/wk · avg ${formatCurrency(stats.avgTicket)}`}
+                      accent="text-success" />
+                    <PlanTile label="Sits to run"
+                      value={isFinite(horizonPlan.likely.requiredPresentations) ? formatCount(Math.ceil(horizonPlan.likely.requiredPresentations)) : "—"}
+                      sub={`close ${pctNum(stats.closeRate * 100)} · ${horizonPlan.likely.presentationsPerWeek.toFixed(1)}/wk`}
+                      accent="text-info" />
+                    <PlanTile label="Leads needed"
+                      value={isFinite(horizonPlan.likely.requiredLeads) ? formatCount(Math.ceil(horizonPlan.likely.requiredLeads)) : "—"}
+                      sub={`${horizonPlan.likely.leadsPerWeek.toFixed(1)}/wk · ${horizonPlan.likely.leadsPerDay.toFixed(1)}/day`}
+                      accent="text-primary" />
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-xs space-y-1.5">
+                    <div className="font-bold text-foreground text-[11px] uppercase tracking-wider mb-1">
+                      Confidence range on leads needed (±{Math.round(bandWidth * 100)}% on close rate)
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="rounded border border-success/40 bg-success/5 p-2">
+                        <div className="text-[10px] font-bold uppercase text-muted-foreground">Best</div>
+                        <div className="font-display font-extrabold tabular-nums text-sm">
+                          {isFinite(horizonPlan.best.requiredLeads) ? formatCount(Math.ceil(horizonPlan.best.requiredLeads)) : "—"}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground tabular-nums">
+                          {horizonPlan.best.leadsPerWeek.toFixed(1)}/wk
+                        </div>
+                      </div>
+                      <div className="rounded border border-primary/40 bg-primary/5 p-2">
+                        <div className="text-[10px] font-bold uppercase text-muted-foreground">Likely</div>
+                        <div className="font-display font-extrabold tabular-nums text-sm">
+                          {isFinite(horizonPlan.likely.requiredLeads) ? formatCount(Math.ceil(horizonPlan.likely.requiredLeads)) : "—"}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground tabular-nums">
+                          {horizonPlan.likely.leadsPerWeek.toFixed(1)}/wk
+                        </div>
+                      </div>
+                      <div className="rounded border border-destructive/40 bg-destructive/5 p-2">
+                        <div className="text-[10px] font-bold uppercase text-muted-foreground">Worst</div>
+                        <div className="font-display font-extrabold tabular-nums text-sm">
+                          {isFinite(horizonPlan.worst.requiredLeads) ? formatCount(Math.ceil(horizonPlan.worst.requiredLeads)) : "—"}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground tabular-nums">
+                          {horizonPlan.worst.leadsPerWeek.toFixed(1)}/wk
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={cn(
+                    "rounded-lg p-3 text-xs font-bold flex items-center justify-between gap-2",
+                    horizonPlan.nisPaceDelta <= 0 ? "bg-success/10 text-success" : "bg-warning/10 text-warning",
+                  )}>
+                    <span>
+                      {horizonPlan.nisPaceDelta <= 0
+                        ? `On pace — current ${formatCurrency(stats.nisPerWeek)}/wk beats required ${formatCurrency(horizonPlan.likely.nisPerWeek)}/wk`
+                        : `Need to add ${formatCurrency(horizonPlan.nisPaceDelta)}/wk NIS · ${horizonPlan.leadsPaceDelta > 0 ? `≈ ${horizonPlan.leadsPaceDelta.toFixed(1)} more leads/wk` : "same lead volume, better conversion"}`}
+                    </span>
+                  </div>
+                </>
+              )}
+            </section>
+
+
+
             {/* Forecasts */}
             <section className="grid gap-4 md:grid-cols-2">
               <div className="card-elevated p-5 space-y-3">
@@ -603,6 +756,16 @@ export default function Forecast() {
 }
 
 // ─────────────────────────── sub-components ───────────────────────────
+
+function PlanTile({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent: string }) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={cn("mt-1 font-display text-xl font-extrabold tabular-nums", accent)}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground tabular-nums mt-0.5">{sub}</div>}
+    </div>
+  );
+}
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
