@@ -757,6 +757,16 @@ export default function Forecast() {
 
 // ─────────────────────────── sub-components ───────────────────────────
 
+function PlanTile({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent: string }) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={cn("mt-1 font-display text-xl font-extrabold tabular-nums", accent)}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground tabular-nums mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <li className="flex justify-between border-b border-border/50 pb-1.5">
