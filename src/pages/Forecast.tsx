@@ -530,13 +530,25 @@ export default function Forecast() {
                 <div>
                   <h3 className="font-display font-bold text-lg flex items-center gap-2">
                     <CalendarIcon className="h-4 w-4 text-primary" />
-                    Next {horizonDays} days to hit {formatCurrency(goal)} NIS
+                    Next {horizonDays} days to book {formatCurrency(horizonPlan.targetNIS)} NIS
                   </h3>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    Back-calculated from your historical Pitch %, Close %, Avg Ticket, and Retention.
+                    {planMode === "full"
+                      ? `Plan assumes you're booking the full ${formatCurrency(goal)} goal inside this ${horizonDays}-day window.`
+                      : `Plan subtracts the ${formatCurrency(stats.nis)} you've already booked, leaving ${formatCurrency(horizonPlan.targetNIS)} to book.`}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 print:hidden">
+                <div className="flex items-center gap-2 print:hidden flex-wrap">
+                  <div className="flex gap-1 mr-2">
+                    <Button size="sm"
+                      variant={planMode === "full" ? "default" : "outline"}
+                      onClick={() => setPlanMode("full")}
+                      className="h-7 px-2 text-[11px] font-bold">Full goal</Button>
+                    <Button size="sm"
+                      variant={planMode === "remaining" ? "default" : "outline"}
+                      onClick={() => setPlanMode("remaining")}
+                      className="h-7 px-2 text-[11px] font-bold">Remaining</Button>
+                  </div>
                   <Label htmlFor="horizon" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Horizon</Label>
                   <div className="flex gap-1">
                     {[7, 14, 30, 60, 90].map((d) => (
@@ -554,7 +566,7 @@ export default function Forecast() {
 
               {horizonPlan.done ? (
                 <div className="rounded-lg bg-success/10 text-success p-3 text-sm font-bold">
-                  Goal already hit for this window. 
+                  Goal already hit — nothing left to book in this window.
                 </div>
               ) : !horizonPlan.feasible ? (
                 <div className="rounded-lg bg-warning/10 text-warning p-3 text-sm">
@@ -564,25 +576,47 @@ export default function Forecast() {
                 <>
                   <div className="grid gap-3 md:grid-cols-5 grid-cols-2">
                     <PlanTile label="NIS to book"
-                      value={formatCurrency(horizonPlan.likely.remainingNIS)}
+                      value={formatCurrency(horizonPlan.likely.targetNIS)}
                       sub={`${formatCurrency(horizonPlan.likely.nisPerWeek)}/wk · ${formatCurrency(horizonPlan.likely.nisPerDay)}/day`}
                       accent="text-primary" />
                     <PlanTile label="Gross to sell"
                       value={formatCurrency(horizonPlan.likely.requiredGross)}
-                      sub={`retention ${retentionPctDisplay}%`}
+                      sub={`÷ ${retentionPctDisplay}% retention`}
                       accent="text-warning" />
                     <PlanTile label="Deals to win"
                       value={isFinite(horizonPlan.likely.requiredWon) ? formatCount(Math.ceil(horizonPlan.likely.requiredWon)) : "—"}
-                      sub={`${horizonPlan.likely.wonPerWeek.toFixed(1)}/wk · avg ${formatCurrency(stats.avgTicket)}`}
+                      sub={`÷ ${formatCurrency(stats.avgTicket)} avg ticket`}
                       accent="text-success" />
                     <PlanTile label="Sits to run"
                       value={isFinite(horizonPlan.likely.requiredPresentations) ? formatCount(Math.ceil(horizonPlan.likely.requiredPresentations)) : "—"}
-                      sub={`close ${pctNum(stats.closeRate * 100)} · ${horizonPlan.likely.presentationsPerWeek.toFixed(1)}/wk`}
+                      sub={`÷ ${pctNum(stats.closeRate * 100)} close rate`}
                       accent="text-info" />
                     <PlanTile label="Leads needed"
                       value={isFinite(horizonPlan.likely.requiredLeads) ? formatCount(Math.ceil(horizonPlan.likely.requiredLeads)) : "—"}
-                      sub={`${horizonPlan.likely.leadsPerWeek.toFixed(1)}/wk · ${horizonPlan.likely.leadsPerDay.toFixed(1)}/day`}
+                      sub={`÷ ${pctNum(stats.pitchRate * 100)} pitch rate`}
                       accent="text-primary" />
+                  </div>
+
+                  {/* Plain-english math walkthrough */}
+                  <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-2 text-xs">
+                    <div className="font-bold text-foreground text-[11px] uppercase tracking-wider mb-1">
+                      The math, step by step
+                    </div>
+                    <MathStep n={1} label="Start with NIS target"
+                      calc={formatCurrency(horizonPlan.targetNIS)}
+                      note={planMode === "full" ? "your full goal" : `${formatCurrency(goal)} goal − ${formatCurrency(stats.nis)} already booked`} />
+                    <MathStep n={2} label="÷ Retention → Gross sales needed"
+                      calc={`${formatCurrency(horizonPlan.targetNIS)} ÷ ${retentionPctDisplay}% = ${formatCurrency(horizonPlan.likely.requiredGross)}`}
+                      note="what you have to sell before cancels" />
+                    <MathStep n={3} label="÷ Avg Ticket → Deals to win"
+                      calc={`${formatCurrency(horizonPlan.likely.requiredGross)} ÷ ${formatCurrency(stats.avgTicket)} = ${isFinite(horizonPlan.likely.requiredWon) ? Math.ceil(horizonPlan.likely.requiredWon) : "—"} deals`}
+                      note="how many contracts you have to sign" />
+                    <MathStep n={4} label="÷ Close Rate → Sits to run"
+                      calc={`${isFinite(horizonPlan.likely.requiredWon) ? Math.ceil(horizonPlan.likely.requiredWon) : "—"} ÷ ${pctNum(stats.closeRate * 100)} = ${isFinite(horizonPlan.likely.requiredPresentations) ? Math.ceil(horizonPlan.likely.requiredPresentations) : "—"} presentations`}
+                      note="full pitches you need to deliver" />
+                    <MathStep n={5} label="÷ Pitch Rate → Leads to run"
+                      calc={`${isFinite(horizonPlan.likely.requiredPresentations) ? Math.ceil(horizonPlan.likely.requiredPresentations) : "—"} ÷ ${pctNum(stats.pitchRate * 100)} = ${isFinite(horizonPlan.likely.requiredLeads) ? Math.ceil(horizonPlan.likely.requiredLeads) : "—"} leads`}
+                      note={`over ${horizonDays} days = ${horizonPlan.likely.leadsPerWeek.toFixed(1)}/wk`} />
                   </div>
 
                   <div className="rounded-lg border border-border/60 bg-muted/30 p-3 text-xs space-y-1.5">
@@ -633,6 +667,7 @@ export default function Forecast() {
                 </>
               )}
             </section>
+
 
 
 
