@@ -863,6 +863,38 @@ function PlanTile({ label, value, sub, accent }: { label: string; value: string;
   );
 }
 
+function AsmInput({ label, suffix, value, placeholder, overridden, onChange }: {
+  label: string; suffix: "%" | "$"; value: number; placeholder: string; overridden: boolean;
+  onChange: (v: number | null) => void;
+}) {
+  return (
+    <div>
+      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+        <span>{label}</span>
+        {overridden && <span className="text-primary text-[9px]">edited</span>}
+      </Label>
+      <div className="relative mt-0.5">
+        {suffix === "$" && <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>}
+        <Input
+          type="number" min={0} value={value} placeholder={placeholder}
+          onChange={(e) => {
+            const raw = e.target.value;
+            if (raw === "") { onChange(null); return; }
+            const n = +raw;
+            onChange(isFinite(n) ? n : null);
+          }}
+          className={cn(
+            "h-8 text-xs font-bold tabular-nums",
+            suffix === "$" ? "pl-5 pr-6" : "pr-6",
+            overridden && "border-primary/60"
+          )}
+        />
+        {suffix === "%" && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>}
+      </div>
+    </div>
+  );
+}
+
 function MathStep({ n, label, calc, note }: { n: number; label: string; calc: string; note?: string }) {
   return (
     <div className="flex items-start gap-2 border-b border-border/40 pb-1.5 last:border-0">
