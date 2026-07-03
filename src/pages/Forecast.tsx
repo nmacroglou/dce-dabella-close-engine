@@ -191,6 +191,7 @@ export default function Forecast() {
   const [strictLeads, setStrictLeads] = useState(false);
   const [targetDate, setTargetDate] = useState<Date | undefined>();
   const [horizonDays, setHorizonDays] = useState(30);
+  const [planMode, setPlanMode] = useState<"full" | "remaining">("full");
   const [copied, setCopied] = useState(false);
   const hydrated = useRef(false);
 
