@@ -281,13 +281,19 @@ export default function Forecast() {
   const leadsNeededForGoal = dollarsPerLead > 0 ? goal / dollarsPerLead : Infinity;
   const leadsRemaining = Math.max(0, leadsNeededForGoal - stats.leads);
 
-  // Horizon plan — "what does the next N days need to look like?"
-  // targetNIS = full goal (default) OR remaining after what's already booked.
+  // Effective assumptions (override falls back to historical)
+  const asm = useMemo(() => ({
+    retention: ovrRet ?? (stats.retentionRate > 0 ? stats.retentionRate : 1),
+    close:     ovrClose ?? stats.closeRate,
+    pitch:     ovrPitch ?? stats.pitchRate,
+    ticket:    ovrTicket ?? stats.avgTicket,
+  }), [ovrRet, ovrClose, ovrPitch, ovrTicket, stats]);
+
   const horizonPlan = useMemo(() => {
     const targetNIS = planMode === "remaining" ? Math.max(0, goal - stats.nis) : goal;
-    const ret = stats.retentionRate > 0 ? stats.retentionRate : 1;
-    const avgT = stats.avgTicket > 0 ? stats.avgTicket : 0;
-    const pr = stats.pitchRate > 0 ? stats.pitchRate : 0;
+    const ret = asm.retention > 0 ? asm.retention : 1;
+    const avgT = asm.ticket > 0 ? asm.ticket : 0;
+    const pr = asm.pitch > 0 ? asm.pitch : 0;
 
     const calc = (closeR: number) => {
       const requiredGross = targetNIS / ret;
@@ -309,18 +315,19 @@ export default function Forecast() {
       };
     };
     return {
-      likely: calc(stats.closeRate),
-      best:   calc(stats.closeRate * (1 + bandWidth)),
-      worst:  calc(Math.max(0.0001, stats.closeRate * (1 - bandWidth))),
-      leadsPaceDelta: (pr > 0 && stats.closeRate > 0 && avgT > 0)
-        ? (calc(stats.closeRate).leadsPerWeek - stats.leadsPerWeek)
+      likely: calc(asm.close),
+      best:   calc(asm.close * (1 + bandWidth)),
+      worst:  calc(Math.max(0.0001, asm.close * (1 - bandWidth))),
+      leadsPaceDelta: (pr > 0 && asm.close > 0 && avgT > 0)
+        ? (calc(asm.close).leadsPerWeek - stats.leadsPerWeek)
         : 0,
-      nisPaceDelta: (calc(stats.closeRate).nisPerWeek - stats.nisPerWeek),
-      feasible: targetNIS > 0 && pr > 0 && stats.closeRate > 0 && avgT > 0,
+      nisPaceDelta: (calc(asm.close).nisPerWeek - stats.nisPerWeek),
+      feasible: targetNIS > 0 && pr > 0 && asm.close > 0 && avgT > 0,
       done: targetNIS <= 0,
       targetNIS,
     };
-  }, [goal, stats, horizonDays, bandWidth, planMode]);
+  }, [goal, stats, horizonDays, bandWidth, planMode, asm]);
+
 
 
 
