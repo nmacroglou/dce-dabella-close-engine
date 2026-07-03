@@ -8,6 +8,7 @@ import { registerPdfFonts } from "./fonts";
 import { drawDebugOverlay, installDebugRecorder } from "./debug";
 import { drawCover } from "./pages/cover";
 import { drawSelectedOption } from "./pages/selectedOption";
+import { drawAllOptions } from "./pages/allOptions";
 import { drawTClose } from "./pages/tClose";
 import { drawFinancialImpact } from "./pages/financialImpact";
 import { drawWindowInspection } from "./pages/windowInspection";
