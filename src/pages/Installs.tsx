@@ -7,6 +7,17 @@ import { useDeals, useUpdateDeal } from "@/hooks/useDeals";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { Deal } from "@/types/deal";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 
 
 
@@ -28,11 +39,16 @@ function dealName(d: Deal) {
   return `${d.homeowner1 || "Untitled"}${d.homeowner2 ? ` & ${d.homeowner2}` : ""}`;
 }
 
+type PendingReschedule = { dealId: string; fromDate: string | null; toDate: string; dealName: string };
+
 export default function Installs() {
   const { data: deals = [], isLoading } = useDeals();
   const updateDeal = useUpdateDeal();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingReschedule | null>(null);
+
+
 
   const { setActiveDealId } = useActiveDeal();
   const today = new Date();
@@ -179,7 +195,7 @@ export default function Installs() {
                     onDragLeave={() => {
                       if (dragOverKey === key) setDragOverKey(null);
                     }}
-                    onDrop={async (e) => {
+                    onDrop={(e) => {
                       e.preventDefault();
                       const id = e.dataTransfer.getData("text/deal-id") || draggingId;
                       setDragOverKey(null);
@@ -187,15 +203,14 @@ export default function Installs() {
                       if (!id) return;
                       const dropped = deals.find((x) => x.id === id);
                       if (!dropped || dropped.install_date === key) return;
-                      try {
-                        await updateDeal.mutateAsync({ id, updates: { install_date: key } });
-                        toast.success(
-                          `Moved ${dropped.homeowner1 ?? "install"} to ${parseYmd(key).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`
-                        );
-                      } catch {
-                        // hook toasts on error
-                      }
+                      setPending({
+                        dealId: id,
+                        fromDate: dropped.install_date,
+                        toDate: key,
+                        dealName: dealName(dropped),
+                      });
                     }}
+
                     className={`relative border-b border-r border-hairline/70 p-2 flex flex-col gap-1 transition-colors ${
                       inMonth ? "bg-card" : "bg-muted/20"
                     } ${isToday ? "ring-2 ring-inset ring-primary/40" : ""} ${
@@ -360,8 +375,84 @@ export default function Installs() {
           </aside>
         </div>
       </main>
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reschedule this install?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <p>
+                  You're moving <span className="font-bold text-foreground">{pending?.dealName}</span>.
+                </p>
+                <div className="rounded-lg border border-hairline bg-muted/30 p-3 space-y-1">
+                  <p className="text-xs">
+                    <span className="text-muted-foreground">From:</span>{" "}
+                    <span className="font-semibold text-foreground">
+                      {pending?.fromDate
+                        ? parseYmd(pending.fromDate).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" })
+                        : "Unscheduled"}
+                    </span>
+                  </p>
+                  <p className="text-xs">
+                    <span className="text-muted-foreground">To:</span>{" "}
+                    <span className="font-semibold text-primary">
+                      {pending && parseYmd(pending.toDate).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  You'll be able to undo this from the toast for a few seconds.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep original date</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!pending) return;
+                const p = pending;
+                setPending(null);
+                try {
+                  await updateDeal.mutateAsync({ id: p.dealId, updates: { install_date: p.toDate } });
+                  toast.success(
+                    `Moved ${p.dealName} to ${parseYmd(p.toDate).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`,
+                    {
+                      duration: 8000,
+                      action: {
+                        label: "Undo",
+                        onClick: async () => {
+                          try {
+                            await updateDeal.mutateAsync({
+                              id: p.dealId,
+                              updates: { install_date: p.fromDate },
+                            });
+                            toast.success(
+                              p.fromDate
+                                ? `Restored to ${parseYmd(p.fromDate).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`
+                                : "Install date cleared"
+                            );
+                          } catch {
+                            // hook toasts on error
+                          }
+                        },
+                      },
+                    }
+                  );
+                } catch {
+                  // hook toasts on error
+                }
+              }}
+            >
+              Confirm reschedule
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
 }
 
 function Kpi({ label, value, accent }: { label: string; value: number; accent: string }) {
