@@ -193,24 +193,45 @@ export default function Installs() {
                 const inMonth = d.getMonth() === cursor.getMonth();
                 const isToday = ymd(d) === ymd(today);
                 const isDropTarget = dragOverKey === key;
+                const invalid = validateDropDate(d, today);
+                const isInvalidTarget = isDropTarget && !!invalid;
                 return (
                   <div
                     key={i}
                     onDragOver={(e) => {
                       if (!draggingId) return;
+                      if (invalid) {
+                        e.dataTransfer.dropEffect = "none";
+                        if (dragOverKey !== key) {
+                          setDragOverKey(key);
+                          setInvalidReason(invalid);
+                        }
+                        return;
+                      }
                       e.preventDefault();
                       e.dataTransfer.dropEffect = "move";
-                      if (dragOverKey !== key) setDragOverKey(key);
+                      if (dragOverKey !== key) {
+                        setDragOverKey(key);
+                        setInvalidReason(null);
+                      }
                     }}
                     onDragLeave={() => {
-                      if (dragOverKey === key) setDragOverKey(null);
+                      if (dragOverKey === key) {
+                        setDragOverKey(null);
+                        setInvalidReason(null);
+                      }
                     }}
                     onDrop={(e) => {
                       e.preventDefault();
                       const id = e.dataTransfer.getData("text/deal-id") || draggingId;
                       setDragOverKey(null);
+                      setInvalidReason(null);
                       setDraggingId(null);
                       if (!id) return;
+                      if (invalid) {
+                        toast.error(`Can't drop here — ${invalid.toLowerCase()}`);
+                        return;
+                      }
                       const dropped = deals.find((x) => x.id === id);
                       if (!dropped || dropped.install_date === key) return;
                       setPending({
@@ -220,13 +241,21 @@ export default function Installs() {
                         dealName: dealName(dropped),
                       });
                     }}
-
                     className={`relative border-b border-r border-hairline/70 p-2 flex flex-col gap-1 transition-colors ${
                       inMonth ? "bg-card" : "bg-muted/20"
                     } ${isToday ? "ring-2 ring-inset ring-primary/40" : ""} ${
-                      isDropTarget ? "bg-primary/15 ring-2 ring-inset ring-primary" : ""
+                      isDropTarget && !invalid ? "bg-primary/15 ring-2 ring-inset ring-primary" : ""
+                    } ${isInvalidTarget ? "bg-destructive/10 ring-2 ring-inset ring-destructive/60 cursor-not-allowed" : ""} ${
+                      draggingId && invalid && !isDropTarget ? "opacity-70" : ""
                     }`}
                   >
+                    {isInvalidTarget && (
+                      <div className="absolute inset-x-1 bottom-1 z-10 rounded-md bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-1 shadow-md flex items-center gap-1 pointer-events-none">
+                        <AlertTriangle className="h-2.5 w-2.5" />
+                        <span className="truncate">{invalid}</span>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
                       <span
                         className={`text-[11px] font-bold ${
