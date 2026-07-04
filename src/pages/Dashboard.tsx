@@ -19,6 +19,8 @@ import { WowChipStrip } from "@/components/dashboard/WowChipStrip";
 import { ConversionRibbon } from "@/components/dashboard/ConversionRibbon";
 import { ReportingActions } from "@/components/dashboard/ReportingActions";
 import { bucketByDay, splitCurrentPrior, sumBuckets, wowDelta } from "@/lib/dashboardSeries";
+import InstallAlerts from "@/components/installs/InstallAlerts";
+
 
 // Defer chart-heavy below-the-fold sections to shrink initial bundle.
 const TrendsCard = lazy(() => import("@/components/dashboard/TrendsCard").then(m => ({ default: m.TrendsCard })));
