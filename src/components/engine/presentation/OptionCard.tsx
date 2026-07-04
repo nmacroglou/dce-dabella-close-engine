@@ -101,11 +101,11 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
             </div>
           )}
           <p className={`relative text-4xl font-extrabold ${theme.accent} mb-1 tracking-tight num-display`}>{fmt(opt.price)}</p>
-          <div className="relative text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
-            <span>as low as</span>
+          <div className="relative text-base text-muted-foreground flex items-center gap-2 flex-wrap">
+            <span className="text-sm">as low as</span>
             {editing ? (
               <span className="inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                <span className="font-bold text-foreground">$</span>
+                <span className="font-extrabold text-foreground text-2xl">$</span>
                 <input
                   ref={inputRef}
                   type="number"
@@ -117,7 +117,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
                     if (e.key === "Escape") { e.preventDefault(); cancel(); }
                   }}
                   onBlur={commit}
-                  className="w-24 rounded-md border border-hairline bg-background px-2 py-0.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-32 rounded-md border border-hairline bg-background px-2 py-0.5 text-2xl font-extrabold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
                 <button type="button" onClick={commit} className="p-1 rounded text-accent hover:bg-accent/10" aria-label="Save">
                   <Check className="h-3.5 w-3.5" />
