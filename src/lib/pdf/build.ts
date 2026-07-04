@@ -8,7 +8,7 @@ import { registerPdfFonts } from "./fonts";
 import { drawDebugOverlay, installDebugRecorder } from "./debug";
 import { drawCover } from "./pages/cover";
 import { drawSelectedOption } from "./pages/selectedOption";
-import { drawAllOptions } from "./pages/allOptions";
+import { drawAllOptions, drawAllOptionsIncludedComparison } from "./pages/allOptions";
 import { drawTClose } from "./pages/tClose";
 import { drawFinancialImpact } from "./pages/financialImpact";
 import { drawWindowInspection } from "./pages/windowInspection";
@@ -50,6 +50,9 @@ export async function buildCustomerPdf(
   } else {
     // Overview comparison of all three options
     drawAllOptions(pdf, state, computed, options, originalComputed);
+    // Complete side-by-side included-features comparison for A vs B vs C
+    pdf.addPage();
+    drawAllOptionsIncludedComparison(pdf, state, options);
     // Followed by a full "What's Included" detail page for each option
     options.forEach((o) => {
       pdf.addPage();
