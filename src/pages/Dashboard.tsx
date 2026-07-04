@@ -19,6 +19,8 @@ import { WowChipStrip } from "@/components/dashboard/WowChipStrip";
 import { ConversionRibbon } from "@/components/dashboard/ConversionRibbon";
 import { ReportingActions } from "@/components/dashboard/ReportingActions";
 import { bucketByDay, splitCurrentPrior, sumBuckets, wowDelta } from "@/lib/dashboardSeries";
+import InstallAlerts from "@/components/installs/InstallAlerts";
+
 
 // Defer chart-heavy below-the-fold sections to shrink initial bundle.
 const TrendsCard = lazy(() => import("@/components/dashboard/TrendsCard").then(m => ({ default: m.TrendsCard })));
@@ -314,7 +316,10 @@ export default function Dashboard() {
       <AppHeader />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
+        <InstallAlerts />
+
         {/* ===== HERO with State of the Week ===== */}
+
         <section className="relative overflow-hidden rounded-3xl border border-hairline bg-card shadow-[var(--shadow-lg)]">
           <div className="absolute inset-0 gradient-surface opacity-80" />
           <div className="absolute -top-24 -right-16 w-[28rem] h-[28rem] rounded-full opacity-40 blur-3xl gradient-brand animate-pulse" style={{ animationDuration: "6s" }} />

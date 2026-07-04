@@ -2,9 +2,11 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, CalendarDays, MapPin, StickyNote, Users, AlertTriangle, CalendarClock } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
+import InstallAlerts from "@/components/installs/InstallAlerts";
 import { useDeals } from "@/hooks/useDeals";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { Deal } from "@/types/deal";
+
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -124,7 +126,10 @@ export default function Installs() {
           </div>
         </div>
 
+        <InstallAlerts />
+
         {/* KPI strip */}
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Kpi label="Scheduled this month" value={installs.filter((d) => {
             const dt = parseYmd(d.install_date!);
