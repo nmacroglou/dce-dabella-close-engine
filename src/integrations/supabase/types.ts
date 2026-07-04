@@ -422,6 +422,8 @@ export type Database = {
           homeowner1: string | null
           homeowner2: string | null
           id: string
+          install_date: string | null
+          install_notes: string | null
           lead_source: string | null
           lost_reason: string | null
           notes: string | null
@@ -451,6 +453,8 @@ export type Database = {
           homeowner1?: string | null
           homeowner2?: string | null
           id?: string
+          install_date?: string | null
+          install_notes?: string | null
           lead_source?: string | null
           lost_reason?: string | null
           notes?: string | null
@@ -480,6 +484,8 @@ export type Database = {
           homeowner1?: string | null
           homeowner2?: string | null
           id?: string
+          install_date?: string | null
+          install_notes?: string | null
           lead_source?: string | null
           lost_reason?: string | null
           notes?: string | null

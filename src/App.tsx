@@ -25,6 +25,7 @@ const ManageUp = lazy(() => import("./pages/ManageUp.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const Manual = lazy(() => import("./pages/Manual.tsx"));
 const Forecast = lazy(() => import("./pages/Forecast.tsx"));
+const Installs = lazy(() => import("./pages/Installs.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -78,6 +79,7 @@ const App = () => (
                     <Route path="/manage-up" element={<ProtectedRoute><ManageUp /></ProtectedRoute>} />
                     <Route path="/manual" element={<ProtectedRoute><Manual /></ProtectedRoute>} />
                     <Route path="/forecast" element={<ProtectedRoute><Forecast /></ProtectedRoute>} />
+                    <Route path="/installs" element={<ProtectedRoute><Installs /></ProtectedRoute>} />
                     <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />

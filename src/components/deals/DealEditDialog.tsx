@@ -27,6 +27,8 @@ export default function DealEditDialog({ deal, open, onClose }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [leadSource, setLeadSource] = useState<LeadSource | "unset">("unset");
+  const [installDate, setInstallDate] = useState("");
+  const [installNotes, setInstallNotes] = useState("");
 
   useEffect(() => {
     if (!deal) return;
@@ -36,6 +38,8 @@ export default function DealEditDialog({ deal, open, onClose }: Props) {
     setEmail(deal.homeowner_email ?? "");
     setPhone(deal.homeowner_phone ?? "");
     setLeadSource((deal.lead_source as LeadSource | null) ?? "unset");
+    setInstallDate(deal.install_date ?? "");
+    setInstallNotes(deal.install_notes ?? "");
   }, [deal]);
 
   if (!deal) return null;
@@ -55,6 +59,8 @@ export default function DealEditDialog({ deal, open, onClose }: Props) {
           homeowner_email: email.trim() || null,
           homeowner_phone: phone.trim() || null,
           lead_source: leadSource === "unset" ? null : leadSource,
+          install_date: installDate || null,
+          install_notes: installNotes.trim() || null,
         },
       });
       toast.success("Deal updated");
@@ -108,6 +114,16 @@ export default function DealEditDialog({ deal, open, onClose }: Props) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-hairline">
+            <div className="space-y-1.5">
+              <Label>Install date</Label>
+              <Input type="date" value={installDate} onChange={(e) => setInstallDate(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Install notes</Label>
+              <Input value={installNotes} onChange={(e) => setInstallNotes(e.target.value)} placeholder="Crew, prep, gate code…" />
+            </div>
           </div>
         </div>
         <DialogFooter>
