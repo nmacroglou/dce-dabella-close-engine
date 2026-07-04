@@ -7,6 +7,8 @@ import { useDeals, useUpdateDeal } from "@/hooks/useDeals";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { Deal } from "@/types/deal";
 import { toast } from "sonner";
+import InstallEditDialog from "@/components/installs/InstallEditDialog";
+
 import {
   AlertDialog,
   AlertDialogAction,
