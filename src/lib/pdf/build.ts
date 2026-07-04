@@ -48,7 +48,13 @@ export async function buildCustomerPdf(
   if (selectedOption) {
     drawSelectedOption(pdf, state, computed, chosenOpt, originalComputed);
   } else {
+    // Overview comparison of all three options
     drawAllOptions(pdf, state, computed, options, originalComputed);
+    // Followed by a full "What's Included" detail page for each option
+    options.forEach((o) => {
+      pdf.addPage();
+      drawSelectedOption(pdf, state, computed, o, originalComputed);
+    });
   }
 
   pdf.addPage();
