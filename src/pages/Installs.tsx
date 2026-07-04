@@ -434,7 +434,10 @@ export default function Installs() {
         </div>
       </main>
 
+      <InstallEditDialog deal={editingDeal} open={!!editingDeal} onClose={() => setEditingDeal(null)} />
+
       <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reschedule this install?</AlertDialogTitle>
