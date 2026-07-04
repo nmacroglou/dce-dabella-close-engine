@@ -155,8 +155,26 @@ export default function Installs() {
             >
               Today
             </button>
+            <div className="h-5 w-px bg-hairline mx-1" />
+            <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground cursor-pointer select-none" title="Allow drops on Saturdays and Sundays">
+              <input
+                type="checkbox"
+                checked={allowWeekends}
+                onChange={(e) => setAllowWeekends(e.target.checked)}
+                className="h-3 w-3 accent-primary"
+              />
+              Weekends
+            </label>
           </div>
         </div>
+
+        {draggingId && invalidReason && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 flex items-center gap-2 text-xs font-semibold text-destructive">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            {invalidReason} — pick another day.
+          </div>
+        )}
+
 
         <InstallAlerts />
 
