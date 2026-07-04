@@ -51,6 +51,8 @@ export default function Installs() {
   const [pending, setPending] = useState<PendingReschedule | null>(null);
   const [allowWeekends, setAllowWeekends] = useState(false);
   const [invalidReason, setInvalidReason] = useState<string | null>(null);
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+
 
   const validateDropDate = (d: Date, tRef: Date): string | null => {
     const day = d.getDay();
