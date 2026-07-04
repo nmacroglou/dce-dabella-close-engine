@@ -47,6 +47,16 @@ export default function Installs() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingReschedule | null>(null);
+  const [allowWeekends, setAllowWeekends] = useState(false);
+  const [invalidReason, setInvalidReason] = useState<string | null>(null);
+
+  const validateDropDate = (d: Date, tRef: Date): string | null => {
+    const day = d.getDay();
+    if (d < tRef) return "Can't schedule in the past";
+    if (!allowWeekends && (day === 0 || day === 6)) return "Weekends are disabled";
+    return null;
+  };
+
 
 
 
