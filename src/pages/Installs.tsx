@@ -285,7 +285,8 @@ export default function Installs() {
                         </div>
                         <Users className="h-3.5 w-3.5 text-warning shrink-0" />
                       </Link>
-                    ))}
+                    </li>
+                  ))}
                   {needsScheduling.length > 6 && (
                     <li className="text-[10px] text-muted-foreground px-2">
                       +{needsScheduling.length - 6} more in Deals
