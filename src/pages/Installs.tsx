@@ -184,7 +184,7 @@ export default function Installs() {
                     onDragLeave={() => {
                       if (dragOverKey === key) setDragOverKey(null);
                     }}
-                    onDrop={async (e) => {
+                    onDrop={(e) => {
                       e.preventDefault();
                       const id = e.dataTransfer.getData("text/deal-id") || draggingId;
                       setDragOverKey(null);
@@ -192,15 +192,14 @@ export default function Installs() {
                       if (!id) return;
                       const dropped = deals.find((x) => x.id === id);
                       if (!dropped || dropped.install_date === key) return;
-                      try {
-                        await updateDeal.mutateAsync({ id, updates: { install_date: key } });
-                        toast.success(
-                          `Moved ${dropped.homeowner1 ?? "install"} to ${parseYmd(key).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`
-                        );
-                      } catch {
-                        // hook toasts on error
-                      }
+                      setPending({
+                        dealId: id,
+                        fromDate: dropped.install_date,
+                        toDate: key,
+                        dealName: dealName(dropped),
+                      });
                     }}
+
                     className={`relative border-b border-r border-hairline/70 p-2 flex flex-col gap-1 transition-colors ${
                       inMonth ? "bg-card" : "bg-muted/20"
                     } ${isToday ? "ring-2 ring-inset ring-primary/40" : ""} ${
