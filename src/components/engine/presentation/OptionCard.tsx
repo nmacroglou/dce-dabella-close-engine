@@ -89,9 +89,14 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
         </h2>
 
         {/* Price */}
-        <div className={`relative rounded-2xl p-5 mb-6 ${theme.bgAccent} border ${theme.borderAccent} overflow-hidden`}>
+        <div className={`relative rounded-2xl p-6 mb-6 ${theme.bgAccent} border ${theme.borderAccent} overflow-hidden`}>
           <div aria-hidden className="absolute -top-10 -right-10 h-32 w-32 rounded-full blur-2xl opacity-40"
             style={{ background: `linear-gradient(135deg, hsl(var(--primary) / 0.4), transparent)` }} />
+
+          {/* Total price */}
+          <p className="relative text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em] mb-1.5">
+            Total investment
+          </p>
           {showStrike && (
             <div className="flex items-center gap-2 mb-1 relative">
               <p className="text-base font-bold text-muted-foreground line-through num">{fmt(originalPrice!)}</p>
@@ -100,59 +105,72 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
               </span>
             </div>
           )}
-          <p className={`relative text-4xl font-extrabold ${theme.accent} mb-1 tracking-tight num-display`}>{fmt(opt.price)}</p>
-          <div className="relative text-base text-muted-foreground flex items-center gap-2 flex-wrap">
-            <span className="text-sm">as low as</span>
-            {editing ? (
-              <span className="inline-flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                <span className="font-extrabold text-foreground text-2xl">$</span>
-                <input
-                  ref={inputRef}
-                  type="number"
-                  inputMode="decimal"
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") { e.preventDefault(); commit(); }
-                    if (e.key === "Escape") { e.preventDefault(); cancel(); }
-                  }}
-                  onBlur={commit}
-                  className="w-32 rounded-md border border-hairline bg-background px-2 py-0.5 text-2xl font-extrabold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                <button type="button" onClick={commit} className="p-1 rounded text-accent hover:bg-accent/10" aria-label="Save">
-                  <Check className="h-3.5 w-3.5" />
+          <p className={`relative text-[2.75rem] leading-[1.05] font-extrabold ${theme.accent} tracking-[-0.02em] num-display`}>{fmt(opt.price)}</p>
+
+          {/* Divider */}
+          <div className="relative my-4 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+          {/* Monthly */}
+          <div className="relative">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em] mb-1.5">
+              As low as
+            </p>
+            <div className="flex items-baseline gap-3 flex-wrap">
+              {editing ? (
+                <span className="inline-flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <span className="font-extrabold text-foreground text-3xl tracking-tight">$</span>
+                  <input
+                    ref={inputRef}
+                    type="number"
+                    inputMode="decimal"
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") { e.preventDefault(); commit(); }
+                      if (e.key === "Escape") { e.preventDefault(); cancel(); }
+                    }}
+                    onBlur={commit}
+                    className="w-36 rounded-md border border-hairline bg-background px-2 py-0.5 text-3xl font-extrabold text-foreground tracking-tight focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  <button type="button" onClick={commit} className="p-1 rounded text-accent hover:bg-accent/10" aria-label="Save">
+                    <Check className="h-4 w-4" />
+                  </button>
+                  <button type="button" onClick={cancel} className="p-1 rounded text-muted-foreground hover:bg-muted" aria-label="Cancel">
+                    <X className="h-4 w-4" />
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); if (editable) setEditing(true); }}
+                  disabled={!editable}
+                  className={`inline-flex items-baseline gap-1.5 ${editable ? "hover:bg-muted/60 rounded-lg px-1.5 -mx-1.5 py-0.5 cursor-text" : "cursor-default"}`}
+                  title={editable ? "Tap to adjust monthly payment" : undefined}
+                >
+                  <span className="text-3xl font-extrabold text-foreground tracking-[-0.02em] num-display leading-none">
+                    {fmt(displayMonthly)}
+                  </span>
+                  <span className="text-sm font-semibold text-muted-foreground">/mo</span>
+                  {editable && <Pencil className="h-3.5 w-3.5 opacity-40 self-center ml-0.5" />}
                 </button>
-                <button type="button" onClick={cancel} className="p-1 rounded text-muted-foreground hover:bg-muted" aria-label="Cancel">
-                  <X className="h-3.5 w-3.5" />
+              )}
+              <span className="text-xs font-medium text-muted-foreground">with financing</span>
+              {monthlyOverride !== undefined && editable && !editing && (
+                <button type="button" onClick={reset} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground underline underline-offset-2">
+                  reset
                 </button>
-              </span>
-            ) : (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); if (editable) setEditing(true); }}
-                disabled={!editable}
-                className={`font-extrabold text-foreground inline-flex items-baseline gap-1 ${editable ? "hover:bg-muted rounded px-1 -mx-1 cursor-text" : "cursor-default"}`}
-                title={editable ? "Tap to adjust monthly payment" : undefined}
-              >
-                <span className="text-2xl tracking-tight num-display">{fmt(displayMonthly)}</span>
-                <span className="text-sm font-semibold text-muted-foreground">/mo</span>
-                {editable && <Pencil className="h-3 w-3 opacity-50 self-center" />}
-              </button>
-            )}
-            <span>with financing</span>
-            {monthlyOverride !== undefined && editable && !editing && (
-              <button type="button" onClick={reset} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground underline underline-offset-2">
-                reset
-              </button>
-            )}
+              )}
+            </div>
           </div>
+
           {showStrike && (
-            <div className="mt-3 pt-3 border-t border-accent/30 flex items-center justify-between">
+            <div className="relative mt-4 pt-3 border-t border-accent/30 flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-wider text-accent">You save</span>
-              <span className="text-lg font-extrabold text-accent">{fmt(originalPrice! - opt.price)}</span>
+              <span className="text-lg font-extrabold text-accent num-display">{fmt(originalPrice! - opt.price)}</span>
             </div>
           )}
         </div>
+
 
         {/* Features */}
         <div className="space-y-2.5 mb-6">
