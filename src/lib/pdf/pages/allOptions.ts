@@ -4,7 +4,7 @@ import { fmt } from "@/lib/format";
 import { getProductLabel } from "@/lib/engineHelpers";
 import { getDefaultFeatureTexts } from "@/components/engine/presentation/constants";
 import {
-  ACCENT, BORDER, CARD, FOREST_INK, GRAPHITE, INK,
+  ACCENT, BORDER, CARD, CREAM, FOREST_INK, GRAPHITE, INK,
   LIME, LIME_DEEP, MIST, PW, WHITE,
 } from "../theme";
 import { CONTENT_W, MARGIN, RHYTHM } from "../layout";
@@ -42,6 +42,89 @@ export function drawAllOptions(
   options.forEach((opt, i) => {
     const y = startY + i * (cardH + gap);
     drawOptionCard(pdf, state, computed, opt, y, cardH, originalComputed);
+  });
+}
+
+export function drawAllOptionsIncludedComparison(
+  pdf: jsPDF,
+  state: EngineState,
+  options: { key: "A" | "B" | "C"; name: string; price: number; monthly: number }[],
+) {
+  pageBg(pdf);
+
+  sectionHeader(
+    pdf,
+    "What's Included · Side by Side",
+    "Option A vs B vs C.",
+    "Every column below is the complete included list for that option, including any custom edits made before sharing.",
+  );
+
+  const topY = RHYTHM.sectionTop;
+  const columnGap = 5;
+  const colW = (CONTENT_W - columnGap * 2) / 3;
+  const colH = 190;
+  const keys: ("A" | "B" | "C")[] = ["A", "B", "C"];
+
+  keys.forEach((key, i) => {
+    const opt = options.find((o) => o.key === key);
+    const x = MARGIN + i * (colW + columnGap);
+    const customKey = `customFeatures${key}` as keyof EngineState;
+    const customTexts =
+      (state[customKey] as string[] | undefined) &&
+      (state[customKey] as string[]).length > 0
+        ? (state[customKey] as string[])
+        : null;
+    const sharedTexts = state.customFeatures && state.customFeatures.length > 0 ? state.customFeatures : null;
+    const defaultTexts = getDefaultFeatureTexts(state.products, state.roofMaterial, key);
+    const features = customTexts ?? sharedTexts ?? defaultTexts;
+
+    drawIncludedColumn(pdf, x, topY, colW, colH, key, opt?.name ?? `Option ${key}`, features);
+  });
+}
+
+function drawIncludedColumn(
+  pdf: jsPDF,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  key: "A" | "B" | "C",
+  name: string,
+  features: string[],
+) {
+  rounded(pdf, x, y, w, h, 3, CARD, BORDER);
+  setFill(pdf, key === "A" ? LIME : key === "B" ? ACCENT : CREAM);
+  pdf.rect(x, y, w, 1.2, "F");
+
+  rounded(pdf, x + 5, y + 7, 24, 6.5, 3, key === "B" ? ACCENT : LIME);
+  setDisplayFont(pdf, 6.2);
+  setColor(pdf, key === "B" ? WHITE : FOREST_INK);
+  trackedText(pdf, `OPTION ${key}`, x + 17, y + 11.4, { align: "center", charSpace: 0.35 });
+
+  setDisplayFont(pdf, 9.5);
+  setColor(pdf, FOREST_INK);
+  const nameLines = pdf.splitTextToSize(name, w - 10).slice(0, 2);
+  nameLines.forEach((line: string, idx: number) => pdf.text(line, x + 5, y + 21 + idx * 4.6));
+
+  hairline(pdf, x + 5, y + 31, x + w - 5, y + 31, MIST, 0.3);
+
+  let fy = y + 39;
+  const bottomY = y + h - 8;
+  features.forEach((text, idx) => {
+    if (fy > bottomY) return;
+    const remaining = bottomY - fy;
+    const lines = pdf.splitTextToSize(text, w - 15);
+    const visibleLines = lines.slice(0, remaining < 9 ? 1 : 2);
+
+    setFill(pdf, LIME);
+    pdf.circle(x + 6.5, fy - 1.3, 0.75, "F");
+    setBodyFont(pdf, 7.2);
+    setColor(pdf, INK);
+    visibleLines.forEach((line: string, lineIdx: number) => {
+      const suffix = lineIdx === visibleLines.length - 1 && visibleLines.length < lines.length ? "…" : "";
+      pdf.text(`${line}${suffix}`, x + 10, fy + lineIdx * 3.7);
+    });
+    fy += visibleLines.length * 3.7 + (idx === features.length - 1 ? 0 : 2.9);
   });
 }
 
