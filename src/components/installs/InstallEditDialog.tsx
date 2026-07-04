@@ -56,7 +56,7 @@ export default function InstallEditDialog({ deal, open, onClose }: Props) {
         updates: {
           install_date: installDate || null,
           install_notes: installNotes.trim() || null,
-          engine_state: { ...(deal.engine_state ?? {}), install_alert_days: leads },
+          engine_state: { ...(deal.engine_state ?? {}), install_alert_days: leads } as Deal["engine_state"],
         },
       });
       toast.success("Install updated");
