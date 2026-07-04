@@ -27,6 +27,8 @@ export default function DealEditDialog({ deal, open, onClose }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [leadSource, setLeadSource] = useState<LeadSource | "unset">("unset");
+  const [installDate, setInstallDate] = useState("");
+  const [installNotes, setInstallNotes] = useState("");
 
   useEffect(() => {
     if (!deal) return;
@@ -36,6 +38,8 @@ export default function DealEditDialog({ deal, open, onClose }: Props) {
     setEmail(deal.homeowner_email ?? "");
     setPhone(deal.homeowner_phone ?? "");
     setLeadSource((deal.lead_source as LeadSource | null) ?? "unset");
+    setInstallDate(deal.install_date ?? "");
+    setInstallNotes(deal.install_notes ?? "");
   }, [deal]);
 
   if (!deal) return null;
