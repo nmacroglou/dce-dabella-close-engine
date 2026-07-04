@@ -5,7 +5,13 @@ import { useDeals } from "@/hooks/useDeals";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { Deal } from "@/types/deal";
 
-const MILESTONES = [5, 3, 1] as const;
+const DEFAULT_MILESTONES = [5, 3, 1] as const;
+
+function dealMilestones(d: Deal): number[] {
+  const raw = (d.engine_state as { install_alert_days?: number[] } | null)?.install_alert_days;
+  return Array.isArray(raw) && raw.length ? raw : [...DEFAULT_MILESTONES];
+}
+
 
 function parseYmd(s: string): Date {
   const [y, m, d] = s.split("-").map(Number);
