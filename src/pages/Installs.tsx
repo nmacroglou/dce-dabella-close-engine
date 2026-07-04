@@ -7,6 +7,17 @@ import { useDeals, useUpdateDeal } from "@/hooks/useDeals";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { Deal } from "@/types/deal";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 
 
 
