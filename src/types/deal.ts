@@ -79,6 +79,8 @@ export interface Deal {
   lead_source: LeadSource | null;
   was_presented: boolean;
   was_demoed: boolean;
+  install_date: string | null;
+  install_notes: string | null;
   created_at: string;
   updated_at: string;
 }
