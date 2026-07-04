@@ -7,6 +7,8 @@ import { useDeals, useUpdateDeal } from "@/hooks/useDeals";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { Deal } from "@/types/deal";
 import { toast } from "sonner";
+import InstallEditDialog from "@/components/installs/InstallEditDialog";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +51,8 @@ export default function Installs() {
   const [pending, setPending] = useState<PendingReschedule | null>(null);
   const [allowWeekends, setAllowWeekends] = useState(false);
   const [invalidReason, setInvalidReason] = useState<string | null>(null);
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+
 
   const validateDropDate = (d: Date, tRef: Date): string | null => {
     const day = d.getDay();
@@ -309,15 +313,11 @@ export default function Installs() {
                           className={`group flex items-start gap-1 rounded-md px-1.5 py-1 bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors cursor-grab active:cursor-grabbing ${
                             draggingId === deal.id ? "opacity-40" : ""
                           }`}
-                          title={`Drag to reschedule · ${dealName(deal)}${deal.address ? " — " + deal.address : ""}`}
+                          title={`Click to edit · drag to reschedule · ${dealName(deal)}${deal.address ? " — " + deal.address : ""}`}
+                          onClick={() => setEditingDeal(deal)}
                         >
                           <GripVertical className="h-3 w-3 text-primary/60 shrink-0 mt-0.5" />
-                          <Link
-                            to="/"
-                            onClick={() => setActiveDealId(deal.id)}
-                            onDragStart={(e) => e.preventDefault()}
-                            className="min-w-0 flex-1 block"
-                          >
+                          <div className="min-w-0 flex-1">
                             <p className="text-[10px] font-bold text-primary truncate leading-tight">
                               {dealName(deal)}
                             </p>
@@ -326,8 +326,9 @@ export default function Installs() {
                                 {deal.address}
                               </p>
                             )}
-                          </Link>
+                          </div>
                         </div>
+
                       ))}
                       {items.length > 3 && (
                         <span className="text-[9px] font-semibold text-muted-foreground px-1">
@@ -433,7 +434,10 @@ export default function Installs() {
         </div>
       </main>
 
+      <InstallEditDialog deal={editingDeal} open={!!editingDeal} onClose={() => setEditingDeal(null)} />
+
       <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reschedule this install?</AlertDialogTitle>

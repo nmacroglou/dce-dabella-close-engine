@@ -5,7 +5,13 @@ import { useDeals } from "@/hooks/useDeals";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { Deal } from "@/types/deal";
 
-const MILESTONES = [5, 3, 1] as const;
+const DEFAULT_MILESTONES = [5, 3, 1] as const;
+
+function dealMilestones(d: Deal): number[] {
+  const raw = (d.engine_state as { install_alert_days?: number[] } | null)?.install_alert_days;
+  return Array.isArray(raw) && raw.length ? raw : [...DEFAULT_MILESTONES];
+}
+
 
 function parseYmd(s: string): Date {
   const [y, m, d] = s.split("-").map(Number);
@@ -45,23 +51,32 @@ export default function InstallAlerts({ compact = false }: Props) {
 
     const overdue = scheduled.filter((d) => d._days < 0);
     const todayList = scheduled.filter((d) => d._days === 0);
-    const milestoneLists = MILESTONES.map((m) => ({
-      m,
-      list: scheduled.filter((d) => d._days === m),
-    }));
+
+    // Group by lead-day using each deal's own alert preferences
+    const perLead = new Map<number, typeof scheduled>();
+    for (const d of scheduled) {
+      if (d._days <= 0) continue;
+      const leads = dealMilestones(d);
+      if (leads.includes(d._days)) {
+        if (!perLead.has(d._days)) perLead.set(d._days, []);
+        perLead.get(d._days)!.push(d);
+      }
+    }
+    const sortedLeads = [...perLead.keys()].sort((a, b) => a - b);
 
     const out: Bucket[] = [];
     if (overdue.length) out.push({ label: "Past install date", sub: "Confirm completion or reschedule", tone: "danger", deals: overdue });
     if (todayList.length) out.push({ label: "Installing today", sub: "Crews on site — confirm homeowner is ready", tone: "danger", deals: todayList });
-    for (const { m, list } of milestoneLists) {
-      if (!list.length) continue;
+    for (const m of sortedLeads) {
+      const list = perLead.get(m)!;
       out.push({
         label: m === 1 ? "1 day out" : `${m} days out`,
-        sub: m === 5 ? "Pre-install confirmation call" : m === 3 ? "Materials & crew lock-in" : "Final walkthrough & reminder",
+        sub: m <= 1 ? "Final walkthrough & reminder" : m <= 3 ? "Materials & crew lock-in" : "Pre-install confirmation call",
         tone: m === 1 ? "warn" : "info",
         deals: list,
       });
     }
+
     return out;
   }, [deals, today]);
 
