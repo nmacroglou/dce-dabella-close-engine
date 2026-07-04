@@ -50,6 +50,7 @@ const INSIGHTS_CLUSTER: NavEntry[] = [
 ];
 
 const OPS_CLUSTER: NavEntry[] = [
+  { to: "/installs", label: "Installs", icon: CalendarDays, end: false },
   { to: "/incidents", label: "Incidents", icon: ShieldAlert, end: false },
   { to: "/manage-up", label: "Manage Up", icon: Trophy, end: false },
 ];
