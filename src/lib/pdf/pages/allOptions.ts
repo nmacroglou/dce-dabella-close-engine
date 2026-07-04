@@ -4,7 +4,7 @@ import { fmt } from "@/lib/format";
 import { getProductLabel } from "@/lib/engineHelpers";
 import { getDefaultFeatureTexts } from "@/components/engine/presentation/constants";
 import {
-  ACCENT, BORDER, CARD, FOREST_INK, GRAPHITE, INK,
+  ACCENT, BORDER, CARD, CREAM, FOREST_INK, GRAPHITE, INK,
   LIME, LIME_DEEP, MIST, PW, WHITE,
 } from "../theme";
 import { CONTENT_W, MARGIN, RHYTHM } from "../layout";
