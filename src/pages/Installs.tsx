@@ -126,7 +126,10 @@ export default function Installs() {
           </div>
         </div>
 
+        <InstallAlerts />
+
         {/* KPI strip */}
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Kpi label="Scheduled this month" value={installs.filter((d) => {
             const dt = parseYmd(d.install_date!);
