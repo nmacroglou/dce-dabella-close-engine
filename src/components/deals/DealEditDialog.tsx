@@ -115,6 +115,16 @@ export default function DealEditDialog({ deal, open, onClose }: Props) {
               </SelectContent>
             </Select>
           </div>
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-hairline">
+            <div className="space-y-1.5">
+              <Label>Install date</Label>
+              <Input type="date" value={installDate} onChange={(e) => setInstallDate(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Install notes</Label>
+              <Input value={installNotes} onChange={(e) => setInstallNotes(e.target.value)} placeholder="Crew, prep, gate code…" />
+            </div>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
