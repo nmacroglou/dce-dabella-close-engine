@@ -17,6 +17,70 @@ type Section = {
 
 const SECTIONS: Section[] = [
   {
+    id: "full-walkthrough",
+    icon: GitBranch,
+    title: "Full walkthrough: deal → presentation",
+    blurb: "Every step, in order, from a brand-new lead to a shared proposal.",
+    body: (
+      <ol className="list-decimal pl-5 space-y-3">
+        <li>
+          <b>Create the deal.</b> Go to <Link to="/deals" className="text-primary underline">Deals</Link> → <b>New Deal</b>.
+          Enter homeowner name(s), address, <b>email</b>, and <b>phone</b> (both power Follow-Ups and the Share dialog).
+          Pick the product (Roof / Windows / Bath / Solar) and lead source.
+        </li>
+        <li>
+          <b>Set it active.</b> On the deal card, tap <b>Set Active</b>. The gold pill at the top of every page now shows that homeowner —
+          everything you do next writes back to this deal.
+        </li>
+        <li>
+          <b>Run the inspection (optional but recommended).</b> Open the deal → <b>Inspection</b> tab (or the Close Engine → Inspection).
+          Pick the report type, upload photos from the iPad camera, and let AI tag each shot with defects, severity, and captions.
+          Edit the narrative blocks (Executive Summary, Scope, Opinion, Next Steps), then <b>Generate PDF</b> and share it with the homeowner.
+        </li>
+        <li>
+          <b>Prep with the Playbook.</b> Open the <Link to="/" className="text-primary underline">Close Engine</Link> → <b>Playbook</b>.
+          Run the pre-appointment checklist, review the CVV battle card for the product, and confirm the <b>3 Pillars</b> (Sleep · Eat · Water).
+        </li>
+        <li>
+          <b>Price the job in the Calculator.</b> Engine → <b>Calculator</b>. Enter the credit score
+          (auto-picks the payment factor: ≥720 → .0108, 640–719 → .012, &lt;640 → .015),
+          any promos (Efficiency, Standby, Deferred 6/12), and the price for Options A, B, and C.
+          Rename options if needed — the cards will remember your labels for this deal.
+        </li>
+        <li>
+          <b>Customize "What's Included."</b> Engine → <b>Presentation</b> → the pencil icon on each option's features list.
+          You can edit features per option (A/B/C) or share one list across all three.
+        </li>
+        <li>
+          <b>Walk the presentation.</b> Presentation tab flows: <b>Options reveal</b> → <b>Financial Impact</b> (move-forward vs. do-nothing,
+          inflation penalty, locked-in savings) → <b>Scope of Work</b> → <b>Welcome / T-Close</b>. Use the footer nav to move step-by-step.
+        </li>
+        <li>
+          <b>Handle objections live.</b> Engine → <b>Objections</b>. Search by keyword, tap a rebuttal — it's logged against this deal
+          for the Dashboard heatmap. Flip to <b>Coach Mode</b> for live AI tips while you speak.
+        </li>
+        <li>
+          <b>Share the proposal.</b> Top of the Presentation tab → <b>Share</b>. Two modes:
+          <ul className="list-disc pl-5 mt-1 space-y-1">
+            <li><b>Share Proposal</b> — after the homeowner picks an option, sends that single option's full PDF (cover, numbers, scope, welcome).</li>
+            <li><b>Share All 3 Options</b> — no option picked yet: sends the 3-option overview, a side-by-side "What's Included" page, plus a full detail page for each option.</li>
+          </ul>
+          Deliver via email (pre-filled from the deal), SMS, download, or signed link.
+        </li>
+        <li>
+          <b>Close it out.</b> If they say yes, tap the selected option in the Presentation → confirm <b>Sold For</b>.
+          Engine → <b>Post-Close</b>: capture next steps, upload signed docs and photos, and follow-ups are auto-scheduled.
+          The deal moves to <b>Won</b> in the <Link to="/pipeline" className="text-primary underline">Pipeline</Link>.
+        </li>
+        <li>
+          <b>Track the money.</b> Engine → <b>Performance</b> shows commission for this deal;
+          <Link to="/ledger" className="text-primary underline"> Ledger</Link> tracks cash in/out and payment calendar;
+          <Link to="/dashboard" className="text-primary underline"> Dashboard</Link> updates your Sit-to-Close, earnings, and objection heatmap.
+        </li>
+      </ol>
+    ),
+  },
+  {
     id: "overview",
     icon: Sparkles,
     title: "What is the Close Engine?",
