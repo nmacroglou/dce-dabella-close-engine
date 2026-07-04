@@ -30,6 +30,10 @@ function dealName(d: Deal) {
 
 export default function Installs() {
   const { data: deals = [], isLoading } = useDeals();
+  const updateDeal = useUpdateDeal();
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+
   const { setActiveDealId } = useActiveDeal();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
