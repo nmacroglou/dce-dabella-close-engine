@@ -28,11 +28,16 @@ function dealName(d: Deal) {
   return `${d.homeowner1 || "Untitled"}${d.homeowner2 ? ` & ${d.homeowner2}` : ""}`;
 }
 
+type PendingReschedule = { dealId: string; fromDate: string | null; toDate: string; dealName: string };
+
 export default function Installs() {
   const { data: deals = [], isLoading } = useDeals();
   const updateDeal = useUpdateDeal();
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingReschedule | null>(null);
+
+
 
   const { setActiveDealId } = useActiveDeal();
   const today = new Date();
