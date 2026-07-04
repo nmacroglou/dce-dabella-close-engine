@@ -364,8 +364,84 @@ export default function Installs() {
           </aside>
         </div>
       </main>
+
+      <AlertDialog open={!!pending} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reschedule this install?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                <p>
+                  You're moving <span className="font-bold text-foreground">{pending?.dealName}</span>.
+                </p>
+                <div className="rounded-lg border border-hairline bg-muted/30 p-3 space-y-1">
+                  <p className="text-xs">
+                    <span className="text-muted-foreground">From:</span>{" "}
+                    <span className="font-semibold text-foreground">
+                      {pending?.fromDate
+                        ? parseYmd(pending.fromDate).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" })
+                        : "Unscheduled"}
+                    </span>
+                  </p>
+                  <p className="text-xs">
+                    <span className="text-muted-foreground">To:</span>{" "}
+                    <span className="font-semibold text-primary">
+                      {pending && parseYmd(pending.toDate).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  You'll be able to undo this from the toast for a few seconds.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep original date</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (!pending) return;
+                const p = pending;
+                setPending(null);
+                try {
+                  await updateDeal.mutateAsync({ id: p.dealId, updates: { install_date: p.toDate } });
+                  toast.success(
+                    `Moved ${p.dealName} to ${parseYmd(p.toDate).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`,
+                    {
+                      duration: 8000,
+                      action: {
+                        label: "Undo",
+                        onClick: async () => {
+                          try {
+                            await updateDeal.mutateAsync({
+                              id: p.dealId,
+                              updates: { install_date: p.fromDate },
+                            });
+                            toast.success(
+                              p.fromDate
+                                ? `Restored to ${parseYmd(p.fromDate).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}`
+                                : "Install date cleared"
+                            );
+                          } catch {
+                            // hook toasts on error
+                          }
+                        },
+                      },
+                    }
+                  );
+                } catch {
+                  // hook toasts on error
+                }
+              }}
+            >
+              Confirm reschedule
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
 }
 
 function Kpi({ label, value, accent }: { label: string; value: number; accent: string }) {
