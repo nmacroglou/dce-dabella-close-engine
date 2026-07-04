@@ -59,6 +59,8 @@ export default function DealEditDialog({ deal, open, onClose }: Props) {
           homeowner_email: email.trim() || null,
           homeowner_phone: phone.trim() || null,
           lead_source: leadSource === "unset" ? null : leadSource,
+          install_date: installDate || null,
+          install_notes: installNotes.trim() || null,
         },
       });
       toast.success("Deal updated");
