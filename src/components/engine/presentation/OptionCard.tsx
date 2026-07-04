@@ -131,11 +131,12 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
                 type="button"
                 onClick={(e) => { e.stopPropagation(); if (editable) setEditing(true); }}
                 disabled={!editable}
-                className={`font-bold text-foreground inline-flex items-center gap-1 ${editable ? "hover:bg-muted rounded px-1 -mx-1 cursor-text" : "cursor-default"}`}
+                className={`font-extrabold text-foreground inline-flex items-baseline gap-1 ${editable ? "hover:bg-muted rounded px-1 -mx-1 cursor-text" : "cursor-default"}`}
                 title={editable ? "Tap to adjust monthly payment" : undefined}
               >
-                {fmt(displayMonthly)}/mo
-                {editable && <Pencil className="h-3 w-3 opacity-50" />}
+                <span className="text-2xl tracking-tight num-display">{fmt(displayMonthly)}</span>
+                <span className="text-sm font-semibold text-muted-foreground">/mo</span>
+                {editable && <Pencil className="h-3 w-3 opacity-50 self-center" />}
               </button>
             )}
             <span>with financing</span>
