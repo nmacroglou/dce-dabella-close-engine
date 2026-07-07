@@ -887,6 +887,38 @@ export default function InspectionPanel({ dealId }: Props) {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={captionTweakOpen} onOpenChange={setCaptionTweakOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tweak all captions</DialogTitle>
+            <DialogDescription>
+              Apply one instruction to every included photo's caption. Existing tags and severity are preserved — only captions are re-drafted using the photo + your instruction.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={5}
+            placeholder="e.g. Keep it to two sentences, mention the homeowner by name, emphasize safety risk, avoid technical jargon…"
+            value={captionTweakText}
+            onChange={(e) => setCaptionTweakText(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setCaptionTweakOpen(false)}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                setCaptionTweakOpen(false);
+                await handleTweakAllCaptions(captionTweakText);
+              }}
+              disabled={!!captionTweakProgress || !captionTweakText.trim()}
+            >
+              <Wand2 className="h-4 w-4 mr-2" />
+              Apply to {filteredPhotos.length} caption{filteredPhotos.length === 1 ? "" : "s"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
+
       <ShareInspectionPdfDialog
         open={shareOpen}
         onOpenChange={setShareOpen}
