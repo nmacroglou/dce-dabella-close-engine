@@ -81,6 +81,83 @@ export default function InspectionPanel({ dealId }: Props) {
 
   const [tweakOpen, setTweakOpen] = useState(false);
   const [tweakText, setTweakText] = useState("");
+  const [captionTweakOpen, setCaptionTweakOpen] = useState(false);
+  const [captionTweakText, setCaptionTweakText] = useState("");
+  const [captionTweakProgress, setCaptionTweakProgress] = useState<{ done: number; total: number } | null>(null);
+  const cancelCaptionTweakRef = useRef(false);
+
+  async function handleTweakAllCaptions(tweak: string) {
+    const t = tweak.trim();
+    if (!t) {
+      toast.error("Enter a tweak instruction first");
+      return;
+    }
+    const targets = filteredPhotos.filter(
+      (p) => (p as { include_in_report?: boolean }).include_in_report !== false,
+    );
+    if (targets.length === 0) {
+      toast.error("No photos to tweak");
+      return;
+    }
+    cancelCaptionTweakRef.current = false;
+    setCaptionTweakProgress({ done: 0, total: targets.length });
+    const toastId = toast.loading(`Tweaking captions 0 / ${targets.length}…`);
+    let done = 0;
+    let failures = 0;
+    for (const p of targets) {
+      if (cancelCaptionTweakRef.current) {
+        toast.message(`Canceled — tweaked ${done} of ${targets.length}`, { id: toastId });
+        setCaptionTweakProgress(null);
+        return;
+      }
+      const ext = p as { inspection_tags?: string[] };
+      const currentCaption = (p.caption ?? "").trim();
+      const hintParts = [
+        `Global caption tweak — apply this instruction to the caption: ${t}`,
+        currentCaption ? `Current caption to refine: ${currentCaption}` : "",
+        stuccoFinish
+          ? `Existing stucco finish on this home is ${stuccoFinish}. Do not mention any other finish.`
+          : "",
+      ].filter(Boolean);
+      try {
+        const res = await analyze.mutateAsync({
+          photo_id: p.id,
+          storage_path: p.storage_path,
+          report_type: primaryType,
+          user_hint: hintParts.join("\n\n"),
+          existing_tags: ext.inspection_tags ?? [],
+        });
+        if (cancelCaptionTweakRef.current) {
+          toast.message(`Canceled — tweaked ${done} of ${targets.length}`, { id: toastId });
+          setCaptionTweakProgress(null);
+          return;
+        }
+        await updatePhoto.mutateAsync({
+          photo_id: p.id,
+          deal_id: dealId,
+          patch: { caption: res.caption },
+        });
+      } catch (e) {
+        console.error("caption tweak failed", p.id, e);
+        failures++;
+        if (failures >= 3) {
+          toast.error("Stopped after 3 failures (likely rate limit). Try again shortly.", { id: toastId });
+          setCaptionTweakProgress(null);
+          return;
+        }
+      }
+      done++;
+      setCaptionTweakProgress({ done, total: targets.length });
+      toast.loading(`Tweaking captions ${done} / ${targets.length}…`, { id: toastId });
+    }
+    setCaptionTweakProgress(null);
+    toast.success(
+      failures === 0
+        ? `Tweaked ${done} caption${done === 1 ? "" : "s"}`
+        : `Tweaked ${done - failures} of ${targets.length} (${failures} failed)`,
+      { id: toastId },
+    );
+  }
 
   const sections = draft ?? inspection?.sections ?? TEMPLATES[primaryType];
 
@@ -668,6 +745,30 @@ export default function InspectionPanel({ dealId }: Props) {
 
 
 
+        <Button
+          variant="outline"
+          onClick={() => setCaptionTweakOpen(true)}
+          disabled={!!captionTweakProgress || filteredPhotos.length === 0}
+          title="Apply a global instruction to every photo's caption (tags & severity are preserved)."
+        >
+          {captionTweakProgress
+            ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            : <Wand2 className="h-4 w-4 mr-2" />}
+          {captionTweakProgress
+            ? `Tweaking ${captionTweakProgress.done}/${captionTweakProgress.total}`
+            : "Tweak all captions"}
+        </Button>
+
+        {captionTweakProgress && (
+          <Button
+            variant="destructive"
+            onClick={() => { cancelCaptionTweakRef.current = true; }}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Cancel tweak
+          </Button>
+        )}
+
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
           {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
         </Button>
@@ -785,6 +886,38 @@ export default function InspectionPanel({ dealId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={captionTweakOpen} onOpenChange={setCaptionTweakOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tweak all captions</DialogTitle>
+            <DialogDescription>
+              Apply one instruction to every included photo's caption. Existing tags and severity are preserved — only captions are re-drafted using the photo + your instruction.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            rows={5}
+            placeholder="e.g. Keep it to two sentences, mention the homeowner by name, emphasize safety risk, avoid technical jargon…"
+            value={captionTweakText}
+            onChange={(e) => setCaptionTweakText(e.target.value)}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setCaptionTweakOpen(false)}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                setCaptionTweakOpen(false);
+                await handleTweakAllCaptions(captionTweakText);
+              }}
+              disabled={!!captionTweakProgress || !captionTweakText.trim()}
+            >
+              <Wand2 className="h-4 w-4 mr-2" />
+              Apply to {filteredPhotos.length} caption{filteredPhotos.length === 1 ? "" : "s"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
 
       <ShareInspectionPdfDialog
         open={shareOpen}
