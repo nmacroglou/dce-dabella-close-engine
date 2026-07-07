@@ -745,6 +745,30 @@ export default function InspectionPanel({ dealId }: Props) {
 
 
 
+        <Button
+          variant="outline"
+          onClick={() => setCaptionTweakOpen(true)}
+          disabled={!!captionTweakProgress || filteredPhotos.length === 0}
+          title="Apply a global instruction to every photo's caption (tags & severity are preserved)."
+        >
+          {captionTweakProgress
+            ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            : <Wand2 className="h-4 w-4 mr-2" />}
+          {captionTweakProgress
+            ? `Tweaking ${captionTweakProgress.done}/${captionTweakProgress.total}`
+            : "Tweak all captions"}
+        </Button>
+
+        {captionTweakProgress && (
+          <Button
+            variant="destructive"
+            onClick={() => { cancelCaptionTweakRef.current = true; }}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Cancel tweak
+          </Button>
+        )}
+
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
           {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
         </Button>
