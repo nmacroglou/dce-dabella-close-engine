@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ActiveDealProvider } from "@/contexts/ActiveDealContext";
 import { OwnerScopeProvider } from "@/contexts/OwnerScopeContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -63,8 +64,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <OwnerScopeProvider>
-            <ActiveDealProvider>
+          <LanguageProvider>
+            <OwnerScopeProvider>
+              <ActiveDealProvider>
               <ErrorBoundary>
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>
@@ -87,7 +89,8 @@ const App = () => (
                 </Suspense>
               </ErrorBoundary>
             </ActiveDealProvider>
-          </OwnerScopeProvider>
+            </OwnerScopeProvider>
+          </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

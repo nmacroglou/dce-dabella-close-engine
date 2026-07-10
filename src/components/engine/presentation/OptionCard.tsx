@@ -3,6 +3,7 @@ import { CheckCircle2, TrendingUp, Zap, Sparkles, Pencil, Check, X } from "lucid
 import { fmt } from "@/lib/format";
 import { OPTION_THEMES, getFeaturesForOption, type RoofMaterial } from "./constants";
 import type { ComputedValues } from "@/types/engine";
+import { useT } from "@/contexts/LanguageContext";
 
 interface OptionCardProps {
   optionKey: "A" | "B" | "C";
@@ -20,6 +21,7 @@ interface OptionCardProps {
 }
 
 export default function OptionCard({ optionKey, name, computed, selected, onClick, customFeatures, products, roofMaterial, originalPrice, discountPct, monthlyOverride, onMonthlyChange }: OptionCardProps) {
+  const t = useT();
   const theme = OPTION_THEMES[optionKey];
   const features = getFeaturesForOption(products, roofMaterial, customFeatures, optionKey);
   const isHighlighted = optionKey === "A";
@@ -82,7 +84,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
 
       <div className="p-7 pt-10 relative">
         <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em] mb-1">
-          Option {optionKey}
+          {t("Option", "Opción")} {optionKey}
         </p>
         <h2 className="text-xl font-display font-extrabold text-foreground mb-5 leading-tight">
           {name}
@@ -95,7 +97,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
 
           {/* Total price */}
           <p className="relative text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em] mb-1.5">
-            Total investment
+            {t("Total investment", "Inversión total")}
           </p>
           {showStrike && (
             <div className="flex items-center gap-2 mb-1 relative">
@@ -113,7 +115,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
           {/* Monthly */}
           <div className="relative">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em] mb-1.5">
-              As low as
+              {t("As low as", "Desde solo")}
             </p>
             <div className="flex items-baseline gap-3 flex-wrap">
               {editing ? (
@@ -154,7 +156,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
                   {editable && <Pencil className="h-3.5 w-3.5 opacity-40 self-center ml-0.5" />}
                 </button>
               )}
-              <span className="text-xs font-medium text-muted-foreground">with financing</span>
+              <span className="text-xs font-medium text-muted-foreground">{t("with financing", "con financiamiento")}</span>
               {monthlyOverride !== undefined && editable && !editing && (
                 <button type="button" onClick={reset} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground underline underline-offset-2">
                   reset
@@ -165,7 +167,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
 
           {showStrike && (
             <div className="relative mt-4 pt-3 border-t border-accent/30 flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-accent">You save</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-accent">{t("You save", "Usted ahorra")}</span>
               <span className="text-lg font-extrabold text-accent num-display">{fmt(originalPrice! - opt.price)}</span>
             </div>
           )}
@@ -175,7 +177,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
         {/* Features */}
         <div className="space-y-2.5 mb-6">
           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
-            What's included
+            {t("What's included", "Qué se incluye")}
           </p>
           {features.map((f, i) => (
             <div key={i} className="flex items-start gap-3">
@@ -188,17 +190,17 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
         {/* Value snapshot */}
         <div className="rounded-2xl bg-muted/60 p-4 space-y-2.5">
           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
-            Value snapshot
+            {t("Value snapshot", "Resumen de valor")}
           </p>
-          <ValueLine icon={TrendingUp} label="Home value increase" value={`+${fmt(opt.roiValue)}`} />
-          <ValueLine icon={Zap} label="10-yr energy savings" value={`+${fmt(computed.energySavings)}`} />
+          <ValueLine icon={TrendingUp} label={t("Home value increase", "Aumento del valor de la casa")} value={`+${fmt(opt.roiValue)}`} />
+          <ValueLine icon={Zap} label={t("10-yr energy savings", "Ahorro de energía a 10 años")} value={`+${fmt(computed.energySavings)}`} />
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" /> Net effective cost
+                <Sparkles className="h-4 w-4 text-primary" /> {t("Net effective cost", "Costo neto efectivo")}
               </span>
-              <span className="text-[10px] text-muted-foreground">Price minus home value gain & energy savings</span>
+              <span className="text-[10px] text-muted-foreground">{t("Price minus home value gain & energy savings", "Precio menos aumento del valor y ahorro de energía")}</span>
             </div>
             <span className="text-base font-extrabold text-primary">{fmt(opt.netCost)}</span>
           </div>

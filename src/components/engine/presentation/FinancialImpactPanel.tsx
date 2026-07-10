@@ -4,6 +4,7 @@ import { TrendingUp, ToggleLeft, ToggleRight, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { getOptionMetrics, OPTION_KEYS } from "@/lib/engineHelpers";
 import OptionPill from "./OptionPill";
+import { useT } from "@/contexts/LanguageContext";
 
 interface Props {
   state: EngineState;
@@ -27,6 +28,7 @@ function ImpactRow({ label, hint, formula, moveForward, doNothing, moveClass, no
 }
 
 export default memo(function FinancialImpactPanel({ state, computed }: Props) {
+  const t = useT();
   const [mode, setMode] = useState<"single" | "compare">("single");
   const [selectedKey, setSelectedKey] = useState<"A" | "B" | "C">(state.selectedOption || "A");
 
@@ -40,24 +42,27 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
     <div className="card-elevated-lg p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-extrabold text-foreground flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-accent" /> 10-Year Financial Impact
+          <TrendingUp className="h-5 w-5 text-accent" /> {t("10-Year Financial Impact", "Impacto Financiero a 10 Años")}
         </h3>
         <button
           onClick={() => setMode(m => m === "single" ? "compare" : "single")}
           className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           {mode === "single" ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />}
-          {mode === "single" ? "Compare all" : "Single view"}
+          {mode === "single" ? t("Compare all", "Comparar todas") : t("Single view", "Vista única")}
         </button>
       </div>
 
       {/* Coach script */}
       <div className="rounded-xl bg-accent/5 border border-accent/20 p-3">
         <p className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1 flex items-center gap-1">
-          <Info className="h-3 w-3" /> What to say
+          <Info className="h-3 w-3" /> {t("What to say", "Qué decir")}
         </p>
         <p className="text-sm text-foreground/90 italic leading-relaxed">
-          "Let's look at the <span className="font-bold not-italic">total picture</span> — what you gain by moving forward vs. what it costs to wait."
+          {t(
+            `"Let's look at the total picture — what you gain by moving forward vs. what it costs to wait."`,
+            `"Veamos el panorama completo — lo que gana al avanzar vs. lo que cuesta esperar."`,
+          )}
         </p>
       </div>
 
@@ -71,7 +76,7 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
 
           <div className="space-y-0 rounded-xl border border-border overflow-hidden">
             <ImpactRow
-              label="Home value increase"
+              label={t("Home value increase", "Aumento del valor de la casa")}
               hint={`${fmt(sel.price)} × ${state.roiPercent}% ROI`}
               formula={`${fmt(sel.price)} × 0.${state.roiPercent} = ${fmt(sel.roi)}`}
               moveForward={`+${fmt(sel.roi)}`}
@@ -80,8 +85,8 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
               nothingClass="text-muted-foreground"
             />
             <ImpactRow
-              label="Energy savings"
-              hint={`${fmt(state.monthlyBill)}/mo × ${state.energySavingsPct}% × 10 yrs`}
+              label={t("Energy savings", "Ahorro de energía")}
+              hint={`${fmt(state.monthlyBill)}/mo × ${state.energySavingsPct}% × 10 ${t("yrs", "años")}`}
               formula={`${fmt(state.monthlyBill)} × 12 × 10 × ${state.energySavingsPct}% = ${fmt(computed.energySavings)}`}
               moveForward={`+${fmt(computed.energySavings)}`}
               doNothing={`-${fmt(computed.energySavings)}`}
@@ -89,8 +94,8 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
               nothingClass="text-destructive"
             />
             <ImpactRow
-              label="Price lock savings"
-              hint="Avoid 8% annual material inflation"
+              label={t("Price lock savings", "Ahorro por precio fijo")}
+              hint={t("Avoid 8% annual material inflation", "Evite el 8% de inflación anual de materiales")}
               formula={`${fmt(sel.price)} × (1.08¹⁰ − 1) = ${fmt(sel.lockedInSavings)}`}
               moveForward={`+${fmt(sel.lockedInSavings)}`}
               doNothing={`-${fmt(sel.inflationPenalty)}`}
@@ -101,14 +106,14 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-accent/10 border border-accent/30 p-4 text-center">
-              <p className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1">✅ Move Forward</p>
+              <p className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1">✅ {t("Move Forward", "Avanzar")}</p>
               <p className="text-xs font-mono text-foreground/70 mb-1">
                 {fmt(sel.roi)} + {fmt(computed.energySavings)} + {fmt(sel.lockedInSavings)}
               </p>
               <p className="text-2xl font-black text-accent">+{fmt(sel.moveForward)}</p>
             </div>
             <div className="rounded-xl bg-destructive/10 border border-destructive/30 p-4 text-center">
-              <p className="text-[10px] font-bold text-destructive uppercase tracking-wider mb-1">❌ Do Nothing</p>
+              <p className="text-[10px] font-bold text-destructive uppercase tracking-wider mb-1">❌ {t("Do Nothing", "No hacer nada")}</p>
               <p className="text-xs font-mono text-foreground/70 mb-1">
                 −{fmt(computed.energySavings)} − {fmt(sel.inflationPenalty)}
               </p>
@@ -117,12 +122,12 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
           </div>
 
           <div className="p-4 rounded-xl bg-foreground text-background text-center space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Net advantage of moving forward</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">{t("Net advantage of moving forward", "Ventaja neta de avanzar")}</p>
             <p className="text-xs font-mono opacity-70">
               {fmt(sel.moveForward)} − ({fmt(sel.doNothing)}) = {fmt(sel.netDiff)}
             </p>
             <p className="text-3xl font-black">{fmt(sel.netDiff)}</p>
-            <p className="text-xs opacity-60">You're this much better off saying yes today</p>
+            <p className="text-xs opacity-60">{t("You're this much better off saying yes today", "Está esto mejor si dice que sí hoy")}</p>
           </div>
         </>
       ) : (

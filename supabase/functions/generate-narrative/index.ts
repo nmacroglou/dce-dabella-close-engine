@@ -15,6 +15,7 @@ interface ReqBody {
   photos?: PhotoFinding[];
   tweak?: string;
   current_sections?: Record<string, string>;
+  language?: "en" | "es";
 }
 
 const TRADE_LABEL: Record<ReportType, string> = {
@@ -93,6 +94,11 @@ Deno.serve(async (req) => {
     const voiceBlock = types.map((t) => `• ${TRADE_LABEL[t].toUpperCase()}: ${VOICE[t]}`).join("\n");
     const tradeList = types.map((t) => TRADE_LABEL[t]).join(" + ");
 
+    const language = body.language === "es" ? "es" : "en";
+    const languageDirective = language === "es"
+      ? `\n\nWRITE THE ENTIRE REPORT IN NATURAL, PROFESSIONAL LATIN-AMERICAN SPANISH. Do not translate word-for-word — write as a native Spanish-speaking master inspector would. Keep the same voice: plain, evidence-first, no marketing.`
+      : "";
+
     const system = `You are speaking as a single, unified DaBella inspector who carries every one of the following trade lineages at once. Do not introduce yourself — write the report straight.
 
 ${personaBlock}
@@ -100,7 +106,7 @@ ${personaBlock}
 You are drafting a homeowner-facing ${tradeList} inspection report${types.length > 1 ? " (multiple trades combined into one report)" : ""}. Write tight. Each section: 2–3 short sentences max (next_steps can be a 3–5 item numbered list, one short line each). No marketing language, no hedging ("appears to", "may possibly"), no compound run-ons. Plainspoken, specific, evidence-first. Anchor every claim in the photo findings provided. Do NOT invent defects that are not represented in the findings. Prefer short declarative sentences over long qualified ones.
 
 Trade-specific voice and terminology to use throughout:
-${voiceBlock}`;
+${voiceBlock}${languageDirective}`;
 
     const user = `Report type(s): ${types.join(", ")}
 

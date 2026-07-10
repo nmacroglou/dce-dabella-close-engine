@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Props {
   photo: DealPhoto & {
@@ -30,6 +31,7 @@ const SEV_TONE: Record<"low" | "moderate" | "high", string> = {
 };
 
 function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
+  const { t, lang } = useLanguage();
   const analyze = useAnalyzePhoto();
   const update = useUpdatePhotoTags();
   const del = useDeleteDealPhoto();
@@ -82,6 +84,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         report_type: reportType,
         user_hint: buildHint(),
         existing_tags: tags,
+        language: lang,
       });
       if (cancelRef.current) return;
       setCaption(res.caption);
@@ -109,6 +112,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         report_type: reportType,
         user_hint: buildHint(),
         existing_tags: tags,
+        language: lang,
       });
       if (cancelRef.current) return;
       setCaption(res.caption);
@@ -145,7 +149,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         {photo.signedUrl ? (
           <img src={photo.signedUrl} alt={caption || "Inspection photo"} className="h-full w-full object-cover" loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-xs text-muted-foreground">Loading…</div>
+          <div className="flex items-center justify-center h-full text-xs text-muted-foreground">{t("Loading…", "Cargando…")}</div>
         )}
         {severity && (
           <span className={`absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${SEV_TONE[severity]}`}>
@@ -156,7 +160,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
 
       <div className="flex items-start gap-2">
         <Textarea
-          placeholder="Type what you see — the wand will refine it with the photo."
+          placeholder={t("Type what you see — the wand will refine it with the photo.", "Escriba lo que ve — la varita lo refinará con la foto.")}
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           onBlur={(e) => commitCaption(e.target.value)}
@@ -170,8 +174,10 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
           onClick={analyze.isPending ? cancelAnalyze : handleCaptionOnly}
           title={
             analyze.isPending
-              ? "Cancel — discard this AI run"
-              : caption.trim() ? "Refine my note with the photo" : "AI write caption from photo"
+              ? t("Cancel — discard this AI run", "Cancelar — descartar esta ejecución de IA")
+              : caption.trim()
+              ? t("Refine my note with the photo", "Refinar mi nota con la foto")
+              : t("AI write caption from photo", "IA escribe el pie de foto")
           }
         >
           {analyze.isPending ? <X className="h-4 w-4" /> : <Wand2 className="h-4 w-4 text-primary" />}
@@ -193,7 +199,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
           onChange={(e) => setNewTag(e.target.value)}
           onBlur={() => { if (newTag.trim()) addTag(); }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
-          placeholder="+ add tag"
+          placeholder={t("+ add tag", "+ añadir etiqueta")}
           className="text-xs px-2 py-1 h-8 rounded border border-dashed border-border bg-transparent w-28 outline-none focus:border-primary"
         />
       </div>
@@ -205,19 +211,19 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
           onValueChange={(v) => patch({ severity: v === "unset" ? null : (v as "low" | "moderate" | "high") })}
         >
           <SelectTrigger className="h-8 text-xs w-[120px]">
-            <SelectValue placeholder="Severity" />
+            <SelectValue placeholder={t("Severity", "Gravedad")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="unset">Severity…</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="moderate">Moderate</SelectItem>
-            <SelectItem value="high">High</SelectItem>
+            <SelectItem value="unset">{t("Severity…", "Gravedad…")}</SelectItem>
+            <SelectItem value="low">{t("Low", "Baja")}</SelectItem>
+            <SelectItem value="moderate">{t("Moderate", "Moderada")}</SelectItem>
+            <SelectItem value="high">{t("High", "Alta")}</SelectItem>
           </SelectContent>
         </Select>
 
         <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground ml-auto">
           <Switch checked={include} onCheckedChange={(v) => patch({ include_in_report: v })} />
-          Include
+          {t("Include", "Incluir")}
         </label>
       </div>
 
@@ -229,15 +235,15 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
           onClick={analyze.isPending ? cancelAnalyze : handleAnalyze}
         >
           {analyze.isPending
-            ? <><X className="h-3 w-3 mr-1.5" />Cancel</>
-            : <><Sparkles className="h-3 w-3 mr-1.5" />{tags.length === 0 ? "Auto-tag" : "Re-analyze"}</>}
+            ? <><X className="h-3 w-3 mr-1.5" />{t("Cancel", "Cancelar")}</>
+            : <><Sparkles className="h-3 w-3 mr-1.5" />{tags.length === 0 ? t("Auto-tag", "Auto-etiquetar") : t("Re-analyze", "Re-analizar")}</>}
         </Button>
         <Button
           size="sm"
           variant="ghost"
           className="h-8 w-8 p-0"
-          onClick={() => { if (confirm("Delete this photo?")) del.mutate(photo); }}
-          aria-label="Delete photo"
+          onClick={() => { if (confirm(t("Delete this photo?", "¿Eliminar esta foto?"))) del.mutate(photo); }}
+          aria-label={t("Delete photo", "Eliminar foto")}
         >
           <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
         </Button>

@@ -19,6 +19,7 @@ import PhotoTagCard from "./PhotoTagCard";
 import { useDeals } from "@/hooks/useDeals";
 import ShareInspectionPdfDialog from "./ShareInspectionPdfDialog";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 interface Props {
@@ -44,6 +45,7 @@ const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
 ];
 
 export default function InspectionPanel({ dealId }: Props) {
+  const { t, lang } = useLanguage();
   // Multi-select: rep can pick one or more trades for a single combined report.
   const [reportTypes, setReportTypes] = useState<InspectionReportType[]>(["roof"]);
   const primaryType = reportTypes[0] ?? "roof";
@@ -126,6 +128,7 @@ export default function InspectionPanel({ dealId }: Props) {
           report_type: primaryType,
           user_hint: hintParts.join("\n\n"),
           existing_tags: ext.inspection_tags ?? [],
+          language: lang,
         });
         if (cancelCaptionTweakRef.current) {
           toast.message(`Canceled — tweaked ${done} of ${targets.length}`, { id: toastId });
@@ -234,6 +237,7 @@ export default function InspectionPanel({ dealId }: Props) {
         const res = await analyze.mutateAsync({
           photo_id: p.id, storage_path: p.storage_path, report_type: primaryType,
           user_hint: finishHint,
+          language: lang,
         });
         if (cancelTagRef.current) {
           toast.message(`Canceled — tagged ${done} of ${total}`, { id: toastId });
@@ -541,6 +545,7 @@ export default function InspectionPanel({ dealId }: Props) {
         report_types: reportTypes,
         photos: tagged,
         tweak: mergedTweak || undefined,
+        language: lang,
       });
       setDraft(res.sections);
       toast.success("Narrative drafted — review and Save", { id: toastId });
@@ -704,42 +709,42 @@ export default function InspectionPanel({ dealId }: Props) {
         />
         <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={upload.isPending}>
           <Camera className="h-4 w-4 mr-2" />
-          {upload.isPending ? "Uploading…" : "Add photos"}
+          {upload.isPending ? t("Uploading…", "Subiendo…") : t("Add photos", "Añadir fotos")}
         </Button>
 
         <Button variant="outline" onClick={handleAutoTagAll} disabled={!!tagProgress || filteredPhotos.length === 0}>
           {tagProgress ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-          {tagProgress ? `Tagging ${tagProgress.done}/${tagProgress.total}` : `Auto-tag all (${filteredPhotos.length})`}
+          {tagProgress ? `${t("Tagging", "Etiquetando")} ${tagProgress.done}/${tagProgress.total}` : `${t("Auto-tag all", "Auto-etiquetar todo")} (${filteredPhotos.length})`}
         </Button>
 
         <Button
           variant="destructive"
           onClick={handleCancelAutoTag}
           disabled={!tagProgress}
-          title={tagProgress ? "Stop the auto-tag run. Photos already tagged are kept." : "Only active during an Auto-tag run."}
+          title={tagProgress ? t("Stop the auto-tag run. Photos already tagged are kept.", "Detener el auto-etiquetado. Las fotos ya etiquetadas se conservan.") : t("Only active during an Auto-tag run.", "Solo activo durante un auto-etiquetado.")}
         >
           <X className="h-4 w-4 mr-2" />
-          Cancel tagging
+          {t("Cancel tagging", "Cancelar etiquetado")}
         </Button>
 
         <Button
           variant="outline"
           onClick={handleAmpUrgency}
           disabled={ampPending || filteredPhotos.length === 0}
-          title="Adds +30% weight to every tag — bumps each photo one severity tier (low→moderate→high)."
+          title={t("Adds +30% weight to every tag — bumps each photo one severity tier (low→moderate→high).", "Añade +30% de peso a cada etiqueta — sube cada foto un nivel de gravedad (baja→moderada→alta).")}
         >
           {ampPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <TrendingUp className="h-4 w-4 mr-2" />}
-          Amp urgency +30%
+          {t("Amp urgency +30%", "Aumentar urgencia +30%")}
         </Button>
 
         <Button
           variant="outline"
           onClick={handleClearAll}
           disabled={clearPending || !!tagProgress || filteredPhotos.length === 0}
-          title="Wipe captions, tags, and severity on every photo so you can run a fresh tag pass. Photos stay."
+          title={t("Wipe captions, tags, and severity on every photo so you can run a fresh tag pass. Photos stay.", "Borra pies de foto, etiquetas y gravedad de cada foto para volver a etiquetar. Las fotos permanecen.")}
         >
           {clearPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eraser className="h-4 w-4 mr-2" />}
-          Clear & re-tag
+          {t("Clear & re-tag", "Limpiar y re-etiquetar")}
         </Button>
 
 
@@ -749,14 +754,14 @@ export default function InspectionPanel({ dealId }: Props) {
           variant="outline"
           onClick={() => setCaptionTweakOpen(true)}
           disabled={!!captionTweakProgress || filteredPhotos.length === 0}
-          title="Apply a global instruction to every photo's caption (tags & severity are preserved)."
+          title={t("Apply a global instruction to every photo's caption (tags & severity are preserved).", "Aplica una instrucción global al pie de foto de cada imagen (etiquetas y gravedad se conservan).")}
         >
           {captionTweakProgress
             ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             : <Wand2 className="h-4 w-4 mr-2" />}
           {captionTweakProgress
-            ? `Tweaking ${captionTweakProgress.done}/${captionTweakProgress.total}`
-            : "Tweak all captions"}
+            ? `${t("Tweaking", "Ajustando")} ${captionTweakProgress.done}/${captionTweakProgress.total}`
+            : t("Tweak all captions", "Ajustar todos los pies de foto")}
         </Button>
 
         {captionTweakProgress && (
@@ -765,29 +770,29 @@ export default function InspectionPanel({ dealId }: Props) {
             onClick={() => { cancelCaptionTweakRef.current = true; }}
           >
             <X className="h-4 w-4 mr-2" />
-            Cancel tweak
+            {t("Cancel tweak", "Cancelar ajuste")}
           </Button>
         )}
 
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
-          {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
+          {save.isPending ? t("Saving…", "Guardando…") : draft ? t("Save changes", "Guardar cambios") : t("Saved", "Guardado")}
         </Button>
 
         <Button onClick={() => setShareOpen(true)} disabled={!deal}>
           <Share2 className="h-4 w-4 mr-2" />
-          Generate &amp; Share PDF
+          {t("Generate & Share PDF", "Generar y compartir PDF")}
         </Button>
       </div>
 
       <div>
         <div className="flex items-center justify-between mb-3">
           <h4 className="font-display font-extrabold text-lg tracking-tight">
-            Photos <span className="text-muted-foreground font-normal text-sm">({filteredPhotos.length})</span>
+            {t("Photos", "Fotos")} <span className="text-muted-foreground font-normal text-sm">({filteredPhotos.length})</span>
           </h4>
         </div>
         {filteredPhotos.length === 0 ? (
           <div className="card-premium p-8 text-center text-sm text-muted-foreground">
-            No photos yet. Tap <span className="font-semibold text-foreground">Add photos</span> to take or upload images from the iPad camera.
+            {t("No photos yet. Tap", "Aún no hay fotos. Toque")} <span className="font-semibold text-foreground">{t("Add photos", "Añadir fotos")}</span> {t("to take or upload images from the iPad camera.", "para tomar o subir imágenes desde la cámara del iPad.")}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -808,7 +813,7 @@ export default function InspectionPanel({ dealId }: Props) {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
-            <h4 className="font-display font-extrabold text-lg tracking-tight">Report Narrative</h4>
+            <h4 className="font-display font-extrabold text-lg tracking-tight">{t("Report Narrative", "Narrativa del reporte")}</h4>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -820,7 +825,7 @@ export default function InspectionPanel({ dealId }: Props) {
               {generateNarrative.isPending
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Sparkles className="h-4 w-4 mr-2" />}
-              Draft from photos
+              {t("Draft from photos", "Redactar desde fotos")}
             </Button>
             <Button
               size="sm"
@@ -829,12 +834,12 @@ export default function InspectionPanel({ dealId }: Props) {
               disabled={generateNarrative.isPending}
             >
               <Wand2 className="h-4 w-4 mr-2" />
-              Tweak
+              {t("Tweak", "Ajustar")}
             </Button>
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Drafted in the voice of {reportTypes.length > 1 ? "the combined " + reportTypes.map((t) => REPORT_TYPE_SHORT[t]).join(" + ") + " inspectors" : "a " + REPORT_TYPE_LABELS[primaryType].toLowerCase() + " inspector"}. Use <span className="font-semibold text-foreground">Draft from photos</span> to synthesize the narrative from the tagged photos above, or <span className="font-semibold text-foreground">Tweak</span> to steer it (material, age, prior repairs, etc.).
+          {t("Drafted in the voice of", "Redactado con la voz de")} {reportTypes.length > 1 ? t("the combined ", "los ") + reportTypes.map((tt) => REPORT_TYPE_SHORT[tt]).join(" + ") + t(" inspectors", " inspectores combinados") : t("a ", "un ") + REPORT_TYPE_LABELS[primaryType].toLowerCase() + t(" inspector", " inspector")}. {t("Use", "Use")} <span className="font-semibold text-foreground">{t("Draft from photos", "Redactar desde fotos")}</span> {t("to synthesize the narrative from the tagged photos above, or", "para sintetizar la narrativa desde las fotos etiquetadas, o")} <span className="font-semibold text-foreground">{t("Tweak", "Ajustar")}</span> {t("to steer it (material, age, prior repairs, etc.).", "para guiarla (material, edad, reparaciones previas, etc.).")}
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {SECTION_FIELDS.map(({ key, label }) => (
@@ -854,23 +859,23 @@ export default function InspectionPanel({ dealId }: Props) {
       <Dialog open={tweakOpen} onOpenChange={setTweakOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tweak the narrative</DialogTitle>
+            <DialogTitle>{t("Tweak the narrative", "Ajustar la narrativa")}</DialogTitle>
             <DialogDescription>
-              Give the AI extra context to bake into the report — material, age, prior repairs, homeowner concerns. It will re-draft all sections using the tagged photos plus this context.
+              {t("Give the AI extra context to bake into the report — material, age, prior repairs, homeowner concerns. It will re-draft all sections using the tagged photos plus this context.", "Dele a la IA contexto adicional para incorporar al reporte — material, edad, reparaciones previas, inquietudes del propietario. Re-redactará todas las secciones usando las fotos etiquetadas más este contexto.")}
             </DialogDescription>
           </DialogHeader>
           <Textarea
             rows={5}
             placeholder={
               reportTypes.includes("roof")
-                ? "e.g. 3-tab asphalt shingle, ~22 years old, prior patch over the south valley, homeowner reports staining in the master bedroom ceiling."
-                : "e.g. material, age, prior repairs, homeowner concerns…"
+                ? t("e.g. 3-tab asphalt shingle, ~22 years old, prior patch over the south valley, homeowner reports staining in the master bedroom ceiling.", "p. ej. teja asfáltica de 3 pestañas, ~22 años, parche previo sobre la vertiente sur, el propietario reporta manchas en el techo del dormitorio principal.")
+                : t("e.g. material, age, prior repairs, homeowner concerns…", "p. ej. material, edad, reparaciones previas, inquietudes del propietario…")
             }
             value={tweakText}
             onChange={(e) => setTweakText(e.target.value)}
           />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setTweakOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setTweakOpen(false)}>{t("Cancel", "Cancelar")}</Button>
             <Button
               onClick={async () => {
                 setTweakOpen(false);
@@ -881,7 +886,7 @@ export default function InspectionPanel({ dealId }: Props) {
               {generateNarrative.isPending
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Wand2 className="h-4 w-4 mr-2" />}
-              Re-draft with context
+              {t("Re-draft with context", "Re-redactar con contexto")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -890,19 +895,19 @@ export default function InspectionPanel({ dealId }: Props) {
       <Dialog open={captionTweakOpen} onOpenChange={setCaptionTweakOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tweak all captions</DialogTitle>
+            <DialogTitle>{t("Tweak all captions", "Ajustar todos los pies de foto")}</DialogTitle>
             <DialogDescription>
-              Apply one instruction to every included photo's caption. Existing tags and severity are preserved — only captions are re-drafted using the photo + your instruction.
+              {t("Apply one instruction to every included photo's caption. Existing tags and severity are preserved — only captions are re-drafted using the photo + your instruction.", "Aplique una instrucción al pie de foto de cada foto incluida. Las etiquetas y la gravedad existentes se conservan — solo se re-redactan los pies de foto usando la foto + su instrucción.")}
             </DialogDescription>
           </DialogHeader>
           <Textarea
             rows={5}
-            placeholder="e.g. Keep it to two sentences, mention the homeowner by name, emphasize safety risk, avoid technical jargon…"
+            placeholder={t("e.g. Keep it to two sentences, mention the homeowner by name, emphasize safety risk, avoid technical jargon…", "p. ej. Máximo dos oraciones, mencione al propietario por nombre, enfatice el riesgo de seguridad, evite jerga técnica…")}
             value={captionTweakText}
             onChange={(e) => setCaptionTweakText(e.target.value)}
           />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setCaptionTweakOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setCaptionTweakOpen(false)}>{t("Cancel", "Cancelar")}</Button>
             <Button
               onClick={async () => {
                 setCaptionTweakOpen(false);
@@ -911,7 +916,7 @@ export default function InspectionPanel({ dealId }: Props) {
               disabled={!!captionTweakProgress || !captionTweakText.trim()}
             >
               <Wand2 className="h-4 w-4 mr-2" />
-              Apply to {filteredPhotos.length} caption{filteredPhotos.length === 1 ? "" : "s"}
+              {t("Apply to", "Aplicar a")} {filteredPhotos.length} {t(filteredPhotos.length === 1 ? "caption" : "captions", filteredPhotos.length === 1 ? "pie de foto" : "pies de foto")}
             </Button>
           </DialogFooter>
         </DialogContent>

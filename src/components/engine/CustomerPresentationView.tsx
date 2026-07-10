@@ -15,6 +15,7 @@ import PromoTrigger, { tierPct, type TierState } from "./presentation/PromoTrigg
 import SharePdfDialog from "./presentation/SharePdfDialog";
 import PresentationHeader from "./presentation/PresentationHeader";
 import PresentationFooterNav from "./presentation/PresentationFooterNav";
+import { useT } from "@/contexts/LanguageContext";
 
 interface Props {
   state: EngineState;
@@ -27,15 +28,24 @@ const BASE_STAGES = ["options", "impact", "scope", "welcome"] as const;
 const WINDOW_STAGES = ["options", "impact", "inspection", "scope", "welcome"] as const;
 type Stage = "options" | "impact" | "inspection" | "scope" | "welcome";
 
-const STAGE_LABELS: Record<Stage, string> = {
+const STAGE_LABELS_EN: Record<Stage, string> = {
   options: "Your Options",
   impact: "The Numbers",
   inspection: "Inspection",
   scope: "What to Expect",
   welcome: "Welcome",
 };
+const STAGE_LABELS_ES: Record<Stage, string> = {
+  options: "Sus Opciones",
+  impact: "Los Números",
+  inspection: "Inspección",
+  scope: "Qué Esperar",
+  welcome: "Bienvenida",
+};
 
 export default function CustomerPresentationView({ state, computed, onClose, update }: Props) {
+  const t = useT();
+  const STAGE_LABELS = t("_en", "_es") === "_es" ? STAGE_LABELS_ES : STAGE_LABELS_EN;
   const isWindows = hasProduct(state.products, "Windows");
   const productLabel = getProductLabel(state.products);
   const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
@@ -111,15 +121,21 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
   const headerContent = (() => {
     if (stage === "options" && !selectedOption) {
       return {
-        title: `Your ${productLabel} Options`,
-        sub: `${state.homeowner1}${state.homeowner2 ? ` & ${state.homeowner2}` : ""}, let me walk you through your options one at a time.`,
+        title: t(`Your ${productLabel} Options`, `Sus Opciones de ${productLabel}`),
+        sub: `${state.homeowner1}${state.homeowner2 ? ` & ${state.homeowner2}` : ""}, ${t("let me walk you through your options one at a time.", "permítame guiarle a través de sus opciones una a la vez.")}`,
       };
     }
     if (stage === "options" && selectedOption) {
-      return { title: "Great Choice!", sub: `You've selected Option ${selectedOption}. Here's the financial breakdown.` };
+      return {
+        title: t("Great Choice!", "¡Excelente elección!"),
+        sub: t(`You've selected Option ${selectedOption}. Here's the financial breakdown.`, `Ha elegido la Opción ${selectedOption}. Aquí tiene el desglose financiero.`),
+      };
     }
     if (stage === "impact") {
-      return { title: "The Numbers Behind Your Decision", sub: `Here's what moving forward with Option ${selectedOption} looks like over the next 10 years.` };
+      return {
+        title: t("The Numbers Behind Your Decision", "Los Números Detrás de Su Decisión"),
+        sub: t(`Here's what moving forward with Option ${selectedOption} looks like over the next 10 years.`, `Así se ve avanzar con la Opción ${selectedOption} durante los próximos 10 años.`),
+      };
     }
     return null;
   })();
@@ -132,12 +148,12 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
         <button
           onClick={() => setShareOpen(true)}
           className="flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md px-4 py-2 hover:bg-primary/90 transition-colors text-sm font-semibold"
-          aria-label="Share proposal"
+          aria-label={t("Share proposal", "Compartir propuesta")}
         >
           <Share2 className="h-4 w-4" />
-          {selectedOption ? "Share Proposal" : "Share All 3 Options"}
+          {selectedOption ? t("Share Proposal", "Compartir Propuesta") : t("Share All 3 Options", "Compartir las 3 Opciones")}
         </button>
-        <button onClick={onClose} className="rounded-full bg-card border border-border shadow-md p-2 hover:bg-muted transition-colors" aria-label="Close presentation">
+        <button onClick={onClose} className="rounded-full bg-card border border-border shadow-md p-2 hover:bg-muted transition-colors" aria-label={t("Close presentation", "Cerrar presentación")}>
           <X className="h-5 w-5 text-muted-foreground" />
         </button>
       </div>
@@ -220,7 +236,7 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
                 onClick={() => { setSelectedOption(null); setStage("options"); }}
                 className="mt-3 mx-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <ChevronLeft className="h-4 w-4" /> Change selection
+                <ChevronLeft className="h-4 w-4" /> {t("Change selection", "Cambiar selección")}
               </button>
             </div>
             <TrustBar />

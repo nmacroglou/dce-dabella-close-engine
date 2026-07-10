@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useT } from "@/contexts/LanguageContext";
 
 export interface PresentationFooterNavProps<S extends string> {
   stages: readonly S[];
@@ -16,6 +17,7 @@ function PresentationFooterNavImpl<S extends string>({
   onNext,
   nextDisabled,
 }: PresentationFooterNavProps<S>) {
+  const t = useT();
   const stageIndex = stages.indexOf(stage);
   const isLast = stageIndex >= stages.length - 1;
   return (
@@ -26,7 +28,7 @@ function PresentationFooterNavImpl<S extends string>({
           disabled={stageIndex === 0}
           className="flex items-center gap-2 px-6 py-3 rounded-xl bg-muted text-foreground font-semibold text-sm transition-all disabled:opacity-0 disabled:pointer-events-none"
         >
-          <ChevronLeft className="h-4 w-4" /> Back
+          <ChevronLeft className="h-4 w-4" /> {t("Back", "Atrás")}
         </button>
 
         <div className="flex items-center gap-2">
@@ -46,7 +48,7 @@ function PresentationFooterNavImpl<S extends string>({
             disabled={nextDisabled}
             className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-40 disabled:pointer-events-none"
           >
-            Continue <ChevronRight className="h-4 w-4" />
+            {t("Continue", "Continuar")} <ChevronRight className="h-4 w-4" />
           </button>
         ) : (
           <div className="w-[120px]" />

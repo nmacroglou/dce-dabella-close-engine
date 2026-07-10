@@ -1,19 +1,21 @@
 import { Sparkles, Heart, PartyPopper, Shield, Award } from "lucide-react";
 import dabellaLogo from "@/assets/dabella-logo.png";
+import { useT } from "@/contexts/LanguageContext";
 
 interface Props {
   homeowner1: string;
   homeowner2: string;
 }
 
-const PERKS = [
-  { icon: Shield, top: "Lifetime", bottom: "Warranty" },
-  { icon: Heart, top: "5-Star", bottom: "Service" },
-  { icon: Award, top: "Expert", bottom: "Install" },
-];
-
 export default function WelcomeClose({ homeowner1, homeowner2 }: Props) {
+  const t = useT();
   const names = homeowner2 ? `${homeowner1} & ${homeowner2}` : homeowner1;
+
+  const PERKS = [
+    { icon: Shield, top: t("Lifetime", "De por vida"), bottom: t("Warranty", "Garantía") },
+    { icon: Heart, top: t("5-Star", "5 Estrellas"), bottom: t("Service", "Servicio") },
+    { icon: Award, top: t("Expert", "Experto"), bottom: t("Install", "Instalación") },
+  ];
 
   return (
     <div className="max-w-3xl mx-auto animate-scale-in">
@@ -37,13 +39,15 @@ export default function WelcomeClose({ homeowner1, homeowner2 }: Props) {
             <div className="flex items-center justify-center gap-3">
               <PartyPopper className="h-8 w-8 text-warning" />
               <h2 className="text-4xl font-display font-extrabold text-primary-foreground tracking-tight">
-                Welcome to the Family!
+                {t("Welcome to the Family!", "¡Bienvenidos a la Familia!")}
               </h2>
               <PartyPopper className="h-8 w-8 text-warning" />
             </div>
             <p className="text-xl text-primary-foreground/90 font-medium max-w-lg mx-auto leading-relaxed">
-              {names}, congratulations on investing in your home's future. We're honored to earn
-              your trust.
+              {names}, {t(
+                "congratulations on investing in your home's future. We're honored to earn your trust.",
+                "felicidades por invertir en el futuro de su hogar. Es un honor ganarse su confianza.",
+              )}
             </p>
           </div>
 
@@ -64,10 +68,14 @@ export default function WelcomeClose({ homeowner1, homeowner2 }: Props) {
           </div>
 
           <p className="text-sm text-primary-foreground/50 font-medium italic text-center">
-            "We don't just build homes — we build relationships."
+            {t(
+              '"We don\'t just build homes — we build relationships."',
+              '"No solo construimos casas — construimos relaciones."',
+            )}
           </p>
         </div>
       </div>
     </div>
   );
 }
+

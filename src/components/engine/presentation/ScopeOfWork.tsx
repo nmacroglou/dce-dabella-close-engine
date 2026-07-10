@@ -12,12 +12,14 @@ import {
 import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 
 import { hasProduct } from "@/lib/engineHelpers";
+import { useT } from "@/contexts/LanguageContext";
 
 interface Props {
   products?: string[];
 }
 
 export default function ScopeOfWork({ products = [] }: Props) {
+  const t = useT();
   const isWindows = hasProduct(products, "Windows");
   const isRoofing = hasProduct(products, "Roofing System");
   const isStucco = hasProduct(products, "Stucco");
@@ -75,27 +77,27 @@ export default function ScopeOfWork({ products = [] }: Props) {
           <div className="flex items-center justify-center gap-3 mb-1">
             <ClipboardCheck className="h-7 w-7 text-primary-foreground" />
             <h2 className="text-2xl font-display font-extrabold text-primary-foreground tracking-tight">
-              What to Expect
+              {t("What to Expect", "Qué Esperar")}
             </h2>
           </div>
           <p className="text-primary-foreground/70 text-sm font-medium">
             {isRoofing
-              ? "Your complete scope of work — everything included in your project"
+              ? t("Your complete scope of work — everything included in your project", "Su alcance de trabajo completo — todo lo incluido en su proyecto")
               : isWindows
-              ? "Your complete window project scope — from measure to final walkthrough"
+              ? t("Your complete window project scope — from measure to final walkthrough", "Su alcance completo del proyecto de ventanas — desde la medición hasta el recorrido final")
               : isStucco
-              ? "Your complete stucco restoration — from prep to final coat"
+              ? t("Your complete stucco restoration — from prep to final coat", "Su restauración de estuco completa — desde la preparación hasta la capa final")
               : isPaint
-              ? "Your complete exterior paint project — from prep to final coat"
+              ? t("Your complete exterior paint project — from prep to final coat", "Su proyecto de pintura exterior completo — desde la preparación hasta la capa final")
               : isSiding
-              ? "Your complete siding replacement — from tear-off to trim-out"
+              ? t("Your complete siding replacement — from tear-off to trim-out", "Su reemplazo de revestimiento completo — desde la remoción hasta los acabados")
               : isBath
-              ? "Your complete bath remodel — from demo to final walkthrough"
+              ? t("Your complete bath remodel — from demo to final walkthrough", "Su remodelación de baño completa — desde la demolición hasta el recorrido final")
               : isSolar
-              ? "Your complete solar installation — from permit to PTO"
+              ? t("Your complete solar installation — from permit to PTO", "Su instalación solar completa — desde el permiso hasta la activación (PTO)")
               : isGutters
-              ? "Your complete gutter project — from tear-off to clean-up"
-              : "Your complete scope of work — everything included in your project"}
+              ? t("Your complete gutter project — from tear-off to clean-up", "Su proyecto de canaletas completo — desde la remoción hasta la limpieza")
+              : t("Your complete scope of work — everything included in your project", "Su alcance de trabajo completo — todo lo incluido en su proyecto")}
           </p>
 
         </div>
@@ -104,7 +106,7 @@ export default function ScopeOfWork({ products = [] }: Props) {
         <div className="px-8 pt-6 pb-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
-              Scope reviewed
+              {t("Scope reviewed", "Alcance revisado")}
             </span>
             <span className="text-xs font-bold text-primary tabular-nums">
               {checkedCount} / {items.length}
@@ -156,14 +158,14 @@ export default function ScopeOfWork({ products = [] }: Props) {
             disabled={animating}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold text-base tracking-wide hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-60"
           >
-            {allChecked ? "Reset Checklist" : "✓  Review All Items"}
+            {allChecked ? t("Reset Checklist", "Reiniciar lista") : t("✓  Review All Items", "✓  Revisar todos los puntos")}
           </button>
         </div>
       </div>
 
       {/* Script prompt */}
       <div className="script-block text-center max-w-2xl mx-auto text-base">
-        "Does that sound like everything we have spoken about today?"
+        {t('"Does that sound like everything we have spoken about today?"', '"¿Le parece que esto cubre todo lo que hemos hablado hoy?"')}
       </div>
     </div>
   );
