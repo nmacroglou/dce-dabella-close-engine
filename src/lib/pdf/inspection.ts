@@ -263,7 +263,7 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
       pdf.roundedRect(tx, cursorY, badgeW, sevH, 1.6, 1.6, "F");
       setDisplayFont(pdf, 7);
       setColor(pdf, WHITE);
-      trackedText(pdf, SEV_LABEL[photo.severity], tx + badgeW / 2, cursorY + 4.1, {
+      trackedText(pdf, (lang === "es" ? SEV_LABEL_ES : SEV_LABEL_EN)[photo.severity], tx + badgeW / 2, cursorY + 4.1, {
         align: "center", charSpace: 0.5,
       });
     }
@@ -314,14 +314,20 @@ async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
 
 // ─── Professional Opinion + Welcome ───────────────────────────
 function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string) {
+  const lang = (input.language ?? "en") as Lang;
   pageBg(pdf);
-  sectionHeader(pdf, "Section 3", "Professional Opinion", "Our recommended path to protect the home long-term.");
+  sectionHeader(
+    pdf,
+    L(lang, "Section 3", "Sección 3"),
+    L(lang, "Professional Opinion", "Opinión Profesional"),
+    L(lang, "Our recommended path to protect the home long-term.", "Nuestro camino recomendado para proteger el hogar a largo plazo."),
+  );
 
   let y = 78;
-  y = drawBlock(pdf, "Professional Opinion", input.sections.professional_opinion, y);
-  y = drawBlock(pdf, "Recommended Scope", input.sections.recommended_scope, y);
-  y = drawBlock(pdf, "Next Steps", input.sections.next_steps, y);
-  y = drawBlock(pdf, "Limitations", input.sections.limitations, y);
+  y = drawBlock(pdf, L(lang, "Professional Opinion", "Opinión Profesional"), input.sections.professional_opinion, y);
+  y = drawBlock(pdf, L(lang, "Recommended Scope", "Alcance Recomendado"), input.sections.recommended_scope, y);
+  y = drawBlock(pdf, L(lang, "Next Steps", "Próximos Pasos"), input.sections.next_steps, y);
+  y = drawBlock(pdf, L(lang, "Limitations", "Limitaciones"), input.sections.limitations, y);
 
   if (input.rep && (input.rep.name || input.rep.email || input.rep.phone)) {
     const bannerH = 30;
@@ -332,7 +338,6 @@ function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string)
     }
     rounded(pdf, 22, y, PW - 44, bannerH, 2, FOREST_INK);
 
-    // Reserved logo slot — aspect-preserved, never overlaps text.
     const slotX = 28;
     const slotW = 22;
     const slotH = 14;
@@ -350,21 +355,21 @@ function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string)
       }
     } catch { /* ignore */ }
 
-    // Subtle divider between logo slot and text block
     hairline(pdf, slotX + slotW + 4, y + 7, slotX + slotW + 4, y + bannerH - 7, [60, 95, 65], 0.25);
 
     setDisplayFont(pdf, 7.5);
     setColor(pdf, LIME);
-    trackedText(pdf, "YOUR DABELLA CONSULTANT", textX, y + 10, { charSpace: 0.55 });
+    trackedText(pdf, L(lang, "YOUR DABELLA CONSULTANT", "SU CONSULTOR DABELLA"), textX, y + 10, { charSpace: 0.55 });
     setBodyFont(pdf, 10.5, "bold");
     setColor(pdf, WHITE);
-    pdf.text(input.rep.name || "DaBella Team", textX, y + 18);
+    pdf.text(input.rep.name || L(lang, "DaBella Team", "Equipo DaBella"), textX, y + 18);
     setBodyFont(pdf, 8.5);
     setColor(pdf, [200, 215, 200]);
     const contact = [input.rep.phone, input.rep.email].filter(Boolean).join("   ·   ");
     pdf.text(contact, textX, y + 24);
   }
 }
+
 
 // ─── Helpers ──────────────────────────────────────────────────
 function drawBlock(pdf: jsPDF, heading: string, text: string, y: number): number {
@@ -391,14 +396,14 @@ function drawBlock(pdf: jsPDF, heading: string, text: string, y: number): number
   return cy + 7;
 }
 
-function drawFooters(pdf: jsPDF) {
+function drawFooters(pdf: jsPDF, lang: Lang = "en") {
   const total = pdf.getNumberOfPages();
   for (let p = 2; p <= total; p++) {
     pdf.setPage(p);
     hairline(pdf, 22, PH - 16, PW - 22, PH - 16, MIST, 0.2);
     setDisplayFont(pdf, 6.5);
     setColor(pdf, SLATE);
-    trackedText(pdf, "DABELLA · INSPECTION REPORT", 22, PH - 11, { charSpace: 0.45 });
+    trackedText(pdf, L(lang, "DABELLA · INSPECTION REPORT", "DABELLA · INFORME DE INSPECCIÓN"), 22, PH - 11, { charSpace: 0.45 });
     setBodyFont(pdf, 6.5);
     trackedText(
       pdf,
@@ -408,3 +413,4 @@ function drawFooters(pdf: jsPDF) {
     );
   }
 }
+
