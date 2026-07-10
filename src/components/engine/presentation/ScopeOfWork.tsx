@@ -19,6 +19,7 @@ interface Props {
 }
 
 export default function ScopeOfWork({ products = [] }: Props) {
+  const t = useT();
   const isWindows = hasProduct(products, "Windows");
   const isRoofing = hasProduct(products, "Roofing System");
   const isStucco = hasProduct(products, "Stucco");
