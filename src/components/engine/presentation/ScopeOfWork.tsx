@@ -77,27 +77,27 @@ export default function ScopeOfWork({ products = [] }: Props) {
           <div className="flex items-center justify-center gap-3 mb-1">
             <ClipboardCheck className="h-7 w-7 text-primary-foreground" />
             <h2 className="text-2xl font-display font-extrabold text-primary-foreground tracking-tight">
-              What to Expect
+              {t("What to Expect", "Qué Esperar")}
             </h2>
           </div>
           <p className="text-primary-foreground/70 text-sm font-medium">
             {isRoofing
-              ? "Your complete scope of work — everything included in your project"
+              ? t("Your complete scope of work — everything included in your project", "Su alcance de trabajo completo — todo lo incluido en su proyecto")
               : isWindows
-              ? "Your complete window project scope — from measure to final walkthrough"
+              ? t("Your complete window project scope — from measure to final walkthrough", "Su alcance completo del proyecto de ventanas — desde la medición hasta el recorrido final")
               : isStucco
-              ? "Your complete stucco restoration — from prep to final coat"
+              ? t("Your complete stucco restoration — from prep to final coat", "Su restauración de estuco completa — desde la preparación hasta la capa final")
               : isPaint
-              ? "Your complete exterior paint project — from prep to final coat"
+              ? t("Your complete exterior paint project — from prep to final coat", "Su proyecto de pintura exterior completo — desde la preparación hasta la capa final")
               : isSiding
-              ? "Your complete siding replacement — from tear-off to trim-out"
+              ? t("Your complete siding replacement — from tear-off to trim-out", "Su reemplazo de revestimiento completo — desde la remoción hasta los acabados")
               : isBath
-              ? "Your complete bath remodel — from demo to final walkthrough"
+              ? t("Your complete bath remodel — from demo to final walkthrough", "Su remodelación de baño completa — desde la demolición hasta el recorrido final")
               : isSolar
-              ? "Your complete solar installation — from permit to PTO"
+              ? t("Your complete solar installation — from permit to PTO", "Su instalación solar completa — desde el permiso hasta la activación (PTO)")
               : isGutters
-              ? "Your complete gutter project — from tear-off to clean-up"
-              : "Your complete scope of work — everything included in your project"}
+              ? t("Your complete gutter project — from tear-off to clean-up", "Su proyecto de canaletas completo — desde la remoción hasta la limpieza")
+              : t("Your complete scope of work — everything included in your project", "Su alcance de trabajo completo — todo lo incluido en su proyecto")}
           </p>
 
         </div>
@@ -106,7 +106,7 @@ export default function ScopeOfWork({ products = [] }: Props) {
         <div className="px-8 pt-6 pb-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
-              Scope reviewed
+              {t("Scope reviewed", "Alcance revisado")}
             </span>
             <span className="text-xs font-bold text-primary tabular-nums">
               {checkedCount} / {items.length}
