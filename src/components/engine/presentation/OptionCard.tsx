@@ -3,6 +3,7 @@ import { CheckCircle2, TrendingUp, Zap, Sparkles, Pencil, Check, X } from "lucid
 import { fmt } from "@/lib/format";
 import { OPTION_THEMES, getFeaturesForOption, type RoofMaterial } from "./constants";
 import type { ComputedValues } from "@/types/engine";
+import { useT } from "@/contexts/LanguageContext";
 
 interface OptionCardProps {
   optionKey: "A" | "B" | "C";
