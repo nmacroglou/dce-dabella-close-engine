@@ -147,7 +147,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         {photo.signedUrl ? (
           <img src={photo.signedUrl} alt={caption || "Inspection photo"} className="h-full w-full object-cover" loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-xs text-muted-foreground">Loading…</div>
+          <div className="flex items-center justify-center h-full text-xs text-muted-foreground">{t("Loading…", "Cargando…")}</div>
         )}
         {severity && (
           <span className={`absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${SEV_TONE[severity]}`}>
