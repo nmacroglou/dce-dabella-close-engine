@@ -189,6 +189,7 @@ export function useGenerateNarrative() {
       report_types?: InspectionReportType[];
       photos: { caption?: string | null; tags?: string[] | null; severity?: "low" | "moderate" | "high" | null }[];
       tweak?: string;
+      language?: "en" | "es";
     }) => {
       const { data, error } = await supabase.functions.invoke("generate-narrative", {
         body: input,
