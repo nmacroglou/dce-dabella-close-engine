@@ -859,23 +859,23 @@ export default function InspectionPanel({ dealId }: Props) {
       <Dialog open={tweakOpen} onOpenChange={setTweakOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tweak the narrative</DialogTitle>
+            <DialogTitle>{t("Tweak the narrative", "Ajustar la narrativa")}</DialogTitle>
             <DialogDescription>
-              Give the AI extra context to bake into the report — material, age, prior repairs, homeowner concerns. It will re-draft all sections using the tagged photos plus this context.
+              {t("Give the AI extra context to bake into the report — material, age, prior repairs, homeowner concerns. It will re-draft all sections using the tagged photos plus this context.", "Dele a la IA contexto adicional para incorporar al reporte — material, edad, reparaciones previas, inquietudes del propietario. Re-redactará todas las secciones usando las fotos etiquetadas más este contexto.")}
             </DialogDescription>
           </DialogHeader>
           <Textarea
             rows={5}
             placeholder={
               reportTypes.includes("roof")
-                ? "e.g. 3-tab asphalt shingle, ~22 years old, prior patch over the south valley, homeowner reports staining in the master bedroom ceiling."
-                : "e.g. material, age, prior repairs, homeowner concerns…"
+                ? t("e.g. 3-tab asphalt shingle, ~22 years old, prior patch over the south valley, homeowner reports staining in the master bedroom ceiling.", "p. ej. teja asfáltica de 3 pestañas, ~22 años, parche previo sobre la vertiente sur, el propietario reporta manchas en el techo del dormitorio principal.")
+                : t("e.g. material, age, prior repairs, homeowner concerns…", "p. ej. material, edad, reparaciones previas, inquietudes del propietario…")
             }
             value={tweakText}
             onChange={(e) => setTweakText(e.target.value)}
           />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setTweakOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setTweakOpen(false)}>{t("Cancel", "Cancelar")}</Button>
             <Button
               onClick={async () => {
                 setTweakOpen(false);
@@ -886,7 +886,7 @@ export default function InspectionPanel({ dealId }: Props) {
               {generateNarrative.isPending
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Wand2 className="h-4 w-4 mr-2" />}
-              Re-draft with context
+              {t("Re-draft with context", "Re-redactar con contexto")}
             </Button>
           </DialogFooter>
         </DialogContent>
