@@ -115,7 +115,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
           {/* Monthly */}
           <div className="relative">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em] mb-1.5">
-              As low as
+              {t("As low as", "Desde solo")}
             </p>
             <div className="flex items-baseline gap-3 flex-wrap">
               {editing ? (
