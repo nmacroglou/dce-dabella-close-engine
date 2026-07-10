@@ -4,6 +4,7 @@ import { TrendingUp, ToggleLeft, ToggleRight, Info } from "lucide-react";
 import { fmt } from "@/lib/format";
 import { getOptionMetrics, OPTION_KEYS } from "@/lib/engineHelpers";
 import OptionPill from "./OptionPill";
+import { useT } from "@/contexts/LanguageContext";
 
 interface Props {
   state: EngineState;
