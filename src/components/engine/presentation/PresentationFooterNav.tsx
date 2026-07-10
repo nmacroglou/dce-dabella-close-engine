@@ -17,6 +17,7 @@ function PresentationFooterNavImpl<S extends string>({
   onNext,
   nextDisabled,
 }: PresentationFooterNavProps<S>) {
+  const t = useT();
   const stageIndex = stages.indexOf(stage);
   const isLast = stageIndex >= stages.length - 1;
   return (
