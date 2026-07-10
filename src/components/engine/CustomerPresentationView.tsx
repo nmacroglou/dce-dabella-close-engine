@@ -121,15 +121,21 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
   const headerContent = (() => {
     if (stage === "options" && !selectedOption) {
       return {
-        title: `Your ${productLabel} Options`,
-        sub: `${state.homeowner1}${state.homeowner2 ? ` & ${state.homeowner2}` : ""}, let me walk you through your options one at a time.`,
+        title: t(`Your ${productLabel} Options`, `Sus Opciones de ${productLabel}`),
+        sub: `${state.homeowner1}${state.homeowner2 ? ` & ${state.homeowner2}` : ""}, ${t("let me walk you through your options one at a time.", "permítame guiarle a través de sus opciones una a la vez.")}`,
       };
     }
     if (stage === "options" && selectedOption) {
-      return { title: "Great Choice!", sub: `You've selected Option ${selectedOption}. Here's the financial breakdown.` };
+      return {
+        title: t("Great Choice!", "¡Excelente elección!"),
+        sub: t(`You've selected Option ${selectedOption}. Here's the financial breakdown.`, `Ha elegido la Opción ${selectedOption}. Aquí tiene el desglose financiero.`),
+      };
     }
     if (stage === "impact") {
-      return { title: "The Numbers Behind Your Decision", sub: `Here's what moving forward with Option ${selectedOption} looks like over the next 10 years.` };
+      return {
+        title: t("The Numbers Behind Your Decision", "Los Números Detrás de Su Decisión"),
+        sub: t(`Here's what moving forward with Option ${selectedOption} looks like over the next 10 years.`, `Así se ve avanzar con la Opción ${selectedOption} durante los próximos 10 años.`),
+      };
     }
     return null;
   })();
