@@ -156,7 +156,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
                   {editable && <Pencil className="h-3.5 w-3.5 opacity-40 self-center ml-0.5" />}
                 </button>
               )}
-              <span className="text-xs font-medium text-muted-foreground">with financing</span>
+              <span className="text-xs font-medium text-muted-foreground">{t("with financing", "con financiamiento")}</span>
               {monthlyOverride !== undefined && editable && !editing && (
                 <button type="button" onClick={reset} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground underline underline-offset-2">
                   reset
