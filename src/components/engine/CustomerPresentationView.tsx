@@ -15,6 +15,7 @@ import PromoTrigger, { tierPct, type TierState } from "./presentation/PromoTrigg
 import SharePdfDialog from "./presentation/SharePdfDialog";
 import PresentationHeader from "./presentation/PresentationHeader";
 import PresentationFooterNav from "./presentation/PresentationFooterNav";
+import { useT } from "@/contexts/LanguageContext";
 
 interface Props {
   state: EngineState;
