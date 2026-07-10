@@ -84,7 +84,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
 
       <div className="p-7 pt-10 relative">
         <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em] mb-1">
-          Option {optionKey}
+          {t("Option", "Opción")} {optionKey}
         </p>
         <h2 className="text-xl font-display font-extrabold text-foreground mb-5 leading-tight">
           {name}
