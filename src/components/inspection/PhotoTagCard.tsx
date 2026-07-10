@@ -209,19 +209,19 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
           onValueChange={(v) => patch({ severity: v === "unset" ? null : (v as "low" | "moderate" | "high") })}
         >
           <SelectTrigger className="h-8 text-xs w-[120px]">
-            <SelectValue placeholder="Severity" />
+            <SelectValue placeholder={t("Severity", "Gravedad")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="unset">Severity…</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="moderate">Moderate</SelectItem>
-            <SelectItem value="high">High</SelectItem>
+            <SelectItem value="unset">{t("Severity…", "Gravedad…")}</SelectItem>
+            <SelectItem value="low">{t("Low", "Baja")}</SelectItem>
+            <SelectItem value="moderate">{t("Moderate", "Moderada")}</SelectItem>
+            <SelectItem value="high">{t("High", "Alta")}</SelectItem>
           </SelectContent>
         </Select>
 
         <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground ml-auto">
           <Switch checked={include} onCheckedChange={(v) => patch({ include_in_report: v })} />
-          Include
+          {t("Include", "Incluir")}
         </label>
       </div>
 
