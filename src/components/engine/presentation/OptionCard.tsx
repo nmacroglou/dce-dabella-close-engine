@@ -97,7 +97,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
 
           {/* Total price */}
           <p className="relative text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em] mb-1.5">
-            Total investment
+            {t("Total investment", "Inversión total")}
           </p>
           {showStrike && (
             <div className="flex items-center gap-2 mb-1 relative">
