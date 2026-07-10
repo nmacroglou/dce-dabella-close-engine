@@ -13,7 +13,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Briefcase, X, History, Sparkles } from "lucide-react";
-import { STAGE_LABELS, STAGE_COLORS, DISQUALIFIED_REASON_LABELS, type DealStage, type DisqualifiedReason } from "@/types/deal";
+import { STAGE_LABELS, STAGE_LABELS_ES, STAGE_COLORS, DISQUALIFIED_REASON_LABELS, DISQUALIFIED_REASON_LABELS_ES, type DealStage, type DisqualifiedReason } from "@/types/deal";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
