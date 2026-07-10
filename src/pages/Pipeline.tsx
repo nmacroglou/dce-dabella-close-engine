@@ -13,14 +13,18 @@ import { Button } from "@/components/ui/button";
 import FollowUpComposer from "@/components/followups/FollowUpComposer";
 import { toast } from "sonner";
 import { pct } from "@/lib/format";
+import { useT } from "@/contexts/LanguageContext";
 
 import { FollowUpAdmin, type FollowUpFilter } from "@/components/pipeline/FollowUpAdmin";
+
 
 // Stages we allow drag-and-drop into. Won/lost are excluded because they
 // require additional info (closed_amount / lost_reason) collected elsewhere.
 const DRAGGABLE_TARGETS: DealStage[] = ["inspecting", "presented", "follow_up"];
 
 export default function Pipeline() {
+  const t = useT();
+
   const { data: deals = [] } = useDeals();
   const { isAdmin } = useIsAdmin();
   const { data: profiles = [] } = useAllProfiles(isAdmin);
@@ -74,16 +78,17 @@ export default function Pipeline() {
     if (!dragged) return;
     if (dragged.from === target) return;
     if (!DRAGGABLE_TARGETS.includes(target)) {
-      toast.info(`Move to ${STAGE_LABELS[target]} from the deal page`, {
-        description: "Closing a deal needs a sold amount or lost reason.",
+      toast.info(t(`Move to ${STAGE_LABELS[target]} from the deal page`, `Mueve a ${STAGE_LABELS[target]} desde la página del trato`), {
+        description: t("Closing a deal needs a sold amount or lost reason.", "Cerrar un trato requiere un monto vendido o motivo de pérdida."),
       });
       return;
     }
     updateStage.mutate(
       { id: dragged.id, stage: target },
-      { onSuccess: () => toast.success(`Moved to ${STAGE_LABELS[target]}`) },
+      { onSuccess: () => toast.success(t(`Moved to ${STAGE_LABELS[target]}`, `Movido a ${STAGE_LABELS[target]}`)) },
     );
   }
+
 
   const StatChip = ({ icon: Icon, label, value, accent }: { icon: React.ElementType; label: string; value: string; accent: string }) => (
     <div className="flex items-center gap-2 rounded-full border border-hairline bg-card/70 backdrop-blur px-3 py-1.5">
@@ -110,26 +115,27 @@ export default function Pipeline() {
       <main className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6 space-y-5">
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
-            <h2 className="text-2xl font-display font-extrabold text-foreground">{isAdmin ? "All Pipeline" : "My Pipeline"}</h2>
+            <h2 className="text-2xl font-display font-extrabold text-foreground">{isAdmin ? t("All Pipeline", "Embudo Total") : t("My Pipeline", "Mi Embudo")}</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {isAdmin ? "Every rep's pipeline, all in one view." : "Drag any deal between Inspecting, Presented, and Follow-up."}
+              {isAdmin ? t("Every rep's pipeline, all in one view.", "El embudo de cada representante, todo en una vista.") : t("Drag any deal between Inspecting, Presented, and Follow-up.", "Arrastra cualquier trato entre Inspección, Presentado y Seguimiento.")}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <StatChip icon={AlertCircle} label="Overdue" value={String(stats.overdue.length)}
+            <StatChip icon={AlertCircle} label={t("Overdue", "Atrasados")} value={String(stats.overdue.length)}
               accent={stats.overdue.length > 0 ? "text-destructive" : "text-success"} />
-            <StatChip icon={Calendar} label="Due today" value={String(stats.today.length)} accent="text-warning" />
-            <StatChip icon={CheckCircle2} label="Open" value={String(stats.open.length)} accent="text-primary" />
-            <StatChip icon={TrendingUp} label="SLA 7d" value={pct(stats.compliance)} accent="text-success" />
+            <StatChip icon={Calendar} label={t("Due today", "Hoy")} value={String(stats.today.length)} accent="text-warning" />
+            <StatChip icon={CheckCircle2} label={t("Open", "Abiertos")} value={String(stats.open.length)} accent="text-primary" />
+            <StatChip icon={TrendingUp} label={t("SLA 7d", "SLA 7d")} value={pct(stats.compliance)} accent="text-success" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
           <section className="card-elevated-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Pipeline</h3>
-              <span className="text-[11px] text-muted-foreground">{deals.length} deals</span>
+              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{t("Pipeline", "Embudo")}</h3>
+              <span className="text-[11px] text-muted-foreground">{deals.length} {t("deals", "tratos")}</span>
             </div>
+
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               {grouped.map(({ stage, deals: ds }) => {
                 const canDrop = DRAGGABLE_TARGETS.includes(stage);
@@ -224,9 +230,10 @@ export default function Pipeline() {
                       })}
                       {ds.length === 0 && (
                         <p className="text-[11px] text-muted-foreground italic px-2 py-3 text-center">
-                          {dragging && canDrop ? "Drop here" : "Empty"}
+                          {dragging && canDrop ? t("Drop here", "Suelta aquí") : t("Empty", "Vacío")}
                         </p>
                       )}
+
                     </div>
                   </div>
                 );
@@ -236,14 +243,15 @@ export default function Pipeline() {
 
           <aside className="card-elevated-lg p-4 xl:sticky xl:top-4">
             <h3 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5 text-foreground">
-              <AlertCircle className="h-4 w-4 text-destructive" /> Action queue
+              <AlertCircle className="h-4 w-4 text-destructive" /> {t("Action queue", "Cola de acciones")}
             </h3>
             {stats.overdue.length === 0 && stats.today.length === 0 ? (
               <div className="text-center py-8">
                 <CheckCircle2 className="h-8 w-8 text-success mx-auto mb-2" />
-                <p className="text-sm font-semibold text-foreground">All caught up</p>
-                <p className="text-xs text-muted-foreground mt-1">No SLA breaches or due touchpoints.</p>
+                <p className="text-sm font-semibold text-foreground">{t("All caught up", "Todo al día")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t("No SLA breaches or due touchpoints.", "Sin incumplimientos de SLA ni contactos pendientes.")}</p>
               </div>
+
             ) : (
               <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
                 {[...stats.overdue, ...stats.today].map((f) => {
@@ -255,19 +263,20 @@ export default function Pipeline() {
                         <div className="min-w-0">
                           <p className="text-xs font-bold truncate text-foreground">{d?.homeowner1 || "Untitled"}</p>
                           <p className="text-[10px] text-muted-foreground">
-                            #{f.touchpoint_number} · {isOverdue ? "overdue" : "today"} · {new Date(f.due_at).toLocaleDateString()}
+                            #{f.touchpoint_number} · {isOverdue ? t("overdue", "atrasado") : t("today", "hoy")} · {new Date(f.due_at).toLocaleDateString()}
                           </p>
                         </div>
                         <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${isOverdue ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
-                          {isOverdue ? "SLA" : "Due"}
+                          {isOverdue ? t("SLA", "SLA") : t("Due", "Vence")}
                         </span>
                       </div>
                       <div className="flex gap-1.5">
                         <Button size="sm" variant="outline" onClick={() => setComposer({ dealId: f.deal_id, followUpId: f.id })} className="gap-1 h-7 px-2 text-[11px] flex-1">
-                          <Sparkles className="h-3 w-3" /> {f.ai_email_body ? "Edit" : "Draft"}
+                          <Sparkles className="h-3 w-3" /> {f.ai_email_body ? t("Edit", "Editar") : t("Draft", "Borrador")}
                         </Button>
-                        <Button size="sm" onClick={() => openDeal(f.deal_id)} className="h-7 px-2 text-[11px] flex-1">Open</Button>
+                        <Button size="sm" onClick={() => openDeal(f.deal_id)} className="h-7 px-2 text-[11px] flex-1">{t("Open", "Abrir")}</Button>
                       </div>
+
                     </div>
                   );
                 })}
@@ -284,13 +293,14 @@ export default function Pipeline() {
           onEdit={(f) => setComposer({ dealId: f.deal_id, followUpId: f.id })}
           onComplete={async (f) => {
             await updateFollowUp.mutateAsync({ id: f.id, updates: { completed_at: new Date().toISOString() } });
-            toast.success("Marked complete");
+            toast.success(t("Marked complete", "Marcado como completado"));
           }}
           onDelete={async (f) => {
-            if (!confirm("Delete this follow-up and its draft?")) return;
+            if (!confirm(t("Delete this follow-up and its draft?", "¿Eliminar este seguimiento y su borrador?"))) return;
             await deleteFollowUp.mutateAsync(f.id);
-            toast.success("Follow-up deleted");
+            toast.success(t("Follow-up deleted", "Seguimiento eliminado"));
           }}
+
           onOpenDeal={openDeal}
         />
       </main>
