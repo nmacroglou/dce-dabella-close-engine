@@ -28,7 +28,7 @@ function PresentationFooterNavImpl<S extends string>({
           disabled={stageIndex === 0}
           className="flex items-center gap-2 px-6 py-3 rounded-xl bg-muted text-foreground font-semibold text-sm transition-all disabled:opacity-0 disabled:pointer-events-none"
         >
-          <ChevronLeft className="h-4 w-4" /> Back
+          <ChevronLeft className="h-4 w-4" /> {t("Back", "Atrás")}
         </button>
 
         <div className="flex items-center gap-2">
