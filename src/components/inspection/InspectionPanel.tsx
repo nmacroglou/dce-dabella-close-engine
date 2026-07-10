@@ -128,6 +128,7 @@ export default function InspectionPanel({ dealId }: Props) {
           report_type: primaryType,
           user_hint: hintParts.join("\n\n"),
           existing_tags: ext.inspection_tags ?? [],
+          language: lang,
         });
         if (cancelCaptionTweakRef.current) {
           toast.message(`Canceled — tweaked ${done} of ${targets.length}`, { id: toastId });
