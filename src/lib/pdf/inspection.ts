@@ -32,6 +32,7 @@ export interface InspectionPdfInput {
   sections: InspectionSections;
   photos: InspectionPhoto[];
   rep?: RepInfo;
+  language?: "en" | "es";
 }
 
 function resolveReportTypes(input: InspectionPdfInput): InspectionReportType[] {
@@ -40,8 +41,12 @@ function resolveReportTypes(input: InspectionPdfInput): InspectionReportType[] {
   return ["roof"];
 }
 
+type Lang = "en" | "es";
+const L = (lang: Lang, en: string, es: string) => (lang === "es" ? es : en);
 const SEV_COLOR = { low: SLATE, moderate: ACCENT, high: NEGATIVE } as const;
-const SEV_LABEL = { low: "LOW", moderate: "MODERATE", high: "HIGH" } as const;
+const SEV_LABEL_EN = { low: "LOW", moderate: "MODERATE", high: "HIGH" } as const;
+const SEV_LABEL_ES = { low: "BAJA", moderate: "MODERADA", high: "ALTA" } as const;
+
 
 export async function buildInspectionPdf(input: InspectionPdfInput): Promise<{ blob: Blob; doc: jsPDF }> {
   const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
@@ -61,13 +66,15 @@ export async function buildInspectionPdf(input: InspectionPdfInput): Promise<{ b
   pdf.addPage();
   drawOpinion(pdf, input, logoDataUrl);
 
-  drawFooters(pdf);
+  drawFooters(pdf, (input.language ?? "en") as Lang);
 
   return { blob: pdf.output("blob"), doc: pdf };
 }
 
+
 // ─── Cover ────────────────────────────────────────────────────
 function drawCover(pdf: jsPDF, input: InspectionPdfInput) {
+  const lang = (input.language ?? "en") as Lang;
   vGradient(pdf, 0, 0, PW, PH, FOREST, FOREST_INK);
 
   pdf.setGState(pdf.GState({ opacity: 0.07 }));
@@ -82,23 +89,23 @@ function drawCover(pdf: jsPDF, input: InspectionPdfInput) {
   setColor(pdf, LIME);
   trackedText(pdf, "DABELLA", 22, 22, { charSpace: 0.7 });
 
-  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const today = new Date().toLocaleDateString(lang === "es" ? "es-ES" : "en-US", { year: "numeric", month: "long", day: "numeric" });
   setBodyFont(pdf, 7);
   setColor(pdf, [220, 230, 220]);
   trackedText(pdf, today.toUpperCase(), PW - 22, 22, { align: "right", charSpace: 0.45 });
 
   setDisplayFont(pdf, 8);
   setColor(pdf, LIME);
-  trackedText(pdf, "PROFESSIONAL INSPECTION REPORT", 22, 100, { charSpace: 0.6 });
+  trackedText(pdf, L(lang, "PROFESSIONAL INSPECTION REPORT", "INFORME DE INSPECCIÓN PROFESIONAL"), 22, 100, { charSpace: 0.6 });
 
   const titleTypes = resolveReportTypes(input);
-  const title = combinedReportLabel(titleTypes);
+  const title = combinedReportLabel(titleTypes, lang);
   // Scale down the headline when multiple trades are combined so it fits on one line.
   const titleSize = title.length > 28 ? 26 : title.length > 22 ? 30 : 38;
   setDisplayFont(pdf, titleSize);
   setColor(pdf, WHITE);
   pdf.text(title, 22, 132);
-  pdf.text("& Home Protection", 22, 154);
+  pdf.text(L(lang, "& Home Protection", "y Protección del Hogar"), 22, 154);
   void REPORT_TYPE_LABELS;
 
   setFill(pdf, ACCENT);
@@ -106,18 +113,18 @@ function drawCover(pdf: jsPDF, input: InspectionPdfInput) {
 
   setBodyFont(pdf, 10.5);
   setColor(pdf, [220, 232, 220]);
-  pdf.text("An honest, photo-by-photo review of your home —", 22, 178);
-  pdf.text("with recommendations to protect what matters most.", 22, 185);
+  pdf.text(L(lang, "An honest, photo-by-photo review of your home —", "Una revisión honesta, foto por foto, de su hogar —"), 22, 178);
+  pdf.text(L(lang, "with recommendations to protect what matters most.", "con recomendaciones para proteger lo que más importa."), 22, 185);
 
   const ry = 222;
   hairline(pdf, 22, ry, PW - 22, ry, ACCENT, 0.5);
   setDisplayFont(pdf, 7);
   setColor(pdf, ACCENT);
-  trackedText(pdf, "PREPARED FOR", 22, ry + 7, { charSpace: 0.55 });
+  trackedText(pdf, L(lang, "PREPARED FOR", "PREPARADO PARA"), 22, ry + 7, { charSpace: 0.55 });
 
   setDisplayFont(pdf, 22);
   setColor(pdf, WHITE);
-  pdf.text(input.customerName || "Homeowner", 22, ry + 22);
+  pdf.text(input.customerName || L(lang, "Homeowner", "Propietario"), 22, ry + 22);
 
   if (input.address) {
     setBodyFont(pdf, 9);
@@ -128,28 +135,43 @@ function drawCover(pdf: jsPDF, input: InspectionPdfInput) {
   setBodyFont(pdf, 7);
   setColor(pdf, [180, 200, 180]);
   trackedText(pdf, "DABELLA.US", 22, PH - 14, { charSpace: 0.6 });
-  trackedText(pdf, "HOME IMPROVEMENT, EXPERTLY DONE", PW - 22, PH - 14, { align: "right", charSpace: 0.35 });
+  trackedText(pdf, L(lang, "HOME IMPROVEMENT, EXPERTLY DONE", "MEJORAS DEL HOGAR, HECHAS CON MAESTRÍA"), PW - 22, PH - 14, { align: "right", charSpace: 0.35 });
 }
+
 
 // ─── Summary ──────────────────────────────────────────────────
 function drawSummary(pdf: jsPDF, input: InspectionPdfInput) {
+  const lang = (input.language ?? "en") as Lang;
   pageBg(pdf);
-  sectionHeader(pdf, "Section 1", "Executive Summary", "What we found, why it matters, and how to protect the home.");
+  sectionHeader(
+    pdf,
+    L(lang, "Section 1", "Sección 1"),
+    L(lang, "Executive Summary", "Resumen Ejecutivo"),
+    L(lang, "What we found, why it matters, and how to protect the home.", "Lo que encontramos, por qué importa y cómo proteger el hogar."),
+  );
 
   let y = 78;
-  y = drawBlock(pdf, "Executive Summary", input.sections.executive_summary, y);
-  y = drawBlock(pdf, "Inspection Scope", input.sections.inspection_scope, y);
-  y = drawBlock(pdf, "Measurements", input.sections.measurements, y);
+  y = drawBlock(pdf, L(lang, "Executive Summary", "Resumen Ejecutivo"), input.sections.executive_summary, y);
+  y = drawBlock(pdf, L(lang, "Inspection Scope", "Alcance de la Inspección"), input.sections.inspection_scope, y);
+  y = drawBlock(pdf, L(lang, "Measurements", "Mediciones"), input.sections.measurements, y);
 }
+
 
 // ─── Findings (image grid) ────────────────────────────────────
 async function drawFindings(pdf: jsPDF, input: InspectionPdfInput) {
   const photos = input.photos.filter((p) => p.signedUrl);
   if (photos.length === 0) return;
 
+  const lang = (input.language ?? "en") as Lang;
   pdf.addPage();
   pageBg(pdf);
-  sectionHeader(pdf, "Section 2", "Findings", "Each photo below documents an observed condition.");
+  sectionHeader(
+    pdf,
+    L(lang, "Section 2", "Sección 2"),
+    L(lang, "Findings", "Hallazgos"),
+    L(lang, "Each photo below documents an observed condition.", "Cada foto documenta una condición observada."),
+  );
+
 
   const cardW = PW - 44;
   const cardX = 22;
