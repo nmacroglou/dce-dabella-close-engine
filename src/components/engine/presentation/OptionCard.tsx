@@ -190,17 +190,17 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
         {/* Value snapshot */}
         <div className="rounded-2xl bg-muted/60 p-4 space-y-2.5">
           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
-            Value snapshot
+            {t("Value snapshot", "Resumen de valor")}
           </p>
-          <ValueLine icon={TrendingUp} label="Home value increase" value={`+${fmt(opt.roiValue)}`} />
-          <ValueLine icon={Zap} label="10-yr energy savings" value={`+${fmt(computed.energySavings)}`} />
+          <ValueLine icon={TrendingUp} label={t("Home value increase", "Aumento del valor de la casa")} value={`+${fmt(opt.roiValue)}`} />
+          <ValueLine icon={Zap} label={t("10-yr energy savings", "Ahorro de energía a 10 años")} value={`+${fmt(computed.energySavings)}`} />
           <div className="h-px bg-border" />
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" /> Net effective cost
+                <Sparkles className="h-4 w-4 text-primary" /> {t("Net effective cost", "Costo neto efectivo")}
               </span>
-              <span className="text-[10px] text-muted-foreground">Price minus home value gain & energy savings</span>
+              <span className="text-[10px] text-muted-foreground">{t("Price minus home value gain & energy savings", "Precio menos aumento del valor y ahorro de energía")}</span>
             </div>
             <span className="text-base font-extrabold text-primary">{fmt(opt.netCost)}</span>
           </div>
