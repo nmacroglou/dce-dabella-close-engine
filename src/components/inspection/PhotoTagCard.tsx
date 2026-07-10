@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useT } from "@/contexts/LanguageContext";
 
 interface Props {
   photo: DealPhoto & {
