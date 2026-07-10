@@ -895,19 +895,19 @@ export default function InspectionPanel({ dealId }: Props) {
       <Dialog open={captionTweakOpen} onOpenChange={setCaptionTweakOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tweak all captions</DialogTitle>
+            <DialogTitle>{t("Tweak all captions", "Ajustar todos los pies de foto")}</DialogTitle>
             <DialogDescription>
-              Apply one instruction to every included photo's caption. Existing tags and severity are preserved — only captions are re-drafted using the photo + your instruction.
+              {t("Apply one instruction to every included photo's caption. Existing tags and severity are preserved — only captions are re-drafted using the photo + your instruction.", "Aplique una instrucción al pie de foto de cada foto incluida. Las etiquetas y la gravedad existentes se conservan — solo se re-redactan los pies de foto usando la foto + su instrucción.")}
             </DialogDescription>
           </DialogHeader>
           <Textarea
             rows={5}
-            placeholder="e.g. Keep it to two sentences, mention the homeowner by name, emphasize safety risk, avoid technical jargon…"
+            placeholder={t("e.g. Keep it to two sentences, mention the homeowner by name, emphasize safety risk, avoid technical jargon…", "p. ej. Máximo dos oraciones, mencione al propietario por nombre, enfatice el riesgo de seguridad, evite jerga técnica…")}
             value={captionTweakText}
             onChange={(e) => setCaptionTweakText(e.target.value)}
           />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setCaptionTweakOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setCaptionTweakOpen(false)}>{t("Cancel", "Cancelar")}</Button>
             <Button
               onClick={async () => {
                 setCaptionTweakOpen(false);
@@ -916,7 +916,7 @@ export default function InspectionPanel({ dealId }: Props) {
               disabled={!!captionTweakProgress || !captionTweakText.trim()}
             >
               <Wand2 className="h-4 w-4 mr-2" />
-              Apply to {filteredPhotos.length} caption{filteredPhotos.length === 1 ? "" : "s"}
+              {t("Apply to", "Aplicar a")} {filteredPhotos.length} {t(filteredPhotos.length === 1 ? "caption" : "captions", filteredPhotos.length === 1 ? "pie de foto" : "pies de foto")}
             </Button>
           </DialogFooter>
         </DialogContent>
