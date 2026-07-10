@@ -158,7 +158,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
 
       <div className="flex items-start gap-2">
         <Textarea
-          placeholder="Type what you see — the wand will refine it with the photo."
+          placeholder={t("Type what you see — the wand will refine it with the photo.", "Escriba lo que ve — la varita lo refinará con la foto.")}
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           onBlur={(e) => commitCaption(e.target.value)}
@@ -172,8 +172,10 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
           onClick={analyze.isPending ? cancelAnalyze : handleCaptionOnly}
           title={
             analyze.isPending
-              ? "Cancel — discard this AI run"
-              : caption.trim() ? "Refine my note with the photo" : "AI write caption from photo"
+              ? t("Cancel — discard this AI run", "Cancelar — descartar esta ejecución de IA")
+              : caption.trim()
+              ? t("Refine my note with the photo", "Refinar mi nota con la foto")
+              : t("AI write caption from photo", "IA escribe el pie de foto")
           }
         >
           {analyze.isPending ? <X className="h-4 w-4" /> : <Wand2 className="h-4 w-4 text-primary" />}
