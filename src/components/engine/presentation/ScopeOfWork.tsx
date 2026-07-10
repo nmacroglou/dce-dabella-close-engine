@@ -165,7 +165,7 @@ export default function ScopeOfWork({ products = [] }: Props) {
 
       {/* Script prompt */}
       <div className="script-block text-center max-w-2xl mx-auto text-base">
-        "Does that sound like everything we have spoken about today?"
+        {t('"Does that sound like everything we have spoken about today?"', '"¿Le parece que esto cubre todo lo que hemos hablado hoy?"')}
       </div>
     </div>
   );
