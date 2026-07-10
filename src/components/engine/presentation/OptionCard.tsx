@@ -167,7 +167,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
 
           {showStrike && (
             <div className="relative mt-4 pt-3 border-t border-accent/30 flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-accent">You save</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-accent">{t("You save", "Usted ahorra")}</span>
               <span className="text-lg font-extrabold text-accent num-display">{fmt(originalPrice! - opt.price)}</span>
             </div>
           )}
