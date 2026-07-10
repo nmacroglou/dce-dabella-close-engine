@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useT } from "@/contexts/LanguageContext";
 
 export interface PresentationFooterNavProps<S extends string> {
   stages: readonly S[];
