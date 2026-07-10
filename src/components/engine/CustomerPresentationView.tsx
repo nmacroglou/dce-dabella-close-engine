@@ -236,7 +236,7 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
                 onClick={() => { setSelectedOption(null); setStage("options"); }}
                 className="mt-3 mx-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <ChevronLeft className="h-4 w-4" /> Change selection
+                <ChevronLeft className="h-4 w-4" /> {t("Change selection", "Cambiar selección")}
               </button>
             </div>
             <TrustBar />
