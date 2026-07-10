@@ -15,6 +15,7 @@ interface ReqBody {
   photos?: PhotoFinding[];
   tweak?: string;
   current_sections?: Record<string, string>;
+  language?: "en" | "es";
 }
 
 const TRADE_LABEL: Record<ReportType, string> = {
