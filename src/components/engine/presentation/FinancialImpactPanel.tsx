@@ -106,14 +106,14 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-accent/10 border border-accent/30 p-4 text-center">
-              <p className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1">✅ Move Forward</p>
+              <p className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1">✅ {t("Move Forward", "Avanzar")}</p>
               <p className="text-xs font-mono text-foreground/70 mb-1">
                 {fmt(sel.roi)} + {fmt(computed.energySavings)} + {fmt(sel.lockedInSavings)}
               </p>
               <p className="text-2xl font-black text-accent">+{fmt(sel.moveForward)}</p>
             </div>
             <div className="rounded-xl bg-destructive/10 border border-destructive/30 p-4 text-center">
-              <p className="text-[10px] font-bold text-destructive uppercase tracking-wider mb-1">❌ Do Nothing</p>
+              <p className="text-[10px] font-bold text-destructive uppercase tracking-wider mb-1">❌ {t("Do Nothing", "No hacer nada")}</p>
               <p className="text-xs font-mono text-foreground/70 mb-1">
                 −{fmt(computed.energySavings)} − {fmt(sel.inflationPenalty)}
               </p>
@@ -122,12 +122,12 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
           </div>
 
           <div className="p-4 rounded-xl bg-foreground text-background text-center space-y-1">
-            <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Net advantage of moving forward</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">{t("Net advantage of moving forward", "Ventaja neta de avanzar")}</p>
             <p className="text-xs font-mono opacity-70">
               {fmt(sel.moveForward)} − ({fmt(sel.doNothing)}) = {fmt(sel.netDiff)}
             </p>
             <p className="text-3xl font-black">{fmt(sel.netDiff)}</p>
-            <p className="text-xs opacity-60">You're this much better off saying yes today</p>
+            <p className="text-xs opacity-60">{t("You're this much better off saying yes today", "Está esto mejor si dice que sí hoy")}</p>
           </div>
         </>
       ) : (
