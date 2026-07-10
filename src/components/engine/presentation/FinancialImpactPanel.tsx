@@ -42,24 +42,27 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
     <div className="card-elevated-lg p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-extrabold text-foreground flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-accent" /> 10-Year Financial Impact
+          <TrendingUp className="h-5 w-5 text-accent" /> {t("10-Year Financial Impact", "Impacto Financiero a 10 Años")}
         </h3>
         <button
           onClick={() => setMode(m => m === "single" ? "compare" : "single")}
           className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           {mode === "single" ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />}
-          {mode === "single" ? "Compare all" : "Single view"}
+          {mode === "single" ? t("Compare all", "Comparar todas") : t("Single view", "Vista única")}
         </button>
       </div>
 
       {/* Coach script */}
       <div className="rounded-xl bg-accent/5 border border-accent/20 p-3">
         <p className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1 flex items-center gap-1">
-          <Info className="h-3 w-3" /> What to say
+          <Info className="h-3 w-3" /> {t("What to say", "Qué decir")}
         </p>
         <p className="text-sm text-foreground/90 italic leading-relaxed">
-          "Let's look at the <span className="font-bold not-italic">total picture</span> — what you gain by moving forward vs. what it costs to wait."
+          {t(
+            `"Let's look at the total picture — what you gain by moving forward vs. what it costs to wait."`,
+            `"Veamos el panorama completo — lo que gana al avanzar vs. lo que cuesta esperar."`,
+          )}
         </p>
       </div>
 
