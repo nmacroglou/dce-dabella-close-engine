@@ -59,11 +59,11 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-1">
                   <h3 className="text-xl font-bold text-foreground">
-                    Step {activeStep.id}: {activeStep.title}
+                    {t("Step", "Paso")} {activeStep.id}: {activeStep.title}
                   </h3>
                   {completed.has(activeStepId) && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent">
-                      <Check className="h-3 w-3" /> Done
+                      <Check className="h-3 w-3" /> {t("Done", "Hecho")}
                     </span>
                   )}
                 </div>
@@ -75,7 +75,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
           {/* Script */}
           <div className="card-elevated-lg p-6">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              Suggested Script
+              {t("Suggested Script", "Guion sugerido")}
             </h4>
             <div className="script-block text-base leading-relaxed whitespace-pre-line">
               {activeStep.script}
@@ -87,7 +87,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
             <CollapsibleCard
               key={idx}
               title={ds.label}
-              badge="Scenario"
+              badge={t("Scenario", "Escenario")}
               isOpen={scripts.has(idx)}
               onToggle={() => scripts.toggle(idx)}
             >
