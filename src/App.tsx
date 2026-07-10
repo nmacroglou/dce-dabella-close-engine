@@ -89,7 +89,8 @@ const App = () => (
                 </Suspense>
               </ErrorBoundary>
             </ActiveDealProvider>
-          </OwnerScopeProvider>
+            </OwnerScopeProvider>
+          </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
