@@ -84,6 +84,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         report_type: reportType,
         user_hint: buildHint(),
         existing_tags: tags,
+        language: lang,
       });
       if (cancelRef.current) return;
       setCaption(res.caption);
