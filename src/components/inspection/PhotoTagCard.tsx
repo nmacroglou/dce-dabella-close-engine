@@ -233,15 +233,15 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
           onClick={analyze.isPending ? cancelAnalyze : handleAnalyze}
         >
           {analyze.isPending
-            ? <><X className="h-3 w-3 mr-1.5" />Cancel</>
-            : <><Sparkles className="h-3 w-3 mr-1.5" />{tags.length === 0 ? "Auto-tag" : "Re-analyze"}</>}
+            ? <><X className="h-3 w-3 mr-1.5" />{t("Cancel", "Cancelar")}</>
+            : <><Sparkles className="h-3 w-3 mr-1.5" />{tags.length === 0 ? t("Auto-tag", "Auto-etiquetar") : t("Re-analyze", "Re-analizar")}</>}
         </Button>
         <Button
           size="sm"
           variant="ghost"
           className="h-8 w-8 p-0"
-          onClick={() => { if (confirm("Delete this photo?")) del.mutate(photo); }}
-          aria-label="Delete photo"
+          onClick={() => { if (confirm(t("Delete this photo?", "¿Eliminar esta foto?"))) del.mutate(photo); }}
+          aria-label={t("Delete photo", "Eliminar foto")}
         >
           <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
         </Button>
