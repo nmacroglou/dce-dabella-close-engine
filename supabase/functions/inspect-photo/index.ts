@@ -10,6 +10,7 @@ interface ReqBody {
   report_type?: ReportType;
   user_hint?: string;
   existing_tags?: string[];
+  language?: "en" | "es";
 }
 
 const TAXONOMY: Record<ReportType, string> = {
