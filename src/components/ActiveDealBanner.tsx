@@ -198,17 +198,17 @@ export default function ActiveDealBanner() {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-foreground truncate">
-              {deal.homeowner1 || "Untitled"}
+              {deal.homeowner1 || t("Untitled", "Sin título")}
               {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              Auto-saving · Updated {new Date(deal.updated_at).toLocaleTimeString()}
+              {t("Auto-saving", "Guardando automáticamente")} · {t("Updated", "Actualizado")} {new Date(deal.updated_at).toLocaleTimeString()}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${STAGE_COLORS[deal.stage]}`}>
-            {STAGE_LABELS[deal.stage]}
+            {stageLabels[deal.stage]}
           </span>
           <Popover>
             <PopoverTrigger asChild>
@@ -216,10 +216,10 @@ export default function ActiveDealBanner() {
                 size="sm"
                 variant="ghost"
                 className="h-9 px-2 gap-1"
-                aria-label="View stage history"
+                aria-label={t("View stage history", "Ver historial de etapas")}
               >
                 <History className="h-4 w-4" />
-                <span className="hidden sm:inline text-xs font-semibold">History</span>
+                <span className="hidden sm:inline text-xs font-semibold">{t("History", "Historial")}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 max-h-96 overflow-y-auto">
@@ -233,15 +233,15 @@ export default function ActiveDealBanner() {
             onClick={() => setComposerOpen(true)}
           >
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="hidden sm:inline text-xs font-semibold">Follow-up</span>
+            <span className="hidden sm:inline text-xs font-semibold">{t("Follow-up", "Seguimiento")}</span>
           </Button>
           <Select value={deal.stage} onValueChange={(v) => handleStage(v as DealStage)}>
             <SelectTrigger className="w-36 h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {(Object.keys(STAGE_LABELS) as DealStage[]).map((s) => (
-                <SelectItem key={s} value={s}>{STAGE_LABELS[s]}</SelectItem>
+              {(Object.keys(stageLabels) as DealStage[]).map((s) => (
+                <SelectItem key={s} value={s}>{stageLabels[s]}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -249,7 +249,7 @@ export default function ActiveDealBanner() {
             size="sm"
             variant="ghost"
             onClick={() => setActiveDealId(null)}
-            aria-label="Close active deal"
+            aria-label={t("Close active deal", "Cerrar deal activo")}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -259,11 +259,11 @@ export default function ActiveDealBanner() {
       <Dialog open={winOpen} onOpenChange={setWinOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mark deal as won 🎉</DialogTitle>
+            <DialogTitle>{t("Mark deal as won 🎉", "Marcar deal como ganado 🎉")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label>Closed amount</Label>
+              <Label>{t("Closed amount", "Monto cerrado")}</Label>
               <Input
                 type="number"
                 value={winAmount}
@@ -271,20 +271,20 @@ export default function ActiveDealBanner() {
                 placeholder="42000"
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground">Selected option: <span className="font-semibold">{deal.selected_option ?? "—"}</span></p>
+              <p className="text-xs text-muted-foreground">{t("Selected option:", "Opción seleccionada:")} <span className="font-semibold">{deal.selected_option ?? "—"}</span></p>
             </div>
             <div className="space-y-1.5">
-              <Label>Note (optional)</Label>
+              <Label>{t("Note (optional)", "Nota (opcional)")}</Label>
               <Textarea
                 value={winNote}
                 onChange={(e) => setWinNote(e.target.value)}
-                placeholder="What sealed it? Hot button, financing tier, who said yes…"
+                placeholder={t("What sealed it? Hot button, financing tier, who said yes…", "¿Qué lo selló? Hot button, tier de financiamiento, quién dijo sí…")}
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={confirmWin}>Confirm win</Button>
+            <Button onClick={confirmWin}>{t("Confirm win", "Confirmar victoria")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -292,30 +292,30 @@ export default function ActiveDealBanner() {
       <Dialog open={lostOpen} onOpenChange={setLostOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mark deal as lost</DialogTitle>
+            <DialogTitle>{t("Mark deal as lost", "Marcar deal como perdido")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label>What was the main reason?</Label>
+              <Label>{t("What was the main reason?", "¿Cuál fue la razón principal?")}</Label>
               <Input
                 value={lostReason}
                 onChange={(e) => setLostReason(e.target.value)}
-                placeholder="Price, timing, went with competitor..."
+                placeholder={t("Price, timing, went with competitor...", "Precio, timing, se fueron con la competencia...")}
                 autoFocus
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Note (optional)</Label>
+              <Label>{t("Note (optional)", "Nota (opcional)")}</Label>
               <Textarea
                 value={lostNote}
                 onChange={(e) => setLostNote(e.target.value)}
-                placeholder="What did they say? Any objection you couldn't overcome?"
+                placeholder={t("What did they say? Any objection you couldn't overcome?", "¿Qué dijeron? ¿Alguna objeción que no pudiste superar?")}
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="destructive" onClick={confirmLost}>Confirm loss</Button>
+            <Button variant="destructive" onClick={confirmLost}>{t("Confirm loss", "Confirmar pérdida")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -323,34 +323,34 @@ export default function ActiveDealBanner() {
       <Dialog open={dqOpen} onOpenChange={setDqOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mark deal as disqualified</DialogTitle>
+            <DialogTitle>{t("Mark deal as disqualified", "Marcar deal como descalificado")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label>Reason</Label>
+              <Label>{t("Reason", "Razón")}</Label>
               <Select value={dqReason} onValueChange={(v) => setDqReason(v as DisqualifiedReason)}>
                 <SelectTrigger autoFocus>
-                  <SelectValue placeholder="Pick a disqualification reason…" />
+                  <SelectValue placeholder={t("Pick a disqualification reason…", "Elige una razón de descalificación…")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(DISQUALIFIED_REASON_LABELS) as DisqualifiedReason[]).map((k) => (
-                    <SelectItem key={k} value={k}>{DISQUALIFIED_REASON_LABELS[k]}</SelectItem>
+                  {(Object.keys(dqLabels) as DisqualifiedReason[]).map((k) => (
+                    <SelectItem key={k} value={k}>{dqLabels[k]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Note (optional)</Label>
+              <Label>{t("Note (optional)", "Nota (opcional)")}</Label>
               <Textarea
                 value={dqNote}
                 onChange={(e) => setDqNote(e.target.value)}
-                placeholder="Specifics — DTE %, credit score band, missing co-app, etc."
+                placeholder={t("Specifics — DTE %, credit score band, missing co-app, etc.", "Detalles — DTE %, banda de crédito, sin co-solicitante, etc.")}
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={confirmDq} disabled={!dqReason}>Confirm</Button>
+            <Button onClick={confirmDq} disabled={!dqReason}>{t("Confirm", "Confirmar")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -361,30 +361,30 @@ export default function ActiveDealBanner() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Move to {pendingStage ? STAGE_LABELS[pendingStage] : ""}
+              {t("Move to", "Mover a")} {pendingStage ? stageLabels[pendingStage] : ""}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label>Note (optional)</Label>
+              <Label>{t("Note (optional)", "Nota (opcional)")}</Label>
               <Textarea
                 value={stageNote}
                 onChange={(e) => setStageNote(e.target.value)}
-                placeholder="What did you say or observe? Hot button, next step, scheduled callback…"
+                placeholder={t("What did you say or observe? Hot button, next step, scheduled callback…", "¿Qué dijiste u observaste? Hot button, siguiente paso, callback programado…")}
                 rows={4}
                 autoFocus
               />
               <p className="text-xs text-muted-foreground">
-                Saved to the stage timeline. Skip to move without a note.
+                {t("Saved to the stage timeline. Skip to move without a note.", "Guardado en la línea de tiempo. Omite para mover sin nota.")}
               </p>
             </div>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={confirmStageChange}>
-              Skip
+              {t("Skip", "Omitir")}
             </Button>
             <Button onClick={confirmStageChange}>
-              Save & move
+              {t("Save & move", "Guardar y mover")}
             </Button>
           </DialogFooter>
         </DialogContent>
