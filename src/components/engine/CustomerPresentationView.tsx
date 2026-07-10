@@ -28,15 +28,24 @@ const BASE_STAGES = ["options", "impact", "scope", "welcome"] as const;
 const WINDOW_STAGES = ["options", "impact", "inspection", "scope", "welcome"] as const;
 type Stage = "options" | "impact" | "inspection" | "scope" | "welcome";
 
-const STAGE_LABELS: Record<Stage, string> = {
+const STAGE_LABELS_EN: Record<Stage, string> = {
   options: "Your Options",
   impact: "The Numbers",
   inspection: "Inspection",
   scope: "What to Expect",
   welcome: "Welcome",
 };
+const STAGE_LABELS_ES: Record<Stage, string> = {
+  options: "Sus Opciones",
+  impact: "Los Números",
+  inspection: "Inspección",
+  scope: "Qué Esperar",
+  welcome: "Bienvenida",
+};
 
 export default function CustomerPresentationView({ state, computed, onClose, update }: Props) {
+  const t = useT();
+  const STAGE_LABELS = t("_en", "_es") === "_es" ? STAGE_LABELS_ES : STAGE_LABELS_EN;
   const isWindows = hasProduct(state.products, "Windows");
   const productLabel = getProductLabel(state.products);
   const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
