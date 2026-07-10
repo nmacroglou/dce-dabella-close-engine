@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, useMemo, useCallback } from "react";
 import { DollarSign, Plus, FileText, Settings2, Calculator, Loader2 } from "lucide-react";
 import { getMonthlyBonus, MONTHLY_BONUS_TIERS } from "@/data/commissionData";
+import { useT } from "@/contexts/LanguageContext";
 import SectionHeader from "./shared/SectionHeader";
 import DealCard, { type Deal, emptyDeal, computeDeal } from "./commission/DealCard";
 
@@ -20,13 +21,13 @@ const ViewFallback = () => (
 
 type View = "sheet" | "estimator" | "grid";
 
-const VIEWS: { key: View; label: string; icon: typeof FileText; desc: string }[] = [
-  { key: "sheet", label: "Live Sheet", icon: FileText, desc: "Auto-fill from active deal" },
-  { key: "estimator", label: "Quick Estimator", icon: Calculator, desc: "Multi-deal monthly NIS" },
-  { key: "grid", label: "My Grid", icon: Settings2, desc: "Edit your % tiers" },
-];
-
 export default function CommissionTab() {
+  const t = useT();
+  const VIEWS: { key: View; label: string; icon: typeof FileText; desc: string }[] = [
+    { key: "sheet", label: t("Live Sheet", "Hoja en vivo"), icon: FileText, desc: t("Auto-fill from active deal", "Auto-llenado desde el deal activo") },
+    { key: "estimator", label: t("Quick Estimator", "Estimador rápido"), icon: Calculator, desc: t("Multi-deal monthly NIS", "NIS mensual multi-deal") },
+    { key: "grid", label: t("My Grid", "Mi tabla"), icon: Settings2, desc: t("Edit your % tiers", "Edita tus tiers de %") },
+  ];
   const [view, setView] = useState<View>("sheet");
   const [deals, setDeals] = useState<Deal[]>([emptyDeal()]);
 
@@ -93,8 +94,8 @@ export default function CommissionTab() {
           <div className="space-y-3">
             <SectionHeader
               icon={<DollarSign className="h-5 w-5 text-primary" />}
-              title="Deals"
-              subtitle="Add each deal to estimate commissions and track NIS"
+              title={t("Deals", "Deals")}
+              subtitle={t("Add each deal to estimate commissions and track NIS", "Añade cada deal para estimar comisiones y rastrear NIS")}
             />
 
             {deals.map((deal, i) => (
@@ -112,7 +113,7 @@ export default function CommissionTab() {
               className="w-full rounded-2xl border-2 border-dashed border-hairline-strong hover:border-primary/50 hover:bg-primary/5 p-4 flex items-center justify-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary transition-all pressable"
             >
               <Plus className="h-4 w-4" />
-              Add Deal
+              {t("Add Deal", "Añadir Deal")}
             </button>
           </div>
 

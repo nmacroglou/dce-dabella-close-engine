@@ -126,7 +126,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
           {/* Tips */}
           <div className="card-elevated-lg p-6">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-              Pro Tips
+              {t("Pro Tips", "Consejos pro")}
             </h4>
             <div className="space-y-3">
               {activeStep.tips.map((tip, idx) => (
@@ -153,9 +153,9 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
               <ExternalLink className="h-5 w-5 text-primary flex-shrink-0" />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                  Open {TAB_LABELS[activeStep.linkTab] || activeStep.linkTab}
+                  {t("Open", "Abrir")} {TAB_LABELS[activeStep.linkTab] || activeStep.linkTab}
                 </p>
-                <p className="text-xs text-muted-foreground">Jump to the relevant tool</p>
+                <p className="text-xs text-muted-foreground">{t("Jump to the relevant tool", "Ir a la herramienta relevante")}</p>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </button>
@@ -170,7 +170,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
                 : "gradient-brand text-primary-foreground hover:opacity-95 shadow-[var(--shadow-glow)]"
             }`}
           >
-            {completed.has(activeStepId) ? "✓ Completed — Tap to Undo" : "Mark Step Complete"}
+            {completed.has(activeStepId) ? t("✓ Completed — Tap to Undo", "✓ Completado — Toca para deshacer") : t("Mark Step Complete", "Marcar paso como completo")}
           </button>
 
           {/* Next step */}
@@ -179,7 +179,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
               onClick={() => setActiveStepId(activeStepId + 1)}
               className="w-full rounded-2xl border border-hairline bg-card px-5 py-4 text-sm font-semibold text-foreground hover:bg-muted/50 hover:border-primary/40 transition-all flex items-center justify-center gap-2 pressable"
             >
-              Next: Step {activeStepId + 1} <ChevronRight className="h-4 w-4" />
+              {t("Next: Step", "Siguiente: Paso")} {activeStepId + 1} <ChevronRight className="h-4 w-4" />
             </button>
           )}
         </div>

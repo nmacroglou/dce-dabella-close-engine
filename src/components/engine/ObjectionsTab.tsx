@@ -4,8 +4,10 @@ import { AlertTriangle, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDealObjections, useLogObjection, useDeleteDealObjection } from "@/hooks/useDealObjections";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/contexts/LanguageContext";
 
 export default function ObjectionsTab({ state, update }: EngineTabProps) {
+  const t = useT();
   const active = state.objectionType;
   const route = active ? OBJECTION_ROUTES[active] : null;
 
@@ -23,7 +25,7 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
       <div className="lg:col-span-2 space-y-4">
         <div className="card-premium p-6">
-          <h3 className="text-lg font-bold font-display gradient-text mb-5">Objection router</h3>
+          <h3 className="text-lg font-bold font-display gradient-text mb-5">{t("Objection router", "Ruta de objeciones")}</h3>
           <div className="space-y-3">
             {OBJECTIONS.map(({ id, label, icon: Icon }) => (
               <div
@@ -49,8 +51,8 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleLog(id)}
-                    aria-label="Log this objection"
-                    title="Log this objection on the deal"
+                    aria-label={t("Log this objection", "Registrar esta objeción")}
+                    title={t("Log this objection on the deal", "Registrar esta objeción en el deal")}
                   >
                     <Plus className="h-4 w-4 text-primary" />
                   </Button>
@@ -60,7 +62,7 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
           </div>
           {!activeDealId && (
             <p className="text-xs text-muted-foreground mt-4 italic">
-              Open an active deal to log objections — feeds the dashboard heatmap.
+              {t("Open an active deal to log objections — feeds the dashboard heatmap.", "Abre un deal activo para registrar objeciones — alimenta el heatmap del dashboard.")}
             </p>
           )}
         </div>
@@ -68,7 +70,7 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
         {activeDealId && logged.length > 0 && (
           <div className="card-premium p-5">
             <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
-              Logged on this deal ({logged.length})
+              {t("Logged on this deal", "Registradas en este deal")} ({logged.length})
             </h4>
             <ul className="space-y-2">
               {logged.map((o) => {
@@ -79,7 +81,7 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
                     <button
                       onClick={() => del.mutate({ id: o.id, dealId: activeDealId })}
                       className="text-muted-foreground hover:text-destructive"
-                      aria-label="Remove logged objection"
+                      aria-label={t("Remove logged objection", "Eliminar objeción registrada")}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -101,7 +103,7 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
               <h3 className="text-lg font-bold font-display gradient-text">{route.title}</h3>
             </div>
             <div className="script-block mb-5">{route.script}</div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Route steps</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("Route steps", "Pasos de la ruta")}</h4>
             <div className="space-y-3">
               {route.steps.map((step, i) => (
                 <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-muted/40 border border-hairline">
@@ -114,7 +116,7 @@ export default function ObjectionsTab({ state, update }: EngineTabProps) {
         ) : (
           <div className="card-premium p-12 text-center">
             <AlertTriangle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground font-medium">Select an objection to see the route</p>
+            <p className="text-muted-foreground font-medium">{t("Select an objection to see the route", "Selecciona una objeción para ver la ruta")}</p>
           </div>
         )}
       </div>
