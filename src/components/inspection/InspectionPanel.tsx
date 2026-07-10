@@ -545,6 +545,7 @@ export default function InspectionPanel({ dealId }: Props) {
         report_types: reportTypes,
         photos: tagged,
         tweak: mergedTweak || undefined,
+        language: lang,
       });
       setDraft(res.sections);
       toast.success("Narrative drafted — review and Save", { id: toastId });
