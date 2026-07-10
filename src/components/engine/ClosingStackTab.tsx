@@ -2,9 +2,11 @@ import { useState } from "react";
 import type { EngineTabProps } from "@/types/engine";
 import { CLOSING_STEPS } from "@/data/closingSteps";
 import { Sparkles } from "lucide-react";
+import { useT } from "@/contexts/LanguageContext";
 import ScriptCard from "./shared/ScriptCard";
 
 export default function ClosingStackTab({ state, computed, update }: EngineTabProps) {
+  const t = useT();
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
 
@@ -12,7 +14,7 @@ export default function ClosingStackTab({ state, computed, update }: EngineTabPr
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-fade-in">
       <div className="lg:col-span-3">
         <div className="card-elevated-lg p-6">
-          <h3 className="text-lg font-bold text-foreground mb-5">Closing stack</h3>
+          <h3 className="text-lg font-bold text-foreground mb-5">{t("Closing stack", "Cierre")}</h3>
           <div className="space-y-3">
             {CLOSING_STEPS.map((step, i) => (
               <button
@@ -30,7 +32,7 @@ export default function ClosingStackTab({ state, computed, update }: EngineTabPr
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold text-foreground">{step.label}</p>
                       <span className="inline-flex items-center rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent uppercase">
-                        Natural ask
+                        {t("Natural ask", "Pedido natural")}
                       </span>
                     </div>
                     {activeStep === step.id && (
@@ -49,26 +51,30 @@ export default function ClosingStackTab({ state, computed, update }: EngineTabPr
           <div aria-hidden className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-primary/40 blur-3xl" />
           <div aria-hidden className="absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-accent/30 blur-3xl" />
           <h3 className="relative text-lg font-display font-extrabold mb-4 flex items-center gap-2 tracking-tight">
-            <Sparkles className="h-5 w-5 text-warning" /> Ready to close
+            <Sparkles className="h-5 w-5 text-warning" /> {t("Ready to close", "Listo para cerrar")}
           </h3>
           <p className="relative text-base leading-relaxed opacity-90 italic">
-            "Based on everything we've gone through, this gives you peace of mind, eliminates future unexpected costs, and is the most cost-effective option. So the only thing left is — <strong className="not-italic opacity-100">would you like to use a check or card?</strong>"
+            {t(
+              `"Based on everything we've gone through, this gives you peace of mind, eliminates future unexpected costs, and is the most cost-effective option. So the only thing left is — "`,
+              `"Basado en todo lo que hemos visto, esto les da tranquilidad, elimina costos futuros inesperados y es la opción más rentable. Lo único que queda es — "`
+            )}
+            <strong className="not-italic opacity-100">{t("would you like to use a check or card?", "¿prefieren usar cheque o tarjeta?")}</strong>"
           </p>
         </div>
 
         <div className="card-elevated-lg p-6">
           <ScriptCard
-            title="If they hesitate"
-            text={`"I completely understand. Other than the true objection we just discussed, is there anything else stopping you from moving forward today?"`}
+            title={t("If they hesitate", "Si dudan")}
+            text={t(`"I completely understand. Other than the true objection we just discussed, is there anything else stopping you from moving forward today?"`, `"Lo entiendo completamente. Aparte de la objeción real que acabamos de hablar, ¿hay algo más que les impida avanzar hoy?"`)}
           />
         </div>
 
         <div className="card-elevated-lg p-6">
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">Deal notes</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-2">{t("Deal notes", "Notas del deal")}</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Capture homeowner reactions, objections, and next move..."
+            placeholder={t("Capture homeowner reactions, objections, and next move...", "Captura reacciones del propietario, objeciones y siguiente paso...")}
             className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[120px] resize-none"
           />
         </div>

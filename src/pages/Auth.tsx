@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
+import { useT } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import dabellaLogo from "@/assets/dabella-logo.png";
 export default function AuthPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const t = useT();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,15 +40,15 @@ export default function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created — you're in!");
+        toast.success(t("Account created — you're in!", "Cuenta creada — ¡estás dentro!"));
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("Welcome back!");
+        toast.success(t("Welcome back!", "¡Bienvenido de nuevo!"));
       }
       navigate("/", { replace: true });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Authentication failed";
+      const msg = err instanceof Error ? err.message : t("Authentication failed", "Autenticación fallida");
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -61,7 +63,7 @@ export default function AuthPage() {
       });
       if (result.error) throw result.error;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Google sign-in failed";
+      const msg = err instanceof Error ? err.message : t("Google sign-in failed", "Error al iniciar sesión con Google");
       toast.error(msg);
       setLoading(false);
     }
@@ -86,7 +88,9 @@ export default function AuthPage() {
             Close <span className="gradient-text">Engine</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1.5">
-            {mode === "signin" ? "Sign in to your rep dashboard" : "Create your rep account"}
+            {mode === "signin"
+              ? t("Sign in to your rep dashboard", "Inicia sesión en tu panel de rep")
+              : t("Create your rep account", "Crea tu cuenta de rep")}
           </p>
         </div>
 
@@ -103,7 +107,7 @@ export default function AuthPage() {
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          Continue with Google
+          {t("Continue with Google", "Continuar con Google")}
         </Button>
 
         <div className="relative my-4">
@@ -111,14 +115,14 @@ export default function AuthPage() {
             <div className="w-full border-t border-hairline" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-card px-2 text-muted-foreground uppercase tracking-wider font-semibold">or</span>
+            <span className="bg-card px-2 text-muted-foreground uppercase tracking-wider font-semibold">{t("or", "o")}</span>
           </div>
         </div>
 
         <form onSubmit={handleEmailAuth} className="space-y-4">
           {mode === "signup" && (
             <div className="space-y-1.5">
-              <Label htmlFor="displayName">Your name</Label>
+              <Label htmlFor="displayName">{t("Your name", "Tu nombre")}</Label>
               <Input
                 id="displayName"
                 type="text"
@@ -130,7 +134,7 @@ export default function AuthPage() {
             </div>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("Email", "Correo electrónico")}</Label>
             <Input
               id="email"
               type="email"
@@ -142,7 +146,7 @@ export default function AuthPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("Password", "Contraseña")}</Label>
             <Input
               id="password"
               type="password"
@@ -156,18 +160,18 @@ export default function AuthPage() {
           </div>
           <Button type="submit" disabled={loading} className="w-full h-11 gradient-brand text-primary-foreground shadow-[var(--shadow-glow)] pressable">
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {mode === "signin" ? "Sign in" : "Create account"}
+            {mode === "signin" ? t("Sign in", "Iniciar sesión") : t("Create account", "Crear cuenta")}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          {mode === "signin" ? "New rep?" : "Already have an account?"}{" "}
+          {mode === "signin" ? t("New rep?", "¿Nuevo rep?") : t("Already have an account?", "¿Ya tienes una cuenta?")}{" "}
           <button
             type="button"
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
             className="text-primary font-semibold hover:underline"
           >
-            {mode === "signin" ? "Create an account" : "Sign in"}
+            {mode === "signin" ? t("Create an account", "Crear una cuenta") : t("Sign in", "Iniciar sesión")}
           </button>
         </p>
       </div>
