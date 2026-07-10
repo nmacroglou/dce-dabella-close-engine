@@ -247,6 +247,21 @@ export default function AppHeader() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
+                  onClick={toggleLang}
+                  className="rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-300 hover:text-white hover:bg-white/10 border border-hairline/60 hover:border-primary/40 transition-all pressable"
+                  aria-label={`Switch language, current ${lang === "en" ? "English" : "Spanish"}`}
+                >
+                  <span className={lang === "en" ? "text-primary" : "opacity-50"}>EN</span>
+                  <span className="mx-0.5 opacity-40">/</span>
+                  <span className={lang === "es" ? "text-primary" : "opacity-50"}>ES</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-[11px]">Language / Idioma</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
                   onClick={toggle}
                   className="rounded-md p-1.5 text-slate-300 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/5 transition-all pressable"
                   aria-label="Toggle dark mode"
