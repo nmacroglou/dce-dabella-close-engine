@@ -28,6 +28,7 @@ function ImpactRow({ label, hint, formula, moveForward, doNothing, moveClass, no
 }
 
 export default memo(function FinancialImpactPanel({ state, computed }: Props) {
+  const t = useT();
   const [mode, setMode] = useState<"single" | "compare">("single");
   const [selectedKey, setSelectedKey] = useState<"A" | "B" | "C">(state.selectedOption || "A");
 
