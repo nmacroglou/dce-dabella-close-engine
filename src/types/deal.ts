@@ -14,6 +14,15 @@ export const STAGE_LABELS: Record<DealStage, string> = {
   disqualified: "Disqualified",
 };
 
+export const STAGE_LABELS_ES: Record<DealStage, string> = {
+  inspecting: "Inspeccionando",
+  presented: "Presentado",
+  follow_up: "Seguimiento",
+  won: "Ganado",
+  lost: "Perdido",
+  disqualified: "Descalificado",
+};
+
 export const STAGE_COLORS: Record<DealStage, string> = {
   inspecting: "bg-muted text-muted-foreground",
   presented: "bg-primary/10 text-primary",
@@ -44,6 +53,17 @@ export const DISQUALIFIED_REASON_LABELS: Record<DisqualifiedReason, string> = {
   other: "Other",
 };
 
+export const DISQUALIFIED_REASON_LABELS_ES: Record<DisqualifiedReason, string> = {
+  no_home: "Sin casa",
+  no_money_price: "Sin dinero — Precio muy alto",
+  no_money_dte: "Sin dinero — DTE muy alto / inexistente",
+  no_money_credit: "Sin dinero — Crédito por los suelos",
+  no_money_no_funds: "Sin dinero — Sin fondos",
+  no_money_no_coapp: "Sin dinero — Sin co-solicitante",
+  no_money_cant_afford: "Sin dinero — No puede pagar",
+  other: "Otro",
+};
+
 export type LeadSource = "internet" | "canvass" | "self_gen" | "referral" | "other";
 
 export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
@@ -52,6 +72,14 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   self_gen: "Self-Gen",
   referral: "Referral",
   other: "Other",
+};
+
+export const LEAD_SOURCE_LABELS_ES: Record<LeadSource, string> = {
+  internet: "Internet",
+  canvass: "Puerta a puerta",
+  self_gen: "Auto-generado",
+  referral: "Referido",
+  other: "Otro",
 };
 
 export interface Deal {

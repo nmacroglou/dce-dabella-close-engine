@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calculator, Presentation, ShieldAlert, Layers, Brain, Loader2, BookOpen, DollarSign, ClipboardCheck, Sparkles, Camera } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import ActiveDealBanner from "@/components/ActiveDealBanner";
+import { useT } from "@/contexts/LanguageContext";
 
 const CalculatorTab = lazy(() => import("@/components/engine/CalculatorTab"));
 const PresentationTab = lazy(() => import("@/components/engine/PresentationTab"));
@@ -17,18 +18,21 @@ const PostCloseTab = lazy(() => import("@/components/engine/PostCloseTab"));
 const VisionTab = lazy(() => import("@/components/engine/VisionTab"));
 const InspectionTab = lazy(() => import("@/components/engine/InspectionTab"));
 
-const TABS = [
-  { value: "playbook", label: "Playbook", icon: BookOpen },
-  { value: "calculator", label: "Calculator", icon: Calculator },
-  { value: "inspection", label: "Inspection", icon: Camera },
-  { value: "presentation", label: "Presentation", icon: Presentation },
-  { value: "vision", label: "Vision", icon: Sparkles },
-  { value: "objections", label: "Objections", icon: ShieldAlert },
-  { value: "closing", label: "Closing Stack", icon: Layers },
-  { value: "postclose", label: "Post-Close", icon: ClipboardCheck },
-  { value: "commission", label: "Performance", icon: DollarSign },
-  { value: "coach", label: "Coach Mode", icon: Brain },
-] as const;
+const useTabs = () => {
+  const t = useT();
+  return [
+    { value: "playbook", label: t("Playbook", "Manual"), icon: BookOpen },
+    { value: "calculator", label: t("Calculator", "Calculadora"), icon: Calculator },
+    { value: "inspection", label: t("Inspection", "Inspección"), icon: Camera },
+    { value: "presentation", label: t("Presentation", "Presentación"), icon: Presentation },
+    { value: "vision", label: t("Vision", "Visión"), icon: Sparkles },
+    { value: "objections", label: t("Objections", "Objeciones"), icon: ShieldAlert },
+    { value: "closing", label: t("Closing Stack", "Cierre"), icon: Layers },
+    { value: "postclose", label: t("Post-Close", "Post-Cierre"), icon: ClipboardCheck },
+    { value: "commission", label: t("Performance", "Rendimiento"), icon: DollarSign },
+    { value: "coach", label: t("Coach Mode", "Modo coach"), icon: Brain },
+  ] as const;
+};
 
 function TabLoader() {
   return (
@@ -41,6 +45,7 @@ function TabLoader() {
 export default function Index() {
   const { state, update, computed, coachingTip, reset } = useCloseEngine();
   const location = useLocation();
+  const TABS = useTabs();
 
   useEffect(() => {
     const tab = (location.state as { tab?: string } | null)?.tab;
