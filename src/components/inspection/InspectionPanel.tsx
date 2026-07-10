@@ -709,42 +709,42 @@ export default function InspectionPanel({ dealId }: Props) {
         />
         <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={upload.isPending}>
           <Camera className="h-4 w-4 mr-2" />
-          {upload.isPending ? "Uploading…" : "Add photos"}
+          {upload.isPending ? t("Uploading…", "Subiendo…") : t("Add photos", "Añadir fotos")}
         </Button>
 
         <Button variant="outline" onClick={handleAutoTagAll} disabled={!!tagProgress || filteredPhotos.length === 0}>
           {tagProgress ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-          {tagProgress ? `Tagging ${tagProgress.done}/${tagProgress.total}` : `Auto-tag all (${filteredPhotos.length})`}
+          {tagProgress ? `${t("Tagging", "Etiquetando")} ${tagProgress.done}/${tagProgress.total}` : `${t("Auto-tag all", "Auto-etiquetar todo")} (${filteredPhotos.length})`}
         </Button>
 
         <Button
           variant="destructive"
           onClick={handleCancelAutoTag}
           disabled={!tagProgress}
-          title={tagProgress ? "Stop the auto-tag run. Photos already tagged are kept." : "Only active during an Auto-tag run."}
+          title={tagProgress ? t("Stop the auto-tag run. Photos already tagged are kept.", "Detener el auto-etiquetado. Las fotos ya etiquetadas se conservan.") : t("Only active during an Auto-tag run.", "Solo activo durante un auto-etiquetado.")}
         >
           <X className="h-4 w-4 mr-2" />
-          Cancel tagging
+          {t("Cancel tagging", "Cancelar etiquetado")}
         </Button>
 
         <Button
           variant="outline"
           onClick={handleAmpUrgency}
           disabled={ampPending || filteredPhotos.length === 0}
-          title="Adds +30% weight to every tag — bumps each photo one severity tier (low→moderate→high)."
+          title={t("Adds +30% weight to every tag — bumps each photo one severity tier (low→moderate→high).", "Añade +30% de peso a cada etiqueta — sube cada foto un nivel de gravedad (baja→moderada→alta).")}
         >
           {ampPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <TrendingUp className="h-4 w-4 mr-2" />}
-          Amp urgency +30%
+          {t("Amp urgency +30%", "Aumentar urgencia +30%")}
         </Button>
 
         <Button
           variant="outline"
           onClick={handleClearAll}
           disabled={clearPending || !!tagProgress || filteredPhotos.length === 0}
-          title="Wipe captions, tags, and severity on every photo so you can run a fresh tag pass. Photos stay."
+          title={t("Wipe captions, tags, and severity on every photo so you can run a fresh tag pass. Photos stay.", "Borra pies de foto, etiquetas y gravedad de cada foto para volver a etiquetar. Las fotos permanecen.")}
         >
           {clearPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Eraser className="h-4 w-4 mr-2" />}
-          Clear & re-tag
+          {t("Clear & re-tag", "Limpiar y re-etiquetar")}
         </Button>
 
 
@@ -754,14 +754,14 @@ export default function InspectionPanel({ dealId }: Props) {
           variant="outline"
           onClick={() => setCaptionTweakOpen(true)}
           disabled={!!captionTweakProgress || filteredPhotos.length === 0}
-          title="Apply a global instruction to every photo's caption (tags & severity are preserved)."
+          title={t("Apply a global instruction to every photo's caption (tags & severity are preserved).", "Aplica una instrucción global al pie de foto de cada imagen (etiquetas y gravedad se conservan).")}
         >
           {captionTweakProgress
             ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             : <Wand2 className="h-4 w-4 mr-2" />}
           {captionTweakProgress
-            ? `Tweaking ${captionTweakProgress.done}/${captionTweakProgress.total}`
-            : "Tweak all captions"}
+            ? `${t("Tweaking", "Ajustando")} ${captionTweakProgress.done}/${captionTweakProgress.total}`
+            : t("Tweak all captions", "Ajustar todos los pies de foto")}
         </Button>
 
         {captionTweakProgress && (
@@ -770,17 +770,17 @@ export default function InspectionPanel({ dealId }: Props) {
             onClick={() => { cancelCaptionTweakRef.current = true; }}
           >
             <X className="h-4 w-4 mr-2" />
-            Cancel tweak
+            {t("Cancel tweak", "Cancelar ajuste")}
           </Button>
         )}
 
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
-          {save.isPending ? "Saving…" : draft ? "Save changes" : "Saved"}
+          {save.isPending ? t("Saving…", "Guardando…") : draft ? t("Save changes", "Guardar cambios") : t("Saved", "Guardado")}
         </Button>
 
         <Button onClick={() => setShareOpen(true)} disabled={!deal}>
           <Share2 className="h-4 w-4 mr-2" />
-          Generate &amp; Share PDF
+          {t("Generate & Share PDF", "Generar y compartir PDF")}
         </Button>
       </div>
 
