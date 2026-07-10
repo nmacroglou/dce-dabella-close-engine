@@ -76,7 +76,7 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
 
           <div className="space-y-0 rounded-xl border border-border overflow-hidden">
             <ImpactRow
-              label="Home value increase"
+              label={t("Home value increase", "Aumento del valor de la casa")}
               hint={`${fmt(sel.price)} × ${state.roiPercent}% ROI`}
               formula={`${fmt(sel.price)} × 0.${state.roiPercent} = ${fmt(sel.roi)}`}
               moveForward={`+${fmt(sel.roi)}`}
@@ -85,8 +85,8 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
               nothingClass="text-muted-foreground"
             />
             <ImpactRow
-              label="Energy savings"
-              hint={`${fmt(state.monthlyBill)}/mo × ${state.energySavingsPct}% × 10 yrs`}
+              label={t("Energy savings", "Ahorro de energía")}
+              hint={`${fmt(state.monthlyBill)}/mo × ${state.energySavingsPct}% × 10 ${t("yrs", "años")}`}
               formula={`${fmt(state.monthlyBill)} × 12 × 10 × ${state.energySavingsPct}% = ${fmt(computed.energySavings)}`}
               moveForward={`+${fmt(computed.energySavings)}`}
               doNothing={`-${fmt(computed.energySavings)}`}
@@ -94,8 +94,8 @@ export default memo(function FinancialImpactPanel({ state, computed }: Props) {
               nothingClass="text-destructive"
             />
             <ImpactRow
-              label="Price lock savings"
-              hint="Avoid 8% annual material inflation"
+              label={t("Price lock savings", "Ahorro por precio fijo")}
+              hint={t("Avoid 8% annual material inflation", "Evite el 8% de inflación anual de materiales")}
               formula={`${fmt(sel.price)} × (1.08¹⁰ − 1) = ${fmt(sel.lockedInSavings)}`}
               moveForward={`+${fmt(sel.lockedInSavings)}`}
               doNothing={`-${fmt(sel.inflationPenalty)}`}
