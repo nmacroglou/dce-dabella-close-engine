@@ -787,12 +787,12 @@ export default function InspectionPanel({ dealId }: Props) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h4 className="font-display font-extrabold text-lg tracking-tight">
-            Photos <span className="text-muted-foreground font-normal text-sm">({filteredPhotos.length})</span>
+            {t("Photos", "Fotos")} <span className="text-muted-foreground font-normal text-sm">({filteredPhotos.length})</span>
           </h4>
         </div>
         {filteredPhotos.length === 0 ? (
           <div className="card-premium p-8 text-center text-sm text-muted-foreground">
-            No photos yet. Tap <span className="font-semibold text-foreground">Add photos</span> to take or upload images from the iPad camera.
+            {t("No photos yet. Tap", "Aún no hay fotos. Toque")} <span className="font-semibold text-foreground">{t("Add photos", "Añadir fotos")}</span> {t("to take or upload images from the iPad camera.", "para tomar o subir imágenes desde la cámara del iPad.")}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
