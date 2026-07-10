@@ -158,7 +158,7 @@ export default function ScopeOfWork({ products = [] }: Props) {
             disabled={animating}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold text-base tracking-wide hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 disabled:opacity-60"
           >
-            {allChecked ? "Reset Checklist" : "✓  Review All Items"}
+            {allChecked ? t("Reset Checklist", "Reiniciar lista") : t("✓  Review All Items", "✓  Revisar todos los puntos")}
           </button>
         </div>
       </div>
