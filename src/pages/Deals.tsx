@@ -22,12 +22,15 @@ import AppHeader from "@/components/AppHeader";
 import DealListCard from "@/components/deals/DealListCard";
 import IncidentDialog from "@/components/incidents/IncidentDialog";
 import DealEditDialog from "@/components/deals/DealEditDialog";
+import { useT } from "@/contexts/LanguageContext";
 import type { Incident } from "@/types/incident";
 import type { Deal } from "@/types/deal";
+
 
 type ViewMode = "comfortable" | "compact";
 
 export default function DealsPage() {
+  const t = useT();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useIsAdmin();
   const { data: profiles = [] } = useAllProfiles(isAdmin);
@@ -37,6 +40,7 @@ export default function DealsPage() {
   const create = useCreateDeal();
   const del = useDeleteDeal();
   const { setActiveDealId } = useActiveDeal();
+
 
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -104,7 +108,7 @@ export default function DealsPage() {
 
   const handleCreate = async () => {
     if (!newName.trim()) {
-      toast.error("Add at least a homeowner name");
+      toast.error(t("Add at least a homeowner name", "Añade al menos un nombre de propietario"));
       return;
     }
     const deal = await create.mutateAsync({
@@ -121,9 +125,10 @@ export default function DealsPage() {
     setNewEmail("");
     setNewPhone("");
     setNewLeadSource("unset");
-    toast.success("Deal created — let's go close it");
+    toast.success(t("Deal created — let's go close it", "Trato creado — ¡vamos a cerrarlo!"));
     navigate("/");
   };
+
 
   const isCompact = viewMode === "compact";
 
@@ -135,10 +140,10 @@ export default function DealsPage() {
           <div className="flex items-end justify-between flex-wrap gap-4">
             <div>
               <h2 className="text-2xl font-display font-extrabold tracking-tight">
-                Your <span className="gradient-text">Deals</span>
+                {t("Your", "Tus")} <span className="gradient-text">{t("Deals", "Tratos")}</span>
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Every homeowner you've worked, all in one place.
+                {t("Every homeowner you've worked, all in one place.", "Cada propietario con el que has trabajado, todo en un solo lugar.")}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -148,10 +153,10 @@ export default function DealsPage() {
                 onValueChange={(v) => v && setViewMode(v as ViewMode)}
                 className="hidden sm:flex"
               >
-                <ToggleGroupItem value="comfortable" aria-label="Comfortable view">
+                <ToggleGroupItem value="comfortable" aria-label={t("Comfortable view", "Vista cómoda")}>
                   <LayoutList className="h-4 w-4" />
                 </ToggleGroupItem>
-                <ToggleGroupItem value="compact" aria-label="Compact view">
+                <ToggleGroupItem value="compact" aria-label={t("Compact view", "Vista compacta")}>
                   <LayoutGrid className="h-4 w-4" />
                 </ToggleGroupItem>
               </ToggleGroup>
@@ -160,7 +165,7 @@ export default function DealsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All stages</SelectItem>
+                  <SelectItem value="all">{t("All stages", "Todas las etapas")}</SelectItem>
                   {(Object.keys(STAGE_LABELS) as DealStage[]).map((s) => (
                     <SelectItem key={s} value={s}>{STAGE_LABELS[s]}</SelectItem>
                   ))}
@@ -169,40 +174,40 @@ export default function DealsPage() {
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button>
-                    <Plus className="h-4 w-4 mr-2" /> New Deal
+                    <Plus className="h-4 w-4 mr-2" /> {t("New Deal", "Nuevo Trato")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Start a new deal</DialogTitle>
+                    <DialogTitle>{t("Start a new deal", "Iniciar un nuevo trato")}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4 py-2">
                     <div className="space-y-1.5">
-                      <Label>Homeowner name</Label>
+                      <Label>{t("Homeowner name", "Nombre del propietario")}</Label>
                       <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="John Smith" autoFocus />
                     </div>
                     <div className="space-y-1.5">
-                      <Label>Address (optional)</Label>
+                      <Label>{t("Address (optional)", "Dirección (opcional)")}</Label>
                       <Input value={newAddress} onChange={(e) => setNewAddress(e.target.value)} placeholder="123 Main St" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label>Email</Label>
+                        <Label>{t("Email", "Correo")}</Label>
                         <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="homeowner@email.com" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label>Phone</Label>
+                        <Label>{t("Phone", "Teléfono")}</Label>
                         <Input type="tel" value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="(555) 555-5555" />
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <Label>Lead source</Label>
+                      <Label>{t("Lead source", "Fuente del lead")}</Label>
                       <Select value={newLeadSource} onValueChange={(v) => setNewLeadSource(v as LeadSource | "unset")}>
                         <SelectTrigger>
-                          <SelectValue placeholder="How did this lead come in?" />
+                          <SelectValue placeholder={t("How did this lead come in?", "¿Cómo llegó este lead?")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="unset">Not set</SelectItem>
+                          <SelectItem value="unset">{t("Not set", "Sin definir")}</SelectItem>
                           {(Object.keys(LEAD_SOURCE_LABELS) as LeadSource[]).map((k) => (
                             <SelectItem key={k} value={k}>{LEAD_SOURCE_LABELS[k]}</SelectItem>
                           ))}
@@ -213,7 +218,7 @@ export default function DealsPage() {
                   <DialogFooter>
                     <Button onClick={handleCreate} disabled={create.isPending}>
                       {create.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Create & open
+                      {t("Create & open", "Crear y abrir")}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -224,7 +229,7 @@ export default function DealsPage() {
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search deals by name, address, product, stage..."
+              placeholder={t("Search deals by name, address, product, stage...", "Buscar tratos por nombre, dirección, producto, etapa…")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-9"
@@ -239,11 +244,12 @@ export default function DealsPage() {
         ) : filtered.length === 0 ? (
           <div className="card-elevated-lg p-12 text-center">
             <Briefcase className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-foreground mb-1">No deals yet</h3>
+            <h3 className="text-lg font-bold text-foreground mb-1">{t("No deals yet", "Aún no hay tratos")}</h3>
             <p className="text-sm text-muted-foreground mb-5">
-              Click "New Deal" above to start your first one. Everything you enter will save automatically.
+              {t("Click \"New Deal\" above to start your first one. Everything you enter will save automatically.", "Haz clic en \"Nuevo Trato\" arriba para empezar el primero. Todo lo que ingreses se guarda automáticamente.")}
             </p>
           </div>
+
         ) : (
           <div className={`grid gap-4 ${isCompact ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1 lg:grid-cols-2"}`}>
             {filtered.map((deal) => (
