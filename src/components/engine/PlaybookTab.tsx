@@ -3,6 +3,7 @@ import type { EngineTabProps } from "@/types/engine";
 import { SELLING_STEPS } from "@/data/sellingSteps";
 import { Check, ChevronRight, ExternalLink } from "lucide-react";
 import { useSetToggle } from "@/hooks/useSetToggle";
+import { useT } from "@/contexts/LanguageContext";
 import StepProgressBar from "./playbook/StepProgressBar";
 import Checklist from "./playbook/Checklist";
 import ReferencePanel from "./playbook/ReferencePanel";
@@ -13,13 +14,13 @@ import PillarsBattleCardPanel from "./playbook/PillarsBattleCardPanel";
 import CvvBattleCardsPanel from "./playbook/CvvBattleCardsPanel";
 import CoolLifeBattleCardPanel from "./playbook/CoolLifeBattleCardPanel";
 
-const TAB_LABELS: Record<string, string> = {
-  calculator: "Calculator",
-  presentation: "Presentation",
-  closing: "Closing Stack",
-};
-
 export default function PlaybookTab({ state, update }: EngineTabProps) {
+  const t = useT();
+  const TAB_LABELS: Record<string, string> = {
+    calculator: t("Calculator", "Calculadora"),
+    presentation: t("Presentation", "Presentación"),
+    closing: t("Closing Stack", "Cierre"),
+  };
   const [activeStepId, setActiveStepId] = useState(1);
   const completed = useSetToggle<number>();
   const scripts = useSetToggle<number>();
