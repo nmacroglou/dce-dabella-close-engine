@@ -148,12 +148,12 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
         <button
           onClick={() => setShareOpen(true)}
           className="flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md px-4 py-2 hover:bg-primary/90 transition-colors text-sm font-semibold"
-          aria-label="Share proposal"
+          aria-label={t("Share proposal", "Compartir propuesta")}
         >
           <Share2 className="h-4 w-4" />
-          {selectedOption ? "Share Proposal" : "Share All 3 Options"}
+          {selectedOption ? t("Share Proposal", "Compartir Propuesta") : t("Share All 3 Options", "Compartir las 3 Opciones")}
         </button>
-        <button onClick={onClose} className="rounded-full bg-card border border-border shadow-md p-2 hover:bg-muted transition-colors" aria-label="Close presentation">
+        <button onClick={onClose} className="rounded-full bg-card border border-border shadow-md p-2 hover:bg-muted transition-colors" aria-label={t("Close presentation", "Cerrar presentación")}>
           <X className="h-5 w-5 text-muted-foreground" />
         </button>
       </div>
