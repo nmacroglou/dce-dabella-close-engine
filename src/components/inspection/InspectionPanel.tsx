@@ -45,6 +45,7 @@ const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
 ];
 
 export default function InspectionPanel({ dealId }: Props) {
+  const { t, lang } = useLanguage();
   // Multi-select: rep can pick one or more trades for a single combined report.
   const [reportTypes, setReportTypes] = useState<InspectionReportType[]>(["roof"]);
   const primaryType = reportTypes[0] ?? "roof";
