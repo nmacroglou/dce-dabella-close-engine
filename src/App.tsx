@@ -64,8 +64,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <OwnerScopeProvider>
-            <ActiveDealProvider>
+          <LanguageProvider>
+            <OwnerScopeProvider>
+              <ActiveDealProvider>
               <ErrorBoundary>
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>
