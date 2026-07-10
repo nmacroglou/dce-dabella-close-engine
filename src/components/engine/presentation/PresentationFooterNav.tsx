@@ -48,7 +48,7 @@ function PresentationFooterNavImpl<S extends string>({
             disabled={nextDisabled}
             className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-40 disabled:pointer-events-none"
           >
-            Continue <ChevronRight className="h-4 w-4" />
+            {t("Continue", "Continuar")} <ChevronRight className="h-4 w-4" />
           </button>
         ) : (
           <div className="w-[120px]" />
