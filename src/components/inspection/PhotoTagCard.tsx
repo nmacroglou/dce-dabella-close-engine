@@ -197,7 +197,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
           onChange={(e) => setNewTag(e.target.value)}
           onBlur={() => { if (newTag.trim()) addTag(); }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
-          placeholder="+ add tag"
+          placeholder={t("+ add tag", "+ añadir etiqueta")}
           className="text-xs px-2 py-1 h-8 rounded border border-dashed border-border bg-transparent w-28 outline-none focus:border-primary"
         />
       </div>
