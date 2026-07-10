@@ -137,6 +137,7 @@ export default function AppHeader() {
   const { activeDealId, setActiveDealId } = useActiveDeal();
   const { data: activeDeal } = useDeal(activeDealId);
   const { dark, toggle } = useDarkMode();
+  const { lang, toggle: toggleLang } = useLanguage();
   const { isAdmin } = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
 
