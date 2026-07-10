@@ -177,7 +177,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
         {/* Features */}
         <div className="space-y-2.5 mb-6">
           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
-            What's included
+            {t("What's included", "Qué se incluye")}
           </p>
           {features.map((f, i) => (
             <div key={i} className="flex items-start gap-3">
