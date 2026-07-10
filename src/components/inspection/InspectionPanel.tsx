@@ -813,7 +813,7 @@ export default function InspectionPanel({ dealId }: Props) {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-primary" />
-            <h4 className="font-display font-extrabold text-lg tracking-tight">Report Narrative</h4>
+            <h4 className="font-display font-extrabold text-lg tracking-tight">{t("Report Narrative", "Narrativa del reporte")}</h4>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -825,7 +825,7 @@ export default function InspectionPanel({ dealId }: Props) {
               {generateNarrative.isPending
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Sparkles className="h-4 w-4 mr-2" />}
-              Draft from photos
+              {t("Draft from photos", "Redactar desde fotos")}
             </Button>
             <Button
               size="sm"
@@ -834,12 +834,12 @@ export default function InspectionPanel({ dealId }: Props) {
               disabled={generateNarrative.isPending}
             >
               <Wand2 className="h-4 w-4 mr-2" />
-              Tweak
+              {t("Tweak", "Ajustar")}
             </Button>
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
-          Drafted in the voice of {reportTypes.length > 1 ? "the combined " + reportTypes.map((t) => REPORT_TYPE_SHORT[t]).join(" + ") + " inspectors" : "a " + REPORT_TYPE_LABELS[primaryType].toLowerCase() + " inspector"}. Use <span className="font-semibold text-foreground">Draft from photos</span> to synthesize the narrative from the tagged photos above, or <span className="font-semibold text-foreground">Tweak</span> to steer it (material, age, prior repairs, etc.).
+          {t("Drafted in the voice of", "Redactado con la voz de")} {reportTypes.length > 1 ? t("the combined ", "los ") + reportTypes.map((tt) => REPORT_TYPE_SHORT[tt]).join(" + ") + t(" inspectors", " inspectores combinados") : t("a ", "un ") + REPORT_TYPE_LABELS[primaryType].toLowerCase() + t(" inspector", " inspector")}. {t("Use", "Use")} <span className="font-semibold text-foreground">{t("Draft from photos", "Redactar desde fotos")}</span> {t("to synthesize the narrative from the tagged photos above, or", "para sintetizar la narrativa desde las fotos etiquetadas, o")} <span className="font-semibold text-foreground">{t("Tweak", "Ajustar")}</span> {t("to steer it (material, age, prior repairs, etc.).", "para guiarla (material, edad, reparaciones previas, etc.).")}
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {SECTION_FIELDS.map(({ key, label }) => (
