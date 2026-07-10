@@ -237,6 +237,7 @@ export default function InspectionPanel({ dealId }: Props) {
         const res = await analyze.mutateAsync({
           photo_id: p.id, storage_path: p.storage_path, report_type: primaryType,
           user_hint: finishHint,
+          language: lang,
         });
         if (cancelTagRef.current) {
           toast.message(`Canceled — tagged ${done} of ${total}`, { id: toastId });
