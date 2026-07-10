@@ -153,6 +153,7 @@ export function useAnalyzePhoto() {
       report_type: InspectionReportType;
       user_hint?: string;
       existing_tags?: string[];
+      language?: "en" | "es";
     }) => {
       // Resize in the browser so the edge function never loads camera-sized images into memory.
       const { data: signed, error: signErr } = await supabase.storage
@@ -170,6 +171,7 @@ export function useAnalyzePhoto() {
           report_type: input.report_type,
           user_hint: input.user_hint,
           existing_tags: input.existing_tags,
+          language: input.language ?? "en",
         },
       });
       if (error) throw new Error(await functionErrorMessage(error, "AI tagging failed"));
