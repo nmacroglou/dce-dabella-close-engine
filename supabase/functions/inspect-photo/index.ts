@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM(body.report_type) },
+          { role: "system", content: SYSTEM(body.report_type, body.language === "es" ? "es" : "en") },
           {
             role: "user",
             content: [
