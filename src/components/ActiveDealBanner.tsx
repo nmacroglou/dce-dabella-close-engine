@@ -61,14 +61,14 @@ export default function ActiveDealBanner() {
             <Briefcase className="h-4 w-4 text-warning" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-foreground">No active deal selected</p>
+            <p className="text-sm font-bold text-foreground">{t("No active deal selected", "Ningún deal activo seleccionado")}</p>
             <p className="text-xs text-muted-foreground">
-              Your edits won't be saved. Open a deal to track this conversation.
+              {t("Your edits won't be saved. Open a deal to track this conversation.", "Tus cambios no se guardarán. Abre un deal para rastrear esta conversación.")}
             </p>
           </div>
         </div>
         <Button size="sm" onClick={() => navigate("/deals")}>
-          Pick a deal
+          {t("Pick a deal", "Elegir un deal")}
         </Button>
       </div>
     );
@@ -125,7 +125,7 @@ export default function ActiveDealBanner() {
             try {
               const n = await scheduleSLAFollowUps(deal.id, user.id, grid.follow_up_sla);
               if (n > 0) {
-                toast.success(`${n} follow-up touchpoints scheduled`);
+                toast.success(`${n} ${t("follow-up touchpoints scheduled", "puntos de seguimiento programados")}`);
                 qc.invalidateQueries({ queryKey: ["follow-ups"] });
                 setComposerOpen(true);
               }
