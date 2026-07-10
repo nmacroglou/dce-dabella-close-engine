@@ -35,6 +35,9 @@ export default function ActiveDealBanner() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const { data: grid } = useCommissionGrid();
+  const { lang, t } = useLanguage();
+  const stageLabels = lang === "es" ? STAGE_LABELS_ES : STAGE_LABELS;
+  const dqLabels = lang === "es" ? DISQUALIFIED_REASON_LABELS_ES : DISQUALIFIED_REASON_LABELS;
 
   const [winOpen, setWinOpen] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
