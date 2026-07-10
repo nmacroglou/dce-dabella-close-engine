@@ -19,6 +19,7 @@ import PhotoTagCard from "./PhotoTagCard";
 import { useDeals } from "@/hooks/useDeals";
 import ShareInspectionPdfDialog from "./ShareInspectionPdfDialog";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 interface Props {
