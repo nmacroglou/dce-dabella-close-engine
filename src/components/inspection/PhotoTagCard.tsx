@@ -31,7 +31,7 @@ const SEV_TONE: Record<"low" | "moderate" | "high", string> = {
 };
 
 function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
-  const t = useT();
+  const { t, lang } = useLanguage();
   const analyze = useAnalyzePhoto();
   const update = useUpdatePhotoTags();
   const del = useDeleteDealPhoto();
