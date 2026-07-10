@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useDeal } from "@/hooks/useDeals";
 import { useDarkMode } from "@/hooks/useDarkMode";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { usePrefetchOnHover } from "@/hooks/usePrefetchRoute";
 import {
