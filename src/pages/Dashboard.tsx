@@ -20,6 +20,8 @@ import { ConversionRibbon } from "@/components/dashboard/ConversionRibbon";
 import { ReportingActions } from "@/components/dashboard/ReportingActions";
 import { bucketByDay, splitCurrentPrior, sumBuckets, wowDelta } from "@/lib/dashboardSeries";
 import InstallAlerts from "@/components/installs/InstallAlerts";
+import { useT } from "@/contexts/LanguageContext";
+
 
 
 // Defer chart-heavy below-the-fold sections to shrink initial bundle.
@@ -41,6 +43,8 @@ const RANGE_KEY = "dabella.hud.rangeDays";
 type RangeDays = 7 | 30 | 90 | "all";
 
 export default function Dashboard() {
+  const t = useT();
+
   const { user } = useAuth();
   const { data: stats, isLoading } = useDashboardStats();
   const { data: followUps = [] } = useFollowUps();
@@ -309,7 +313,7 @@ export default function Dashboard() {
     );
   }
 
-  const greeting = (user?.user_metadata?.full_name || user?.email || "").split(" ")[0] || "rep";
+  const greeting = (user?.user_metadata?.full_name || user?.email || "").split(" ")[0] || t("rep", "representante");
 
   return (
     <div className="min-h-screen surface-premium">
@@ -335,13 +339,13 @@ export default function Dashboard() {
               <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
                 <div className="chip chip-primary backdrop-blur">
                   <Sparkles className="h-3 w-3" />
-                  <span className="uppercase tracking-[0.2em] text-[10px]">DaBella Operator HUD</span>
+                  <span className="uppercase tracking-[0.2em] text-[10px]">{t("DaBella Operator HUD", "HUD del Operador DaBella")}</span>
                 </div>
                 <ReportingActions
-                  rangeLabel={rangeDays === "all" ? "All time" : `Last ${rangeDays} days`}
+                  rangeLabel={rangeDays === "all" ? t("All time", "Todo el tiempo") : t(`Last ${rangeDays} days`, `Últimos ${rangeDays} días`)}
                   buckets={dayBuckets14}
                   summary={{
-                    rangeLabel: rangeDays === "all" ? "All time" : `Last ${rangeDays} days`,
+                    rangeLabel: rangeDays === "all" ? t("All time", "Todo el tiempo") : t(`Last ${rangeDays} days`, `Últimos ${rangeDays} días`),
                     revenue: { current: wow.revenue.current, prior: wow.revenue.prior },
                     closedDeals: wow.closedDeals,
                     closeRate: { current: wow.closeRate.current, prior: wow.closeRate.prior },
@@ -353,29 +357,30 @@ export default function Dashboard() {
               </div>
 
               <h2 className="text-display-xl text-foreground">
-                Hey {greeting} —<br className="hidden sm:block" />
-                <span className="gradient-text">state of the week</span> is in.
+                {t("Hey", "Hola")} {greeting} —<br className="hidden sm:block" />
+                <span className="gradient-text">{t("state of the week", "estado de la semana")}</span> {t("is in.", "está aquí.")}
               </h2>
               <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-xl">
-                Live performance, week-over-week trends, and the next move that closes more deals.
+                {t("Live performance, week-over-week trends, and the next move that closes more deals.", "Rendimiento en vivo, tendencias semana a semana y el próximo movimiento que cierra más tratos.")}
               </p>
               <div className="flex flex-wrap items-center gap-2 mt-5">
                 <Link to="/pipeline" className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl gradient-brand text-primary-foreground font-bold text-sm hover:opacity-95 transition-all pressable shadow-[var(--shadow-glow)]">
-                  Open Pipeline <ArrowUpRight className="h-4 w-4" />
+                  {t("Open Pipeline", "Abrir Embudo")} <ArrowUpRight className="h-4 w-4" />
                 </Link>
                 <Link to="/deals" className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-hairline bg-card/80 backdrop-blur font-bold text-sm hover:border-primary/40 hover:bg-card transition-all pressable">
-                  My Deals
+                  {t("My Deals", "Mis Tratos")}
                 </Link>
               </div>
 
               <div className="mt-6">
                 <WowChipStrip chips={[
-                  { label: `Revenue (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
-                  { label: `Close rate (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta, deltaSuffix: "pp" },
-                  { label: `Deals run (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
-                  { label: `$/Hour (${rangeDays === "all" ? "all time" : `${rangeDays}d`})`, current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
+                  { label: `${t("Revenue", "Ingresos")} (${rangeDays === "all" ? t("all time", "total") : `${rangeDays}d`})`, current: fmt(Math.round(wow.revenue.current)), delta: wow.revenue.delta },
+                  { label: `${t("Close rate", "Tasa de cierre")} (${rangeDays === "all" ? t("all time", "total") : `${rangeDays}d`})`, current: `${Math.round(wow.closeRate.current * 100)}%`, delta: wow.closeRate.delta, deltaSuffix: "pp" },
+                  { label: `${t("Deals run", "Tratos")} (${rangeDays === "all" ? t("all time", "total") : `${rangeDays}d`})`, current: String(wow.dealsRun.current), delta: wow.dealsRun.delta },
+                  { label: `${t("$/Hour", "$/Hora")} (${rangeDays === "all" ? t("all time", "total") : `${rangeDays}d`})`, current: fmt(Math.round(wow.dollarsPerHour.current)), delta: wow.dollarsPerHour.delta },
                 ]} />
               </div>
+
             </div>
 
             {/* Hero side: SLA compliance ring */}
@@ -395,7 +400,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-2 font-semibold">Follow-up compliance</p>
+              <p className="text-[11px] text-muted-foreground mt-2 font-semibold">{t("Follow-up compliance", "Cumplimiento de seguimiento")}</p>
             </div>
           </div>
         </section>
@@ -403,8 +408,8 @@ export default function Dashboard() {
         {/* ===== RANGE PICKER ===== */}
         <section className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 className="text-sm font-bold font-display text-foreground uppercase tracking-wider">Performance window</h3>
-            <p className="text-[11px] text-muted-foreground mt-0.5">KPIs below reflect deals created in the selected range.</p>
+            <h3 className="text-sm font-bold font-display text-foreground uppercase tracking-wider">{t("Performance window", "Ventana de rendimiento")}</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{t("KPIs below reflect deals created in the selected range.", "Los KPIs siguientes reflejan los tratos creados en el rango seleccionado.")}</p>
           </div>
           <div className="inline-flex items-center gap-1 p-1 rounded-xl border border-hairline-strong bg-card/60 backdrop-blur shadow-sm">
             {([7, 30, 90, "all"] as RangeDays[]).map((d) => (
@@ -417,11 +422,12 @@ export default function Dashboard() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {d === "all" ? "All time" : `Last ${d}d`}
+                {d === "all" ? t("All time", "Total") : t(`Last ${d}d`, `${d}d`)}
               </button>
             ))}
           </div>
         </section>
+
 
         {/* ===== HERO KPIs (windowed) ===== */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -489,22 +495,23 @@ export default function Dashboard() {
               <div className="h-7 w-7 rounded-lg bg-primary/15 grid place-items-center">
                 <Gauge className="h-3.5 w-3.5 text-primary" />
               </div>
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Rep Economics</h3>
-              <span className="text-[10px] text-muted-foreground hidden sm:inline">— how every hour and every open deal maps to dollars</span>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">{t("Rep Economics", "Economía del Representante")}</h3>
+              <span className="text-[10px] text-muted-foreground hidden sm:inline">— {t("how every hour and every open deal maps to dollars", "cómo cada hora y cada trato abierto se traduce en dólares")}</span>
             </div>
             <button
               onClick={() => setEditingEcon((v) => !v)}
               className="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
             >
               <Pencil className="h-3 w-3" />
-              {editingEcon ? "Done" : `${weeklyHours}h/wk · ${commissionPct}% comm`}
+              {editingEcon ? t("Done", "Listo") : `${weeklyHours}h/${t("wk", "sem")} · ${commissionPct}% ${t("comm", "com")}`}
             </button>
+
           </div>
 
           {editingEcon && (
             <div className="rounded-xl border border-border bg-muted/30 p-3 mb-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="flex items-center gap-2 text-xs">
-                <span className="font-semibold text-muted-foreground w-32">Hours per week</span>
+                <span className="font-semibold text-muted-foreground w-32">{t("Hours per week", "Horas por semana")}</span>
                 <input
                   type="number" min={1} max={120} value={weeklyHours}
                   onChange={(e) => setWeeklyHours(Math.max(1, parseFloat(e.target.value) || 1))}
@@ -512,13 +519,14 @@ export default function Dashboard() {
                 />
               </label>
               <label className="flex items-center gap-2 text-xs">
-                <span className="font-semibold text-muted-foreground w-32">Commission %</span>
+                <span className="font-semibold text-muted-foreground w-32">{t("Commission %", "% de Comisión")}</span>
                 <input
                   type="number" min={0} max={100} step={0.5} value={commissionPct}
                   onChange={(e) => setCommissionPct(Math.max(0, parseFloat(e.target.value) || 0))}
                   className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </label>
+
             </div>
           )}
 
@@ -580,12 +588,13 @@ export default function Dashboard() {
                   <Zap className="h-4 w-4 text-destructive" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">Hot list — overdue follow-ups</h3>
-                  <p className="text-xs text-muted-foreground">Knock these out first to recover SLA.</p>
+                  <h3 className="text-base font-bold text-foreground">{t("Hot list — overdue follow-ups", "Lista urgente — seguimientos atrasados")}</h3>
+                  <p className="text-xs text-muted-foreground">{t("Knock these out first to recover SLA.", "Elimínalos primero para recuperar el SLA.")}</p>
                 </div>
               </div>
-              <Link to="/pipeline" className="text-xs font-bold text-primary hover:underline">View all →</Link>
+              <Link to="/pipeline" className="text-xs font-bold text-primary hover:underline">{t("View all →", "Ver todos →")}</Link>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {followUpInsights.overdueList.map((f) => {
                 const d = deals.find((dd) => dd.id === f.deal_id);

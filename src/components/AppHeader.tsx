@@ -56,8 +56,25 @@ const OPS_CLUSTER: NavEntry[] = [
   { to: "/manage-up", label: "Manage Up", icon: Trophy, end: false },
 ];
 
+const NAV_ES: Record<string, string> = {
+  Engine: "Motor",
+  Deals: "Tratos",
+  Pipeline: "Embudo",
+  Dashboard: "Panel",
+  Forecast: "Pronóstico",
+  Ledger: "Libro",
+  Energy: "Energía",
+  Installs: "Instalaciones",
+  Incidents: "Incidencias",
+  "Manage Up": "Gestión",
+  Admin: "Admin",
+};
+
+
 function NavItem({ to, label, icon: Icon, end }: NavEntry) {
   const prefetch = usePrefetchOnHover(to);
+  const { lang } = useLanguage();
+  const shown = lang === "es" ? (NAV_ES[label] ?? label) : label;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -65,7 +82,7 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           to={to}
           end={end}
           {...prefetch}
-          aria-label={label}
+          aria-label={shown}
           className={({ isActive }) =>
             `group relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-bold whitespace-nowrap transition-all pressable ${
               isActive
@@ -77,13 +94,13 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {({ isActive }) => (
             <>
               <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
-              <span className="hidden xl:inline">{label}</span>
+              <span className="hidden xl:inline">{shown}</span>
             </>
           )}
         </NavLink>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="text-[11px] font-semibold">
-        {label}
+        {shown}
       </TooltipContent>
     </Tooltip>
   );
@@ -103,7 +120,10 @@ function NavCluster({ items, label }: { items: NavEntry[]; label: string }) {
   );
 }
 
+
 function MobileNavItem({ to, label, icon: Icon, end, onNavigate }: NavEntry & { onNavigate: () => void }) {
+  const { lang } = useLanguage();
+  const shown = lang === "es" ? (NAV_ES[label] ?? label) : label;
   return (
     <NavLink
       to={to}
@@ -118,10 +138,11 @@ function MobileNavItem({ to, label, icon: Icon, end, onNavigate }: NavEntry & { 
         }
     >
       <Icon className="h-4 w-4" />
-      {label}
+      {shown}
     </NavLink>
   );
 }
+
 
 function MobileClusterLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -137,7 +158,7 @@ export default function AppHeader() {
   const { activeDealId, setActiveDealId } = useActiveDeal();
   const { data: activeDeal } = useDeal(activeDealId);
   const { dark, toggle } = useDarkMode();
-  const { lang, toggle: toggleLang } = useLanguage();
+  const { lang, toggle: toggleLang, t } = useLanguage();
   const { isAdmin } = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -185,20 +206,22 @@ export default function AppHeader() {
               ) : (
                 <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/40 border border-hairline/60">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Idle</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("Idle", "Inactivo")}</span>
                 </span>
               )}
+
             </div>
           </Link>
 
           {/* Center: clustered nav */}
           <nav className="hidden xl:flex flex-1 items-center justify-center px-2 overflow-visible">
-            <NavCluster items={SELL_CLUSTER} label="Sell" />
+            <NavCluster items={SELL_CLUSTER} label={t("Sell", "Vender")} />
             <ClusterDivider />
-            <NavCluster items={INSIGHTS_CLUSTER} label="Insights" />
+            <NavCluster items={INSIGHTS_CLUSTER} label={t("Insights", "Análisis")} />
             <ClusterDivider />
-            <NavCluster items={opsCluster} label="Operations" />
+            <NavCluster items={opsCluster} label={t("Operations", "Operaciones")} />
           </nav>
+
 
           {/* Right: Utility cluster */}
           <div className="flex items-center gap-1.5 pl-2 border-l border-hairline/60 shrink-0">
@@ -224,19 +247,20 @@ export default function AppHeader() {
                   </h2>
                 </div>
                 <nav className="flex flex-col gap-0.5">
-                  <MobileClusterLabel>Sell</MobileClusterLabel>
+                  <MobileClusterLabel>{t("Sell", "Vender")}</MobileClusterLabel>
                   {SELL_CLUSTER.map((item) => (
                     <MobileNavItem key={item.to} {...item} onNavigate={() => setMobileOpen(false)} />
                   ))}
-                  <MobileClusterLabel>Insights</MobileClusterLabel>
+                  <MobileClusterLabel>{t("Insights", "Análisis")}</MobileClusterLabel>
                   {INSIGHTS_CLUSTER.map((item) => (
                     <MobileNavItem key={item.to} {...item} onNavigate={() => setMobileOpen(false)} />
                   ))}
-                  <MobileClusterLabel>Operations</MobileClusterLabel>
+                  <MobileClusterLabel>{t("Operations", "Operaciones")}</MobileClusterLabel>
                   {opsCluster.map((item) => (
                     <MobileNavItem key={item.to} {...item} onNavigate={() => setMobileOpen(false)} />
                   ))}
                 </nav>
+
                 <div className="mt-4 pt-3 border-t border-hairline space-y-2">
                   <OwnerScopeFilter />
                   <PublishStatusBadge />
@@ -290,18 +314,19 @@ export default function AppHeader() {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/deals")}>
-                  <Briefcase className="h-4 w-4 mr-2" /> My deals
+                  <Briefcase className="h-4 w-4 mr-2" /> {t("My deals", "Mis tratos")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                  <LayoutDashboard className="h-4 w-4 mr-2" /> Dashboard
+                  <LayoutDashboard className="h-4 w-4 mr-2" /> {t("Dashboard", "Panel")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/manual")}>
-                  <BookOpen className="h-4 w-4 mr-2" /> How to use this app
+                  <BookOpen className="h-4 w-4 mr-2" /> {t("How to use this app", "Cómo usar la app")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                  <LogOut className="h-4 w-4 mr-2" /> Sign out
+                  <LogOut className="h-4 w-4 mr-2" /> {t("Sign out", "Cerrar sesión")}
                 </DropdownMenuItem>
+
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

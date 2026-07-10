@@ -10,6 +10,16 @@ export const REPORT_TYPE_LABELS: Record<InspectionReportType, string> = {
   paint: "Paint Inspection",
 };
 
+export const REPORT_TYPE_LABELS_ES: Record<InspectionReportType, string> = {
+  roof: "Inspección de Techo",
+  windows: "Inspección de Ventanas",
+  bath: "Inspección de Baño",
+  solar: "Inspección Solar",
+  siding: "Inspección de Revestimiento",
+  stucco: "Inspección de Estuco",
+  paint: "Inspección de Pintura",
+};
+
 /** Short trade name without the "Inspection" suffix, used when combining multiple report types. */
 export const REPORT_TYPE_SHORT: Record<InspectionReportType, string> = {
   roof: "Roof",
@@ -21,12 +31,26 @@ export const REPORT_TYPE_SHORT: Record<InspectionReportType, string> = {
   paint: "Paint",
 };
 
+export const REPORT_TYPE_SHORT_ES: Record<InspectionReportType, string> = {
+  roof: "Techo",
+  windows: "Ventanas",
+  bath: "Baño",
+  solar: "Solar",
+  siding: "Revestimiento",
+  stucco: "Estuco",
+  paint: "Pintura",
+};
+
 /** Join one or more report types into a single human label, e.g. "Roof + Siding Inspection". */
-export function combinedReportLabel(types: InspectionReportType[]): string {
+export function combinedReportLabel(types: InspectionReportType[], lang: "en" | "es" = "en"): string {
   const list = (types && types.length ? types : ["roof" as InspectionReportType]);
-  if (list.length === 1) return REPORT_TYPE_LABELS[list[0]];
-  return `${list.map((t) => REPORT_TYPE_SHORT[t]).join(" + ")} Inspection`;
+  const labels = lang === "es" ? REPORT_TYPE_LABELS_ES : REPORT_TYPE_LABELS;
+  const shorts = lang === "es" ? REPORT_TYPE_SHORT_ES : REPORT_TYPE_SHORT;
+  if (list.length === 1) return labels[list[0]];
+  const suffix = lang === "es" ? "Inspección" : "Inspection";
+  return `${list.map((t) => shorts[t]).join(" + ")} ${suffix}`;
 }
+
 
 export interface InspectionSections {
   executive_summary: string;
