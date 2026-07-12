@@ -154,12 +154,7 @@ function drawOptionCard(
     charSpace: 0.35,
   });
 
-  // Option name
-  setDisplayFont(pdf, 13);
-  setColor(pdf, FOREST_INK);
-  pdf.text(`Option ${opt.key} · ${opt.name}`, x + 8, y + 22);
-
-  // Price block (right)
+  // Price block (right) — draw first so we can clip the name to avoid overlap
   const rx = x + w - 8;
 
   setDisplayFont(pdf, 6.5);
@@ -168,7 +163,25 @@ function drawOptionCard(
 
   setDisplayFont(pdf, 20);
   setColor(pdf, FOREST_INK);
-  pdf.text(fmt(opt.monthly), rx, y + 22, { align: "right" });
+  const monthlyStr = fmt(opt.monthly);
+  const monthlyW = pdf.getTextWidth(monthlyStr);
+  pdf.text(monthlyStr, rx, y + 22, { align: "right" });
+
+  // Option name — constrained, auto-shrink then wrap to prevent overlap
+  const nameFull = `Option ${opt.key} · ${opt.name}`;
+  const nameLeft = x + 8;
+  const nameMaxW = Math.max(40, rx - monthlyW - 6 - nameLeft);
+  let nameSize = 13;
+  setDisplayFont(pdf, nameSize);
+  setColor(pdf, FOREST_INK);
+  while (nameSize > 9 && pdf.getTextWidth(nameFull) > nameMaxW) {
+    nameSize -= 0.5;
+    setDisplayFont(pdf, nameSize);
+  }
+  const nameLines = pdf.splitTextToSize(nameFull, nameMaxW).slice(0, 2);
+  nameLines.forEach((ln: string, i: number) => {
+    pdf.text(ln, nameLeft, y + 22 + i * (nameSize * 0.42));
+  });
 
   setBodyFont(pdf, 7);
   setColor(pdf, GRAPHITE);
