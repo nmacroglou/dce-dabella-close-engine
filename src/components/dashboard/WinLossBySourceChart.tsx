@@ -39,20 +39,20 @@ export function WinLossBySourceChart({ deals }: Props) {
             <Filter className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-foreground">Win / Loss by Lead Source</h3>
-            <p className="text-xs text-muted-foreground">Where your closed deals actually come from.</p>
+            <h3 className="text-base font-bold text-foreground">Win / Loss / Disqualified by Lead Source</h3>
+            <p className="text-xs text-muted-foreground">Where your finished deals actually come from.</p>
           </div>
         </div>
         <div className="text-[11px] text-muted-foreground">
           Overall close rate: <span className="font-bold text-foreground">{pct(overallRate)}</span>
           <span className="mx-1.5">·</span>
-          {totalWon} won / {totalLost} lost
+          {totalWon}W · {totalLost}L · {totalDisqualified}D
         </div>
       </div>
 
       {data.length === 0 ? (
         <div className="py-12 text-center text-sm text-muted-foreground">
-          No closed deals yet — tag deals with a lead source to see this chart.
+          No finished deals yet — tag deals with a lead source to see this chart.
         </div>
       ) : (
         <div className="h-[280px] w-full">
@@ -81,6 +81,7 @@ export function WinLossBySourceChart({ deals }: Props) {
                 }}
                 formatter={(value: number, name: string, item: { payload: typeof data[number] }) => {
                   if (name === "Won") return [`${value} (${pct(item.payload.closeRate)})`, "Won"];
+                  if (name === "Disqualified") return [value, "Disqualified"];
                   return [value, name];
                 }}
               />
@@ -88,8 +89,11 @@ export function WinLossBySourceChart({ deals }: Props) {
               <Bar dataKey="won" name="Won" stackId="a" fill="hsl(var(--success))" radius={[0, 0, 0, 0]}>
                 <LabelList dataKey="won" position="insideTop" fill="hsl(var(--success-foreground))" fontSize={10} />
               </Bar>
-              <Bar dataKey="lost" name="Lost" stackId="a" fill="hsl(var(--destructive))" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="lost" name="Lost" stackId="a" fill="hsl(var(--destructive))" radius={[0, 0, 0, 0]}>
                 <LabelList dataKey="lost" position="insideTop" fill="hsl(var(--destructive-foreground))" fontSize={10} />
+              </Bar>
+              <Bar dataKey="disqualified" name="Disqualified" stackId="a" fill="hsl(var(--muted-foreground))" radius={[6, 6, 0, 0]}>
+                <LabelList dataKey="disqualified" position="insideTop" fill="hsl(var(--primary-foreground))" fontSize={10} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -102,7 +106,7 @@ export function WinLossBySourceChart({ deals }: Props) {
             <div key={r.source} className="rounded-lg border border-border bg-muted/30 px-2.5 py-1.5">
               <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground truncate">{r.source}</div>
               <div className="text-sm font-bold text-foreground">{pct(r.closeRate)}</div>
-              <div className="text-[10px] text-muted-foreground">{r.won}W · {r.lost}L</div>
+              <div className="text-[10px] text-muted-foreground">{r.won}W · {r.lost}L · {r.disqualified}D</div>
             </div>
           ))}
         </div>
