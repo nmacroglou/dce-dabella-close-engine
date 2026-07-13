@@ -17,9 +17,10 @@ export function WinLossBySourceChart({ deals }: Props) {
       const inSource = deals.filter((d) => (d.lead_source ?? "unset") === k);
       const won = inSource.filter((d) => d.stage === "won").length;
       const lost = inSource.filter((d) => d.stage === "lost").length;
-      const finished = won + lost;
+      const disqualified = inSource.filter((d) => d.stage === "disqualified").length;
+      const finished = won + lost + disqualified;
       const closeRate = finished > 0 ? won / finished : 0;
-      return { source: label, won, lost, finished, closeRate, total: inSource.length };
+      return { source: label, won, lost, disqualified, finished, closeRate, total: inSource.length };
     }).filter((r) => r.total > 0);
     rows.sort((a, b) => b.finished - a.finished);
     return rows;
@@ -27,7 +28,8 @@ export function WinLossBySourceChart({ deals }: Props) {
 
   const totalWon = data.reduce((s, r) => s + r.won, 0);
   const totalLost = data.reduce((s, r) => s + r.lost, 0);
-  const overallRate = totalWon + totalLost > 0 ? totalWon / (totalWon + totalLost) : 0;
+  const totalDisqualified = data.reduce((s, r) => s + r.disqualified, 0);
+  const overallRate = totalWon + totalLost + totalDisqualified > 0 ? totalWon / (totalWon + totalLost + totalDisqualified) : 0;
 
   return (
     <section className="rounded-2xl border border-hairline bg-card p-5 shadow-[var(--shadow-md)]">
