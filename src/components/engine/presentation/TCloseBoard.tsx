@@ -5,6 +5,7 @@ import { fmt } from "@/lib/format";
 import { getOptionLabel, getOptionMetrics, OPTION_KEYS } from "@/lib/engineHelpers";
 import FormulaBlock from "./FormulaBlock";
 import OptionPill from "./OptionPill";
+import T from "@/components/i18n/T";
 
 interface Props {
   state: EngineState;
