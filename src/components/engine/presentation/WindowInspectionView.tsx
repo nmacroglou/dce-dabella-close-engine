@@ -51,10 +51,10 @@ export default function WindowInspectionView({ state }: Props) {
               >
                 <Icon className={`h-4 w-4 ${s.color} flex-shrink-0`} />
                 <span className="text-sm font-medium text-foreground">
-                  {i + 1}. {entry.label}
+                  {i + 1}. {localizedLabels[i] ?? entry.label}
                 </span>
                 <span className={`ml-auto text-xs font-bold uppercase ${s.color}`}>
-                  {entry.status === "na" ? "N/A" : entry.status}
+                  {entry.status === "na" ? "N/A" : entry.status === "yes" ? <T>yes</T> : <T>no</T>}
                 </span>
               </div>
             );
