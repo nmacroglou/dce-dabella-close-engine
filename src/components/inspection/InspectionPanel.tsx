@@ -208,6 +208,77 @@ export default function InspectionPanel({ dealId }: Props) {
     toast.success(reportTypes.length > 1 ? `Saved across ${reportTypes.length} trades` : "Inspection saved");
   }
 
+  // ─── Language auto-translate ────────────────────────────────────────────
+  // When the user flips the language toggle, translate the narrative sections
+  // (into a draft the rep can review + save) and every included photo caption
+  // in-place. Skips the initial mount so we don't retranslate on page load.
+  const translateBatch = useTranslateBatch();
+  const [translatePending, setTranslatePending] = useState(false);
+  const lastLangRef = useRef(lang);
+  const runTranslate = useCallback(async (target: "en" | "es") => {
+    setTranslatePending(true);
+    const toastId = toast.loading(target === "es" ? "Traduciendo inspección…" : "Translating inspection…");
+    try {
+      // 1) Sections — 7 strings, one round-trip.
+      const sectionKeys = Object.keys(sections) as (keyof InspectionSections)[];
+      const sectionTexts = sectionKeys.map((k) => sections[k] ?? "");
+      const translatedSections = await translateBatch(
+        sectionTexts,
+        target,
+        "Home-improvement inspection report sections. Preserve line breaks, bullets, and numbering.",
+      );
+      const nextSections = { ...sections } as InspectionSections;
+      sectionKeys.forEach((k, i) => { nextSections[k] = translatedSections[i] ?? sections[k]; });
+      setDraft(nextSections);
+
+      // 2) Photo captions — one round-trip for all included photos.
+      const captionTargets = filteredPhotos.filter(
+        (p) => (p as { include_in_report?: boolean }).include_in_report !== false && (p.caption ?? "").trim().length > 0,
+      );
+      if (captionTargets.length > 0) {
+        const captions = captionTargets.map((p) => p.caption ?? "");
+        const translatedCaptions = await translateBatch(
+          captions,
+          target,
+          "Photo captions from a residential inspection. Preserve any FLIR numbers and units.",
+        );
+        for (let i = 0; i < captionTargets.length; i++) {
+          const p = captionTargets[i];
+          const next = translatedCaptions[i] ?? p.caption;
+          if (next && next !== p.caption) {
+            try {
+              await updatePhoto.mutateAsync({
+                photo_id: p.id, deal_id: dealId,
+                patch: { caption: next },
+              });
+            } catch (e) {
+              console.error("caption translate failed", p.id, e);
+            }
+          }
+        }
+      }
+
+      toast.success(
+        target === "es" ? "Inspección traducida al español" : "Inspection translated to English",
+        { id: toastId },
+      );
+    } catch (e) {
+      console.error("translate inspection failed", e);
+      toast.error(target === "es" ? "Traducción falló" : "Translation failed", { id: toastId });
+    } finally {
+      setTranslatePending(false);
+    }
+  }, [sections, filteredPhotos, translateBatch, updatePhoto, dealId]);
+
+  // Auto-run when the language actually changes (skip first render).
+  useEffect(() => {
+    if (lastLangRef.current === lang) return;
+    lastLangRef.current = lang;
+    // Fire and forget — runTranslate closes over the latest sections/photos.
+    void runTranslate(lang);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
     for (const f of Array.from(files)) {
