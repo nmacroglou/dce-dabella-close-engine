@@ -32,11 +32,11 @@ export default function WindowInspectionView({ state }: Props) {
           <div className="flex items-center justify-center gap-3 mb-1">
             <ClipboardList className="h-7 w-7 text-primary-foreground" />
             <h2 className="text-2xl font-display font-extrabold text-primary-foreground tracking-tight">
-              Window Inspection Results
+              <T>Window Inspection Results</T>
             </h2>
           </div>
           <p className="text-primary-foreground/70 text-sm font-medium">
-            Here's what we found during our inspection of your windows
+            <T>Here's what we found during our inspection of your windows</T>
           </p>
         </div>
 
