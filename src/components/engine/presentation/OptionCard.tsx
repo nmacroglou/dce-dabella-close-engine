@@ -4,6 +4,7 @@ import { fmt } from "@/lib/format";
 import { OPTION_THEMES, getFeaturesForOption, type RoofMaterial } from "./constants";
 import type { ComputedValues } from "@/types/engine";
 import { useT } from "@/contexts/LanguageContext";
+import { useTranslatedList } from "@/hooks/useTranslator";
 
 interface OptionCardProps {
   optionKey: "A" | "B" | "C";
@@ -24,6 +25,10 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
   const t = useT();
   const theme = OPTION_THEMES[optionKey];
   const features = getFeaturesForOption(products, roofMaterial, customFeatures, optionKey);
+  const translatedTexts = useTranslatedList(
+    features.map((f) => f.text),
+    "Home-improvement sales presentation: short 'What's included' benefit bullet shown to a homeowner. Keep concise and marketing-quality.",
+  );
   const isHighlighted = optionKey === "A";
   const opt = computed.options[optionKey];
   const showStrike = !!discountPct && !!originalPrice && originalPrice > opt.price;
@@ -182,7 +187,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
           {features.map((f, i) => (
             <div key={i} className="flex items-start gap-3">
               <CheckCircle2 className={`h-5 w-5 flex-shrink-0 mt-0.5 ${theme.accent}`} />
-              <span className="text-sm font-medium text-foreground leading-snug">{f.text}</span>
+              <span className="text-sm font-medium text-foreground leading-snug">{translatedTexts[i] ?? f.text}</span>
             </div>
           ))}
         </div>
