@@ -64,10 +64,10 @@ export default function WindowInspectionView({ state }: Props) {
         {findings.filter((e) => e.status === "no").length > 0 && (
           <div className="px-8 pb-6">
             <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
-              <p className="text-sm font-semibold text-destructive mb-1">Issues Found:</p>
+              <p className="text-sm font-semibold text-destructive mb-1"><T>Issues Found:</T></p>
               <ul className="list-disc list-inside text-sm text-muted-foreground space-y-0.5">
-                {findings.filter((e) => e.status === "no").map((e, i) => (
-                  <li key={i}>{e.label}</li>
+                {findings.filter((e) => e.status === "no").map((e) => (
+                  <li key={e.label}>{localizedLabels[inspectionLabels.indexOf(e.label)] ?? e.label}</li>
                 ))}
               </ul>
             </div>
