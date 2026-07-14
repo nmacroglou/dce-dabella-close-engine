@@ -131,6 +131,7 @@ export default function ScopeOfWork({ products = [] }: Props) {
         <div className="px-6 py-4 space-y-0.5">
           {items.map((item, i) => {
             const done = checked[i];
+            const label = localizedItems[i] ?? item;
             return (
               <button
                 key={i}
@@ -151,7 +152,7 @@ export default function ScopeOfWork({ products = [] }: Props) {
                     done ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
-                  {item}
+                  {label}
                 </span>
               </button>
             );
