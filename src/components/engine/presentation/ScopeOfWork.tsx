@@ -13,6 +13,7 @@ import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 
 import { hasProduct } from "@/lib/engineHelpers";
 import { useT } from "@/contexts/LanguageContext";
+import { useTranslatedList } from "@/hooks/useTranslator";
 
 interface Props {
   products?: string[];
