@@ -190,7 +190,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
       <div className="flex flex-wrap gap-1.5 items-center">
         {tags.map((t) => (
           <span key={t} className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded bg-primary/10 text-primary">
-            {prettyTag(t)}
+            {tagLabel(t)}
             <button onClick={() => removeTag(t)} className="opacity-60 hover:opacity-100 p-0.5" aria-label={`Remove ${t}`}>
               <X className="h-3 w-3" />
             </button>
