@@ -155,7 +155,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         )}
         {severity && (
           <span className={`absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${SEV_TONE[severity]}`}>
-            {SEVERITY_LABEL[severity]}
+            {lang === "es" ? ({ low: "Baja", moderate: "Moderada", high: "Alta" } as const)[severity] : SEVERITY_LABEL[severity]}
           </span>
         )}
       </div>
