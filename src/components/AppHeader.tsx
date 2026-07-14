@@ -233,7 +233,7 @@ export default function AppHeader() {
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button
-                    className="xl:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
+                    className="md:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
                   aria-label="Open navigation"
                 >
                   <Menu className="h-3.5 w-3.5 text-white" />
