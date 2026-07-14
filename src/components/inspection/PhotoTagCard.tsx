@@ -8,6 +8,7 @@ import { prettyTag, SEVERITY_LABEL } from "@/data/inspectionTemplates";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { useTagLabel } from "@/hooks/useTranslator";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
