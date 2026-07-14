@@ -926,9 +926,9 @@ export default function InspectionPanel({ dealId }: Props) {
           {t("Drafted in the voice of", "Redactado con la voz de")} {reportTypes.length > 1 ? t("the combined ", "los ") + reportTypes.map((tt) => REPORT_TYPE_SHORT[tt]).join(" + ") + t(" inspectors", " inspectores combinados") : t("a ", "un ") + REPORT_TYPE_LABELS[primaryType].toLowerCase() + t(" inspector", " inspector")}. {t("Use", "Use")} <span className="font-semibold text-foreground">{t("Draft from photos", "Redactar desde fotos")}</span> {t("to synthesize the narrative from the tagged photos above, or", "para sintetizar la narrativa desde las fotos etiquetadas, o")} <span className="font-semibold text-foreground">{t("Tweak", "Ajustar")}</span> {t("to steer it (material, age, prior repairs, etc.).", "para guiarla (material, edad, reparaciones previas, etc.).")}
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {SECTION_FIELDS.map(({ key, label }) => (
+          {SECTION_FIELDS.map(({ key, label, label_es }) => (
             <div key={key} className="space-y-1.5">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{lang === "es" ? label_es : label}</Label>
               <Textarea
                 rows={key === "executive_summary" || key === "professional_opinion" ? 6 : 4}
                 value={sections[key]}
