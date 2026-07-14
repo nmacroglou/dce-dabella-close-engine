@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp, X, Eraser, Thermometer, Plus, Trash2 } from "lucide-react";
+import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp, X, Eraser, Thermometer, Plus, Trash2, Languages } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,7 @@ import { useDeals } from "@/hooks/useDeals";
 import ShareInspectionPdfDialog from "./ShareInspectionPdfDialog";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslateBatch } from "@/hooks/useTranslator";
 
 
 interface Props {
@@ -34,14 +35,14 @@ const STUCCO_FINISHES = [
 ] as const;
 type StuccoFinish = typeof STUCCO_FINISHES[number];
 
-const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
-  { key: "executive_summary", label: "Executive Summary" },
-  { key: "inspection_scope", label: "Inspection Scope" },
-  { key: "measurements", label: "Measurements" },
-  { key: "professional_opinion", label: "Professional Opinion" },
-  { key: "recommended_scope", label: "Recommended Scope" },
-  { key: "next_steps", label: "Next Steps" },
-  { key: "limitations", label: "Limitations" },
+const SECTION_FIELDS: { key: keyof InspectionSections; label: string; label_es: string }[] = [
+  { key: "executive_summary", label: "Executive Summary", label_es: "Resumen ejecutivo" },
+  { key: "inspection_scope", label: "Inspection Scope", label_es: "Alcance de la inspección" },
+  { key: "measurements", label: "Measurements", label_es: "Mediciones" },
+  { key: "professional_opinion", label: "Professional Opinion", label_es: "Opinión profesional" },
+  { key: "recommended_scope", label: "Recommended Scope", label_es: "Alcance recomendado" },
+  { key: "next_steps", label: "Next Steps", label_es: "Próximos pasos" },
+  { key: "limitations", label: "Limitations", label_es: "Limitaciones" },
 ];
 
 export default function InspectionPanel({ dealId }: Props) {
@@ -206,6 +207,77 @@ export default function InspectionPanel({ dealId }: Props) {
     setDraft(null);
     toast.success(reportTypes.length > 1 ? `Saved across ${reportTypes.length} trades` : "Inspection saved");
   }
+
+  // ─── Language auto-translate ────────────────────────────────────────────
+  // When the user flips the language toggle, translate the narrative sections
+  // (into a draft the rep can review + save) and every included photo caption
+  // in-place. Skips the initial mount so we don't retranslate on page load.
+  const translateBatch = useTranslateBatch();
+  const [translatePending, setTranslatePending] = useState(false);
+  const lastLangRef = useRef(lang);
+  const runTranslate = useCallback(async (target: "en" | "es") => {
+    setTranslatePending(true);
+    const toastId = toast.loading(target === "es" ? "Traduciendo inspección…" : "Translating inspection…");
+    try {
+      // 1) Sections — 7 strings, one round-trip.
+      const sectionKeys = Object.keys(sections) as (keyof InspectionSections)[];
+      const sectionTexts = sectionKeys.map((k) => sections[k] ?? "");
+      const translatedSections = await translateBatch(
+        sectionTexts,
+        target,
+        "Home-improvement inspection report sections. Preserve line breaks, bullets, and numbering.",
+      );
+      const nextSections = { ...sections } as InspectionSections;
+      sectionKeys.forEach((k, i) => { nextSections[k] = translatedSections[i] ?? sections[k]; });
+      setDraft(nextSections);
+
+      // 2) Photo captions — one round-trip for all included photos.
+      const captionTargets = filteredPhotos.filter(
+        (p) => (p as { include_in_report?: boolean }).include_in_report !== false && (p.caption ?? "").trim().length > 0,
+      );
+      if (captionTargets.length > 0) {
+        const captions = captionTargets.map((p) => p.caption ?? "");
+        const translatedCaptions = await translateBatch(
+          captions,
+          target,
+          "Photo captions from a residential inspection. Preserve any FLIR numbers and units.",
+        );
+        for (let i = 0; i < captionTargets.length; i++) {
+          const p = captionTargets[i];
+          const next = translatedCaptions[i] ?? p.caption;
+          if (next && next !== p.caption) {
+            try {
+              await updatePhoto.mutateAsync({
+                photo_id: p.id, deal_id: dealId,
+                patch: { caption: next },
+              });
+            } catch (e) {
+              console.error("caption translate failed", p.id, e);
+            }
+          }
+        }
+      }
+
+      toast.success(
+        target === "es" ? "Inspección traducida al español" : "Inspection translated to English",
+        { id: toastId },
+      );
+    } catch (e) {
+      console.error("translate inspection failed", e);
+      toast.error(target === "es" ? "Traducción falló" : "Translation failed", { id: toastId });
+    } finally {
+      setTranslatePending(false);
+    }
+  }, [sections, filteredPhotos, translateBatch, updatePhoto, dealId]);
+
+  // Auto-run when the language actually changes (skip first render).
+  useEffect(() => {
+    if (lastLangRef.current === lang) return;
+    lastLangRef.current = lang;
+    // Fire and forget — runTranslate closes over the latest sections/photos.
+    void runTranslate(lang);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -774,6 +846,18 @@ export default function InspectionPanel({ dealId }: Props) {
           </Button>
         )}
 
+        <Button
+          variant="outline"
+          onClick={() => runTranslate(lang === "es" ? "en" : "es")}
+          disabled={translatePending || filteredPhotos.length + Object.keys(sections).length === 0}
+          title={t("Translate all narrative + photo captions to the other language.", "Traducir toda la narrativa y los pies de foto al otro idioma.")}
+        >
+          {translatePending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Languages className="h-4 w-4 mr-2" />}
+          {lang === "es"
+            ? t("Translate → English", "Traducir → Inglés")
+            : t("Translate → Español", "Traducir → Español")}
+        </Button>
+
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
           {save.isPending ? t("Saving…", "Guardando…") : draft ? t("Save changes", "Guardar cambios") : t("Saved", "Guardado")}
         </Button>
@@ -842,9 +926,9 @@ export default function InspectionPanel({ dealId }: Props) {
           {t("Drafted in the voice of", "Redactado con la voz de")} {reportTypes.length > 1 ? t("the combined ", "los ") + reportTypes.map((tt) => REPORT_TYPE_SHORT[tt]).join(" + ") + t(" inspectors", " inspectores combinados") : t("a ", "un ") + REPORT_TYPE_LABELS[primaryType].toLowerCase() + t(" inspector", " inspector")}. {t("Use", "Use")} <span className="font-semibold text-foreground">{t("Draft from photos", "Redactar desde fotos")}</span> {t("to synthesize the narrative from the tagged photos above, or", "para sintetizar la narrativa desde las fotos etiquetadas, o")} <span className="font-semibold text-foreground">{t("Tweak", "Ajustar")}</span> {t("to steer it (material, age, prior repairs, etc.).", "para guiarla (material, edad, reparaciones previas, etc.).")}
         </p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {SECTION_FIELDS.map(({ key, label }) => (
+          {SECTION_FIELDS.map(({ key, label, label_es }) => (
             <div key={key} className="space-y-1.5">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{lang === "es" ? label_es : label}</Label>
               <Textarea
                 rows={key === "executive_summary" || key === "professional_opinion" ? 6 : 4}
                 value={sections[key]}

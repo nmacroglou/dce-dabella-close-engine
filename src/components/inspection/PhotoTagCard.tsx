@@ -4,10 +4,11 @@ import type { DealPhoto } from "@/hooks/useDealPhotos";
 import { useDeleteDealPhoto } from "@/hooks/useDealPhotos";
 import { useAnalyzePhoto, useUpdatePhotoTags } from "@/hooks/useInspection";
 import type { InspectionReportType } from "@/data/inspectionTemplates";
-import { prettyTag, SEVERITY_LABEL } from "@/data/inspectionTemplates";
+import { SEVERITY_LABEL } from "@/data/inspectionTemplates";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { useTagLabel } from "@/hooks/useTranslator";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -37,6 +38,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
   const del = useDeleteDealPhoto();
 
   const tags = photo.inspection_tags ?? [];
+  const tagLabel = useTagLabel(tags);
   const severity = photo.severity ?? null;
   const include = photo.include_in_report ?? true;
   const dbCaption = photo.caption ?? "";
@@ -153,7 +155,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
         )}
         {severity && (
           <span className={`absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${SEV_TONE[severity]}`}>
-            {SEVERITY_LABEL[severity]}
+            {lang === "es" ? ({ low: "Baja", moderate: "Moderada", high: "Alta" } as const)[severity] : SEVERITY_LABEL[severity]}
           </span>
         )}
       </div>
@@ -188,7 +190,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
       <div className="flex flex-wrap gap-1.5 items-center">
         {tags.map((t) => (
           <span key={t} className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded bg-primary/10 text-primary">
-            {prettyTag(t)}
+            {tagLabel(t)}
             <button onClick={() => removeTag(t)} className="opacity-60 hover:opacity-100 p-0.5" aria-label={`Remove ${t}`}>
               <X className="h-3 w-3" />
             </button>
