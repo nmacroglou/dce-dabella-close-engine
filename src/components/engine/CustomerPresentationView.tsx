@@ -46,8 +46,8 @@ const STAGE_LABELS_ES: Record<Stage, string> = {
 };
 
 export default function CustomerPresentationView({ state, computed, onClose, update }: Props) {
-  const t = useT();
-  const STAGE_LABELS = t("_en", "_es") === "_es" ? STAGE_LABELS_ES : STAGE_LABELS_EN;
+  const { t, lang } = useLanguage();
+  const STAGE_LABELS = lang === "es" ? STAGE_LABELS_ES : STAGE_LABELS_EN;
   const isWindows = hasProduct(state.products, "Windows");
   const productLabel = getProductLabel(state.products);
   const STAGES: readonly Stage[] = isWindows ? WINDOW_STAGES : BASE_STAGES;
