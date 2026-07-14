@@ -187,7 +187,7 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
           {features.map((f, i) => (
             <div key={i} className="flex items-start gap-3">
               <CheckCircle2 className={`h-5 w-5 flex-shrink-0 mt-0.5 ${theme.accent}`} />
-              <span className="text-sm font-medium text-foreground leading-snug">{f.text}</span>
+              <span className="text-sm font-medium text-foreground leading-snug">{translatedTexts[i] ?? f.text}</span>
             </div>
           ))}
         </div>
