@@ -225,7 +225,7 @@ export default function AppHeader() {
 
           {/* Right: Utility cluster */}
           <div className="flex items-center gap-1.5 pl-2 border-l border-hairline/60 shrink-0">
-            <div className="hidden xl:flex items-center gap-1.5">
+            <div className="hidden 2xl:flex items-center gap-1.5">
               <OwnerScopeFilter />
               <PublishStatusBadge />
             </div>
