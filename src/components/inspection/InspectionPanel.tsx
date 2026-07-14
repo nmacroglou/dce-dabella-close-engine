@@ -35,14 +35,14 @@ const STUCCO_FINISHES = [
 ] as const;
 type StuccoFinish = typeof STUCCO_FINISHES[number];
 
-const SECTION_FIELDS: { key: keyof InspectionSections; label: string }[] = [
-  { key: "executive_summary", label: "Executive Summary" },
-  { key: "inspection_scope", label: "Inspection Scope" },
-  { key: "measurements", label: "Measurements" },
-  { key: "professional_opinion", label: "Professional Opinion" },
-  { key: "recommended_scope", label: "Recommended Scope" },
-  { key: "next_steps", label: "Next Steps" },
-  { key: "limitations", label: "Limitations" },
+const SECTION_FIELDS: { key: keyof InspectionSections; label: string; label_es: string }[] = [
+  { key: "executive_summary", label: "Executive Summary", label_es: "Resumen ejecutivo" },
+  { key: "inspection_scope", label: "Inspection Scope", label_es: "Alcance de la inspección" },
+  { key: "measurements", label: "Measurements", label_es: "Mediciones" },
+  { key: "professional_opinion", label: "Professional Opinion", label_es: "Opinión profesional" },
+  { key: "recommended_scope", label: "Recommended Scope", label_es: "Alcance recomendado" },
+  { key: "next_steps", label: "Next Steps", label_es: "Próximos pasos" },
+  { key: "limitations", label: "Limitations", label_es: "Limitaciones" },
 ];
 
 export default function InspectionPanel({ dealId }: Props) {
