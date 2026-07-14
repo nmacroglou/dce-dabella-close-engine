@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import type { EngineState, ComputedValues } from "@/types/engine";
-import { X, ChevronLeft, Share2 } from "lucide-react";
+import { X, ChevronLeft, Share2, Languages, Loader2 } from "lucide-react";
 import { buildOptionsArray, getOptionMetrics, getProductLabel, hasProduct, applyDiscountToComputed } from "@/lib/engineHelpers";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import { useUpdateDeal } from "@/hooks/useDeals";
@@ -15,7 +15,9 @@ import PromoTrigger, { tierPct, type TierState } from "./presentation/PromoTrigg
 import SharePdfDialog from "./presentation/SharePdfDialog";
 import PresentationHeader from "./presentation/PresentationHeader";
 import PresentationFooterNav from "./presentation/PresentationFooterNav";
-import { useT } from "@/contexts/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslateBatch } from "@/hooks/useTranslator";
+import { toast } from "sonner";
 
 interface Props {
   state: EngineState;
