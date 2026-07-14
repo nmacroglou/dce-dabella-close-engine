@@ -1,5 +1,8 @@
+import { useMemo } from "react";
 import { Check, X, Minus, ClipboardList, Grid3X3 } from "lucide-react";
 import type { EngineState } from "@/types/engine";
+import T from "@/components/i18n/T";
+import { useTranslatedList } from "@/hooks/useTranslator";
 
 interface Props {
   state: EngineState;
@@ -14,6 +17,12 @@ const STATUS_ICON = {
 export default function WindowInspectionView({ state }: Props) {
   const { windowInspection, windowItems } = state;
   const findings = windowInspection.filter((e) => e.status !== "na");
+  // Translate the window checklist labels once via the cached list translator.
+  const inspectionLabels = useMemo(() => windowInspection.map((e) => e.label), [windowInspection]);
+  const localizedLabels = useTranslatedList(
+    inspectionLabels,
+    "Window inspection checklist item shown to a homeowner.",
+  );
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -23,11 +32,11 @@ export default function WindowInspectionView({ state }: Props) {
           <div className="flex items-center justify-center gap-3 mb-1">
             <ClipboardList className="h-7 w-7 text-primary-foreground" />
             <h2 className="text-2xl font-display font-extrabold text-primary-foreground tracking-tight">
-              Window Inspection Results
+              <T>Window Inspection Results</T>
             </h2>
           </div>
           <p className="text-primary-foreground/70 text-sm font-medium">
-            Here's what we found during our inspection of your windows
+            <T>Here's what we found during our inspection of your windows</T>
           </p>
         </div>
 
@@ -42,10 +51,10 @@ export default function WindowInspectionView({ state }: Props) {
               >
                 <Icon className={`h-4 w-4 ${s.color} flex-shrink-0`} />
                 <span className="text-sm font-medium text-foreground">
-                  {i + 1}. {entry.label}
+                  {i + 1}. {localizedLabels[i] ?? entry.label}
                 </span>
                 <span className={`ml-auto text-xs font-bold uppercase ${s.color}`}>
-                  {entry.status === "na" ? "N/A" : entry.status}
+                  {entry.status === "na" ? "N/A" : entry.status === "yes" ? <T>yes</T> : <T>no</T>}
                 </span>
               </div>
             );
@@ -55,10 +64,10 @@ export default function WindowInspectionView({ state }: Props) {
         {findings.filter((e) => e.status === "no").length > 0 && (
           <div className="px-8 pb-6">
             <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
-              <p className="text-sm font-semibold text-destructive mb-1">Issues Found:</p>
+              <p className="text-sm font-semibold text-destructive mb-1"><T>Issues Found:</T></p>
               <ul className="list-disc list-inside text-sm text-muted-foreground space-y-0.5">
-                {findings.filter((e) => e.status === "no").map((e, i) => (
-                  <li key={i}>{e.label}</li>
+                {findings.filter((e) => e.status === "no").map((e) => (
+                  <li key={e.label}>{localizedLabels[inspectionLabels.indexOf(e.label)] ?? e.label}</li>
                 ))}
               </ul>
             </div>
@@ -73,7 +82,7 @@ export default function WindowInspectionView({ state }: Props) {
             <div className="flex items-center justify-center gap-3 mb-1">
               <Grid3X3 className="h-6 w-6 text-accent-foreground" />
               <h2 className="text-xl font-display font-extrabold text-accent-foreground tracking-tight">
-                Window Schedule — {windowItems.length} Window{windowItems.length !== 1 ? "s" : ""}
+                <T>Window Schedule</T> — {windowItems.length} {windowItems.length !== 1 ? <T>Windows</T> : <T>Window</T>}
               </h2>
             </div>
           </div>
@@ -83,12 +92,12 @@ export default function WindowInspectionView({ state }: Props) {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
                   <th className="p-3 text-left">#</th>
-                  <th className="p-3 text-left">Level</th>
-                  <th className="p-3 text-left">Room</th>
-                  <th className="p-3 text-left">Style</th>
-                  <th className="p-3 text-left">Size</th>
-                  <th className="p-3 text-left">Grids</th>
-                  <th className="p-3 text-left">Notes</th>
+                  <th className="p-3 text-left"><T>Level</T></th>
+                  <th className="p-3 text-left"><T>Room</T></th>
+                  <th className="p-3 text-left"><T>Style</T></th>
+                  <th className="p-3 text-left"><T>Size</T></th>
+                  <th className="p-3 text-left"><T>Grids</T></th>
+                  <th className="p-3 text-left"><T>Notes</T></th>
                 </tr>
               </thead>
               <tbody>
