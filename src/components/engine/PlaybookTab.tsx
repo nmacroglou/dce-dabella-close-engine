@@ -123,6 +123,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
           <BattleCardPanel />
           <CvvBattleCardsPanel />
           <CoolLifeBattleCardPanel />
+          <CoolLifeResourcesPanel />
 
           {/* Tips */}
           <div className="card-elevated-lg p-6">
