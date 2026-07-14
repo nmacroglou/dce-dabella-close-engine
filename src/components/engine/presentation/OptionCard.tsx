@@ -4,6 +4,7 @@ import { fmt } from "@/lib/format";
 import { OPTION_THEMES, getFeaturesForOption, type RoofMaterial } from "./constants";
 import type { ComputedValues } from "@/types/engine";
 import { useT } from "@/contexts/LanguageContext";
+import { useTranslatedList } from "@/hooks/useTranslator";
 
 interface OptionCardProps {
   optionKey: "A" | "B" | "C";
