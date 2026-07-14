@@ -214,7 +214,7 @@ export default function AppHeader() {
           </Link>
 
           {/* Center: clustered nav */}
-          <nav className="hidden xl:flex flex-1 items-center justify-center px-2 overflow-visible">
+          <nav className="hidden md:flex flex-1 items-center justify-center px-2 overflow-visible">
             <NavCluster items={SELL_CLUSTER} label={t("Sell", "Vender")} />
             <ClusterDivider />
             <NavCluster items={INSIGHTS_CLUSTER} label={t("Insights", "Análisis")} />
