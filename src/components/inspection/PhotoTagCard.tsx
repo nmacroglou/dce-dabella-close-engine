@@ -4,7 +4,7 @@ import type { DealPhoto } from "@/hooks/useDealPhotos";
 import { useDeleteDealPhoto } from "@/hooks/useDealPhotos";
 import { useAnalyzePhoto, useUpdatePhotoTags } from "@/hooks/useInspection";
 import type { InspectionReportType } from "@/data/inspectionTemplates";
-import { prettyTag, SEVERITY_LABEL } from "@/data/inspectionTemplates";
+import { SEVERITY_LABEL } from "@/data/inspectionTemplates";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
