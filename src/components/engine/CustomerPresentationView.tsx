@@ -87,6 +87,99 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
     setStage("impact");
   };
 
+  // ─── Language auto-translate ────────────────────────────────────────────
+  // When the language toggles, translate the rep-authored, customer-facing
+  // strings (option names + custom feature bullet lists) in-place so the
+  // homeowner sees the presentation in their language. Homeowner names,
+  // computed numbers, and hard-coded UI labels are untouched.
+  const translateBatch = useTranslateBatch();
+  const [translatePending, setTranslatePending] = useState(false);
+  const lastLangRef = useRef(lang);
+  const runTranslate = async (target: "en" | "es") => {
+    if (!update) return;
+    // Collect the strings to translate in a stable order so we can zip results back.
+    type Slot =
+      | { kind: "name"; opt: "A" | "B" | "C" }
+      | { kind: "feat"; opt: "shared" | "A" | "B" | "C"; index: number };
+    const slots: Slot[] = [];
+    const texts: string[] = [];
+
+    (["A", "B", "C"] as const).forEach((opt) => {
+      const name = opt === "A" ? state.optionAName : opt === "B" ? state.optionBName : state.optionCName;
+      if (name && name.trim().length > 0) {
+        slots.push({ kind: "name", opt });
+        texts.push(name);
+      }
+    });
+    const featureBuckets: { key: "shared" | "A" | "B" | "C"; list: string[] | undefined }[] = [
+      { key: "shared", list: state.customFeatures },
+      { key: "A", list: state.customFeaturesA },
+      { key: "B", list: state.customFeaturesB },
+      { key: "C", list: state.customFeaturesC },
+    ];
+    featureBuckets.forEach(({ key, list }) => {
+      (list ?? []).forEach((f, i) => {
+        if (f && f.trim().length > 0) {
+          slots.push({ kind: "feat", opt: key, index: i });
+          texts.push(f);
+        }
+      });
+    });
+
+    if (texts.length === 0) return;
+    setTranslatePending(true);
+    const toastId = toast.loading(target === "es" ? "Traduciendo presentación…" : "Translating presentation…");
+    try {
+      const translated = await translateBatch(
+        texts,
+        target,
+        "Home-improvement sales presentation: package/option names and short benefit bullets shown to a homeowner. Keep concise, natural, and marketing-quality.",
+      );
+
+      // Apply option name updates.
+      const newNames: Record<"A" | "B" | "C", string | null> = { A: null, B: null, C: null };
+      const newFeatures: Record<"shared" | "A" | "B" | "C", string[] | null> = {
+        shared: null, A: null, B: null, C: null,
+      };
+      // Clone existing arrays so partial updates preserve order.
+      featureBuckets.forEach(({ key, list }) => {
+        if (list) newFeatures[key] = [...list];
+      });
+
+      slots.forEach((slot, i) => {
+        const val = translated[i];
+        if (typeof val !== "string" || val.length === 0) return;
+        if (slot.kind === "name") newNames[slot.opt] = val;
+        else if (newFeatures[slot.opt]) newFeatures[slot.opt]![slot.index] = val;
+      });
+
+      if (newNames.A !== null) update("optionAName", newNames.A as never);
+      if (newNames.B !== null) update("optionBName", newNames.B as never);
+      if (newNames.C !== null) update("optionCName", newNames.C as never);
+      if (newFeatures.shared) update("customFeatures", newFeatures.shared as never);
+      if (newFeatures.A) update("customFeaturesA", newFeatures.A as never);
+      if (newFeatures.B) update("customFeaturesB", newFeatures.B as never);
+      if (newFeatures.C) update("customFeaturesC", newFeatures.C as never);
+
+      toast.success(
+        target === "es" ? "Presentación traducida al español" : "Presentation translated to English",
+        { id: toastId },
+      );
+    } catch (e) {
+      console.error("translate presentation failed", e);
+      toast.error(target === "es" ? "Traducción falló" : "Translation failed", { id: toastId });
+    } finally {
+      setTranslatePending(false);
+    }
+  };
+
+  useEffect(() => {
+    if (lastLangRef.current === lang) return;
+    lastLangRef.current = lang;
+    void runTranslate(lang);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   // Persist selection + discounted price ("sold for") to the active deal so the
   // Commission Sheet auto-mirrors it as roof worth (original selected option)
   // and roof sold-for (post-discount).
