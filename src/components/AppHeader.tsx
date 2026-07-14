@@ -94,7 +94,7 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {({ isActive }) => (
             <>
               <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
-              <span className="hidden lg:inline">{shown}</span>
+              <span className="hidden xl:inline">{shown}</span>
             </>
           )}
         </NavLink>
