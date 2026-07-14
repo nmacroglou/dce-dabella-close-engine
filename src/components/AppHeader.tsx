@@ -84,7 +84,7 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {...prefetch}
           aria-label={shown}
           className={({ isActive }) =>
-            `group relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-bold whitespace-nowrap transition-all pressable ${
+            `group relative flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all pressable ${
               isActive
                 ? "bg-primary/15 text-primary border border-primary/20"
                 : "text-slate-300 hover:text-foreground hover:bg-muted/45"
@@ -93,8 +93,8 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
         >
           {({ isActive }) => (
             <>
-              <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
-              <span className="hidden xl:inline">{shown}</span>
+              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
+              <span className="hidden lg:inline">{shown}</span>
             </>
           )}
         </NavLink>
