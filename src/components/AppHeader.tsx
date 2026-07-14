@@ -84,7 +84,7 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {...prefetch}
           aria-label={shown}
           className={({ isActive }) =>
-            `group relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px] font-bold whitespace-nowrap transition-all pressable ${
+            `group relative flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all pressable ${
               isActive
                 ? "bg-primary/15 text-primary border border-primary/20"
                 : "text-slate-300 hover:text-foreground hover:bg-muted/45"
@@ -93,7 +93,7 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
         >
           {({ isActive }) => (
             <>
-              <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
               <span className="hidden xl:inline">{shown}</span>
             </>
           )}
@@ -214,7 +214,7 @@ export default function AppHeader() {
           </Link>
 
           {/* Center: clustered nav */}
-          <nav className="hidden xl:flex flex-1 items-center justify-center px-2 overflow-visible">
+          <nav className="hidden md:flex flex-1 items-center justify-center px-2 overflow-visible">
             <NavCluster items={SELL_CLUSTER} label={t("Sell", "Vender")} />
             <ClusterDivider />
             <NavCluster items={INSIGHTS_CLUSTER} label={t("Insights", "Análisis")} />
@@ -233,7 +233,7 @@ export default function AppHeader() {
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <button
-                    className="xl:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
+                    className="md:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
                   aria-label="Open navigation"
                 >
                   <Menu className="h-3.5 w-3.5 text-white" />
