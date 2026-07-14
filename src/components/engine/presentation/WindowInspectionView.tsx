@@ -17,13 +17,12 @@ const STATUS_ICON = {
 export default function WindowInspectionView({ state }: Props) {
   const { windowInspection, windowItems } = state;
   const findings = windowInspection.filter((e) => e.status !== "na");
-  // Translate the window checklist labels through the cached translator.
-  const inspectionLabels = windowInspection.map((e) => e.label);
-  // Pre-fetch each label individually so shared strings hit the shared cache.
-  // (useTranslated on an empty string is a no-op.)
-  const labelCache: Record<string, string> = {};
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  inspectionLabels.forEach((l) => { labelCache[l] = useTranslated(l, "Window inspection checklist item shown to a homeowner."); });
+  // Translate the window checklist labels once via the cached list translator.
+  const inspectionLabels = useMemo(() => windowInspection.map((e) => e.label), [windowInspection]);
+  const localizedLabels = useTranslatedList(
+    inspectionLabels,
+    "Window inspection checklist item shown to a homeowner.",
+  );
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
