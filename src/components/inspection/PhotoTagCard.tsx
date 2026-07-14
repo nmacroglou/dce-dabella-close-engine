@@ -38,6 +38,7 @@ function PhotoTagCardImpl({ photo, reportType, stuccoFinish }: Props) {
   const del = useDeleteDealPhoto();
 
   const tags = photo.inspection_tags ?? [];
+  const tagLabel = useTagLabel(tags);
   const severity = photo.severity ?? null;
   const include = photo.include_in_report ?? true;
   const dbCaption = photo.caption ?? "";
