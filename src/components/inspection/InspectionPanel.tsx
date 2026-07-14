@@ -215,47 +215,90 @@ export default function InspectionPanel({ dealId }: Props) {
   const translateBatch = useTranslateBatch();
   const [translatePending, setTranslatePending] = useState(false);
   const lastLangRef = useRef(lang);
+  // Snapshot of the original English so flipping ES → EN restores the exact
+  // source instead of a lossy AI round-trip.
+  const englishSectionsRef = useRef<InspectionSections | null>(null);
+  const englishCaptionsRef = useRef<Map<string, string>>(new Map());
   const runTranslate = useCallback(async (target: "en" | "es") => {
     setTranslatePending(true);
     const toastId = toast.loading(target === "es" ? "Traduciendo inspección…" : "Translating inspection…");
     try {
-      // 1) Sections — 7 strings, one round-trip.
       const sectionKeys = Object.keys(sections) as (keyof InspectionSections)[];
-      const sectionTexts = sectionKeys.map((k) => sections[k] ?? "");
-      const translatedSections = await translateBatch(
-        sectionTexts,
-        target,
-        "Home-improvement inspection report sections. Preserve line breaks, bullets, and numbering.",
-      );
-      const nextSections = { ...sections } as InspectionSections;
-      sectionKeys.forEach((k, i) => { nextSections[k] = translatedSections[i] ?? sections[k]; });
-      setDraft(nextSections);
 
-      // 2) Photo captions — one round-trip for all included photos.
+      // Going TO English: prefer restoring the snapshot verbatim.
+      if (target === "en" && englishSectionsRef.current) {
+        setDraft({ ...englishSectionsRef.current });
+      } else {
+        // Cache English source before we overwrite with Spanish.
+        if (target === "es" && !englishSectionsRef.current) {
+          englishSectionsRef.current = { ...sections } as InspectionSections;
+        }
+        const sectionTexts = sectionKeys.map((k) => sections[k] ?? "");
+        const translatedSections = await translateBatch(
+          sectionTexts,
+          target,
+          "Home-improvement inspection report sections. Preserve line breaks, bullets, and numbering.",
+        );
+        const nextSections = { ...sections } as InspectionSections;
+        sectionKeys.forEach((k, i) => { nextSections[k] = translatedSections[i] ?? sections[k]; });
+        setDraft(nextSections);
+      }
+
+      // Photo captions.
       const captionTargets = filteredPhotos.filter(
         (p) => (p as { include_in_report?: boolean }).include_in_report !== false && (p.caption ?? "").trim().length > 0,
       );
       if (captionTargets.length > 0) {
-        const captions = captionTargets.map((p) => p.caption ?? "");
-        const translatedCaptions = await translateBatch(
-          captions,
-          target,
-          "Photo captions from a residential inspection. Preserve any FLIR numbers and units.",
-        );
-        for (let i = 0; i < captionTargets.length; i++) {
-          const p = captionTargets[i];
-          const next = translatedCaptions[i] ?? p.caption;
-          if (next && next !== p.caption) {
-            try {
-              await updatePhoto.mutateAsync({
-                photo_id: p.id, deal_id: dealId,
-                patch: { caption: next },
-              });
-            } catch (e) {
-              console.error("caption translate failed", p.id, e);
+        // Snapshot English captions before overwriting.
+        if (target === "es") {
+          for (const p of captionTargets) {
+            if (!englishCaptionsRef.current.has(p.id)) {
+              englishCaptionsRef.current.set(p.id, p.caption ?? "");
             }
           }
         }
+
+        // Split into restore-from-snapshot vs. translate-via-AI.
+        const restoreList: { id: string; storage_path: string; deal_id: string; caption: string; original: string }[] = [];
+        const aiList: typeof captionTargets = [];
+        for (const p of captionTargets) {
+          const snap = target === "en" ? englishCaptionsRef.current.get(p.id) : undefined;
+          if (snap) restoreList.push({ id: p.id, storage_path: p.storage_path, deal_id: p.deal_id, caption: p.caption ?? "", original: snap });
+          else aiList.push(p);
+        }
+
+        // Restore snapshots first — no AI call.
+        for (const r of restoreList) {
+          if (r.original && r.original !== r.caption) {
+            try {
+              await updatePhoto.mutateAsync({ photo_id: r.id, deal_id: dealId, patch: { caption: r.original } });
+            } catch (e) { console.error("caption restore failed", r.id, e); }
+          }
+        }
+
+        if (aiList.length > 0) {
+          const captions = aiList.map((p) => p.caption ?? "");
+          const translatedCaptions = await translateBatch(
+            captions,
+            target,
+            "Photo captions from a residential inspection. Preserve any FLIR numbers and units.",
+          );
+          for (let i = 0; i < aiList.length; i++) {
+            const p = aiList[i];
+            const next = translatedCaptions[i] ?? p.caption;
+            if (next && next !== p.caption) {
+              try {
+                await updatePhoto.mutateAsync({ photo_id: p.id, deal_id: dealId, patch: { caption: next } });
+              } catch (e) { console.error("caption translate failed", p.id, e); }
+            }
+          }
+        }
+      }
+
+      // Clear snapshots once fully back on English so a future ES trip re-snapshots fresh edits.
+      if (target === "en") {
+        englishSectionsRef.current = null;
+        englishCaptionsRef.current.clear();
       }
 
       toast.success(
@@ -274,10 +317,10 @@ export default function InspectionPanel({ dealId }: Props) {
   useEffect(() => {
     if (lastLangRef.current === lang) return;
     lastLangRef.current = lang;
-    // Fire and forget — runTranslate closes over the latest sections/photos.
     void runTranslate(lang);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
+
 
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
