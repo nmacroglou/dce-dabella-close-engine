@@ -46,6 +46,12 @@ export default function ScopeOfWork({ products = [] }: Props) {
   // Fallback only if nothing matched
   if (items.length === 0) pushUnique(SCOPE_ITEMS);
 
+  // Translate the scope checklist (per-language cache) so the homeowner sees
+  // it in the active language without touching the source data.
+  const localizedItems = useTranslatedList(
+    items,
+    "Home-improvement project scope-of-work checklist items shown to a homeowner. Keep concise, professional, and product-accurate.",
+  );
 
   const [checked, setChecked] = useState<boolean[]>(new Array(items.length).fill(false));
   const [animating, setAnimating] = useState(false);
