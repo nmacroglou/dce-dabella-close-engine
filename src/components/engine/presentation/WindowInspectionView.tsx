@@ -1,7 +1,8 @@
+import { useMemo } from "react";
 import { Check, X, Minus, ClipboardList, Grid3X3 } from "lucide-react";
 import type { EngineState } from "@/types/engine";
 import T from "@/components/i18n/T";
-import { useTranslated } from "@/hooks/useTranslator";
+import { useTranslatedList } from "@/hooks/useTranslator";
 
 interface Props {
   state: EngineState;
