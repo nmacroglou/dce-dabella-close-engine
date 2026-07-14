@@ -13,6 +13,7 @@ import BattleCardPanel from "./playbook/BattleCardPanel";
 import PillarsBattleCardPanel from "./playbook/PillarsBattleCardPanel";
 import CvvBattleCardsPanel from "./playbook/CvvBattleCardsPanel";
 import CoolLifeBattleCardPanel from "./playbook/CoolLifeBattleCardPanel";
+import CoolLifeResourcesPanel from "./playbook/CoolLifeResourcesPanel";
 
 export default function PlaybookTab({ state, update }: EngineTabProps) {
   const t = useT();
