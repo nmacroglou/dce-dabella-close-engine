@@ -25,6 +25,10 @@ export default function OptionCard({ optionKey, name, computed, selected, onClic
   const t = useT();
   const theme = OPTION_THEMES[optionKey];
   const features = getFeaturesForOption(products, roofMaterial, customFeatures, optionKey);
+  const translatedTexts = useTranslatedList(
+    features.map((f) => f.text),
+    "Home-improvement sales presentation: short 'What's included' benefit bullet shown to a homeowner. Keep concise and marketing-quality.",
+  );
   const isHighlighted = optionKey === "A";
   const opt = computed.options[optionKey];
   const showStrike = !!discountPct && !!originalPrice && originalPrice > opt.price;
