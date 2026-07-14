@@ -1,4 +1,4 @@
-import { FileText, ExternalLink, Download, BookOpen, CreditCard } from "lucide-react";
+import { FileText, ExternalLink, Download, BookOpen } from "lucide-react";
 
 const RESOURCES = [
   {
@@ -27,7 +27,6 @@ const RESOURCES = [
   },
 ];
 
-const PAY_LINK = "https://lifepaintcompany.securepayments.cardpointe.com/pay?";
 const RESOURCES_PAGE = "https://lifetimepluscoatings.com/resources/";
 
 export default function CoolLifeResourcesPanel() {
@@ -87,21 +86,6 @@ export default function CoolLifeResourcesPanel() {
           </div>
         ))}
 
-        <a
-          href={PAY_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 p-3 hover:border-primary/60 hover:bg-primary/10 transition-all"
-        >
-          <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary/15 text-primary flex items-center justify-center">
-            <CreditCard className="h-4 w-4" />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">Pay Now</p>
-            <p className="text-[11px] text-muted-foreground">CardPointe secure payment · Visa · MC · Amex · Discover</p>
-          </div>
-          <ExternalLink className="h-3.5 w-3.5 text-primary" />
-        </a>
       </div>
     </div>
   );
