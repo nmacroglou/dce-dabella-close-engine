@@ -82,7 +82,7 @@ export default function WindowInspectionView({ state }: Props) {
             <div className="flex items-center justify-center gap-3 mb-1">
               <Grid3X3 className="h-6 w-6 text-accent-foreground" />
               <h2 className="text-xl font-display font-extrabold text-accent-foreground tracking-tight">
-                Window Schedule — {windowItems.length} Window{windowItems.length !== 1 ? "s" : ""}
+                <T>Window Schedule</T> — {windowItems.length} {windowItems.length !== 1 ? <T>Windows</T> : <T>Window</T>}
               </h2>
             </div>
           </div>
@@ -92,12 +92,12 @@ export default function WindowInspectionView({ state }: Props) {
               <thead>
                 <tr className="bg-muted/50 text-muted-foreground text-[11px] font-bold uppercase tracking-wider">
                   <th className="p-3 text-left">#</th>
-                  <th className="p-3 text-left">Level</th>
-                  <th className="p-3 text-left">Room</th>
-                  <th className="p-3 text-left">Style</th>
-                  <th className="p-3 text-left">Size</th>
-                  <th className="p-3 text-left">Grids</th>
-                  <th className="p-3 text-left">Notes</th>
+                  <th className="p-3 text-left"><T>Level</T></th>
+                  <th className="p-3 text-left"><T>Room</T></th>
+                  <th className="p-3 text-left"><T>Style</T></th>
+                  <th className="p-3 text-left"><T>Size</T></th>
+                  <th className="p-3 text-left"><T>Grids</T></th>
+                  <th className="p-3 text-left"><T>Notes</T></th>
                 </tr>
               </thead>
               <tbody>
