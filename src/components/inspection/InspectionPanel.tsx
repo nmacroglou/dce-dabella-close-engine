@@ -35,6 +35,26 @@ const STUCCO_FINISHES = [
 ] as const;
 type StuccoFinish = typeof STUCCO_FINISHES[number];
 
+const SPANISH_WORDS = new Set([
+  "al", "del", "con", "para", "por", "que", "una", "unos", "unas", "los", "las",
+  "se", "su", "sus", "observa", "observan", "muestra", "presenta", "visible",
+  "daño", "daños", "grieta", "grietas", "desgaste", "humedad", "filtración",
+  "sellador", "teja", "tejas", "ventana", "ventanas", "revestimiento", "acabado",
+  "pared", "área", "foto", "moldura", "óxido", "decoloración", "mancha", "manchas",
+  "gránulos", "pérdida", "exterior", "superficie", "requiere", "reemplazo", "sistema",
+  "agua", "alrededor", "desprendimiento", "pintura", "estuco", "baño", "junta",
+  "cubierta", "techo", "canal", "alero", "estructura", "existente", "material",
+]);
+
+function looksSpanish(text: string) {
+  const clean = text.trim().toLowerCase();
+  if (!clean) return false;
+  if (/[áéíóúüñ¿¡]/i.test(clean)) return true;
+  const words = clean.match(/[a-záéíóúüñ]+/gi) ?? [];
+  const hits = words.filter((word) => SPANISH_WORDS.has(word)).length;
+  return hits >= 2 || /\b(se observa|se ve|muestra|presenta|pérdida de|daño visible|área del)\b/i.test(clean);
+}
+
 const SECTION_FIELDS: { key: keyof InspectionSections; label: string; label_es: string }[] = [
   { key: "executive_summary", label: "Executive Summary", label_es: "Resumen ejecutivo" },
   { key: "inspection_scope", label: "Inspection Scope", label_es: "Alcance de la inspección" },
@@ -258,12 +278,14 @@ export default function InspectionPanel({ dealId }: Props) {
           }
         }
 
-        // Split into restore-from-snapshot vs. translate-via-AI.
+        // Split into restore-from-snapshot vs. translate-via-AI. Do not trust
+        // a snapshot that already looks Spanish; older sessions could have
+        // accidentally captured the Spanish caption as the "English" source.
         const restoreList: { id: string; caption: string; original: string }[] = [];
         const aiList: typeof captionTargets = [];
         for (const p of captionTargets) {
           const snap = target === "en" ? englishCaptionsRef.current.get(p.id) : undefined;
-          if (snap) restoreList.push({ id: p.id, caption: p.caption ?? "", original: snap });
+          if (snap && !looksSpanish(snap)) restoreList.push({ id: p.id, caption: p.caption ?? "", original: snap });
           else aiList.push(p);
         }
 
@@ -279,6 +301,7 @@ export default function InspectionPanel({ dealId }: Props) {
         // Translate the rest in small chunks so a single flaky response can't
         // silently fall back to the source for every caption on the deal.
         const CHUNK = 4;
+        let englishCaptionFailures = 0;
         for (let start = 0; start < aiList.length; start += CHUNK) {
           const chunk = aiList.slice(start, start + CHUNK);
           const captions = chunk.map((p) => p.caption ?? "");
@@ -287,7 +310,9 @@ export default function InspectionPanel({ dealId }: Props) {
             translated = await translateBatch(
               captions,
               target,
-              "Photo captions from a residential inspection. Preserve any FLIR numbers and units.",
+              target === "en"
+                ? "Photo captions from a residential inspection. The source text may be Spanish; translate every caption completely into natural professional English. Preserve FLIR numbers and units. Return English only."
+                : "Photo captions from a residential inspection. Translate every caption completely into natural professional Latin-American Spanish. Preserve FLIR numbers and units.",
             );
           } catch (e) {
             console.error("caption translate chunk failed", start, e);
@@ -295,12 +320,32 @@ export default function InspectionPanel({ dealId }: Props) {
           }
           for (let i = 0; i < chunk.length; i++) {
             const p = chunk[i];
-            const next = translated[i];
+            let next = translated[i]?.trim();
+            if (target === "en" && next && looksSpanish(next)) {
+              try {
+                const retry = await translateBatch(
+                  [p.caption ?? ""],
+                  "en",
+                  "The source is Spanish. Translate this residential inspection photo caption into natural professional English only. Do not return Spanish. Preserve numbers and units.",
+                );
+                next = retry[0]?.trim() || next;
+              } catch (e) {
+                console.error("caption translate retry failed", p.id, e);
+              }
+            }
+            if (target === "en" && next && looksSpanish(next)) {
+              englishCaptionFailures++;
+              continue;
+            }
             if (!next || next === (p.caption ?? "")) continue;
             try {
               await updatePhoto.mutateAsync({ photo_id: p.id, deal_id: dealId, patch: { caption: next } });
             } catch (e) { console.error("caption translate failed", p.id, e); }
           }
+        }
+
+        if (englishCaptionFailures > 0) {
+          toast.error(`${englishCaptionFailures} caption${englishCaptionFailures === 1 ? "" : "s"} still looked Spanish after translation. Try Translate → English again.`);
         }
       }
 

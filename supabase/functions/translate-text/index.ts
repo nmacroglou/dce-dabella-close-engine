@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
 Translate every input string into ${targetLabel}.
 Keep meaning, tone, line breaks, bullet symbols (•), numbering, and units (°F, ft, sq ft, %) intact.
 Never add commentary. Never omit content. If a string is already in the target language, return it unchanged.
+${target === "en" ? "IMPORTANT: Many inputs may be Spanish. Translate Spanish sentences fully into English and do not leave Spanish wording in the output except proper names." : "IMPORTANT: Translate English sentences fully into Spanish and do not leave English wording in the output except proper names, brands, and units."}
 Preserve trade jargon accurately (roofing, windows, stucco, paint, bath, solar).`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
