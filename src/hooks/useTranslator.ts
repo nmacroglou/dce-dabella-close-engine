@@ -12,7 +12,10 @@ export function useTranslateBatch() {
     });
     if (error) throw error;
     const out = (data as { texts?: string[] })?.texts;
-    return Array.isArray(out) && out.length === texts.length ? out : texts;
+    if (!Array.isArray(out) || out.length !== texts.length) {
+      throw new Error("Translation response did not match the requested captions");
+    }
+    return out;
   }, []);
 }
 
