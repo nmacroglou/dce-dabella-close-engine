@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp, X, Eraser, Thermometer, Plus, Trash2, Languages } from "lucide-react";
+import { Camera, Loader2, Sparkles, FileText, Wand2, Share2, Check, TrendingUp, X, Eraser, Thermometer, Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -943,17 +943,6 @@ export default function InspectionPanel({ dealId }: Props) {
           </Button>
         )}
 
-        <Button
-          variant="outline"
-          onClick={() => runTranslate(lang === "es" ? "en" : "es")}
-          disabled={translatePending || filteredPhotos.length + Object.keys(sections).length === 0}
-          title={t("Translate all narrative + photo captions to the other language.", "Traducir toda la narrativa y los pies de foto al otro idioma.")}
-        >
-          {translatePending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Languages className="h-4 w-4 mr-2" />}
-          {lang === "es"
-            ? t("Translate → English", "Traducir → Inglés")
-            : t("Translate → Español", "Traducir → Español")}
-        </Button>
 
         <Button onClick={handleSave} disabled={save.isPending || !draft} variant="secondary">
           {save.isPending ? t("Saving…", "Guardando…") : draft ? t("Save changes", "Guardar cambios") : t("Saved", "Guardado")}
