@@ -244,10 +244,10 @@ export default function InspectionPanel({ dealId }: Props) {
         setDraft(nextSections);
       }
 
-      // Photo captions.
-      const captionTargets = filteredPhotos.filter(
-        (p) => (p as { include_in_report?: boolean }).include_in_report !== false && (p.caption ?? "").trim().length > 0,
-      );
+      // Photo captions — translate every photo with a caption, regardless of
+      // include_in_report (the toggle only affects PDF export; the UI still
+      // shows the caption and it needs to match the active language).
+      const captionTargets = filteredPhotos.filter((p) => (p.caption ?? "").trim().length > 0);
       if (captionTargets.length > 0) {
         // Snapshot English captions before overwriting.
         if (target === "es") {
@@ -259,11 +259,11 @@ export default function InspectionPanel({ dealId }: Props) {
         }
 
         // Split into restore-from-snapshot vs. translate-via-AI.
-        const restoreList: { id: string; storage_path: string; deal_id: string; caption: string; original: string }[] = [];
+        const restoreList: { id: string; caption: string; original: string }[] = [];
         const aiList: typeof captionTargets = [];
         for (const p of captionTargets) {
           const snap = target === "en" ? englishCaptionsRef.current.get(p.id) : undefined;
-          if (snap) restoreList.push({ id: p.id, storage_path: p.storage_path, deal_id: p.deal_id, caption: p.caption ?? "", original: snap });
+          if (snap) restoreList.push({ id: p.id, caption: p.caption ?? "", original: snap });
           else aiList.push(p);
         }
 
@@ -276,21 +276,30 @@ export default function InspectionPanel({ dealId }: Props) {
           }
         }
 
-        if (aiList.length > 0) {
-          const captions = aiList.map((p) => p.caption ?? "");
-          const translatedCaptions = await translateBatch(
-            captions,
-            target,
-            "Photo captions from a residential inspection. Preserve any FLIR numbers and units.",
-          );
-          for (let i = 0; i < aiList.length; i++) {
-            const p = aiList[i];
-            const next = translatedCaptions[i] ?? p.caption;
-            if (next && next !== p.caption) {
-              try {
-                await updatePhoto.mutateAsync({ photo_id: p.id, deal_id: dealId, patch: { caption: next } });
-              } catch (e) { console.error("caption translate failed", p.id, e); }
-            }
+        // Translate the rest in small chunks so a single flaky response can't
+        // silently fall back to the source for every caption on the deal.
+        const CHUNK = 4;
+        for (let start = 0; start < aiList.length; start += CHUNK) {
+          const chunk = aiList.slice(start, start + CHUNK);
+          const captions = chunk.map((p) => p.caption ?? "");
+          let translated: string[] = [];
+          try {
+            translated = await translateBatch(
+              captions,
+              target,
+              "Photo captions from a residential inspection. Preserve any FLIR numbers and units.",
+            );
+          } catch (e) {
+            console.error("caption translate chunk failed", start, e);
+            continue;
+          }
+          for (let i = 0; i < chunk.length; i++) {
+            const p = chunk[i];
+            const next = translated[i];
+            if (!next || next === (p.caption ?? "")) continue;
+            try {
+              await updatePhoto.mutateAsync({ photo_id: p.id, deal_id: dealId, patch: { caption: next } });
+            } catch (e) { console.error("caption translate failed", p.id, e); }
           }
         }
       }
