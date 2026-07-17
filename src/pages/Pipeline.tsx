@@ -35,7 +35,10 @@ import { LayoutList, Map as MapIcon } from "lucide-react";
 
 // Stages we allow drag-and-drop into. Won/lost are excluded because they
 // require additional info (closed_amount / lost_reason) collected elsewhere.
-const DRAGGABLE_TARGETS: DealStage[] = ["inspecting", "presented", "follow_up"];
+const DRAGGABLE_TARGETS: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost", "disqualified"];
+
+type RangeDays = 7 | 30 | 90 | "all";
+const RANGE_OPTIONS: RangeDays[] = [7, 30, 90, "all"];
 
 const dealValue = (d: { closed_amount: number | null; price_c: number | null; price_b: number | null; price_a: number | null }) =>
   d.closed_amount ?? d.price_c ?? d.price_b ?? d.price_a ?? null;
@@ -64,6 +67,20 @@ export default function Pipeline() {
   const [dropTarget, setDropTarget] = useState<DealStage | null>(null);
   const [actionDrawerOpen, setActionDrawerOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [rangeDays, setRangeDays] = useState<RangeDays>(30);
+
+  const filteredDeals = useMemo(() => {
+    if (rangeDays === "all") return deals;
+    const cutoff = Date.now() - rangeDays * 864e5;
+    return deals.filter((d) => {
+      const ts = new Date(
+        d.stage === "won" || d.stage === "lost" || d.stage === "disqualified"
+          ? d.closed_at ?? d.stage_changed_at ?? d.updated_at
+          : d.stage_changed_at ?? d.updated_at ?? d.created_at
+      ).getTime();
+      return ts >= cutoff;
+    });
+  }, [deals, rangeDays]);
 
   const stats = useMemo(() => {
     const open = followUps.filter((f) => !f.completed_at);
@@ -87,7 +104,7 @@ export default function Pipeline() {
 
   const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost", "disqualified"];
   const grouped = stages.map((s) => {
-    const ds = deals.filter((d) => d.stage === s);
+    const ds = filteredDeals.filter((d) => d.stage === s);
     const value = ds.reduce((acc, d) => acc + (dealValue(d) ?? 0), 0);
     return { stage: s, deals: ds, value };
   });
@@ -103,15 +120,19 @@ export default function Pipeline() {
     setDragging(null);
     if (!dragged) return;
     if (dragged.from === target) return;
-    if (!DRAGGABLE_TARGETS.includes(target)) {
-      toast.info(t(`Move to ${STAGE_LABELS[target]} from the deal page`, `Mueve a ${STAGE_LABELS[target]} desde la página del trato`), {
-        description: t("Closing a deal needs a sold amount or lost reason.", "Cerrar un trato requiere un monto vendido o motivo de pérdida."),
-      });
-      return;
-    }
     updateStage.mutate(
       { id: dragged.id, stage: target },
-      { onSuccess: () => toast.success(t(`Moved to ${STAGE_LABELS[target]}`, `Movido a ${STAGE_LABELS[target]}`)) },
+      {
+        onSuccess: () => {
+          if (target === "won") {
+            toast.success(t(`Moved to Won — add closed amount on the deal page`, `Movido a Ganado — agrega el monto en la página del trato`));
+          } else if (target === "lost" || target === "disqualified") {
+            toast.success(t(`Moved to ${STAGE_LABELS[target]} — add a reason on the deal page`, `Movido a ${STAGE_LABELS[target]} — agrega un motivo en la página del trato`));
+          } else {
+            toast.success(t(`Moved to ${STAGE_LABELS[target]}`, `Movido a ${STAGE_LABELS[target]}`));
+          }
+        },
+      },
     );
   }
 
@@ -172,10 +193,25 @@ export default function Pipeline() {
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
               {t(
-                "Drag between Inspecting, Presented, and Follow-up. Tap a stat to see the action queue.",
-                "Arrastra entre Inspección, Presentado y Seguimiento. Toca una métrica para ver la cola de acciones.",
+                "Drag cards between any stage. Tap a stat to see the action queue.",
+                "Arrastra tarjetas entre cualquier etapa. Toca una métrica para ver la cola de acciones.",
               )}
             </p>
+            <div className="inline-flex items-center gap-0.5 p-0.5 mt-2 rounded-lg border border-hairline bg-background/40">
+              {RANGE_OPTIONS.map((d) => (
+                <button
+                  key={String(d)}
+                  onClick={() => setRangeDays(d)}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors ${
+                    rangeDays === d
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {d === "all" ? t("All", "Todo") : `${d}d`}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <StatChip
