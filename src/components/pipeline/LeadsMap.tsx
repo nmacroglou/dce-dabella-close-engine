@@ -72,9 +72,9 @@ function pinIcon(google: typeof globalThis.google, hex: string) {
     path: "M12 2C7.58 2 4 5.58 4 10c0 5.25 7 12 8 12s8-6.75 8-12c0-4.42-3.58-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z",
     fillColor: hex,
     fillOpacity: 1,
-    strokeColor: "#0b1220",
-    strokeWeight: 1.5,
-    scale: 1.6,
+    strokeColor: "#ffffff",
+    strokeWeight: 2,
+    scale: 2.2,
     anchor: new google.maps.Point(12, 22),
   } as google.maps.Symbol;
 }
