@@ -104,7 +104,7 @@ export default function Pipeline() {
 
   const stages: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost", "disqualified"];
   const grouped = stages.map((s) => {
-    const ds = deals.filter((d) => d.stage === s);
+    const ds = filteredDeals.filter((d) => d.stage === s);
     const value = ds.reduce((acc, d) => acc + (dealValue(d) ?? 0), 0);
     return { stage: s, deals: ds, value };
   });
