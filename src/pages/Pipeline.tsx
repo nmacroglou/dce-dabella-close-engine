@@ -35,7 +35,10 @@ import { LayoutList, Map as MapIcon } from "lucide-react";
 
 // Stages we allow drag-and-drop into. Won/lost are excluded because they
 // require additional info (closed_amount / lost_reason) collected elsewhere.
-const DRAGGABLE_TARGETS: DealStage[] = ["inspecting", "presented", "follow_up"];
+const DRAGGABLE_TARGETS: DealStage[] = ["inspecting", "presented", "follow_up", "won", "lost", "disqualified"];
+
+type RangeDays = 7 | 30 | 90 | "all";
+const RANGE_OPTIONS: RangeDays[] = [7, 30, 90, "all"];
 
 const dealValue = (d: { closed_amount: number | null; price_c: number | null; price_b: number | null; price_a: number | null }) =>
   d.closed_amount ?? d.price_c ?? d.price_b ?? d.price_a ?? null;
