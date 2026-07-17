@@ -111,6 +111,10 @@ export interface Deal {
   install_notes: string | null;
   created_at: string;
   updated_at: string;
+  lat: number | null;
+  lng: number | null;
+  geocoded_at: string | null;
+  geocoded_address: string | null;
 }
 
 export interface DealObjection {
