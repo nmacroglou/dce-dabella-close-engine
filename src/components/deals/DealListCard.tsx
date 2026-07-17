@@ -1,7 +1,7 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   Trash2, Briefcase, MapPin, Calendar, ArrowRight, Calculator, ChevronDown,
-  ShieldAlert, User, Pencil, Camera,
+  ShieldAlert, User, Pencil, Camera, StickyNote, Check, Loader2,
 } from "lucide-react";
 import { STAGE_LABELS, STAGE_COLORS, type Deal } from "@/types/deal";
 import { fmt } from "@/lib/format";
@@ -12,6 +12,88 @@ import PreliminaryEstimateCard from "@/components/deals/PreliminaryEstimateCard"
 import ClosedAtEditor from "@/components/deals/ClosedAtEditor";
 import { computeEstimate, type PreliminaryEstimateInput } from "@/data/roofingPricing";
 import type { Profile } from "@/hooks/useProfiles";
+import { useUpdateDealQuiet } from "@/hooks/useDeals";
+
+function DealNotesEditor({ dealId, initial, compact }: { dealId: string; initial: string; compact?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(initial);
+  const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const { mutate } = useUpdateDealQuiet();
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSaved = useRef(initial);
+
+  useEffect(() => {
+    // Sync when the underlying deal notes change externally (and no unsaved edits)
+    if (value === lastSaved.current && initial !== value) {
+      setValue(initial);
+      lastSaved.current = initial;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initial]);
+
+  const scheduleSave = (next: string) => {
+    setValue(next);
+    setStatus("saving");
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      mutate(
+        { id: dealId, updates: { notes: next } as Partial<Deal> },
+        {
+          onSuccess: () => {
+            lastSaved.current = next;
+            setStatus("saved");
+            setTimeout(() => setStatus("idle"), 1200);
+          },
+          onError: () => setStatus("idle"),
+        },
+      );
+    }, 600);
+  };
+
+  const trimmed = (value ?? "").trim();
+  const summary = trimmed
+    ? trimmed.length > (compact ? 60 : 110)
+      ? trimmed.slice(0, compact ? 60 : 110).trimEnd() + "…"
+      : trimmed
+    : null;
+
+  return (
+    <div className={compact ? "mb-2" : "mb-3"}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`w-full flex items-start justify-between gap-2 rounded-lg border border-hairline bg-muted/30 px-3 py-2 text-left hover:border-primary/40 transition-colors pressable ${compact ? "text-[11px]" : "text-xs"}`}
+      >
+        <span className="flex items-start gap-1.5 min-w-0 flex-1">
+          <StickyNote className={`${compact ? "h-3 w-3" : "h-3.5 w-3.5"} text-primary flex-shrink-0 mt-0.5`} />
+          <span className="min-w-0 flex-1">
+            <span className="font-semibold text-foreground">Notes</span>
+            {summary ? (
+              <span className="block font-normal text-muted-foreground leading-snug mt-0.5 whitespace-pre-wrap">{summary}</span>
+            ) : (
+              <span className="block font-normal text-muted-foreground/70 italic mt-0.5">Tap to add notes…</span>
+            )}
+          </span>
+        </span>
+        <span className="flex items-center gap-1 flex-shrink-0">
+          {status === "saving" && <Loader2 className="h-3 w-3 text-muted-foreground animate-spin" />}
+          {status === "saved" && <Check className="h-3 w-3 text-success" />}
+          <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+        </span>
+      </button>
+      {open && (
+        <textarea
+          value={value ?? ""}
+          onChange={(e) => scheduleSave(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          placeholder="Homeowner reactions, objections, next steps…"
+          rows={compact ? 3 : 4}
+          className="mt-2 w-full rounded-lg border border-input bg-card px-3 py-2 text-xs outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary resize-y"
+        />
+      )}
+    </div>
+  );
+}
 
 interface Props {
   deal: Deal;
@@ -130,6 +212,9 @@ function DealListCardImpl({
           <DealTagsEditor deal={deal} size="sm" />
         </div>
 
+        <DealNotesEditor dealId={deal.id} initial={deal.notes ?? ""} compact />
+
+
         <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-hairline">
           <Button size="sm" className="flex-1 pressable h-7 text-[11px]" onClick={() => onOpen(deal.id)}>
             Open <ArrowRight className="h-2.5 w-2.5 ml-1" />
@@ -227,6 +312,9 @@ function DealListCardImpl({
       <div className="mb-3">
         <DealTagsEditor deal={deal} />
       </div>
+
+      <DealNotesEditor dealId={deal.id} initial={deal.notes ?? ""} />
+
 
       <button
         onClick={() => setIsExpanded((v) => !v)}
