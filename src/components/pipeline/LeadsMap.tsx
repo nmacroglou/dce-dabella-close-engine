@@ -298,12 +298,21 @@ export default function LeadsMap({ onAction }: Props) {
     }
   }, [ready, filtered, category, isAdmin, profileMap, nextByDeal, onAction]);
 
-  async function runGeocode() {
+  async function runGeocode(force = false) {
     setGeocoding(true);
     try {
-      const { data, error } = await supabase.functions.invoke("geocode-deals", { body: {} });
+      const { data, error } = await supabase.functions.invoke("geocode-deals", {
+        body: { force },
+      });
       if (error) throw error;
-      toast.success(`Geocoded ${data?.updated ?? 0} deal${data?.updated === 1 ? "" : "s"}`);
+      const updated = data?.updated ?? 0;
+      const cleared = data?.cleared ?? 0;
+      const failed = data?.failed ?? 0;
+      toast.success(
+        `Geocoded ${updated} deal${updated === 1 ? "" : "s"}` +
+          (cleared ? ` · cleared ${cleared} bad pin${cleared === 1 ? "" : "s"}` : "") +
+          (failed && !cleared ? ` · ${failed} couldn't be resolved` : ""),
+      );
       await refetch();
     } catch (e: any) {
       toast.error(e?.message || "Geocode failed");
@@ -415,9 +424,12 @@ export default function LeadsMap({ onAction }: Props) {
                 </button>
               ))}
             </div>
-            <Button size="sm" variant="outline" onClick={runGeocode} disabled={geocoding}>
+            <Button size="sm" variant="outline" onClick={() => runGeocode(false)} disabled={geocoding}>
               {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
               <span className="ml-1.5">{missing > 0 ? `Geocode ${missing}` : "Re-geocode"}</span>
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => runGeocode(true)} disabled={geocoding} title="Re-run geocoding for every deal, including ones already placed">
+              <span className="text-[11px]">Fix all locations</span>
             </Button>
           </div>
         </div>
