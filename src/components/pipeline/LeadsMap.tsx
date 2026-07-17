@@ -173,7 +173,18 @@ export default function LeadsMap() {
 
     if (geocoded.length > 0) {
       mapRef.current.fitBounds(bounds, 80);
+      const listener = google.maps.event.addListenerOnce(mapRef.current, "idle", () => {
+        const z = mapRef.current?.getZoom() ?? 11;
+        if (z > 16) mapRef.current?.setZoom(16);
+        if (z < 4) mapRef.current?.setZoom(11);
+      });
       if (geocoded.length === 1) mapRef.current.setZoom(15);
+      // eslint-disable-next-line no-console
+      console.log(`[LeadsMap] rendered ${markersRef.current.length} markers for ${geocoded.length} deals`);
+      void listener;
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(`[LeadsMap] no geocoded deals to render (total deals: ${deals.length})`);
     }
   }, [ready, geocoded, category, isAdmin, profileMap]);
 
