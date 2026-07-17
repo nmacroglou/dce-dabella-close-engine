@@ -164,9 +164,18 @@ export default function LeadsMap({ onAction }: Props) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const cutoff = rangeDays === "all" ? 0 : Date.now() - rangeDays * 864e5;
     return geocoded.filter((d) => {
       if (!activeStages.has(d.stage)) return false;
       if (isAdmin && repFilter !== "all" && d.rep_id !== repFilter) return false;
+      if (rangeDays !== "all") {
+        // Use closed_at for won/lost, else stage change or created_at.
+        const ts =
+          (d.stage === "won" || d.stage === "lost") && d.closed_at
+            ? new Date(d.closed_at).getTime()
+            : new Date(d.stage_changed_at || d.created_at).getTime();
+        if (ts < cutoff) return false;
+      }
       if (!q) return true;
       return (
         (d.homeowner1 || "").toLowerCase().includes(q) ||
@@ -174,7 +183,7 @@ export default function LeadsMap({ onAction }: Props) {
         (d.products || []).some((p) => p.toLowerCase().includes(q))
       );
     });
-  }, [geocoded, activeStages, isAdmin, repFilter, query]);
+  }, [geocoded, activeStages, isAdmin, repFilter, query, rangeDays]);
 
   // KPIs (computed from filtered/geocoded set)
   const kpis = useMemo(() => {
