@@ -298,12 +298,21 @@ export default function LeadsMap({ onAction }: Props) {
     }
   }, [ready, filtered, category, isAdmin, profileMap, nextByDeal, onAction]);
 
-  async function runGeocode() {
+  async function runGeocode(force = false) {
     setGeocoding(true);
     try {
-      const { data, error } = await supabase.functions.invoke("geocode-deals", { body: {} });
+      const { data, error } = await supabase.functions.invoke("geocode-deals", {
+        body: { force },
+      });
       if (error) throw error;
-      toast.success(`Geocoded ${data?.updated ?? 0} deal${data?.updated === 1 ? "" : "s"}`);
+      const updated = data?.updated ?? 0;
+      const cleared = data?.cleared ?? 0;
+      const failed = data?.failed ?? 0;
+      toast.success(
+        `Geocoded ${updated} deal${updated === 1 ? "" : "s"}` +
+          (cleared ? ` · cleared ${cleared} bad pin${cleared === 1 ? "" : "s"}` : "") +
+          (failed && !cleared ? ` · ${failed} couldn't be resolved` : ""),
+      );
       await refetch();
     } catch (e: any) {
       toast.error(e?.message || "Geocode failed");
