@@ -132,6 +132,7 @@ export default function LeadsMap({ onAction }: Props) {
   const [geocoding, setGeocoding] = useState(false);
   const [query, setQuery] = useState("");
   const [repFilter, setRepFilter] = useState<string>("all");
+  const [rangeDays, setRangeDays] = useState<RangeDays>(30);
   const [activeStages, setActiveStages] = useState<Set<DealStage>>(
     new Set(["inspecting", "presented", "follow_up", "won"]),
   );
