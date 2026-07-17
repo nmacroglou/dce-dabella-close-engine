@@ -14,8 +14,10 @@ import FollowUpComposer from "@/components/followups/FollowUpComposer";
 import { toast } from "sonner";
 import { pct } from "@/lib/format";
 import { useT } from "@/contexts/LanguageContext";
-
 import { FollowUpAdmin, type FollowUpFilter } from "@/components/pipeline/FollowUpAdmin";
+import LeadsMap from "@/components/pipeline/LeadsMap";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { LayoutList, Map as MapIcon } from "lucide-react";
 
 
 // Stages we allow drag-and-drop into. Won/lost are excluded because they
