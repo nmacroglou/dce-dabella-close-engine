@@ -120,15 +120,19 @@ export default function Pipeline() {
     setDragging(null);
     if (!dragged) return;
     if (dragged.from === target) return;
-    if (!DRAGGABLE_TARGETS.includes(target)) {
-      toast.info(t(`Move to ${STAGE_LABELS[target]} from the deal page`, `Mueve a ${STAGE_LABELS[target]} desde la página del trato`), {
-        description: t("Closing a deal needs a sold amount or lost reason.", "Cerrar un trato requiere un monto vendido o motivo de pérdida."),
-      });
-      return;
-    }
     updateStage.mutate(
       { id: dragged.id, stage: target },
-      { onSuccess: () => toast.success(t(`Moved to ${STAGE_LABELS[target]}`, `Movido a ${STAGE_LABELS[target]}`)) },
+      {
+        onSuccess: () => {
+          if (target === "won") {
+            toast.success(t(`Moved to Won — add closed amount on the deal page`, `Movido a Ganado — agrega el monto en la página del trato`));
+          } else if (target === "lost" || target === "disqualified") {
+            toast.success(t(`Moved to ${STAGE_LABELS[target]} — add a reason on the deal page`, `Movido a ${STAGE_LABELS[target]} — agrega un motivo en la página del trato`));
+          } else {
+            toast.success(t(`Moved to ${STAGE_LABELS[target]}`, `Movido a ${STAGE_LABELS[target]}`));
+          }
+        },
+      },
     );
   }
 
