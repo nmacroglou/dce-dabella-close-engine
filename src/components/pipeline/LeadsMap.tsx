@@ -269,11 +269,11 @@ export default function LeadsMap({ onAction }: Props) {
         catLabel = STAGE_LABELS[d.stage];
       } else if (category === "lead_source") {
         const src = (d.lead_source || "other").toLowerCase();
-        hex = SOURCE_HEX[src] || SOURCE_HEX.other;
+        hex = SOURCE_HEX[src] || "#94a3b8";
         catLabel = labelize(src);
       } else {
-        const p = (d.products?.[0] || "other").toLowerCase();
-        hex = PRODUCT_HEX[p] || PRODUCT_HEX.other;
+        const p = d.products?.[0];
+        hex = productColor(p);
         catLabel = d.products?.length ? d.products.map(labelize).join(", ") : "Other";
       }
 
