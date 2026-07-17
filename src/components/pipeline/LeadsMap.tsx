@@ -424,9 +424,12 @@ export default function LeadsMap({ onAction }: Props) {
                 </button>
               ))}
             </div>
-            <Button size="sm" variant="outline" onClick={runGeocode} disabled={geocoding}>
+            <Button size="sm" variant="outline" onClick={() => runGeocode(false)} disabled={geocoding}>
               {geocoding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
               <span className="ml-1.5">{missing > 0 ? `Geocode ${missing}` : "Re-geocode"}</span>
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => runGeocode(true)} disabled={geocoding} title="Re-run geocoding for every deal, including ones already placed">
+              <span className="text-[11px]">Fix all locations</span>
             </Button>
           </div>
         </div>
