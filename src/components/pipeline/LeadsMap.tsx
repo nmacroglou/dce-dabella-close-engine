@@ -389,6 +389,21 @@ export default function LeadsMap({ onAction }: Props) {
             {missing > 0 && (
               <span className="text-[11px] text-warning">· {missing} need geocoding</span>
             )}
+            <div className="inline-flex items-center gap-0.5 p-0.5 rounded-lg border border-hairline bg-background/40 ml-1">
+              {RANGE_OPTIONS.map((d) => (
+                <button
+                  key={String(d)}
+                  onClick={() => setRangeDays(d)}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors ${
+                    rangeDays === d
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {d === "all" ? "All" : `${d}d`}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">
