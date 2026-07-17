@@ -321,7 +321,12 @@ export default function Pipeline() {
           </TabsContent>
 
           <TabsContent value="map" className="mt-4">
-            <LeadsMap />
+            <LeadsMap
+              onAction={(a) => {
+                if (a.type === "open") openDeal(a.dealId);
+                else setComposer({ dealId: a.dealId, followUpId: a.followUpId });
+              }}
+            />
           </TabsContent>
         </Tabs>
       </main>
