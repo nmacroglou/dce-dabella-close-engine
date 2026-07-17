@@ -68,15 +68,21 @@ function loadGoogleMaps(): Promise<typeof google> {
 }
 
 function pinIcon(google: typeof globalThis.google, hex: string) {
+  const svg = encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="56" viewBox="0 0 44 56">
+      <filter id="shadow" x="-40%" y="-30%" width="180%" height="180%">
+        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.55"/>
+      </filter>
+      <path filter="url(#shadow)" d="M22 3C12.1 3 4 11.1 4 21c0 12.7 16.1 30.5 17.2 31.8.4.5 1.2.5 1.6 0C23.9 51.5 40 33.7 40 21 40 11.1 31.9 3 22 3Z" fill="${hex}" stroke="#ffffff" stroke-width="4"/>
+      <circle cx="22" cy="21" r="7" fill="#ffffff" opacity="0.98"/>
+      <circle cx="22" cy="21" r="3.5" fill="${hex}"/>
+    </svg>
+  `);
   return {
-    path: "M12 2C7.58 2 4 5.58 4 10c0 5.25 7 12 8 12s8-6.75 8-12c0-4.42-3.58-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z",
-    fillColor: hex,
-    fillOpacity: 1,
-    strokeColor: "#ffffff",
-    strokeWeight: 2,
-    scale: 2.2,
-    anchor: new google.maps.Point(12, 22),
-  } as google.maps.Symbol;
+    url: `data:image/svg+xml;charset=UTF-8,${svg}`,
+    scaledSize: new google.maps.Size(44, 56),
+    anchor: new google.maps.Point(22, 52),
+  } as google.maps.Icon;
 }
 
 export default function LeadsMap() {
@@ -107,9 +113,9 @@ export default function LeadsMap() {
         mapRef.current = new google.maps.Map(mapEl.current, {
           center: { lat: 40.72, lng: -111.9 },
           zoom: 11,
-          tilt: 45,
+          tilt: 0,
           heading: 0,
-          mapTypeId: "hybrid",
+          mapTypeId: "roadmap",
           disableDefaultUI: false,
           streetViewControl: false,
           mapTypeControl: true,
