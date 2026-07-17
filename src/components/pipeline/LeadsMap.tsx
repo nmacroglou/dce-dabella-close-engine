@@ -116,6 +116,9 @@ export type LeadsMapAction =
   | { type: "open"; dealId: string }
   | { type: "draft"; dealId: string; followUpId?: string };
 
+type RangeDays = 7 | 30 | 90 | "all";
+const RANGE_OPTIONS: RangeDays[] = [7, 30, 90, "all"];
+
 interface Props {
   onAction?: (a: LeadsMapAction) => void;
 }
@@ -132,6 +135,7 @@ export default function LeadsMap({ onAction }: Props) {
   const [geocoding, setGeocoding] = useState(false);
   const [query, setQuery] = useState("");
   const [repFilter, setRepFilter] = useState<string>("all");
+  const [rangeDays, setRangeDays] = useState<RangeDays>(30);
   const [activeStages, setActiveStages] = useState<Set<DealStage>>(
     new Set(["inspecting", "presented", "follow_up", "won"]),
   );
@@ -160,9 +164,18 @@ export default function LeadsMap({ onAction }: Props) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const cutoff = rangeDays === "all" ? 0 : Date.now() - rangeDays * 864e5;
     return geocoded.filter((d) => {
       if (!activeStages.has(d.stage)) return false;
       if (isAdmin && repFilter !== "all" && d.rep_id !== repFilter) return false;
+      if (rangeDays !== "all") {
+        // Use closed_at for won/lost, else stage change or created_at.
+        const ts =
+          (d.stage === "won" || d.stage === "lost") && d.closed_at
+            ? new Date(d.closed_at).getTime()
+            : new Date(d.stage_changed_at || d.created_at).getTime();
+        if (ts < cutoff) return false;
+      }
       if (!q) return true;
       return (
         (d.homeowner1 || "").toLowerCase().includes(q) ||
@@ -170,7 +183,7 @@ export default function LeadsMap({ onAction }: Props) {
         (d.products || []).some((p) => p.toLowerCase().includes(q))
       );
     });
-  }, [geocoded, activeStages, isAdmin, repFilter, query]);
+  }, [geocoded, activeStages, isAdmin, repFilter, query, rangeDays]);
 
   // KPIs (computed from filtered/geocoded set)
   const kpis = useMemo(() => {
@@ -376,6 +389,21 @@ export default function LeadsMap({ onAction }: Props) {
             {missing > 0 && (
               <span className="text-[11px] text-warning">· {missing} need geocoding</span>
             )}
+            <div className="inline-flex items-center gap-0.5 p-0.5 rounded-lg border border-hairline bg-background/40 ml-1">
+              {RANGE_OPTIONS.map((d) => (
+                <button
+                  key={String(d)}
+                  onClick={() => setRangeDays(d)}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors ${
+                    rangeDays === d
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {d === "all" ? "All" : `${d}d`}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">
