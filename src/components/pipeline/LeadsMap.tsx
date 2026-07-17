@@ -394,7 +394,7 @@ export default function LeadsMap({ onAction }: Props) {
               >
                 <option value="all">All reps</option>
                 {profiles.map((p) => (
-                  <option key={p.id} value={p.id}>
+                  <option key={p.user_id} value={p.user_id}>
                     {p.display_name || p.email}
                   </option>
                 ))}
