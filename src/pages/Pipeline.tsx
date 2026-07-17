@@ -67,6 +67,20 @@ export default function Pipeline() {
   const [dropTarget, setDropTarget] = useState<DealStage | null>(null);
   const [actionDrawerOpen, setActionDrawerOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [rangeDays, setRangeDays] = useState<RangeDays>(30);
+
+  const filteredDeals = useMemo(() => {
+    if (rangeDays === "all") return deals;
+    const cutoff = Date.now() - rangeDays * 864e5;
+    return deals.filter((d) => {
+      const ts = new Date(
+        d.stage === "won" || d.stage === "lost" || d.stage === "disqualified"
+          ? d.closed_at ?? d.stage_changed_at ?? d.updated_at
+          : d.stage_changed_at ?? d.updated_at ?? d.created_at
+      ).getTime();
+      return ts >= cutoff;
+    });
+  }, [deals, rangeDays]);
 
   const stats = useMemo(() => {
     const open = followUps.filter((f) => !f.completed_at);
