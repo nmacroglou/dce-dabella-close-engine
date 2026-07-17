@@ -1,3 +1,4 @@
+/// <reference types="google.maps" />
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDeals } from "@/hooks/useDeals";
 import { useAllProfiles, buildProfileMap } from "@/hooks/useProfiles";
