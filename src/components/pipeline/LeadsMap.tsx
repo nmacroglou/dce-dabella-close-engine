@@ -116,6 +116,9 @@ export type LeadsMapAction =
   | { type: "open"; dealId: string }
   | { type: "draft"; dealId: string; followUpId?: string };
 
+type RangeDays = 7 | 30 | 90 | "all";
+const RANGE_OPTIONS: RangeDays[] = [7, 30, 90, "all"];
+
 interface Props {
   onAction?: (a: LeadsMapAction) => void;
 }
