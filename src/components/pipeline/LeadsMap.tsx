@@ -358,8 +358,13 @@ export default function LeadsMap({ onAction }: Props) {
         hex: STAGE_HEX[k],
       }));
     }
-    const src = category === "lead_source" ? SOURCE_HEX : PRODUCT_HEX;
-    return Object.entries(src).map(([k, hex]) => ({ label: labelize(k), hex }));
+    if (category === "lead_source") {
+      return Object.entries(SOURCE_HEX).map(([k, hex]) => ({
+        label: k === "self_gen" ? "Self-Gen" : labelize(k),
+        hex,
+      }));
+    }
+    return PRODUCT_OPTIONS.map((p) => ({ label: p, hex: PRODUCT_HEX[p] }));
   }, [category]);
 
   function toggleStage(s: DealStage) {
