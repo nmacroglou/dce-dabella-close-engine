@@ -113,9 +113,9 @@ export default function LeadsMap() {
         mapRef.current = new google.maps.Map(mapEl.current, {
           center: { lat: 40.72, lng: -111.9 },
           zoom: 11,
-          tilt: 45,
+          tilt: 0,
           heading: 0,
-          mapTypeId: "hybrid",
+          mapTypeId: "roadmap",
           disableDefaultUI: false,
           streetViewControl: false,
           mapTypeControl: true,
