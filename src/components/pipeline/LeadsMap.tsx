@@ -56,15 +56,17 @@ const PRODUCT_HEX: Record<ProductType, string> = {
   Bath: "#06b6d4",
 };
 
+const PRODUCT_FALLBACK = "#94a3b8";
+
 function productColor(product: string | undefined): string {
-  if (!product) return PRODUCT_HEX["Roofing System"];
+  if (!product) return PRODUCT_FALLBACK;
   const exact = (PRODUCT_OPTIONS as readonly string[]).find((p) => p === product);
   if (exact) return PRODUCT_HEX[exact as ProductType];
   const normalized = product.toLowerCase();
   const partial = PRODUCT_OPTIONS.find((p) =>
     normalized.includes(p.toLowerCase()) || p.toLowerCase().includes(normalized),
   );
-  return partial ? PRODUCT_HEX[partial] : "#94a3b8";
+  return partial ? PRODUCT_HEX[partial] : PRODUCT_FALLBACK;
 }
 
 function labelize(s: string) {
