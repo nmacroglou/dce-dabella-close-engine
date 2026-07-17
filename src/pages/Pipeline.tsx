@@ -131,6 +131,19 @@ export default function Pipeline() {
           </div>
         </div>
 
+        <Tabs defaultValue="pipeline" className="w-full">
+          <TabsList>
+            <TabsTrigger value="pipeline" className="gap-1.5">
+              <LayoutList className="h-3.5 w-3.5" />
+              {t("Pipeline", "Embudo")}
+            </TabsTrigger>
+            <TabsTrigger value="map" className="gap-1.5">
+              <MapIcon className="h-3.5 w-3.5" />
+              {t("Map (3D)", "Mapa (3D)")}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="pipeline" className="mt-4 space-y-5">
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
           <section className="card-elevated-lg p-4">
             <div className="flex items-center justify-between mb-3">
