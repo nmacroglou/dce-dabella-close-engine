@@ -193,10 +193,25 @@ export default function Pipeline() {
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
               {t(
-                "Drag between Inspecting, Presented, and Follow-up. Tap a stat to see the action queue.",
-                "Arrastra entre Inspección, Presentado y Seguimiento. Toca una métrica para ver la cola de acciones.",
+                "Drag cards between any stage. Tap a stat to see the action queue.",
+                "Arrastra tarjetas entre cualquier etapa. Toca una métrica para ver la cola de acciones.",
               )}
             </p>
+            <div className="inline-flex items-center gap-0.5 p-0.5 mt-2 rounded-lg border border-hairline bg-background/40">
+              {RANGE_OPTIONS.map((d) => (
+                <button
+                  key={String(d)}
+                  onClick={() => setRangeDays(d)}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-colors ${
+                    rangeDays === d
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {d === "all" ? t("All", "Todo") : `${d}d`}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <StatChip
