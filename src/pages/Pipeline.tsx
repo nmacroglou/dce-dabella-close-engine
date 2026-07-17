@@ -318,6 +318,12 @@ export default function Pipeline() {
 
           onOpenDeal={openDeal}
         />
+          </TabsContent>
+
+          <TabsContent value="map" className="mt-4">
+            <LeadsMap />
+          </TabsContent>
+        </Tabs>
       </main>
 
       <FollowUpComposer
