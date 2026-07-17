@@ -6,6 +6,7 @@ import { useIsAdmin } from "@/hooks/useUserRole";
 import { useFollowUps } from "@/hooks/useFollowUps";
 import { followUpStatus } from "@/types/followUp";
 import { STAGE_LABELS, type DealStage, type Deal } from "@/types/deal";
+import { PRODUCT_OPTIONS, type ProductType } from "@/data/products";
 import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
@@ -25,32 +26,48 @@ import { formatCurrencyShort } from "@/lib/format";
 
 type Category = "stage" | "lead_source" | "product";
 
+// Pin colors are derived from the app's dark-mode semantic tokens so the map
+// matches the stage badges, source chips, and product colors used everywhere else.
 const STAGE_HEX: Record<DealStage, string> = {
-  inspecting: "#94a3b8",
-  presented: "#3b82f6",
-  follow_up: "#f59e0b",
-  won: "#22c55e",
-  lost: "#ef4444",
-  disqualified: "#64748b",
+  inspecting: "#94a3b8", // muted-foreground
+  presented: "#3b82f6", // primary
+  follow_up: "#fbbf24", // warning
+  won: "#22c55e", // success
+  lost: "#ef4444", // destructive
+  disqualified: "#64748b", // muted-foreground / slate
 };
 
 const SOURCE_HEX: Record<string, string> = {
-  internet: "#3b82f6",
-  canvass: "#22c55e",
-  self_gen: "#f59e0b",
-  referral: "#a855f7",
-  other: "#94a3b8",
+  internet: "#3b82f6", // primary
+  canvass: "#22c55e", // success
+  self_gen: "#fbbf24", // warning
+  referral: "#a855f7", // purple accent
+  other: "#94a3b8", // muted
 };
 
-const PRODUCT_HEX: Record<string, string> = {
-  roofing: "#ef4444",
-  windows: "#3b82f6",
-  siding: "#f59e0b",
-  gutters: "#22c55e",
-  bath: "#a855f7",
-  solar: "#eab308",
-  other: "#94a3b8",
+const PRODUCT_HEX: Record<ProductType, string> = {
+  "Roofing System": "#ef4444",
+  Windows: "#3b82f6",
+  Siding: "#f97316",
+  Stucco: "#a8a29e",
+  Paint: "#a855f7",
+  Solar: "#eab308",
+  Gutters: "#22c55e",
+  Bath: "#06b6d4",
 };
+
+const PRODUCT_FALLBACK = "#94a3b8";
+
+function productColor(product: string | undefined): string {
+  if (!product) return PRODUCT_FALLBACK;
+  const exact = (PRODUCT_OPTIONS as readonly string[]).find((p) => p === product);
+  if (exact) return PRODUCT_HEX[exact as ProductType];
+  const normalized = product.toLowerCase();
+  const partial = PRODUCT_OPTIONS.find((p) =>
+    normalized.includes(p.toLowerCase()) || p.toLowerCase().includes(normalized),
+  );
+  return partial ? PRODUCT_HEX[partial] : PRODUCT_FALLBACK;
+}
 
 function labelize(s: string) {
   return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -252,11 +269,11 @@ export default function LeadsMap({ onAction }: Props) {
         catLabel = STAGE_LABELS[d.stage];
       } else if (category === "lead_source") {
         const src = (d.lead_source || "other").toLowerCase();
-        hex = SOURCE_HEX[src] || SOURCE_HEX.other;
+        hex = SOURCE_HEX[src] || "#94a3b8";
         catLabel = labelize(src);
       } else {
-        const p = (d.products?.[0] || "other").toLowerCase();
-        hex = PRODUCT_HEX[p] || PRODUCT_HEX.other;
+        const p = d.products?.[0];
+        hex = productColor(p);
         catLabel = d.products?.length ? d.products.map(labelize).join(", ") : "Other";
       }
 
@@ -341,8 +358,13 @@ export default function LeadsMap({ onAction }: Props) {
         hex: STAGE_HEX[k],
       }));
     }
-    const src = category === "lead_source" ? SOURCE_HEX : PRODUCT_HEX;
-    return Object.entries(src).map(([k, hex]) => ({ label: labelize(k), hex }));
+    if (category === "lead_source") {
+      return Object.entries(SOURCE_HEX).map(([k, hex]) => ({
+        label: k === "self_gen" ? "Self-Gen" : labelize(k),
+        hex,
+      }));
+    }
+    return PRODUCT_OPTIONS.map((p) => ({ label: p, hex: PRODUCT_HEX[p] }));
   }, [category]);
 
   function toggleStage(s: DealStage) {
