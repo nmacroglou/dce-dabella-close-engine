@@ -417,6 +417,8 @@ export type Database = {
           created_at: string
           disqualified_reason: string | null
           engine_state: Json
+          geocoded_address: string | null
+          geocoded_at: string | null
           homeowner_email: string | null
           homeowner_phone: string | null
           homeowner1: string | null
@@ -424,7 +426,9 @@ export type Database = {
           id: string
           install_date: string | null
           install_notes: string | null
+          lat: number | null
           lead_source: string | null
+          lng: number | null
           lost_reason: string | null
           notes: string | null
           preliminary_estimate: Json
@@ -448,6 +452,8 @@ export type Database = {
           created_at?: string
           disqualified_reason?: string | null
           engine_state?: Json
+          geocoded_address?: string | null
+          geocoded_at?: string | null
           homeowner_email?: string | null
           homeowner_phone?: string | null
           homeowner1?: string | null
@@ -455,7 +461,9 @@ export type Database = {
           id?: string
           install_date?: string | null
           install_notes?: string | null
+          lat?: number | null
           lead_source?: string | null
+          lng?: number | null
           lost_reason?: string | null
           notes?: string | null
           preliminary_estimate?: Json
@@ -479,6 +487,8 @@ export type Database = {
           created_at?: string
           disqualified_reason?: string | null
           engine_state?: Json
+          geocoded_address?: string | null
+          geocoded_at?: string | null
           homeowner_email?: string | null
           homeowner_phone?: string | null
           homeowner1?: string | null
@@ -486,7 +496,9 @@ export type Database = {
           id?: string
           install_date?: string | null
           install_notes?: string | null
+          lat?: number | null
           lead_source?: string | null
+          lng?: number | null
           lost_reason?: string | null
           notes?: string | null
           preliminary_estimate?: Json
