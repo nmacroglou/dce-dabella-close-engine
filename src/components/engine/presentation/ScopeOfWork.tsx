@@ -98,7 +98,11 @@ export default function ScopeOfWork({ products = [], roofMaterial = "shingle" }:
             </h2>
           </div>
           <p className="text-primary-foreground/70 text-sm font-medium">
-            {isRoofing
+            {isTile
+              ? t("Your complete Westlake Royal Roofing Cool Roof tile installation — from tear-off to final sweep", "Su instalación completa de teja Cool Roof de Westlake Royal Roofing — desde la remoción hasta la limpieza final")
+              : isTpo
+              ? t("Your complete TPO low-slope roof system — from tear-off to warranty registration", "Su sistema completo de techo TPO de baja pendiente — desde la remoción hasta el registro de la garantía")
+              : isRoofing
               ? t("Your complete scope of work — everything included in your project", "Su alcance de trabajo completo — todo lo incluido en su proyecto")
               : isWindows
               ? t("Your complete window project scope — from measure to final walkthrough", "Su alcance completo del proyecto de ventanas — desde la medición hasta el recorrido final")
