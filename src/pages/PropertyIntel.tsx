@@ -14,11 +14,13 @@ export default function PropertyIntel() {
 
   const runSearch = async (query: string) => {
     setLoading(true);
-    // Simulate provider round-trip so the UI feels real.
-    await new Promise((r) => setTimeout(r, 550));
     const first = (user?.user_metadata?.full_name || user?.email || "").split(/[ @]/)[0] || "Nik";
-    setReport(generateReport(query, first));
-    setLoading(false);
+    try {
+      const r = await generateReport(query, first);
+      setReport(r);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
