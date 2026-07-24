@@ -3,6 +3,8 @@ import type { EngineState } from "@/types/engine";
 import { hasProduct } from "@/lib/engineHelpers";
 import {
   SCOPE_ITEMS,
+  TILE_ROOF_SCOPE_ITEMS,
+  TPO_ROOF_SCOPE_ITEMS,
   STUCCO_SCOPE_ITEMS,
   PAINT_SCOPE_ITEMS,
   SIDING_SCOPE_ITEMS,
@@ -27,12 +29,18 @@ export function drawScope(pdf: jsPDF, state: EngineState) {
   const isBath = hasProduct(state.products, "Bath");
   const isSolar = hasProduct(state.products, "Solar");
   const isGutters = hasProduct(state.products, "Gutters");
+  const isTile = isRoofing && state.roofMaterial === "tile";
+  const isTpo = isRoofing && state.roofMaterial === "tpo";
 
   const items: string[] = [];
   const pushUnique = (arr: readonly string[]) => {
     for (const it of arr) if (!items.includes(it)) items.push(it);
   };
-  if (isRoofing) pushUnique(SCOPE_ITEMS);
+  if (isRoofing) {
+    if (isTile) pushUnique(TILE_ROOF_SCOPE_ITEMS);
+    else if (isTpo) pushUnique(TPO_ROOF_SCOPE_ITEMS);
+    else pushUnique(SCOPE_ITEMS);
+  }
   if (isWindows) pushUnique(WINDOW_SCOPE_ITEMS);
   if (isStucco) pushUnique(STUCCO_SCOPE_ITEMS);
   if (isPaint) pushUnique(PAINT_SCOPE_ITEMS);
@@ -42,7 +50,11 @@ export function drawScope(pdf: jsPDF, state: EngineState) {
   if (isGutters) pushUnique(GUTTER_SCOPE_ITEMS);
   if (items.length === 0) pushUnique(SCOPE_ITEMS);
 
-  const subtitle = isRoofing
+  const subtitle = isTile
+    ? "Every step of your Westlake Royal Roofing Cool Roof tile installation, in order."
+    : isTpo
+    ? "Every step of your TPO low-slope roof system, in order."
+    : isRoofing
     ? "Every step we will take, in order, to bring your project home."
     : isWindows
     ? "Your complete window project — from measure to final walkthrough."
