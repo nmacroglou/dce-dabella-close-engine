@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Check, ClipboardCheck } from "lucide-react";
 import {
   SCOPE_ITEMS,
+  TILE_ROOF_SCOPE_ITEMS,
+  TPO_ROOF_SCOPE_ITEMS,
   STUCCO_SCOPE_ITEMS,
   PAINT_SCOPE_ITEMS,
   SIDING_SCOPE_ITEMS,
@@ -14,12 +16,14 @@ import { WINDOW_SCOPE_ITEMS } from "@/data/windowData";
 import { hasProduct } from "@/lib/engineHelpers";
 import { useT } from "@/contexts/LanguageContext";
 import { useTranslatedList } from "@/hooks/useTranslator";
+import type { RoofMaterial } from "./constants";
 
 interface Props {
   products?: string[];
+  roofMaterial?: RoofMaterial;
 }
 
-export default function ScopeOfWork({ products = [] }: Props) {
+export default function ScopeOfWork({ products = [], roofMaterial = "shingle" }: Props) {
   const t = useT();
   const isWindows = hasProduct(products, "Windows");
   const isRoofing = hasProduct(products, "Roofing System");
@@ -29,13 +33,19 @@ export default function ScopeOfWork({ products = [] }: Props) {
   const isBath = hasProduct(products, "Bath");
   const isSolar = hasProduct(products, "Solar");
   const isGutters = hasProduct(products, "Gutters");
+  const isTile = isRoofing && roofMaterial === "tile";
+  const isTpo = isRoofing && roofMaterial === "tpo";
 
   // Combine scope items from all selected products (de-duped, order preserved)
   const items: string[] = [];
   const pushUnique = (arr: readonly string[]) => {
     for (const it of arr) if (!items.includes(it)) items.push(it);
   };
-  if (isRoofing) pushUnique(SCOPE_ITEMS);
+  if (isRoofing) {
+    if (isTile) pushUnique(TILE_ROOF_SCOPE_ITEMS);
+    else if (isTpo) pushUnique(TPO_ROOF_SCOPE_ITEMS);
+    else pushUnique(SCOPE_ITEMS);
+  }
   if (isWindows) pushUnique(WINDOW_SCOPE_ITEMS);
   if (isStucco) pushUnique(STUCCO_SCOPE_ITEMS);
   if (isPaint) pushUnique(PAINT_SCOPE_ITEMS);
