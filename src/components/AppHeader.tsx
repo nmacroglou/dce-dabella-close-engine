@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Moon, Sun, LayoutDashboard, Briefcase, Wrench, LogOut, GitBranch, ShieldCheck,
-  ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen, Target, CalendarDays,
+  ShieldAlert, Wallet, Sun as SunIcon, Menu, Trophy, BookOpen, Target, CalendarDays, Search,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
@@ -39,6 +39,7 @@ type NavEntry = {
 
 const SELL_CLUSTER: NavEntry[] = [
   { to: "/", label: "Engine", icon: Wrench, end: true },
+  { to: "/property-intelligence", label: "Property Intel", icon: Search, end: false },
   { to: "/deals", label: "Deals", icon: Briefcase, end: false },
   { to: "/pipeline", label: "Pipeline", icon: GitBranch, end: false },
 ];
@@ -58,6 +59,7 @@ const OPS_CLUSTER: NavEntry[] = [
 
 const NAV_ES: Record<string, string> = {
   Engine: "Motor",
+  "Property Intel": "Intel Propiedad",
   Deals: "Tratos",
   Pipeline: "Embudo",
   Dashboard: "Panel",

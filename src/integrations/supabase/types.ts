@@ -567,6 +567,50 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunity_scores: {
+        Row: {
+          calculated_at: string
+          explanation_json: Json | null
+          id: string
+          primary_product: string | null
+          priority: string | null
+          property_id: string
+          recommendation_confidence: number | null
+          secondary_product: string | null
+          total_score: number | null
+        }
+        Insert: {
+          calculated_at?: string
+          explanation_json?: Json | null
+          id?: string
+          primary_product?: string | null
+          priority?: string | null
+          property_id: string
+          recommendation_confidence?: number | null
+          secondary_product?: string | null
+          total_score?: number | null
+        }
+        Update: {
+          calculated_at?: string
+          explanation_json?: Json | null
+          id?: string
+          primary_product?: string | null
+          priority?: string | null
+          property_id?: string
+          recommendation_confidence?: number | null
+          secondary_product?: string | null
+          total_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_scores_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       paycheck_overrides: {
         Row: {
           amount: number
@@ -594,6 +638,36 @@ export type Database = {
           payday_date?: string
           rep_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      pi_audit_logs: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -629,6 +703,384 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      properties: {
+        Row: {
+          assessed_value: number | null
+          bathrooms: number | null
+          bedrooms: number | null
+          city: string | null
+          created_at: string
+          created_by: string | null
+          estimated_market_value: number | null
+          estimated_roof_age: number | null
+          exterior_material: string | null
+          id: string
+          is_demo: boolean
+          latitude: number | null
+          longitude: number | null
+          lot_size: number | null
+          parcel_number: string | null
+          postal_code: string | null
+          property_type: string | null
+          roof_material: string | null
+          solar_present: boolean | null
+          square_feet: number | null
+          standardized_address: string
+          state: string | null
+          stories: number | null
+          updated_at: string
+          year_built: number | null
+        }
+        Insert: {
+          assessed_value?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_market_value?: number | null
+          estimated_roof_age?: number | null
+          exterior_material?: string | null
+          id?: string
+          is_demo?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          lot_size?: number | null
+          parcel_number?: string | null
+          postal_code?: string | null
+          property_type?: string | null
+          roof_material?: string | null
+          solar_present?: boolean | null
+          square_feet?: number | null
+          standardized_address: string
+          state?: string | null
+          stories?: number | null
+          updated_at?: string
+          year_built?: number | null
+        }
+        Update: {
+          assessed_value?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_market_value?: number | null
+          estimated_roof_age?: number | null
+          exterior_material?: string | null
+          id?: string
+          is_demo?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          lot_size?: number | null
+          parcel_number?: string | null
+          postal_code?: string | null
+          property_type?: string | null
+          roof_material?: string | null
+          solar_present?: boolean | null
+          square_feet?: number | null
+          standardized_address?: string
+          state?: string | null
+          stories?: number | null
+          updated_at?: string
+          year_built?: number | null
+        }
+        Relationships: []
+      }
+      property_confirmations: {
+        Row: {
+          confirmation_status: string
+          confirmed_at: string
+          confirmed_value: string | null
+          field_name: string
+          id: string
+          notes: string | null
+          property_id: string
+          source_value: string | null
+          user_id: string
+        }
+        Insert: {
+          confirmation_status: string
+          confirmed_at?: string
+          confirmed_value?: string | null
+          field_name: string
+          id?: string
+          notes?: string | null
+          property_id: string
+          source_value?: string | null
+          user_id: string
+        }
+        Update: {
+          confirmation_status?: string
+          confirmed_at?: string
+          confirmed_value?: string | null
+          field_name?: string
+          id?: string
+          notes?: string | null
+          property_id?: string
+          source_value?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_confirmations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_identity_assessments: {
+        Row: {
+          calculated_at: string
+          confidence_label: string | null
+          confidence_score: number | null
+          conflicting_reasons_json: Json | null
+          id: string
+          likely_occupant_name: string | null
+          likely_owner_name: string | null
+          owner_occupancy_status: string | null
+          property_id: string
+          supporting_reasons_json: Json | null
+        }
+        Insert: {
+          calculated_at?: string
+          confidence_label?: string | null
+          confidence_score?: number | null
+          conflicting_reasons_json?: Json | null
+          id?: string
+          likely_occupant_name?: string | null
+          likely_owner_name?: string | null
+          owner_occupancy_status?: string | null
+          property_id: string
+          supporting_reasons_json?: Json | null
+        }
+        Update: {
+          calculated_at?: string
+          confidence_label?: string | null
+          confidence_score?: number | null
+          conflicting_reasons_json?: Json | null
+          id?: string
+          likely_occupant_name?: string | null
+          likely_owner_name?: string | null
+          owner_occupancy_status?: string | null
+          property_id?: string
+          supporting_reasons_json?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_identity_assessments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_intelligence: {
+        Row: {
+          buyer_confidence: number | null
+          data_sources_json: Json | null
+          id: string
+          last_refreshed_at: string
+          missing_fields_json: Json | null
+          occupancy_confidence: number | null
+          owner_confidence: number | null
+          profile_confidence: number | null
+          property_id: string
+          property_match_confidence: number | null
+        }
+        Insert: {
+          buyer_confidence?: number | null
+          data_sources_json?: Json | null
+          id?: string
+          last_refreshed_at?: string
+          missing_fields_json?: Json | null
+          occupancy_confidence?: number | null
+          owner_confidence?: number | null
+          profile_confidence?: number | null
+          property_id: string
+          property_match_confidence?: number | null
+        }
+        Update: {
+          buyer_confidence?: number | null
+          data_sources_json?: Json | null
+          id?: string
+          last_refreshed_at?: string
+          missing_fields_json?: Json | null
+          occupancy_confidence?: number | null
+          owner_confidence?: number | null
+          profile_confidence?: number | null
+          property_id?: string
+          property_match_confidence?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_intelligence_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_ownership_records: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          document_type: string | null
+          id: string
+          is_demo: boolean
+          owner_name: string | null
+          owner_type: string | null
+          ownership_end_date: string | null
+          ownership_start_date: string | null
+          property_id: string
+          recording_number: string | null
+          source: string | null
+          source_record_date: string | null
+          tax_mailing_address: string | null
+          tax_mailing_matches_property: boolean | null
+          tax_mailing_name: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          document_type?: string | null
+          id?: string
+          is_demo?: boolean
+          owner_name?: string | null
+          owner_type?: string | null
+          ownership_end_date?: string | null
+          ownership_start_date?: string | null
+          property_id: string
+          recording_number?: string | null
+          source?: string | null
+          source_record_date?: string | null
+          tax_mailing_address?: string | null
+          tax_mailing_matches_property?: boolean | null
+          tax_mailing_name?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          document_type?: string | null
+          id?: string
+          is_demo?: boolean
+          owner_name?: string | null
+          owner_type?: string | null
+          ownership_end_date?: string | null
+          ownership_start_date?: string | null
+          property_id?: string
+          recording_number?: string | null
+          source?: string | null
+          source_record_date?: string | null
+          tax_mailing_address?: string | null
+          tax_mailing_matches_property?: boolean | null
+          tax_mailing_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_ownership_records_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_sale_records: {
+        Row: {
+          buyer_name: string | null
+          confidence_score: number | null
+          created_at: string
+          document_type: string | null
+          id: string
+          is_demo: boolean
+          property_id: string
+          recording_number: string | null
+          sale_date: string | null
+          sale_price: number | null
+          seller_name: string | null
+          source: string | null
+        }
+        Insert: {
+          buyer_name?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          document_type?: string | null
+          id?: string
+          is_demo?: boolean
+          property_id: string
+          recording_number?: string | null
+          sale_date?: string | null
+          sale_price?: number | null
+          seller_name?: string | null
+          source?: string | null
+        }
+        Update: {
+          buyer_name?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          document_type?: string | null
+          id?: string
+          is_demo?: boolean
+          property_id?: string
+          recording_number?: string | null
+          sale_date?: string | null
+          sale_price?: number | null
+          seller_name?: string | null
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_sale_records_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppressions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_date: string
+          id: string
+          property_id: string
+          reason: string | null
+          suppression_type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string
+          id?: string
+          property_id: string
+          reason?: string | null
+          suppression_type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_date?: string
+          id?: string
+          property_id?: string
+          reason?: string | null
+          suppression_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppressions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
