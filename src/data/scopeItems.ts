@@ -16,6 +16,46 @@ export const SCOPE_ITEMS = [
   "Haul away job debris, magnetically sweep yard, driveway, etc.",
 ] as const;
 
+// Westlake Royal Roofing — concrete / clay tile installation (Cool Roof series).
+// Reflective, CRRC-rated tile with two-ply underlayment and code-compliant fastening.
+export const TILE_ROOF_SCOPE_ITEMS = [
+  "Supply dumpster and protect landscaping, pool, and hardscape",
+  "Tear-off of existing roof covering down to wood deck",
+  "Inspect and replace damaged wood decking, fascia, and rafter tails as needed",
+  "Install new flashing at valleys, sidewalls, headwalls, chimneys, and skylights",
+  "Install drip edge and rake metal color-matched to tile",
+  "Install self-adhered high-temp leak barrier (WEATHER WATCH HT) at eaves, valleys, and all penetrations",
+  "Install two-ply underlayment system rated for tile (30# base + cap sheet or equivalent) per Westlake Royal Roofing spec",
+  "Install horizontal battens / counter-battens sized to tile profile and roof slope",
+  "Install Westlake Royal Roofing Cool Roof concrete or clay tile — CRRC-rated for solar reflectance and thermal emittance to lower attic heat load",
+  "Install matching hip and ridge tile with weather-blocking foam closures",
+  "Install bird stops, eave risers, and rake trim tile for a finished profile",
+  "Fasten field tile per Westlake wind-uplift schedule — nails, screws, or storm clips as required by slope, wind zone, and local code",
+  "Bed and point hip and ridge lines with color-matched mortar or Polyfoam adhesive",
+  "Replace all pipe jacks, boots, and roof vents with tile-compatible flashings",
+  "Install/upgrade attic ventilation to code — O'Hagin low-profile tile vents or ridge vent system",
+  "Final quality-control walk-through with homeowner",
+  "Haul away job debris, magnetically sweep yard, driveway, and walkways",
+] as const;
+
+// TPO single-ply membrane — low-slope / flat roof scope.
+export const TPO_ROOF_SCOPE_ITEMS = [
+  "Supply dumpster and protect landscaping, HVAC equipment, and adjacent surfaces",
+  "Tear-off existing roof system down to structural deck",
+  "Inspect and replace damaged decking, blocking, or wet insulation as needed",
+  "Install tapered polyiso insulation to build positive slope toward drains and scuppers",
+  "Install ½\" HD polyiso or DensDeck cover board, mechanically fastened per wind-uplift design",
+  "Install 60-mil TPO membrane (GAF EverGuard® or Carlisle Sure-Weld®) — fully-adhered or mechanically-fastened per manufacturer spec",
+  "Heat-weld all field seams with a robotic welder and probe-test 100% of seams for a watertight bond",
+  "Install TPO-coated metal drip edge, gravel stops, and termination bars at all perimeters",
+  "Fabricate and heat-weld TPO boots and target patches at every pipe, curb, and HVAC penetration",
+  "Install new scuppers, overflow scuppers, and downspouts as required by code",
+  "Install walk-pads along service paths and around rooftop equipment",
+  "Register full manufacturer system warranty (up to 20-year NDL coverage)",
+  "Final quality-control walk-through with homeowner",
+  "Haul away job debris and magnetically sweep property",
+] as const;
+
 // Cool Life® Wall Coating System — official 10-step application (Lifetime Plus Coatings)
 export const STUCCO_SCOPE_ITEMS = [
   "Pre-Inspection + Consultation — thorough in-home inspection by our experts",
