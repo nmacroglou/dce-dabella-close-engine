@@ -46,7 +46,7 @@ const STAGE_LABELS_ES: Record<Stage, string> = {
 };
 
 export default function CustomerPresentationView({ state, computed, onClose, update }: Props) {
-  const { t, lang } = useLanguage();
+  const { t, lang, setLang } = useLanguage();
   const STAGE_LABELS = lang === "es" ? STAGE_LABELS_ES : STAGE_LABELS_EN;
   const isWindows = hasProduct(state.products, "Windows");
   const productLabel = getProductLabel(state.products);
@@ -240,18 +240,16 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
       {/* Top-right actions */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         <PromoTrigger tier={tier} onChange={setTier} />
-        {update && (
-          <button
-            onClick={() => runTranslate(lang === "es" ? "en" : "es")}
-            disabled={translatePending}
-            className="flex items-center gap-2 rounded-full bg-card border border-border shadow-md px-3 py-2 hover:bg-muted transition-colors text-sm font-semibold disabled:opacity-60"
-            aria-label={t("Translate presentation", "Traducir presentación")}
-            title={t("Translate option names + features to the other language.", "Traducir nombres de opciones y características al otro idioma.")}
-          >
-            {translatePending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
-            {lang === "es" ? "EN" : "ES"}
-          </button>
-        )}
+        <button
+          onClick={() => setLang(lang === "es" ? "en" : "es")}
+          disabled={translatePending}
+          className="flex items-center gap-2 rounded-full bg-card border border-border shadow-md px-3 py-2 hover:bg-muted transition-colors text-sm font-semibold disabled:opacity-60"
+          aria-label={t("Switch language", "Cambiar idioma")}
+          title={t("Switch the entire presentation language.", "Cambiar el idioma de toda la presentación.")}
+        >
+          {translatePending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
+          {lang === "es" ? "EN" : "ES"}
+        </button>
         <button
           onClick={() => setShareOpen(true)}
           className="flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-md px-4 py-2 hover:bg-primary/90 transition-colors text-sm font-semibold"
