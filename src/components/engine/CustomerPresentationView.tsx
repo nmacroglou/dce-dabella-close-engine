@@ -357,7 +357,7 @@ export default function CustomerPresentationView({ state, computed, onClose, upd
         )}
 
         {stage === "inspection" && isWindows && <WindowInspectionView state={state} />}
-        {stage === "scope" && <ScopeOfWork products={state.products} />}
+        {stage === "scope" && <ScopeOfWork products={state.products} roofMaterial={state.roofMaterial} />}
         {stage === "welcome" && <WelcomeClose homeowner1={state.homeowner1} homeowner2={state.homeowner2} />}
       </div>
 
