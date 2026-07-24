@@ -146,7 +146,10 @@ export default function RepActionsBar({ report }: Props) {
         <Btn icon={UserX} label="Renter" onClick={() => markOccupancy("renter")} />
         <Btn icon={UserX} label="Vacant" onClick={() => markOccupancy("vacant")} />
         <Btn icon={MapPinned} tone="primary" label="Add to route" onClick={addToRoute} disabled={dnk} />
-        <Btn icon={MessageCircle} label="Start door convo" onClick={() => toast.info("Opener copied to clipboard").then?.(() => {})} disabled={dnk} />
+        <Btn icon={MessageCircle} label="Start door convo" onClick={() => {
+          navigator.clipboard?.writeText(report.brief.suggested_opener).catch(() => {});
+          toast.info("Opener copied to clipboard");
+        }} disabled={dnk} />
         <Btn icon={StickyNote} label="Add notes" onClick={async () => {
           const id = await ensureProperty(); if (!id || !user) return;
           const v = prompt("Notes:") ?? "";
