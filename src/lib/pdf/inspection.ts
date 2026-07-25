@@ -66,7 +66,11 @@ export async function buildInspectionPdf(input: InspectionPdfInput): Promise<{ b
   pdf.addPage();
   drawOpinion(pdf, input, logoDataUrl);
 
+  pdf.addPage();
+  drawWhyDaBella(pdf, input);
+
   drawFooters(pdf, (input.language ?? "en") as Lang);
+
 
   return { blob: pdf.output("blob"), doc: pdf };
 }
