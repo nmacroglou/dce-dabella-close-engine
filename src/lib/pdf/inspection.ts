@@ -376,6 +376,91 @@ function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string)
 
 
 // ─── Why DaBella ───────────────────────────────────────────────
+type RGB = readonly [number, number, number];
+
+function drawReasonIcon(
+  pdf: jsPDF,
+  kind: "star" | "home" | "badge" | "shield" | "spark",
+  cx: number,
+  cy: number,
+  color: RGB,
+) {
+  setFill(pdf, color);
+  switch (kind) {
+    case "star": {
+      const outer = 5.2;
+      const inner = outer * 0.42;
+      const pts: [number, number][] = [];
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? outer : inner;
+        const a = -Math.PI / 2 + (i * Math.PI) / 5;
+        pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+      }
+      const rel: [number, number][] = [];
+      for (let i = 1; i < pts.length; i++) {
+        rel.push([pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]]);
+      }
+      rel.push([pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]]);
+      pdf.lines(rel, pts[0][0], pts[0][1], [1, 1], "F", true);
+      break;
+    }
+    case "home": {
+      // Roof
+      pdf.triangle(cx - 5.6, cy - 0.6, cx + 5.6, cy - 0.6, cx, cy - 5.8, "F");
+      // Body
+      pdf.rect(cx - 4.4, cy - 0.6, 8.8, 6.6, "F");
+      // Heart (two overlapping circles + triangle) in contrast
+      setFill(pdf, FOREST_INK);
+      pdf.circle(cx - 1.1, cy + 1.6, 0.95, "F");
+      pdf.circle(cx + 1.1, cy + 1.6, 0.95, "F");
+      pdf.triangle(cx - 1.9, cy + 2.0, cx + 1.9, cy + 2.0, cx, cy + 4.1, "F");
+      break;
+    }
+    case "badge": {
+      // Ribbon tails
+      pdf.triangle(cx - 3.2, cy + 1.8, cx - 4.2, cy + 5.4, cx - 1.6, cy + 3.4, "F");
+      pdf.triangle(cx + 3.2, cy + 1.8, cx + 4.2, cy + 5.4, cx + 1.6, cy + 3.4, "F");
+      // Medal
+      pdf.circle(cx, cy - 0.4, 4.8, "F");
+      // Inner check
+      pdf.setDrawColor(FOREST_INK[0], FOREST_INK[1], FOREST_INK[2]);
+      pdf.setLineWidth(1.0);
+      pdf.setLineCap("round");
+      pdf.setLineJoin("round");
+      pdf.lines([[1.5, 1.6], [3.0, -3.6]], cx - 2.2, cy - 0.6);
+      break;
+    }
+    case "shield": {
+      const w = 8.4;
+      const h = 10.4;
+      const topH = h * 0.55;
+      pdf.roundedRect(cx - w / 2, cy - h / 2, w, topH, 1.6, 1.6, "F");
+      pdf.triangle(cx - w / 2, cy - h / 2 + topH, cx + w / 2, cy - h / 2 + topH, cx, cy + h / 2, "F");
+      pdf.setDrawColor(FOREST_INK[0], FOREST_INK[1], FOREST_INK[2]);
+      pdf.setLineWidth(1.1);
+      pdf.setLineCap("round");
+      pdf.setLineJoin("round");
+      pdf.lines([[1.6, 1.8], [3.2, -4.0]], cx - 2.4, cy - 0.6);
+      break;
+    }
+    case "spark": {
+      // Four-point sparkle
+      const s = 5.6;
+      pdf.triangle(cx, cy - s, cx + s * 0.36, cy, cx, cy + s, "F");
+      pdf.triangle(cx, cy - s, cx - s * 0.36, cy, cx, cy + s, "F");
+      pdf.triangle(cx - s, cy, cx, cy + s * 0.36, cx + s, cy, "F");
+      pdf.triangle(cx - s, cy, cx, cy - s * 0.36, cx + s, cy, "F");
+      // Small companion sparkle
+      const s2 = 2.0;
+      pdf.triangle(cx + s + 1.4, cy - s * 0.5, cx + s + 1.4 + s2 * 0.36, cy - s * 0.5 + s2, cx + s + 1.4, cy - s * 0.5 + s2 * 2, "F");
+      pdf.triangle(cx + s + 1.4, cy - s * 0.5, cx + s + 1.4 - s2 * 0.36, cy - s * 0.5 + s2, cx + s + 1.4, cy - s * 0.5 + s2 * 2, "F");
+      pdf.triangle(cx + s - 0.6, cy - s * 0.5 + s2, cx + s + 1.4, cy - s * 0.5 + s2 + s2 * 0.36, cx + s + 3.4, cy - s * 0.5 + s2, "F");
+      pdf.triangle(cx + s - 0.6, cy - s * 0.5 + s2, cx + s + 1.4, cy - s * 0.5 + s2 - s2 * 0.36, cx + s + 3.4, cy - s * 0.5 + s2, "F");
+      break;
+    }
+  }
+}
+
 function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
   const lang = (input.language ?? "en") as Lang;
   pageBg(pdf);
@@ -383,27 +468,54 @@ function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
     pdf,
     L(lang, "Section 4", "Sección 4"),
     L(lang, "Why DaBella?", "¿Por qué DaBella?"),
-    L(lang, "5 important things to consider when choosing your home improvement partner.", "5 cosas importantes a considerar al elegir su socio de mejoras del hogar."),
+    L(lang, "Five reasons homeowners choose us — and stay with us for life.", "Cinco razones por las que los propietarios nos eligen — y se quedan con nosotros de por vida."),
   );
 
-  const reasons = [
+  const reasons: Array<{
+    icon: "star" | "home" | "badge" | "shield" | "spark";
+    tile: RGB;
+    iconColor: RGB;
+    eyebrow: string;
+    title: string;
+    body: string;
+  }> = [
     {
+      icon: "star",
+      tile: LIME,
+      iconColor: FOREST_INK,
+      eyebrow: L(lang, "REPUTATION", "REPUTACIÓN"),
       title: L(lang, "5-Star Reputation", "Reputación de 5 Estrellas"),
       body: L(lang, "Awarded the industry's highest homeowner ratings for quality, craftsmanship, and service.", "Galardonada con las calificaciones más altas de propietarios por calidad, artesanía y servicio."),
     },
     {
-      title: L(lang, "Family Owned & Operated", "Propiedad Familiar y Operada Localmente"),
+      icon: "home",
+      tile: ACCENT,
+      iconColor: WHITE,
+      eyebrow: L(lang, "OUR ROOTS", "NUESTRAS RAÍCES"),
+      title: L(lang, "Family Owned & Operated", "Propiedad y Operación Familiar"),
       body: L(lang, "A locally rooted company that treats every home and every homeowner like family.", "Una empresa con raíces locales que trata cada hogar y cada propietario como familia."),
     },
     {
+      icon: "badge",
+      tile: FOREST_INK,
+      iconColor: LIME,
+      eyebrow: L(lang, "CERTIFIED CREWS", "CUADROS CERTIFICADOS"),
       title: L(lang, "Factory-Trained Installers", "Instaladores Capacitados por la Fábrica"),
       body: L(lang, "Certified crews trained directly by the manufacturers we install — GAF Master Elite® and more.", "Cuadros certificados capacitados directamente por los fabricantes que instalamos, incluyendo GAF Master Elite®."),
     },
     {
+      icon: "shield",
+      tile: LIME_DEEP,
+      iconColor: WHITE,
+      eyebrow: L(lang, "PROTECTION", "PROTECCIÓN"),
       title: L(lang, "Best-in-Class Warranties", "Las Mejores Garantías de la Industria"),
       body: L(lang, "Golden Pledge® Lifetime Warranty and manufacturer-backed protection for long-term peace of mind.", "Garantía de por vida Golden Pledge® y protección respaldada por el fabricante para su tranquilidad a largo plazo."),
     },
     {
+      icon: "spark",
+      tile: CREAM,
+      iconColor: LIME_DEEP,
+      eyebrow: L(lang, "TURNKEY EXPERIENCE", "EXPERIENCIA LLAVE EN MANO"),
       title: L(lang, "Hassle-Free Experience", "Experiencia Sin Complicaciones"),
       body: L(lang, "From inspection to installation, we handle permits, materials, and clean-up so you don't have to.", "Desde la inspección hasta la instalación, nos encargamos de permisos, materiales y limpieza para que usted no tenga que hacerlo."),
     },
@@ -411,19 +523,27 @@ function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
 
   const cardX = 22;
   const cardW = PW - 44;
-  const gap = 7;
+  const gap = 6;
   const startY = 82;
-  const numSize = 18;
-  const pad = 8;
+  const tileSize = 22;
+  const pad = 9;
+  const textX = cardX + pad + tileSize + 10;
+  const textW = cardW - (textX - cardX) - pad;
   let y = startY;
 
   for (let i = 0; i < reasons.length; i++) {
-    const reason = reasons[i];
-    setDisplayFont(pdf, 9);
-    const titleLines = pdf.splitTextToSize(reason.title, cardW - pad * 2 - numSize - 10);
-    setBodyFont(pdf, 9);
-    const bodyLines = pdf.splitTextToSize(reason.body, cardW - pad * 2 - numSize - 10);
-    const cardH = Math.max(pad * 2 + titleLines.length * 5.2 + 3 + bodyLines.length * 4.9, 22);
+    const r = reasons[i];
+
+    setDisplayFont(pdf, 12);
+    const titleLines = pdf.splitTextToSize(r.title, textW);
+    setBodyFont(pdf, 9.5);
+    const bodyLines = pdf.splitTextToSize(r.body, textW);
+
+    const eyebrowH = 4.2;
+    const titleH = titleLines.length * 5.6;
+    const bodyH = bodyLines.length * 4.9;
+    const contentH = eyebrowH + 2.4 + titleH + 2.6 + bodyH;
+    const cardH = Math.max(contentH + pad * 2, tileSize + pad * 2);
 
     if (y + cardH > PH - 44) {
       pdf.addPage();
@@ -431,30 +551,49 @@ function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
       y = 22;
     }
 
-    rounded(pdf, cardX, y, cardW, cardH, 2.4, CARD, MIST);
+    // Card
+    rounded(pdf, cardX, y, cardW, cardH, 3, CARD, MIST);
 
-    // Number badge
-    setFill(pdf, ACCENT);
-    pdf.roundedRect(cardX + pad, y + pad + 0.6, numSize, numSize, 2.2, 2.2, "F");
-    setDisplayFont(pdf, 10);
-    setColor(pdf, WHITE);
-    pdf.text(String(i + 1), cardX + pad + numSize / 2, y + pad + 5.6, { align: "center" });
+    // Left accent rail
+    setFill(pdf, r.tile);
+    pdf.roundedRect(cardX, y, 1.6, cardH, 0.8, 0.8, "F");
 
-    const textX = cardX + pad + numSize + 6;
-    let cy = y + pad + 4.2;
+    // Icon tile
+    const tileX = cardX + pad;
+    const tileY = y + (cardH - tileSize) / 2;
+    setFill(pdf, r.tile);
+    pdf.roundedRect(tileX, tileY, tileSize, tileSize, 4, 4, "F");
+    drawReasonIcon(pdf, r.icon, tileX + tileSize / 2, tileY + tileSize / 2, r.iconColor);
 
-    setDisplayFont(pdf, 9);
+    // Numeric marker (small, top-right of tile)
+    setDisplayFont(pdf, 7);
+    setColor(pdf, SLATE);
+    trackedText(pdf, `0${i + 1}`, cardX + cardW - pad, y + pad + 2, { align: "right", charSpace: 0.5 });
+
+    // Text block — vertically centered inside card
+    const blockTop = y + (cardH - contentH) / 2;
+    let cy = blockTop;
+
+    // Eyebrow
+    setDisplayFont(pdf, 7);
+    setColor(pdf, LIME_DEEP);
+    trackedText(pdf, r.eyebrow, textX, cy + 2.6, { charSpace: 0.6 });
+    cy += eyebrowH + 2.4;
+
+    // Title
+    setDisplayFont(pdf, 12);
     setColor(pdf, FOREST_INK);
     titleLines.forEach((ln: string) => {
-      pdf.text(ln, textX, cy);
-      cy += 5.2;
+      pdf.text(ln, textX, cy + 4);
+      cy += 5.6;
     });
+    cy += 2.6;
 
-    cy += 1;
-    setBodyFont(pdf, 9);
+    // Body
+    setBodyFont(pdf, 9.5);
     setColor(pdf, GRAPHITE);
     bodyLines.forEach((ln: string) => {
-      pdf.text(ln, textX, cy);
+      pdf.text(ln, textX, cy + 3.4);
       cy += 4.9;
     });
 
@@ -467,14 +606,14 @@ function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
   setDisplayFont(pdf, 7.5);
   setColor(pdf, LIME_DEEP);
   trackedText(pdf, L(lang, "LEARN MORE", "APRENDA MÁS"), 22, footerY + 9, { charSpace: 0.55 });
-  setBodyFont(pdf, 11, "bold");
+  setBodyFont(pdf, 12, "bold");
   setColor(pdf, FOREST_INK);
-  pdf.text("DABELLA.US", 22, footerY + 18);
+  pdf.text("DABELLA.US", 22, footerY + 19);
 
   setBodyFont(pdf, 9);
   setColor(pdf, SLATE);
   const tagline = L(lang, "Home improvement, expertly done.", "Mejoras del hogar, hechas con maestría.");
-  pdf.text(tagline, PW - 22, footerY + 18, { align: "right" });
+  pdf.text(tagline, PW - 22, footerY + 19, { align: "right" });
 }
 
 
