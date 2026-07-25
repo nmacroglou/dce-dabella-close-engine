@@ -375,6 +375,109 @@ function drawOpinion(pdf: jsPDF, input: InspectionPdfInput, logoDataUrl: string)
 }
 
 
+// ─── Why DaBella ───────────────────────────────────────────────
+function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
+  const lang = (input.language ?? "en") as Lang;
+  pageBg(pdf);
+  sectionHeader(
+    pdf,
+    L(lang, "Section 4", "Sección 4"),
+    L(lang, "Why DaBella?", "¿Por qué DaBella?"),
+    L(lang, "5 important things to consider when choosing your home improvement partner.", "5 cosas importantes a considerar al elegir su socio de mejoras del hogar."),
+  );
+
+  const reasons = [
+    {
+      title: L(lang, "5-Star Reputation", "Reputación de 5 Estrellas"),
+      body: L(lang, "Awarded the industry's highest homeowner ratings for quality, craftsmanship, and service.", "Galardonada con las calificaciones más altas de propietarios por calidad, artesanía y servicio."),
+    },
+    {
+      title: L(lang, "Family Owned & Operated", "Propiedad Familiar y Operada Localmente"),
+      body: L(lang, "A locally rooted company that treats every home and every homeowner like family.", "Una empresa con raíces locales que trata cada hogar y cada propietario como familia."),
+    },
+    {
+      title: L(lang, "Factory-Trained Installers", "Instaladores Capacitados por la Fábrica"),
+      body: L(lang, "Certified crews trained directly by the manufacturers we install — GAF Master Elite® and more.", "Cuadros certificados capacitados directamente por los fabricantes que instalamos, incluyendo GAF Master Elite®."),
+    },
+    {
+      title: L(lang, "Best-in-Class Warranties", "Las Mejores Garantías de la Industria"),
+      body: L(lang, "Golden Pledge® Lifetime Warranty and manufacturer-backed protection for long-term peace of mind.", "Garantía de por vida Golden Pledge® y protección respaldada por el fabricante para su tranquilidad a largo plazo."),
+    },
+    {
+      title: L(lang, "Hassle-Free Experience", "Experiencia Sin Complicaciones"),
+      body: L(lang, "From inspection to installation, we handle permits, materials, and clean-up so you don't have to.", "Desde la inspección hasta la instalación, nos encargamos de permisos, materiales y limpieza para que usted no tenga que hacerlo."),
+    },
+  ];
+
+  const cardX = 22;
+  const cardW = PW - 44;
+  const gap = 7;
+  const startY = 82;
+  const numSize = 18;
+  const pad = 8;
+  let y = startY;
+
+  for (let i = 0; i < reasons.length; i++) {
+    const reason = reasons[i];
+    setDisplayFont(pdf, 9);
+    const titleLines = pdf.splitTextToSize(reason.title, cardW - pad * 2 - numSize - 10);
+    setBodyFont(pdf, 9);
+    const bodyLines = pdf.splitTextToSize(reason.body, cardW - pad * 2 - numSize - 10);
+    const cardH = Math.max(pad * 2 + titleLines.length * 5.2 + 3 + bodyLines.length * 4.9, 22);
+
+    if (y + cardH > PH - 44) {
+      pdf.addPage();
+      pageBg(pdf);
+      y = 22;
+    }
+
+    rounded(pdf, cardX, y, cardW, cardH, 2.4, CARD, MIST);
+
+    // Number badge
+    setFill(pdf, ACCENT);
+    pdf.roundedRect(cardX + pad, y + pad + 0.6, numSize, numSize, 2.2, 2.2, "F");
+    setDisplayFont(pdf, 10);
+    setColor(pdf, WHITE);
+    pdf.text(String(i + 1), cardX + pad + numSize / 2, y + pad + 5.6, { align: "center" });
+
+    const textX = cardX + pad + numSize + 6;
+    let cy = y + pad + 4.2;
+
+    setDisplayFont(pdf, 9);
+    setColor(pdf, FOREST_INK);
+    titleLines.forEach((ln: string) => {
+      pdf.text(ln, textX, cy);
+      cy += 5.2;
+    });
+
+    cy += 1;
+    setBodyFont(pdf, 9);
+    setColor(pdf, GRAPHITE);
+    bodyLines.forEach((ln: string) => {
+      pdf.text(ln, textX, cy);
+      cy += 4.9;
+    });
+
+    y += cardH + gap;
+  }
+
+  // Website footer
+  const footerY = PH - 32;
+  hairline(pdf, 22, footerY, PW - 22, footerY, ACCENT, 0.4);
+  setDisplayFont(pdf, 7.5);
+  setColor(pdf, LIME_DEEP);
+  trackedText(pdf, L(lang, "LEARN MORE", "APRENDA MÁS"), 22, footerY + 9, { charSpace: 0.55 });
+  setBodyFont(pdf, 11, "bold");
+  setColor(pdf, FOREST_INK);
+  pdf.text("DABELLA.US", 22, footerY + 18);
+
+  setBodyFont(pdf, 9);
+  setColor(pdf, SLATE);
+  const tagline = L(lang, "Home improvement, expertly done.", "Mejoras del hogar, hechas con maestría.");
+  pdf.text(tagline, PW - 22, footerY + 18, { align: "right" });
+}
+
+
 // ─── Helpers ──────────────────────────────────────────────────
 function drawBlock(pdf: jsPDF, heading: string, text: string, y: number): number {
   if (!text) return y;
