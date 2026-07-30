@@ -283,16 +283,34 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Primary detail + sales history in parallel.
-    const [detail, saleHist] = await Promise.all([
-      attomFetch('/property/expandedprofile', parts).catch((e) => ({ __err: String(e) })),
-      attomFetch('/saleshistory/detail', parts).catch(() => null),
-    ]);
+    // ATTOM matches best on USPS-style abbreviations; try raw first, then abbreviated.
+    const candidates = [parts];
+    const abbr = { address1: abbreviateStreet(parts.address1), address2: parts.address2 };
+    if (abbr.address1 !== parts.address1) candidates.push(abbr);
 
-    if ((detail as any).__err) {
+    let detail: any = null;
+    let saleHist: any = null;
+    let lastErr = '';
+    let used = parts;
+
+    for (const cand of candidates) {
+      const [d, s] = await Promise.all([
+        attomFetch('/property/expandedprofile', cand).catch((e) => ({ __err: String(e) })),
+        attomFetch('/saleshistory/detail', cand).catch(() => null),
+      ]);
+      if ((d as any).__err) { lastErr = (d as any).__err; continue; }
+      if (d?.property?.[0]) { detail = d; saleHist = s; used = cand; break; }
+    }
+
+    if (!detail) {
       return new Response(
-        JSON.stringify({ error: 'ATTOM lookup failed', details: (detail as any).__err }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        JSON.stringify({
+          error: 'No property found for address',
+          searched: `${used.address1}, ${used.address2}`,
+          details: lastErr || undefined,
+          is_demo: false,
+        }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
