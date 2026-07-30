@@ -32,17 +32,71 @@ async function attomFetch(path: string, params: Record<string, string>) {
   try { return JSON.parse(body); } catch { throw new Error(`ATTOM ${path}: invalid JSON`); }
 }
 
+const STATES = /\b(A[LKZR]|C[AOT]|DE|FL|GA|HI|I[DLNA]|K[SY]|LA|M[EDAINSOT]|N[EVHJMYCD]|O[HKR]|PA|RI|S[CD]|T[NX]|UT|V[TA]|W[AVIY]|DC)\b/i;
+
+function titleish(s: string) {
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Tolerant address parser. Accepts:
+ *  - address + city + state (+zip) fields
+ *  - "123 Main St, Phoenix, AZ 85013"
+ *  - "123 Main St, Phoenix AZ 85013"
+ *  - "123 Main St Phoenix AZ 85013"  (no commas)
+ */
 function splitAddress(input: ReqBody): { address1: string; address2: string } | null {
   if (input.address && input.city && input.state) {
     return {
-      address1: input.address,
-      address2: `${input.city}, ${input.state}${input.zip ? ' ' + input.zip : ''}`,
+      address1: titleish(input.address),
+      address2: titleish(`${input.city}, ${input.state}${input.zip ? ' ' + input.zip : ''}`),
     };
   }
-  if (input.address) {
-    // Try to parse "123 Main St, Phoenix, AZ 85013"
-    const parts = input.address.split(',').map((s) => s.trim());
-    if (parts.length >= 3) return { address1: parts[0], address2: parts.slice(1).join(', ') };
+
+  const raw = titleish(input.address ?? '');
+  if (!raw) return null;
+
+  const parts = raw.split(',').map((s) => s.trim()).filter(Boolean);
+
+  // "street, city, ST ZIP" (or more)
+  if (parts.length >= 3) {
+    return { address1: parts[0], address2: parts.slice(1).join(', ') };
+  }
+
+  // "street, city ST ZIP"
+  if (parts.length === 2) {
+    const tail = parts[1];
+    const m = tail.match(/^(.*?)\s+([A-Za-z]{2})\s*(\d{5}(?:-\d{4})?)?$/);
+    if (m && STATES.test(m[2])) {
+      const city = titleish(m[1]);
+      const st = m[2].toUpperCase();
+      const zip = m[3] ?? '';
+      // If "street, ST ZIP" (no city), we can still search with zip only.
+      return {
+        address1: parts[0],
+        address2: city ? `${city}, ${st}${zip ? ' ' + zip : ''}` : `${st}${zip ? ' ' + zip : ''}`,
+      };
+    }
+    return { address1: parts[0], address2: tail };
+  }
+
+  // No commas: "1416 W Libby St Phoenix AZ 85023"
+  const tokens = raw.split(/\s+/);
+  let zip = '';
+  if (/^\d{5}(-\d{4})?$/.test(tokens[tokens.length - 1])) zip = tokens.pop()!;
+  let state = '';
+  if (tokens.length && /^[A-Za-z]{2}$/.test(tokens[tokens.length - 1]) && STATES.test(tokens[tokens.length - 1])) {
+    state = tokens.pop()!.toUpperCase();
+  }
+  if (state && tokens.length >= 2) {
+    // Assume last remaining token(s) is the city — take the last one, or two for
+    // common multi-word cities preceded by a street suffix.
+    const city = tokens.pop()!;
+    if (tokens.length === 0) return null;
+    return { address1: tokens.join(' '), address2: `${city}, ${state}${zip ? ' ' + zip : ''}` };
+  }
+  if (zip && tokens.length >= 1) {
+    return { address1: tokens.join(' '), address2: zip };
   }
   return null;
 }
