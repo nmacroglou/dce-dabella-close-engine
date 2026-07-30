@@ -54,6 +54,9 @@ function newPage(pdf: jsPDF, ctx: Ctx, eyebrowText: string, heading: string, sub
   ctx.y = subtitle ? 82 : 76;
 }
 
+/** Height of a kv card with n rows, including the block title above it. */
+const kvNeed = (rows: number) => Math.ceil(rows / 2) * 9.4 + 8 + 6.5 + 7;
+
 function ensure(pdf: jsPDF, ctx: Ctx, needed: number, eyebrowText: string, heading: string) {
   if (ctx.y + needed > BOTTOM) newPage(pdf, ctx, eyebrowText, `${heading} (cont.)`);
 }
@@ -280,7 +283,7 @@ export async function buildPropertyIntelPdf(
     ["Recording #", dash(r.ownership.recording_number)],
   ]);
 
-  ensure(pdf, ctx, 60, "Section 1", "Property & Ownership");
+  ensure(pdf, ctx, kvNeed(6), "Section 1", "Property & Ownership");
   blockTitle(pdf, ctx, "Most recent sale");
   kvCard(pdf, ctx, [
     ["Sale date", date(r.most_recent_sale.sale_date)],
@@ -291,7 +294,7 @@ export async function buildPropertyIntelPdf(
     ["Recording #", dash(r.most_recent_sale.recording_number)],
   ]);
 
-  ensure(pdf, ctx, 45, "Section 1", "Property & Ownership");
+  ensure(pdf, ctx, kvNeed(4), "Section 1", "Property & Ownership");
   blockTitle(pdf, ctx, "Identity assessment");
   kvCard(pdf, ctx, [
     ["Likely owner", dash(r.identity.likely_owner_name)],
@@ -333,7 +336,7 @@ export async function buildPropertyIntelPdf(
     ["Heat exposure", title(i.heat_exposure)],
   ]);
 
-  ensure(pdf, ctx, 40, "Section 2", "Property Characteristics");
+  ensure(pdf, ctx, 34, "Section 2", "Property Characteristics");
   blockTitle(pdf, ctx, "Permits on record");
   if (i.permits.length) {
     bullets(pdf, ctx, i.permits.map((p) =>
@@ -342,7 +345,7 @@ export async function buildPropertyIntelPdf(
     paragraph(pdf, ctx, "No permits found in available records.");
   }
 
-  ensure(pdf, ctx, 35, "Section 2", "Property Characteristics");
+  ensure(pdf, ctx, kvNeed(4), "Section 2", "Property Characteristics");
   blockTitle(pdf, ctx, "Flags");
   kvCard(pdf, ctx, [
     ["Existing customer", i.existing_customer ? "Yes" : "No"],
@@ -377,7 +380,7 @@ export async function buildPropertyIntelPdf(
     bullets(pdf, ctx, o.missing_info, SLATE);
   }
 
-  ensure(pdf, ctx, 55, "Section 3", "Opportunity & Approach");
+  ensure(pdf, ctx, kvNeed(2) + 24, "Section 3", "Opportunity & Approach");
   blockTitle(pdf, ctx, "Pre-door brief");
   kvCard(pdf, ctx, [
     ["Name to use", dash(r.brief.headline_name)],
