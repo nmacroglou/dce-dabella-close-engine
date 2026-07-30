@@ -1,16 +1,18 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import PropertySearch from "@/components/property-intel/PropertySearch";
 import PropertyIntelReportView from "@/components/property-intel/PropertyIntelReport";
 import { generateReport } from "@/lib/propertyIntel/generateReport";
 import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Search } from "lucide-react";
 
 export default function PropertyIntel() {
   const { user } = useAuth();
   const [report, setReport] = useState<PropertyIntelReport | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const runSearch = async (query: string) => {
     setLoading(true);
@@ -20,6 +22,22 @@ export default function PropertyIntel() {
       setReport(r);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const exportPdf = async () => {
+    if (!report) return;
+    setExporting(true);
+    try {
+      const { buildPropertyIntelPdf, propertyIntelPdfFilename } = await import("@/lib/pdf/propertyIntel");
+      const { doc } = await buildPropertyIntelPdf(report);
+      doc.save(propertyIntelPdfFilename(report));
+      toast.success("PDF exported");
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not generate PDF");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -35,10 +53,17 @@ export default function PropertyIntel() {
             </h1>
           </div>
           {report && (
-            <button onClick={() => setReport(null)}
-              className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-muted/40 px-3 py-1.5 text-[12px] font-semibold hover:bg-muted/60">
-              <ArrowLeft className="h-3.5 w-3.5" /> New search
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={exportPdf} disabled={exporting}
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
+                {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                {exporting ? "Building…" : "Export PDF"}
+              </button>
+              <button onClick={() => setReport(null)}
+                className="inline-flex items-center gap-1.5 rounded-md border border-hairline bg-muted/40 px-3 py-1.5 text-[12px] font-semibold hover:bg-muted/60">
+                <ArrowLeft className="h-3.5 w-3.5" /> New search
+              </button>
+            </div>
           )}
         </div>
 
