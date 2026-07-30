@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { registerPdfFonts } from "./fonts";
 import {
+  type RGB,
   ACCENT, CARD, CREAM, FOREST, FOREST_INK, GRAPHITE, LIME, LIME_DEEP,
   MIST, NEGATIVE, PH, POSITIVE, PW, SAND, SLATE, WHITE,
 } from "./theme";
@@ -107,7 +108,7 @@ function paragraph(pdf: jsPDF, ctx: Ctx, text: string, size = 9.2) {
   ctx.y += 3;
 }
 
-function bullets(pdf: jsPDF, ctx: Ctx, items: string[], color = LIME_DEEP) {
+function bullets(pdf: jsPDF, ctx: Ctx, items: string[], color: RGB = LIME_DEEP) {
   if (!items.length) {
     paragraph(pdf, ctx, "None recorded.");
     return;
