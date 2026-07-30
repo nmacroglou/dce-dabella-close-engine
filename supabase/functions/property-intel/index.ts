@@ -101,6 +101,21 @@ function splitAddress(input: ReqBody): { address1: string; address2: string } | 
   return null;
 }
 
+const STREET_ABBR: Record<string, string> = {
+  north: 'N', south: 'S', east: 'E', west: 'W',
+  northeast: 'NE', northwest: 'NW', southeast: 'SE', southwest: 'SW',
+  street: 'St', avenue: 'Ave', boulevard: 'Blvd', drive: 'Dr', road: 'Rd',
+  lane: 'Ln', court: 'Ct', place: 'Pl', circle: 'Cir', trail: 'Trl',
+  parkway: 'Pkwy', highway: 'Hwy', terrace: 'Ter', way: 'Way', square: 'Sq',
+};
+
+function abbreviateStreet(s: string) {
+  return s
+    .split(/\s+/)
+    .map((w) => STREET_ABBR[w.toLowerCase().replace(/[.,]/g, '')] ?? w)
+    .join(' ');
+}
+
 function detectOwnerType(name: string): 'individual' | 'joint' | 'trust' | 'llc' | 'corporation' | 'unknown' {
   const n = name.toUpperCase();
   if (/\bTRUST\b|\bTR\b|\bLIVING TRUST\b/.test(n)) return 'trust';
