@@ -211,10 +211,19 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
   }
 
   const identityScore = ownershipScore - (ownerType === 'trust' || ownerType === 'llc' ? 10 : 0);
+  // Trusts often hold the home the grantor still lives in — surface the personal
+  // name behind the trust when the tax mailing address is the property itself.
+  const trustPersonName = ownerType === 'trust' && ownerName
+    ? ownerName.replace(/\b(REVOCABLE|IRREVOCABLE|LIVING|FAMILY|THE)\b/gi, '')
+        .replace(/\bTRUST(EE)?S?\b|\bTR\b|\bDTD?\b.*$/gi, '')
+        .replace(/\s+/g, ' ').trim() || null
+    : null;
   const likelyOwner =
-    ownerType === 'individual' || ownerType === 'joint' ? ownerName : null;
+    ownerType === 'individual' || ownerType === 'joint' ? ownerName :
+    ownerType === 'trust' && taxMatch ? trustPersonName : null;
   const occupancyStatus =
     ownerType === 'individual' || ownerType === 'joint' ? 'likely_owner_occupied' :
+    ownerType === 'trust' ? (taxMatch ? 'likely_owner_occupied' : 'likely_non_owner_occupied') :
     ownerType === 'llc' || ownerType === 'corporation' ? 'likely_non_owner_occupied' : 'unknown';
 
   const propertyMatch = {
