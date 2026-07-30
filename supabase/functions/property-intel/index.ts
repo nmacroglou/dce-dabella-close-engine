@@ -186,12 +186,16 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
   const saleRecDate = g(saleAmount, 'saleRecDate') ?? null;
 
 
-  const matchScore =
-    (addr.line1 ? 25 : 0) + (p.identifier?.apn ? 25 : 0) + (location.latitude ? 15 : 0) + 20;
+  const apn = clean(g(g(p, 'identifier') ?? {}, 'apn', 'apnOrig'));
+  const line1 = clean(g(addr, 'line1'));
+  const lat = Number(g(location, 'latitude')) || null;
+  const lng = Number(g(location, 'longitude')) || null;
+
+  const matchScore = (line1 ? 25 : 0) + (apn ? 25 : 0) + (lat ? 15 : 0) + 20;
   const matchReasons: string[] = [];
-  if (p.identifier?.apn) matchReasons.push(`Parcel APN ${p.identifier.apn}`);
-  if (addr.line1) matchReasons.push('Address standardized by county record');
-  if (location.latitude) matchReasons.push('Geocoded to parcel centroid');
+  if (apn) matchReasons.push(`Parcel APN ${apn}`);
+  if (line1) matchReasons.push('Address standardized by county record');
+  if (lat) matchReasons.push('Geocoded to parcel centroid');
 
   const ownershipScore = 60 +
     (ownerName ? 15 : -20) +
@@ -215,39 +219,41 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
 
   const propertyMatch = {
     standardized_address: propAddrOneline ?? input.address ?? '',
-    parcel_number: p.identifier?.apn ?? null,
-    city: addr.locality ?? input.city ?? null,
-    state: addr.countrySubd ?? input.state ?? null,
-    postal_code: addr.postal1 ?? input.zip ?? null,
-    latitude: Number(location.latitude) || input.lat || null,
-    longitude: Number(location.longitude) || input.lng || null,
-    property_type: summary.proptype ?? summary.propclass ?? 'Single-family residence',
+    parcel_number: apn,
+    city: clean(g(addr, 'locality')) ?? input.city ?? null,
+    state: clean(g(addr, 'countrySubd')) ?? input.state ?? null,
+    postal_code: clean(g(addr, 'postal1')) ?? input.zip ?? null,
+    latitude: lat ?? input.lat ?? null,
+    longitude: lng ?? input.lng ?? null,
+    property_type:
+      clean(g(summary, 'propertyType', 'propClass', 'propSubType', 'propType')) ??
+      'Single-family residence',
     data_sources: ['ATTOM Data — County Assessor', 'ATTOM Data — Recorder'],
-    last_updated: new Date().toISOString(),
+    last_updated: clean(g(g(p, 'vintage') ?? {}, 'lastModified')) ?? new Date().toISOString(),
     confidence: conf(matchScore, matchReasons),
   };
 
   const ownership = {
     owner_name: ownerName,
     owner_type: ownerType,
-    tax_mailing_name: owner.owner1?.fullname ?? null,
+    tax_mailing_name: clean(g(g(owner, 'owner1') ?? {}, 'fullName', 'lastName')),
     tax_mailing_address: mailingAddr,
     tax_mailing_matches_property: taxMatch,
-    ownership_start_date: sale?.salesearchdate ?? null,
-    document_type: sale?.saleTransType ?? 'Deed',
-    recording_number: sale?.saleRecDate ?? null,
+    ownership_start_date: g(sale, 'saleSearchDate') ?? saleDate ?? null,
+    document_type: saleDocType,
+    recording_number: saleDocNum,
     source: 'ATTOM Data — County Recorder',
-    source_record_date: sale?.salesearchdate ?? null,
+    source_record_date: saleRecDate,
     confidence: conf(ownershipScore, ownershipReasons, ownershipConflicts),
   };
 
   const saleRecord = {
     sale_date: saleDate,
     buyer_name: ownerName,
-    seller_name: latestSale?.sellerName ?? null,
+    seller_name: clean(g(latestSale, 'sellerName')),
     sale_price: salePrice,
-    document_type: latestSale?.saleTransType ?? 'Deed',
-    recording_number: latestSale?.saleRecDate ?? null,
+    document_type: saleDocType,
+    recording_number: saleDocNum,
     source: 'ATTOM Data — County Recorder',
     confidence: conf(saleDate ? 82 : 40, saleDate ? ['Deed recorded'] : ['No sale on file']),
   };
@@ -259,19 +265,35 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
     confidence: conf(identityScore, ownershipReasons, ownershipConflicts),
   };
 
+  const lotSize1 = Number(g(lot, 'lotSize1')) || null;
+  const mortgage = g(assessment, 'mortgage') ?? {};
+  const firstMtg = g(mortgage, 'FirstConcurrent') ?? {};
+
   const info = {
     year_built: yearBuilt ? Number(yearBuilt) : null,
-    square_feet: Number(size.universalsize ?? size.livingsize ?? 0) || null,
-    lot_size: Number(lot.lotsize2 ?? lot.lotsize1 * 43560 ?? 0) || null,
-    stories: Number(building.summary?.levels ?? 0) || null,
-    bedrooms: Number(rooms.beds ?? 0) || null,
-    bathrooms: Number(rooms.bathstotal ?? 0) || null,
-    assessed_value: Number(assessment.assessed?.assdttlvalue ?? 0) || null,
-    estimated_market_value: Number(assessment.market?.mktttlvalue ?? 0) || null,
+    square_feet: Number(g(size, 'universalSize', 'livingSize', 'bldgSize', 'grossSize')) || null,
+    lot_size: Number(g(lot, 'lotSize2')) || (lotSize1 ? Math.round(lotSize1 * 43560) : null),
+    stories: Number(g(g(building, 'summary') ?? {}, 'levels')) || null,
+    bedrooms: Number(g(rooms, 'beds', 'bedsCount', 'roomsBeds')) || null,
+    bathrooms: Number(g(rooms, 'bathsTotal', 'bathsFull')) || null,
+    assessed_value: Number(g(g(assessment, 'assessed') ?? {}, 'assdTtlValue')) || null,
+    estimated_market_value: Number(g(g(assessment, 'market') ?? {}, 'mktTtlValue')) || null,
     roof_material: roofMaterial,
     estimated_roof_age: estRoofAge,
     is_roof_age_estimated: true,
-    exterior_material: building.construction?.wallType ?? null,
+    exterior_material: clean(g(construction, 'wallType', 'constructionType')),
+    building_condition: clean(g(construction, 'condition')),
+    cooling_type: clean(g(g(p, 'utilities') ?? {}, 'coolingType')),
+    heating_type: clean(g(g(p, 'utilities') ?? {}, 'heatingType')),
+    parking_spaces: Number(g(g(building, 'parking') ?? {}, 'prkgSpaces')) || null,
+    annual_tax: Number(g(g(assessment, 'tax') ?? {}, 'taxAmt')) || null,
+    tax_year: Number(g(g(assessment, 'tax') ?? {}, 'taxYear')) || null,
+    mortgage_lender: clean(g(firstMtg, 'lenderLastName')),
+    mortgage_amount: Number(g(firstMtg, 'amount')) || null,
+    mortgage_date: g(firstMtg, 'date') ?? null,
+    zoning: clean(g(lot, 'zoningType', 'siteZoningIdent')),
+    subdivision: clean(g(g(p, 'area') ?? {}, 'subdName')),
+    county: clean(g(g(p, 'area') ?? {}, 'countrySecSubd')),
     solar_present: null,
     permits: [],
     storm_exposure: null,
@@ -281,6 +303,7 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
     existing_customer: false,
     do_not_knock: false,
   };
+
 
   // Simple opportunity heuristic — mirrors mockOpportunity.
   const roofAge = info.estimated_roof_age ?? 0;
