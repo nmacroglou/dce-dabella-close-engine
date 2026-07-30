@@ -126,38 +126,65 @@ function detectOwnerType(name: string): 'individual' | 'joint' | 'trust' | 'llc'
   return 'unknown';
 }
 
+/** Case-insensitive key lookup — ATTOM mixes camelCase and lowercase across endpoints. */
+function g(obj: any, ...keys: string[]): any {
+  if (!obj || typeof obj !== 'object') return undefined;
+  const map = new Map(Object.keys(obj).map((k) => [k.toLowerCase(), k]));
+  for (const k of keys) {
+    const real = map.get(k.toLowerCase());
+    if (real !== undefined && obj[real] !== undefined && obj[real] !== null && obj[real] !== '') {
+      return obj[real];
+    }
+  }
+  return undefined;
+}
+
+const clean = (v: any) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() || null : v ?? null);
+
 function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
   const p = attom?.property?.[0];
   if (!p) return null;
 
-  const addr = p.address ?? {};
-  const owner = p.owner ?? {};
-  const summary = p.summary ?? {};
-  const building = p.building ?? {};
-  const rooms = building.rooms ?? {};
-  const size = building.size ?? {};
-  const lot = p.lot ?? {};
-  const assessment = p.assessment ?? {};
-  const sale = p.sale ?? {};
-  const location = p.location ?? {};
+  const addr = g(p, 'address') ?? {};
+  const summary = g(p, 'summary') ?? {};
+  const building = g(p, 'building') ?? {};
+  const rooms = g(building, 'rooms') ?? {};
+  const size = g(building, 'size') ?? {};
+  const construction = g(building, 'construction') ?? {};
+  const lot = g(p, 'lot') ?? {};
+  const assessment = g(p, 'assessment') ?? {};
+  const sale = g(p, 'sale') ?? {};
+  const location = g(p, 'location') ?? {};
+  // Owner lives under assessment.owner on expandedprofile, sometimes at property.owner.
+  const owner = g(assessment, 'owner') ?? g(p, 'owner') ?? {};
 
   const ownerName =
-    [owner.owner1?.fullname, owner.owner2?.fullname].filter(Boolean).join(' & ') || null;
+    [clean(g(g(owner, 'owner1') ?? {}, 'fullName', 'lastName')),
+     clean(g(g(owner, 'owner2') ?? {}, 'fullName', 'lastName'))]
+      .filter(Boolean).join(' & ') || null;
   const ownerType = ownerName ? detectOwnerType(ownerName) : 'unknown';
 
-  const mailingAddr = owner.mailingaddressoneline ?? null;
-  const propAddrOneline = addr.oneLine ?? null;
-  const taxMatch = !!(mailingAddr && propAddrOneline &&
-    mailingAddr.replace(/\s+/g, ' ').toUpperCase() === propAddrOneline.replace(/\s+/g, ' ').toUpperCase());
+  const mailingAddr = clean(g(owner, 'mailingAddressOneLine'));
+  const propAddrOneline = clean(g(addr, 'oneLine'));
+  const norm = (s: string) => s.replace(/\s+/g, ' ').replace(/-\d{4}$/, '').toUpperCase().trim();
+  const taxMatch = !!(mailingAddr && propAddrOneline && norm(mailingAddr) === norm(propAddrOneline));
 
-  const yearBuilt = summary.yearbuilt ?? building.yearbuilt ?? null;
-  const roofMaterial = building.construction?.roofcover ?? null;
-  const estRoofAge = yearBuilt ? new Date().getFullYear() - Number(yearBuilt) : null;
+  const yearBuilt = g(summary, 'yearBuilt') ?? g(building, 'yearBuilt') ??
+    g(g(building, 'summary') ?? {}, 'yearBuiltEffective') ?? null;
+  const roofMaterial = clean(g(construction, 'roofCover'));
+  const majorImpYear = Number(g(construction, 'propertyStructureMajorImprovementsYear')) || null;
+  const roofBaseYear = majorImpYear ?? (yearBuilt ? Number(yearBuilt) : null);
+  const estRoofAge = roofBaseYear ? new Date().getFullYear() - roofBaseYear : null;
 
-  const salesHistory = secondaryAttom?.property?.[0]?.salehistory ?? [];
+  const salesHistory = g(secondaryAttom?.property?.[0] ?? {}, 'saleHistory') ?? [];
   const latestSale = salesHistory[0] ?? sale ?? {};
-  const saleDate = latestSale?.saleTransDate ?? latestSale?.salesearchdate ?? sale?.salesearchdate ?? null;
-  const salePrice = Number(latestSale?.amount?.saleamt ?? sale?.amount?.saleamt ?? 0) || null;
+  const saleAmount = g(latestSale, 'amount') ?? g(sale, 'amount') ?? {};
+  const saleDate = g(latestSale, 'saleTransDate', 'saleSearchDate') ?? g(sale, 'saleSearchDate') ?? null;
+  const salePrice = Number(g(saleAmount, 'saleAmt')) || null;
+  const saleDocType = clean(g(saleAmount, 'saleDocType')) ?? 'Deed';
+  const saleDocNum = clean(g(saleAmount, 'saleDocNum'));
+  const saleRecDate = g(saleAmount, 'saleRecDate') ?? null;
+
 
   const matchScore =
     (addr.line1 ? 25 : 0) + (p.identifier?.apn ? 25 : 0) + (location.latitude ? 15 : 0) + 20;
