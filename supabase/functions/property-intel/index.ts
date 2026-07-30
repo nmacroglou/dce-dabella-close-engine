@@ -329,6 +329,12 @@ Deno.serve(async (req) => {
       );
     }
 
+    if ((body as any).debug) {
+      return new Response(JSON.stringify({ raw: detail.property?.[0], rawSale: saleHist?.property?.[0] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const normalized = normalize(detail, saleHist, body);
     if (!normalized) {
       return new Response(
