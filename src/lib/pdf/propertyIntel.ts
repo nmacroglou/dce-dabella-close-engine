@@ -13,7 +13,7 @@ import type { Confidence, PropertyIntelReport } from "@/lib/propertyIntel/types"
 
 const M = 22;                 // page margin
 const CW = PW - M * 2;        // content width
-const BOTTOM = PH - 24;       // safe bottom
+const BOTTOM = PH - 22;       // safe bottom
 
 const dash = (v: unknown) =>
   v === null || v === undefined || v === "" ? "—" : String(v);
@@ -55,7 +55,7 @@ function newPage(pdf: jsPDF, ctx: Ctx, eyebrowText: string, heading: string, sub
 }
 
 /** Height of a kv card with n rows, including the block title above it. */
-const kvNeed = (rows: number) => Math.ceil(rows / 2) * 9.4 + 8 + 6.5 + 7;
+const kvNeed = (rows: number) => Math.ceil(rows / 2) * 9.4 + 8 + 6.5;
 
 function ensure(pdf: jsPDF, ctx: Ctx, needed: number, eyebrowText: string, heading: string) {
   if (ctx.y + needed > BOTTOM) newPage(pdf, ctx, eyebrowText, `${heading} (cont.)`);
