@@ -310,7 +310,7 @@ export async function buildPropertyIntelPdf(
   const i = r.info;
   blockTitle(pdf, ctx, "Structure");
   kvCard(pdf, ctx, [
-    ["Year built", num(i.year_built)],
+    ["Year built", i.year_built ? String(i.year_built) : "—"],
     ["Square feet", num(i.square_feet, " sq ft")],
     ["Lot size", num(i.lot_size, " sq ft")],
     ["Stories", num(i.stories)],
@@ -431,7 +431,7 @@ export async function buildPropertyIntelPdf(
     ["Mode", r.is_demo ? "Demo fixture data" : "Live records"],
   ]);
 
-  ensure(pdf, ctx, 30, "Section 4", "Confidence & Sourcing");
+  ensure(pdf, ctx, 20, "Section 4", "Confidence & Sourcing");
   setBodyFont(pdf, 7.6);
   setColor(pdf, SLATE);
   const disc = pdf.splitTextToSize(
