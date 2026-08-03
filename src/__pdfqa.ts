@@ -5,6 +5,7 @@ import { buildCustomerPdf } from "@/lib/pdf/build";
 import { buildInspectionPdf } from "@/lib/pdf/inspection";
 import { buildPropertyIntelPdf } from "@/lib/pdf/propertyIntel";
 import type { EngineState, ComputedValues } from "@/types/engine";
+import { TEMPLATES } from "@/data/inspectionTemplates";
 import { generateReport } from "@/lib/propertyIntel/generateReport";
 
 mkdirSync("/tmp/pdfqa", { recursive: true });
@@ -60,13 +61,7 @@ const { blob: inspection } = await buildInspectionPdf({
   customerName: "Marcus Whitfield",
   address: "1416 W Libby St, Phoenix, AZ 85023",
   reportTypes: ["roof"],
-  sections: {
-    executiveSummary:
-      "The roof is a 22-year-old three-tab asphalt system showing widespread granule loss, cracked field shingles and failed pipe-boot seals. Two active leak paths were documented above the north bedroom.",
-    findings: "Granule loss across all southern slopes; cracked boots; rusted valley metal.",
-    recommendations: "Full tear-off and replacement with a GAF Timberline HDZ system.",
-    nextSteps: "Schedule install, confirm color selection, submit HOA paperwork.",
-  } as never,
+  sections: TEMPLATES.roof,
   photos: [
     { tags: ["granule_loss", "cracked_shingles"], severity: "high", caption: "Heavy granule loss across the south-facing slope with exposed mat.", signedUrl: undefined },
     { tags: ["pipe_boot"], severity: "moderate", caption: "Pipe boot seal is split and no longer watertight.", signedUrl: undefined },
