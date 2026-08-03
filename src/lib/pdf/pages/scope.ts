@@ -77,14 +77,23 @@ export function drawScope(pdf: jsPDF, state: EngineState) {
 
   const y = 78;
   const colW = (PW - 44 - 10) / 2;
-  const rowH = 20;
+  const lineH = 4.3;
   const perCol = Math.ceil(items.length / 2);
+  const maxY = PH - 56;
+
+  // Pre-measure so long steps get the vertical room they need instead of clipping.
+  setBodyFont(pdf, 8.5);
+  const measured = items.map((item) => pdf.splitTextToSize(item, colW - 18) as string[]);
+  const colY = [y, y];
 
   items.forEach((item, i) => {
     const col = i < perCol ? 0 : 1;
-    const row = i < perCol ? i : i - perCol;
+    const lines = measured[i];
+    const rowH = Math.max(20, lines.length * lineH + 9);
     const x = 22 + col * (colW + 10);
-    const ry = y + row * rowH;
+    let ry = colY[col];
+    if (ry + rowH > maxY) return; // never overrun the closing quote
+    colY[col] = ry + rowH;
 
     setDisplayFont(pdf, 16);
     setColor(pdf, LIME);
@@ -94,9 +103,9 @@ export function drawScope(pdf: jsPDF, state: EngineState) {
 
     setBodyFont(pdf, 8.5);
     setColor(pdf, INK);
-    const lines = pdf.splitTextToSize(item, colW - 18);
-    lines.slice(0, 2).forEach((ln: string, li: number) => pdf.text(ln, x + 14, ry + 7 + li * 4.3));
+    lines.forEach((ln: string, li: number) => pdf.text(ln, x + 14, ry + 7 + li * lineH));
   });
+
 
   const qy = PH - 50;
   hairline(pdf, 22, qy, PW - 22, qy, ACCENT, 0.4);
