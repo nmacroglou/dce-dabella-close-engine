@@ -32,7 +32,7 @@ export function drawAllOptions(
     pdf,
     "Your Three Options",
     "Choose the plan that fits.",
-    `Every option is a complete ${getProductLabel(state.products).toLowerCase()} system, backed by the same guarantees.`,
+    `Every option is a complete ${getProductLabel(state.products).toLowerCase().replace(/\s*systems?$/, "")} system, backed by the same guarantees.`,
   );
 
   const startY = RHYTHM.sectionTop;
