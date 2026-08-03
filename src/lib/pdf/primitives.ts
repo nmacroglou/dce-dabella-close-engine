@@ -13,15 +13,44 @@ export const setFill  = (pdf: jsPDF, c: RGB) => pdf.setFillColor(c[0], c[1], c[2
 export const setDraw  = (pdf: jsPDF, c: RGB) => pdf.setDrawColor(c[0], c[1], c[2]);
 
 // ─── Typography ───────────────────────────────────────────────
+/** Plus Jakarta Sans ExtraBold — headlines, eyebrows, big numbers. */
 export function setDisplayFont(pdf: jsPDF, size: number) {
-  pdf.setFont("ProposalSans", "bold");
+  pdf.setFont("ProposalDisplay", "bold");
   pdf.setFontSize(size);
 }
 
+/** Plus Jakarta Sans Bold — slightly quieter display weight. */
+export function setDisplaySoftFont(pdf: jsPDF, size: number) {
+  pdf.setFont("ProposalDisplay", "normal");
+  pdf.setFontSize(size);
+}
+
+/** Inter SemiBold — emphasis inside body copy without shouting. */
+export function setMediumFont(pdf: jsPDF, size: number) {
+  pdf.setFont("ProposalSansMed", "normal");
+  pdf.setFontSize(size);
+}
+
+/** Inter — body copy, labels, tabular data. */
 export function setBodyFont(pdf: jsPDF, size: number, style: BodyFontStyle = "normal") {
   pdf.setFont("ProposalSans", style);
   pdf.setFontSize(size);
 }
+
+/**
+ * Shrink the current font until `text` fits within `maxW`, never going below
+ * `min`. Returns the size actually applied.
+ */
+export function fitFontSize(pdf: jsPDF, text: string, maxW: number, start: number, min = 7) {
+  let size = start;
+  pdf.setFontSize(size);
+  while (size > min && pdf.getTextWidth(text) > maxW) {
+    size -= 0.4;
+    pdf.setFontSize(size);
+  }
+  return size;
+}
+
 
 // ─── Shapes ───────────────────────────────────────────────────
 export function rect(pdf: jsPDF, x: number, y: number, w: number, h: number, fill: RGB) {
