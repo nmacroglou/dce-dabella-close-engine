@@ -120,8 +120,24 @@ export function eyebrow(
 ) {
   setDisplayFont(pdf, size);
   setColor(pdf, color);
-  trackedText(pdf, text.toUpperCase(), x, y, { charSpace: 0.55 });
+  trackedText(pdf, text.toUpperCase(), x, y, { charSpace: 0.45 });
 }
+
+/** Small filled capsule with uppercase label — status chips, option tags. */
+export function pill(
+  pdf: jsPDF, text: string, x: number, y: number,
+  fill: RGB, textColor: RGB, size = 6.6, padX = 3.4,
+) {
+  setDisplayFont(pdf, size);
+  const w = pdf.getTextWidth(text.toUpperCase()) + padX * 2 + size * 0.12;
+  const h = size * 0.62 + 3.2;
+  setFill(pdf, fill);
+  pdf.roundedRect(x, y - h + 1.4, w, h, h / 2, h / 2, "F");
+  setColor(pdf, textColor);
+  trackedText(pdf, text.toUpperCase(), x + padX, y - 1.1, { charSpace: 0.3 });
+  return w;
+}
+
 
 export function pageBg(pdf: jsPDF) {
   rect(pdf, 0, 0, PW, 297, PAPER);
