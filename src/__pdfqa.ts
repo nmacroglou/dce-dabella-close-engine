@@ -1,8 +1,6 @@
 /* QA-only: renders every PDF export with sample data so we can eyeball them. */
 import { writeFileSync, mkdirSync } from "fs";
-const _m = new Map<string,string>();
-(globalThis as any).localStorage = { getItem:(k:string)=>_m.get(k)??null, setItem:(k:string,v:string)=>{_m.set(k,String(v));}, removeItem:(k:string)=>{_m.delete(k);}, clear:()=>_m.clear(), key:()=>null, length:0 };
-(globalThis as any).window = globalThis;
+
 import { buildCustomerPdf } from "@/lib/pdf/build";
 import { buildInspectionPdf } from "@/lib/pdf/inspection";
 import { buildPropertyIntelPdf } from "@/lib/pdf/propertyIntel";
