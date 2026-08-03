@@ -111,9 +111,16 @@ export function trackedText(
   pdf: jsPDF, text: string, x: number, y: number, options?: TextOpts,
 ) {
   const safeCharSpace = Math.min(Math.max(options?.charSpace ?? 0, 0), 0.8);
-  pdf.text(text, x, y, { ...options, charSpace: safeCharSpace });
+  // jsPDF measures alignment without letter-spacing, so tracked text drifts
+  // past its anchor. Compensate for the extra width we're about to add.
+  const extra = safeCharSpace * Math.max(text.length - 1, 0);
+  let ax = x;
+  if (options?.align === "right") ax -= extra;
+  else if (options?.align === "center") ax -= extra / 2;
+  pdf.text(text, ax, y, { ...options, charSpace: safeCharSpace });
   pdf.setCharSpace(0);
 }
+
 
 export function eyebrow(
   pdf: jsPDF, text: string, x: number, y: number, color: RGB = SLATE, size = 7.5,
