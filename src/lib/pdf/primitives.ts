@@ -162,24 +162,28 @@ export function sectionHeader(
   pdf: jsPDF, eyebrowText: string, title: string, subtitle?: string,
 ) {
   setFill(pdf, ACCENT);
-  pdf.rect(22, 22, 14, 0.9, "F");
+  pdf.roundedRect(22, 21.6, 14, 1.1, 0.55, 0.55, "F");
 
-  setDisplayFont(pdf, 7.5);
+  setDisplayFont(pdf, 7);
   setColor(pdf, LIME_DEEP);
-  trackedText(pdf, eyebrowText.toUpperCase(), 22, 30, { charSpace: 0.7 });
+  trackedText(pdf, eyebrowText.toUpperCase(), 22, 30, { charSpace: 0.6 });
 
+  // Headline auto-shrinks so long section titles never run off the page.
   setDisplayFont(pdf, 24);
+  const size = fitFontSize(pdf, title, PW - 44, 24, 15);
   setColor(pdf, FOREST_INK);
   pdf.text(title, 22, 45);
+  pdf.setFontSize(size);
 
   let dividerY = 65;
   if (subtitle) {
-    setBodyFont(pdf, 9.5);
+    setBodyFont(pdf, 9.2);
     setColor(pdf, GRAPHITE);
     const lines = pdf.splitTextToSize(subtitle, PW - 44);
-    lines.forEach((ln: string, i: number) => pdf.text(ln, 22, 53 + i * 5.2));
-    dividerY = 57 + lines.length * 5.2 + 4;
+    lines.forEach((ln: string, i: number) => pdf.text(ln, 22, 53 + i * 5.1));
+    dividerY = 57 + lines.length * 5.1 + 4;
   }
 
-  hairline(pdf, 22, dividerY, PW - 22, dividerY, MIST, 0.3);
+  hairline(pdf, 22, dividerY, PW - 22, dividerY, MIST, 0.35);
 }
+
