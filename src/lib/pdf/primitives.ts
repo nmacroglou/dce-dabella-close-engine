@@ -111,15 +111,19 @@ export function trackedText(
   pdf: jsPDF, text: string, x: number, y: number, options?: TextOpts,
 ) {
   const safeCharSpace = Math.min(Math.max(options?.charSpace ?? 0, 0), 0.8);
-  // jsPDF measures alignment without letter-spacing, so tracked text drifts
-  // past its anchor. Compensate for the extra width we're about to add.
-  const extra = safeCharSpace * Math.max(text.length - 1, 0);
-  let ax = x;
-  if (options?.align === "right") ax -= extra;
-  else if (options?.align === "center") ax -= extra / 2;
-  pdf.text(text, ax, y, { ...options, charSpace: safeCharSpace });
+  const align = options?.align;
+  if (align === "right" || align === "center") {
+    // Place tracked text manually: jsPDF's own alignment maths drifts once
+    // letter-spacing is applied, which pushed right-aligned labels off-page.
+    const w = pdf.getTextWidth(text) + safeCharSpace * Math.max(text.length - 1, 0);
+    const ax = align === "right" ? x - w : x - w / 2;
+    pdf.text(text, ax, y, { ...options, align: "left", charSpace: safeCharSpace });
+  } else {
+    pdf.text(text, x, y, { ...options, charSpace: safeCharSpace });
+  }
   pdf.setCharSpace(0);
 }
+
 
 
 export function eyebrow(
