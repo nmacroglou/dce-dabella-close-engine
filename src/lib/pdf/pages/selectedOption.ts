@@ -28,7 +28,7 @@ export function drawSelectedOption(
     pdf,
     `Your Selection · Option ${opt.key}`,
     "Your Investment.",
-    `A complete ${getProductLabel(state.products).toLowerCase()} system, tailored to your home and built to outlast it.`,
+    `A complete ${getProductLabel(state.products).toLowerCase().replace(/\s*systems?$/, "")} system, tailored to your home and built to outlast it.`,
   );
 
   const heroY = RHYTHM.sectionTop;

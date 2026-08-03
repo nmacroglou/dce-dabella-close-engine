@@ -13,15 +13,44 @@ export const setFill  = (pdf: jsPDF, c: RGB) => pdf.setFillColor(c[0], c[1], c[2
 export const setDraw  = (pdf: jsPDF, c: RGB) => pdf.setDrawColor(c[0], c[1], c[2]);
 
 // ─── Typography ───────────────────────────────────────────────
+/** Plus Jakarta Sans ExtraBold — headlines, eyebrows, big numbers. */
 export function setDisplayFont(pdf: jsPDF, size: number) {
-  pdf.setFont("ProposalSans", "bold");
+  pdf.setFont("ProposalDisplay", "bold");
   pdf.setFontSize(size);
 }
 
+/** Plus Jakarta Sans Bold — slightly quieter display weight. */
+export function setDisplaySoftFont(pdf: jsPDF, size: number) {
+  pdf.setFont("ProposalDisplay", "normal");
+  pdf.setFontSize(size);
+}
+
+/** Inter SemiBold — emphasis inside body copy without shouting. */
+export function setMediumFont(pdf: jsPDF, size: number) {
+  pdf.setFont("ProposalSansMed", "normal");
+  pdf.setFontSize(size);
+}
+
+/** Inter — body copy, labels, tabular data. */
 export function setBodyFont(pdf: jsPDF, size: number, style: BodyFontStyle = "normal") {
   pdf.setFont("ProposalSans", style);
   pdf.setFontSize(size);
 }
+
+/**
+ * Shrink the current font until `text` fits within `maxW`, never going below
+ * `min`. Returns the size actually applied.
+ */
+export function fitFontSize(pdf: jsPDF, text: string, maxW: number, start: number, min = 7) {
+  let size = start;
+  pdf.setFontSize(size);
+  while (size > min && pdf.getTextWidth(text) > maxW) {
+    size -= 0.4;
+    pdf.setFontSize(size);
+  }
+  return size;
+}
+
 
 // ─── Shapes ───────────────────────────────────────────────────
 export function rect(pdf: jsPDF, x: number, y: number, w: number, h: number, fill: RGB) {
@@ -82,17 +111,44 @@ export function trackedText(
   pdf: jsPDF, text: string, x: number, y: number, options?: TextOpts,
 ) {
   const safeCharSpace = Math.min(Math.max(options?.charSpace ?? 0, 0), 0.8);
-  pdf.text(text, x, y, { ...options, charSpace: safeCharSpace });
+  const align = options?.align;
+  if (align === "right" || align === "center") {
+    // Place tracked text manually: jsPDF's own alignment maths drifts once
+    // letter-spacing is applied, which pushed right-aligned labels off-page.
+    const w = pdf.getTextWidth(text) + safeCharSpace * Math.max(text.length - 1, 0);
+    const ax = align === "right" ? x - w : x - w / 2;
+    pdf.text(text, ax, y, { ...options, align: "left", charSpace: safeCharSpace });
+  } else {
+    pdf.text(text, x, y, { ...options, charSpace: safeCharSpace });
+  }
   pdf.setCharSpace(0);
 }
+
+
 
 export function eyebrow(
   pdf: jsPDF, text: string, x: number, y: number, color: RGB = SLATE, size = 7.5,
 ) {
   setDisplayFont(pdf, size);
   setColor(pdf, color);
-  trackedText(pdf, text.toUpperCase(), x, y, { charSpace: 0.55 });
+  trackedText(pdf, text.toUpperCase(), x, y, { charSpace: 0.45 });
 }
+
+/** Small filled capsule with uppercase label — status chips, option tags. */
+export function pill(
+  pdf: jsPDF, text: string, x: number, y: number,
+  fill: RGB, textColor: RGB, size = 6.6, padX = 3.4,
+) {
+  setDisplayFont(pdf, size);
+  const w = pdf.getTextWidth(text.toUpperCase()) + padX * 2 + size * 0.12;
+  const h = size * 0.62 + 3.2;
+  setFill(pdf, fill);
+  pdf.roundedRect(x, y - h + 1.4, w, h, h / 2, h / 2, "F");
+  setColor(pdf, textColor);
+  trackedText(pdf, text.toUpperCase(), x + padX, y - 1.1, { charSpace: 0.3 });
+  return w;
+}
+
 
 export function pageBg(pdf: jsPDF) {
   rect(pdf, 0, 0, PW, 297, PAPER);
@@ -117,24 +173,28 @@ export function sectionHeader(
   pdf: jsPDF, eyebrowText: string, title: string, subtitle?: string,
 ) {
   setFill(pdf, ACCENT);
-  pdf.rect(22, 22, 14, 0.9, "F");
+  pdf.roundedRect(22, 21.6, 14, 1.1, 0.55, 0.55, "F");
 
-  setDisplayFont(pdf, 7.5);
+  setDisplayFont(pdf, 7);
   setColor(pdf, LIME_DEEP);
-  trackedText(pdf, eyebrowText.toUpperCase(), 22, 30, { charSpace: 0.7 });
+  trackedText(pdf, eyebrowText.toUpperCase(), 22, 30, { charSpace: 0.6 });
 
+  // Headline auto-shrinks so long section titles never run off the page.
   setDisplayFont(pdf, 24);
+  const size = fitFontSize(pdf, title, PW - 44, 24, 15);
   setColor(pdf, FOREST_INK);
   pdf.text(title, 22, 45);
+  pdf.setFontSize(size);
 
   let dividerY = 65;
   if (subtitle) {
-    setBodyFont(pdf, 9.5);
+    setBodyFont(pdf, 9.2);
     setColor(pdf, GRAPHITE);
     const lines = pdf.splitTextToSize(subtitle, PW - 44);
-    lines.forEach((ln: string, i: number) => pdf.text(ln, 22, 53 + i * 5.2));
-    dividerY = 57 + lines.length * 5.2 + 4;
+    lines.forEach((ln: string, i: number) => pdf.text(ln, 22, 53 + i * 5.1));
+    dividerY = 57 + lines.length * 5.1 + 4;
   }
 
-  hairline(pdf, 22, dividerY, PW - 22, dividerY, MIST, 0.3);
+  hairline(pdf, 22, dividerY, PW - 22, dividerY, MIST, 0.35);
 }
+

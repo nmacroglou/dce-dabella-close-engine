@@ -155,10 +155,52 @@ function drawSummary(pdf: jsPDF, input: InspectionPdfInput) {
   );
 
   let y = 78;
+  y = drawGlanceStrip(pdf, input, y);
   y = drawBlock(pdf, L(lang, "Executive Summary", "Resumen Ejecutivo"), input.sections.executive_summary, y);
   y = drawBlock(pdf, L(lang, "Inspection Scope", "Alcance de la Inspección"), input.sections.inspection_scope, y);
   y = drawBlock(pdf, L(lang, "Measurements", "Mediciones"), input.sections.measurements, y);
 }
+
+/** Four-up stat strip summarising photo count and severity mix. */
+function drawGlanceStrip(pdf: jsPDF, input: InspectionPdfInput, y: number) {
+  const lang = (input.language ?? "en") as Lang;
+  const photos = input.photos ?? [];
+  if (!photos.length) return y;
+
+  const count = (s: "low" | "moderate" | "high") =>
+    photos.filter((p) => p.severity === s).length;
+
+  const cells: { label: string; value: string; color: RGB }[] = [
+    { label: L(lang, "Photos reviewed", "Fotos revisadas"), value: String(photos.length), color: FOREST_INK },
+    { label: L(lang, "High priority", "Prioridad alta"), value: String(count("high")), color: NEGATIVE },
+    { label: L(lang, "Moderate", "Moderada"), value: String(count("moderate")), color: ACCENT },
+    { label: L(lang, "Low / monitor", "Baja / vigilar"), value: String(count("low")), color: SLATE },
+  ];
+
+  const stripW = PW - 44;
+  const h = 24;
+  const gap = 4;
+  const cw = (stripW - gap * (cells.length - 1)) / cells.length;
+
+  cells.forEach((c, i) => {
+    const x = 22 + i * (cw + gap);
+    rounded(pdf, x, y, cw, h, 2.4, CARD, MIST);
+    setFill(pdf, c.color);
+    pdf.rect(x, y + 3, 1.6, h - 6, "F");
+
+    setDisplayFont(pdf, 17);
+    setColor(pdf, c.color);
+    pdf.text(c.value, x + 6, y + 13);
+
+    setBodyFont(pdf, 6.6);
+    setColor(pdf, SLATE);
+    const lines = (pdf.splitTextToSize(c.label.toUpperCase(), cw - 10) as string[]).slice(0, 2);
+    lines.forEach((ln, li) => trackedText(pdf, ln, x + 6, y + 18.4 + li * 3.4, { charSpace: 0.35 }));
+  });
+
+  return y + h + 10;
+}
+
 
 
 // ─── Findings (image grid) ────────────────────────────────────

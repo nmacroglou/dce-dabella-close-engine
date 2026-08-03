@@ -6,19 +6,34 @@ import { fetchArrayBuffer, arrayBufferToBase64 } from "./assets";
 // still needs the font files added to its private VFS.
 const _b64Cache = new Map<string, string>();
 
-type FontDef = readonly [url: string, family: string, style: "normal" | "bold" | "italic"];
+type FontDef = readonly [file: string, family: string, style: "normal" | "bold" | "italic"];
 
+/**
+ * Type system for every DaBella PDF.
+ *
+ * ProposalSans    — Inter (Regular / Bold / Italic): body copy, labels, data.
+ * ProposalSansMed — Inter SemiBold: emphasis that shouldn't shout.
+ * ProposalDisplay — Plus Jakarta Sans (Bold / ExtraBold): headlines, numbers.
+ *
+ * Files are subset to Latin + common punctuation so all six weights together
+ * add well under 400 KB to the document.
+ */
 export async function registerPdfFonts(pdf: jsPDF) {
   const basePath = typeof window === "undefined" ? "/dev-server/public/pdf-fonts" : "/pdf-fonts";
   const fonts: readonly FontDef[] = [
-    [`${basePath}/LiberationSans-Regular.ttf`, "ProposalSans", "normal"],
-    [`${basePath}/LiberationSans-Bold.ttf`, "ProposalSans", "bold"],
-    [`${basePath}/LiberationSans-Italic.ttf`, "ProposalSans", "italic"],
+    ["Inter-Regular.ttf", "ProposalSans", "normal"],
+    ["Inter-Bold.ttf", "ProposalSans", "bold"],
+    ["Inter-Italic.ttf", "ProposalSans", "italic"],
+    ["Inter-SemiBold.ttf", "ProposalSansMed", "normal"],
+    ["Inter-SemiBold.ttf", "ProposalSansMed", "bold"],
+    ["PlusJakartaSans-Bold.ttf", "ProposalDisplay", "normal"],
+    ["PlusJakartaSans-ExtraBold.ttf", "ProposalDisplay", "bold"],
   ] as const;
 
-  // Fetch all three fonts in parallel — they're independent network requests.
+  // Fetch all faces in parallel — they're independent network requests.
   const loaded = await Promise.all(
-    fonts.map(async ([url, family, style]) => {
+    fonts.map(async ([file, family, style]) => {
+      const url = `${basePath}/${file}`;
       let b64 = _b64Cache.get(url);
       if (!b64) {
         const data = await fetchArrayBuffer(url);
@@ -26,14 +41,13 @@ export async function registerPdfFonts(pdf: jsPDF) {
         b64 = arrayBufferToBase64(data);
         _b64Cache.set(url, b64);
       }
-      return { b64, family, style };
+      return { b64, file, family, style };
     }),
   );
 
   for (const entry of loaded) {
     if (!entry) continue;
-    const fileName = `${entry.family}-${entry.style}.ttf`;
-    pdf.addFileToVFS(fileName, entry.b64);
-    pdf.addFont(fileName, entry.family, entry.style);
+    pdf.addFileToVFS(entry.file, entry.b64);
+    pdf.addFont(entry.file, entry.family, entry.style);
   }
 }
