@@ -343,7 +343,10 @@ export default function LeadsMap({ onAction }: Props) {
           (cleared ? ` · cleared ${cleared} bad pin${cleared === 1 ? "" : "s"}` : "") +
           (failed && !cleared ? ` · ${failed} couldn't be resolved` : ""),
       );
-      await refetch();
+      // Invalidate rather than refetch so every screen holding deals
+      // (list, pipeline board, dashboard) picks up the new coordinates.
+      await queryClient.invalidateQueries({ queryKey: ["deals"] });
+
     } catch (e: any) {
       toast.error(e?.message || "Geocode failed");
     } finally {
