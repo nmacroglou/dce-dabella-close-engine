@@ -58,6 +58,7 @@ export function useInspection(dealId: string | null, reportType: InspectionRepor
   return useQuery({
     queryKey: ["inspection", dealId, reportType],
     enabled: !!dealId,
+    staleTime: 30_000,
     queryFn: async (): Promise<InspectionRow> => {
       if (!dealId) throw new Error("no deal");
       const { data, error } = await supabase
