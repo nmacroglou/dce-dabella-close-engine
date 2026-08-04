@@ -653,7 +653,7 @@ function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
   }
 
   // Website call-out — flows after the cards, clear of the page footer.
-  const footerY = Math.min(Math.max(y + 6, PH - 60), PH - 30);
+  const footerY = Math.min(Math.max(y + 6, PH - 62), PH - 40);
   hairline(pdf, 22, footerY, PW - 22, footerY, ACCENT, 0.4);
   setDisplayFont(pdf, 7.5);
   setColor(pdf, LIME_DEEP);
