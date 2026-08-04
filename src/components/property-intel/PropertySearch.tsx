@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { STALE } from "@/lib/queryScope";
 import { Search, LocateFixed, MapPin, ScanLine, Loader2, Camera } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,17 +13,25 @@ export default function PropertySearch({ onSearch, loading }: {
 }) {
   const { user } = useAuth();
   const [q, setQ] = useState("");
-  const [recent, setRecent] = useState<Recent[]>([]);
 
-  useEffect(() => {
-    if (!user) return;
-    supabase.from("properties")
-      .select("id,standardized_address,created_at")
-      .eq("created_by", user.id)
-      .order("created_at", { ascending: false })
-      .limit(5)
-      .then(({ data }) => setRecent(((data ?? []) as unknown) as Recent[]));
-  }, [user]);
+  // Recent searches go through react-query so they're cached across mounts
+  // and a failed fetch surfaces instead of silently leaving the list empty.
+  const { data: recent = [] } = useQuery({
+    queryKey: ["pi-recent-searches", user?.id],
+    enabled: !!user,
+    staleTime: STALE.reference,
+    queryFn: async (): Promise<Recent[]> => {
+      const { data, error } = await supabase
+        .from("properties")
+        .select("id,standardized_address,created_at")
+        .eq("created_by", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return (data ?? []) as unknown as Recent[];
+    },
+  });
+
 
   const useLocation = () => {
     if (!navigator.geolocation) return toast.error("Geolocation not supported");

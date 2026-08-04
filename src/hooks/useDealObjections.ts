@@ -30,6 +30,7 @@ export function useAllObjections() {
   return useQuery({
     queryKey: ["all-objections", user?.id],
     enabled: !!user,
+    staleTime: 30_000,
     queryFn: async (): Promise<DealObjection[]> => {
       const { data, error } = await supabase
         .from("deal_objections")

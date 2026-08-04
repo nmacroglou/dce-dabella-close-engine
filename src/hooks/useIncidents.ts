@@ -30,6 +30,7 @@ export function useIncidentNotes(incidentId: string | null) {
   return useQuery({
     queryKey: ["incident-notes", incidentId],
     enabled: !!incidentId,
+    staleTime: 15_000,
     queryFn: async (): Promise<IncidentNote[]> => {
       if (!incidentId) return [];
       const { data, error } = await supabase

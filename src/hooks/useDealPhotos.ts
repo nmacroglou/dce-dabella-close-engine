@@ -56,6 +56,7 @@ export function useDealPhotos(dealId: string | null) {
   return useQuery({
     queryKey: ["deal-photos", dealId],
     enabled: !!user && !!dealId,
+    staleTime: 30_000,
     queryFn: async (): Promise<DealPhoto[]> => {
       if (!dealId) return [];
       const { data, error } = await supabase

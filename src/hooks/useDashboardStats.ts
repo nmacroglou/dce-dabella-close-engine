@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOwnerScope } from "@/contexts/OwnerScopeContext";
+import { scopeToRep, STALE } from "@/lib/queryScope";
 import type { Deal, DealStage } from "@/types/deal";
 import type { DealObjection } from "@/types/deal";
+
 
 export interface DashboardStats {
   // Month (all "this month" metrics use closed_at; monthDealsRun uses created_at)
@@ -63,20 +65,39 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["dashboard-stats", user?.id, scope, effectiveRepId],
     enabled: !!user,
-    staleTime: 60_000,
+    staleTime: STALE.derived,
     queryFn: async (): Promise<DashboardStats> => {
-      let dealsQ = supabase.from("deals").select("*");
-      let objQ = supabase.from("deal_objections").select("*");
-      let photosQ = supabase
-        .from("deal_photos")
-        .select("deal_id, inspection_tags, created_at")
-        .not("inspection_tags", "is", null);
-      if (effectiveRepId) {
-        dealsQ = dealsQ.eq("rep_id", effectiveRepId);
-        objQ = objQ.eq("rep_id", effectiveRepId);
-        photosQ = photosQ.eq("rep_id", effectiveRepId);
-      }
+      // Only the columns the aggregations below actually read. Selecting `*`
+      // shipped the whole `engine_state` JSON blob for every deal just to
+      // compute a handful of counters.
+      //
+      // The builders are widened to a minimal structural type: Supabase's
+      // generated generics blow past TypeScript's instantiation depth once a
+      // narrow `select()` is piped through a generic scoping helper.
+      type ScopedQuery = { eq: (col: string, value: string) => ScopedQuery } & PromiseLike<{
+        data: unknown[] | null;
+        error: { message: string } | null;
+      }>;
+      const scoped = (q: unknown) => scopeToRep(q as ScopedQuery, effectiveRepId);
+
+      const dealsQ = scoped(
+        supabase
+          .from("deals")
+          .select(
+            "id, stage, created_at, closed_at, closed_amount, selected_option, price_a, price_b, price_c, stage_changed_at",
+          ),
+      );
+      const objQ = scoped(supabase.from("deal_objections").select("deal_id, objection_type"));
+      const photosQ = scoped(
+        supabase
+          .from("deal_photos")
+          .select("deal_id, inspection_tags, created_at")
+          .not("inspection_tags", "is", null),
+      );
       const [dealsRes, objectionsRes, photosRes] = await Promise.all([dealsQ, objQ, photosQ]);
+
+
+
       if (dealsRes.error) throw dealsRes.error;
       if (objectionsRes.error) throw objectionsRes.error;
       if (photosRes.error) throw photosRes.error;

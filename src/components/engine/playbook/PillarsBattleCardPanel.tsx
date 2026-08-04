@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Maximize2, Download, Heart, X, ZoomIn, ZoomOut, Maximize, Moon, Apple, Droplet, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import pillarsCard from "@/assets/dabella-3-pillars-battlecard.png";
+import pillarsCard from "@/assets/dabella-3-pillars-battlecard.webp";
+import pillarsCardFull from "@/assets/dabella-3-pillars-battlecard.png";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 4;
@@ -100,7 +101,7 @@ export default function PillarsBattleCardPanel() {
               <button onClick={fit} disabled={isFit} className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                 <Maximize className="h-3.5 w-3.5" /> Fit
               </button>
-              <a href={pillarsCard} download="dabella-3-pillars-battlecard.png" className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors">
+              <a href={pillarsCardFull} download="dabella-3-pillars-battlecard.png" className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors">
                 <Download className="h-3.5 w-3.5" /> Download
               </a>
               <button onClick={() => setOpen(false)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors" aria-label="Close">

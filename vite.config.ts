@@ -46,6 +46,8 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
   build: {
+    // Chart + PDF vendors are the two heavyweights; both are route-lazy.
+    chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -54,8 +56,20 @@ export default defineConfig(({ mode }) => ({
           "vendor-query": ["@tanstack/react-query"],
           "vendor-supabase": ["@supabase/supabase-js"],
           "vendor-charts": ["recharts"],
+          // Radix primitives are shared by the header, dialogs and every
+          // form surface — hoisting them keeps per-route chunks small and
+          // makes the shared UI layer cacheable across deploys.
+          "vendor-radix": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-tooltip",
+          ],
         },
       },
     },
   },
+
 }));
