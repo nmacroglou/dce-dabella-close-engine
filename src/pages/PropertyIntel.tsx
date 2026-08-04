@@ -101,6 +101,11 @@ export default function PropertyIntel() {
           </div>
           {report && (
             <div className="flex items-center gap-2">
+              <button onClick={createDeal} disabled={creating || report.info.do_not_knock}
+                className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12px] font-semibold text-primary hover:bg-primary/20 disabled:opacity-60">
+                {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PlusCircle className="h-3.5 w-3.5" />}
+                {creating ? "Creating…" : "Create deal"}
+              </button>
               <button onClick={exportPdf} disabled={exporting}
                 className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
                 {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
