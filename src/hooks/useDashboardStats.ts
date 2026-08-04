@@ -70,26 +70,28 @@ export function useDashboardStats() {
       // Only the columns the aggregations below actually read. Selecting `*`
       // shipped the whole `engine_state` JSON blob for every deal just to
       // compute a handful of counters.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const dealsQ = scopeToRep(
         supabase
           .from("deals")
           .select(
             "id, stage, created_at, closed_at, closed_amount, selected_option, price_a, price_b, price_c, stage_changed_at",
-          ),
+          ) as any,
         effectiveRepId,
       );
       const objQ = scopeToRep(
-        supabase.from("deal_objections").select("deal_id, objection_type"),
+        supabase.from("deal_objections").select("deal_id, objection_type") as any,
         effectiveRepId,
       );
       const photosQ = scopeToRep(
         supabase
           .from("deal_photos")
           .select("deal_id, inspection_tags, created_at")
-          .not("inspection_tags", "is", null),
+          .not("inspection_tags", "is", null) as any,
         effectiveRepId,
       );
-      const [dealsRes, objectionsRes, photosRes] = await Promise.all([dealsQ, objQ, photosQ]);
+      const [dealsRes, objectionsRes, photosRes] = (await Promise.all([dealsQ, objQ, photosQ])) as any[];
+
 
       if (dealsRes.error) throw dealsRes.error;
       if (objectionsRes.error) throw objectionsRes.error;
