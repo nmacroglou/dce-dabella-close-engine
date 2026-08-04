@@ -18,6 +18,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Deal } from "@/types/deal";
+import {
+  DAY_MS, RESOLVE_DAYS, LS_KEY, PRESETS, startOfDay, endOfDay, rangeFromPreset,
+  wonValue, isPostSaleCancel, computeStats, delta, projectNIS,
+  type PresetKey, type Scenario, type S,
+} from "@/lib/forecast";
+import {
+  DeltaChip, PlanTile, AsmInput, MathStep, Row, Lever, Definition, KpiWithDelta,
+  ScenarioCard, ConfidenceBand,
+} from "@/components/forecast/parts";
 
 
 // ─────────────────────────── component ───────────────────────────
