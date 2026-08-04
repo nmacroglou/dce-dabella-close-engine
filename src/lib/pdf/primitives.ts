@@ -228,3 +228,28 @@ export function reportFooter(
 }
 
 
+
+/**
+ * Evenly spaced credential lockup for dark covers. Separator dots are only
+ * drawn when there is real clearance, so long labels never collide.
+ */
+export function credentialRow(
+  pdf: jsPDF, items: string[], y: number,
+  textColor: RGB = [200, 215, 200], dotColor: RGB = [120, 155, 122],
+) {
+  const slot = (PW - 44) / items.length;
+  setDisplayFont(pdf, 6.5);
+  const widths = items.map((c) => pdf.getTextWidth(c.toUpperCase()) + 0.35 * (c.length - 1));
+  items.forEach((c, i) => {
+    setDisplayFont(pdf, 6.5);
+    setColor(pdf, textColor);
+    trackedText(pdf, c.toUpperCase(), 22 + slot * (i + 0.5), y, { align: "center", charSpace: 0.35 });
+    if (i < items.length - 1) {
+      const gap = slot - widths[i] / 2 - widths[i + 1] / 2;
+      if (gap >= 6) {
+        setFill(pdf, dotColor);
+        pdf.circle(22 + slot * (i + 1), y - 1.4, 0.35, "F");
+      }
+    }
+  });
+}

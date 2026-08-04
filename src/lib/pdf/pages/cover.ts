@@ -5,8 +5,8 @@ import {
   ACCENT, FOREST, FOREST_INK, LIME, PH, PW, WHITE,
 } from "../theme";
 import {
-  hairline, rect, setBodyFont, setColor, setDisplayFont, setDraw, setFill,
-  trackedText, vGradient,
+  credentialRow, hairline, rect, setBodyFont, setColor, setDisplayFont, setDraw,
+  setFill, trackedText, vGradient,
 } from "../primitives";
 
 export function drawCover(pdf: jsPDF, state: EngineState) {
@@ -74,18 +74,11 @@ export function drawCover(pdf: jsPDF, state: EngineState) {
 
   const credY = 256;
   hairline(pdf, 22, credY, PW - 22, credY, [80, 120, 85], 0.3);
-  setDisplayFont(pdf, 6.5);
-  setColor(pdf, [200, 215, 200]);
-  const creds = ["LIFETIME WARRANTY", "GAF MASTER ELITE", "TOP-RATED CREWS", "LOCALLY OWNED"];
-  const credSpacing = (PW - 44) / creds.length;
-  creds.forEach((c, i) => {
-    trackedText(pdf, c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 0.4 });
-    // Hairline dot between credentials keeps the row reading as one lockup.
-    if (i < creds.length - 1) {
-      setFill(pdf, [120, 155, 122]);
-      pdf.circle(22 + credSpacing * (i + 1), credY + 5.6, 0.35, "F");
-    }
-  });
+  credentialRow(
+    pdf,
+    ["Lifetime warranty", "GAF Master Elite", "Top-rated crews", "Locally owned"],
+    credY + 7,
+  );
 
   setBodyFont(pdf, 7);
   setColor(pdf, [180, 200, 180]);

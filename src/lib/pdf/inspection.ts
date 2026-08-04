@@ -7,7 +7,7 @@ import {
   MIST, NEGATIVE, PH, PW, SLATE, WHITE,
 } from "./theme";
 import {
-  eyebrow, hairline, pageBg, rect, reportFooter, rounded, sectionHeader,
+  credentialRow, eyebrow, hairline, pageBg, rect, reportFooter, rounded, sectionHeader,
   setBodyFont, setColor, setDisplayFont, setFill, trackedText, vGradient,
 } from "./primitives";
 import {
@@ -138,19 +138,13 @@ function drawCover(pdf: jsPDF, input: InspectionPdfInput) {
 
   const credY = 256;
   hairline(pdf, 22, credY, PW - 22, credY, [80, 120, 85], 0.3);
-  setDisplayFont(pdf, 6.5);
-  setColor(pdf, [200, 215, 200]);
-  const creds = lang === "es"
-    ? ["GARANTÍA DE POR VIDA", "GAF MASTER ELITE", "EQUIPOS CERTIFICADOS", "EMPRESA FAMILIAR"]
-    : ["LIFETIME WARRANTY", "GAF MASTER ELITE", "FACTORY-TRAINED CREWS", "FAMILY OWNED"];
-  const credSpacing = (PW - 44) / creds.length;
-  creds.forEach((c, i) => {
-    trackedText(pdf, c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 0.35 });
-    if (i < creds.length - 1) {
-      setFill(pdf, [120, 155, 122]);
-      pdf.circle(22 + credSpacing * (i + 1), credY + 5.6, 0.35, "F");
-    }
-  });
+  credentialRow(
+    pdf,
+    lang === "es"
+      ? ["Garantía de por vida", "GAF Master Elite", "Equipos certificados", "Empresa familiar"]
+      : ["Lifetime warranty", "GAF Master Elite", "Certified crews", "Family owned"],
+    credY + 7,
+  );
 
   setBodyFont(pdf, 7);
   setColor(pdf, [180, 200, 180]);
