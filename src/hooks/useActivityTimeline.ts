@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOwnerScope } from "@/contexts/OwnerScopeContext";
+import { scopeToRep, STALE } from "@/lib/queryScope";
+
 import type { DealStage } from "@/types/deal";
 import { STAGE_LABELS } from "@/types/deal";
 import { OBJECTIONS } from "@/data/objections";
@@ -26,16 +28,18 @@ export function useActivityTimeline(days = 14) {
   return useQuery({
     queryKey: ["activity-timeline", user?.id, scope, effectiveRepId, days],
     enabled: !!user,
+    staleTime: STALE.derived,
     queryFn: async (): Promise<TimelineEvent[]> => {
       const since = new Date(Date.now() - days * 864e5).toISOString();
       const scopeEq = <T extends { eq: (col: string, v: string) => T }>(q: T, col = "rep_id") =>
-        effectiveRepId ? q.eq(col, effectiveRepId) : q;
+        scopeToRep(q, effectiveRepId, col);
       const [historyRes, dealsRes, objRes, fuRes] = await Promise.all([
-        scopeEq(supabase.from("deal_stage_history").select("*").gte("changed_at", since).order("changed_at", { ascending: false }) as any),
+        scopeEq(supabase.from("deal_stage_history").select("id, deal_id, from_stage, to_stage, changed_at, note").gte("changed_at", since).order("changed_at", { ascending: false }).limit(500) as any),
         scopeEq(supabase.from("deals").select("id, homeowner1") as any),
-        scopeEq(supabase.from("deal_objections").select("*").gte("created_at", since).order("created_at", { ascending: false }) as any),
-        scopeEq(supabase.from("follow_ups").select("*").order("due_at", { ascending: false }).limit(500) as any),
+        scopeEq(supabase.from("deal_objections").select("id, deal_id, objection_type, notes, created_at").gte("created_at", since).order("created_at", { ascending: false }).limit(500) as any),
+        scopeEq(supabase.from("follow_ups").select("id, deal_id, due_at, completed_at, touchpoint_number, channel").order("due_at", { ascending: false }).limit(500) as any),
       ]);
+
 
       if (historyRes.error) throw historyRes.error;
       if (dealsRes.error) throw dealsRes.error;
