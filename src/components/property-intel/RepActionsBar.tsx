@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
+import { saveSearchedProperty } from "@/lib/propertyIntel/saveProperty";
 import {
   Check, X, HomeIcon, UserX, MapPinned, MessageCircle, Camera, StickyNote, Ban, Wrench,
 } from "lucide-react";
@@ -19,24 +20,9 @@ async function logAudit(user_id: string | null, event_type: string, entity_id: s
 }
 
 async function upsertProperty(userId: string, report: PropertyIntelReport): Promise<string | null> {
-  const m = report.property_match;
-  const i = report.info;
-  const { data, error } = await supabase.from("properties").insert({
-    created_by: userId,
-    standardized_address: m.standardized_address,
-    parcel_number: m.parcel_number,
-    city: m.city, state: m.state, postal_code: m.postal_code,
-    latitude: m.latitude, longitude: m.longitude,
-    property_type: m.property_type,
-    year_built: i.year_built, square_feet: i.square_feet, lot_size: i.lot_size,
-    stories: i.stories, bedrooms: i.bedrooms, bathrooms: i.bathrooms,
-    assessed_value: i.assessed_value, estimated_market_value: i.estimated_market_value,
-    roof_material: i.roof_material, estimated_roof_age: i.estimated_roof_age,
-    exterior_material: i.exterior_material, solar_present: i.solar_present,
-    is_demo: report.is_demo,
-  } as never).select("id").maybeSingle();
-  if (error) { console.error(error); toast.error("Could not save property"); return null; }
-  return (data as { id: string } | null)?.id ?? null;
+  const id = await saveSearchedProperty(userId, report);
+  if (!id) toast.error("Could not save property");
+  return id;
 }
 
 function Btn({

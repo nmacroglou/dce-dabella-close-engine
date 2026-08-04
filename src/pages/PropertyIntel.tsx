@@ -1,18 +1,27 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import AppHeader from "@/components/AppHeader";
 import PropertySearch from "@/components/property-intel/PropertySearch";
 import PropertyIntelReportView from "@/components/property-intel/PropertyIntelReport";
 import { generateReport } from "@/lib/propertyIntel/generateReport";
+import { saveSearchedProperty } from "@/lib/propertyIntel/saveProperty";
 import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Download, Loader2, Search } from "lucide-react";
+import { useActiveDeal } from "@/contexts/ActiveDealContext";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, Download, Loader2, Search, PlusCircle } from "lucide-react";
 
 export default function PropertyIntel() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { setActiveDealId } = useActiveDeal();
   const [report, setReport] = useState<PropertyIntelReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const runSearch = async (query: string) => {
     setLoading(true);
@@ -20,8 +29,46 @@ export default function PropertyIntel() {
     try {
       const r = await generateReport(query, first);
       setReport(r);
+      if (user) {
+        await saveSearchedProperty(user.id, r);
+        queryClient.invalidateQueries({ queryKey: ["pi-recent-searches", user.id] });
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createDeal = async () => {
+    if (!report || !user) return;
+    if (report.info.do_not_knock) {
+      toast.error("Cannot create a deal for a Do Not Knock property");
+      return;
+    }
+    setCreating(true);
+    try {
+      const { data, error } = await supabase.from("deals").insert({
+        rep_id: user.id,
+        homeowner1: report.identity.likely_owner_name ?? report.ownership.owner_name ?? "Prospect",
+        address: report.property_match.standardized_address,
+        lat: report.property_match.latitude,
+        lng: report.property_match.longitude,
+        stage: "inspecting",
+        lead_source: "canvass",
+        notes: `Property Intelligence — ${report.opportunity.primary_product} opportunity (score ${report.opportunity.opportunity_score}).`,
+      } as never).select("id").maybeSingle();
+      if (error) throw error;
+      const dealId = (data as { id: string } | null)?.id;
+      if (dealId) {
+        setActiveDealId(dealId);
+        queryClient.invalidateQueries({ queryKey: ["deals"] });
+        toast.success("Deal card created");
+        navigate("/deals");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not create deal");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -54,6 +101,11 @@ export default function PropertyIntel() {
           </div>
           {report && (
             <div className="flex items-center gap-2">
+              <button onClick={createDeal} disabled={creating || report.info.do_not_knock}
+                className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 text-[12px] font-semibold text-primary hover:bg-primary/20 disabled:opacity-60">
+                {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PlusCircle className="h-3.5 w-3.5" />}
+                {creating ? "Creating…" : "Create deal"}
+              </button>
               <button onClick={exportPdf} disabled={exporting}
                 className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
                 {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
