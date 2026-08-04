@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Maximize2, Download, BookOpen, X, ZoomIn, ZoomOut, Maximize, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import battleCard from "@/assets/dabella-10-step-battlecard.png";
+import battleCard from "@/assets/dabella-10-step-battlecard.webp";
+import battleCardFull from "@/assets/dabella-10-step-battlecard.png";
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 4;
@@ -99,7 +100,7 @@ export default function BattleCardPanel() {
                 <Maximize className="h-3.5 w-3.5" /> Fit
               </button>
               <a
-                href={battleCard}
+                href={battleCardFull}
                 download="dabella-10-step-battlecard.png"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted/50 transition-colors"
               >
