@@ -174,11 +174,11 @@ export function sectionHeader(
 ) {
   // Accent tick + eyebrow, set on a common baseline for a steady rhythm.
   setFill(pdf, ACCENT);
-  pdf.roundedRect(22, 26.4, 2.2, 3.4, 1.1, 1.1, "F");
+  pdf.roundedRect(22, 26.2, 1.5, 4, 0.75, 0.75, "F");
 
   setDisplayFont(pdf, 7);
   setColor(pdf, LIME_DEEP);
-  trackedText(pdf, eyebrowText.toUpperCase(), 27, 29.4, { charSpace: 0.6 });
+  trackedText(pdf, eyebrowText.toUpperCase(), 26.5, 29.4, { charSpace: 0.6 });
 
   // Headline auto-shrinks so long section titles never run off the page.
   setDisplayFont(pdf, 24);

@@ -136,6 +136,22 @@ function drawCover(pdf: jsPDF, input: InspectionPdfInput) {
     pdf.text(input.address, 22, ry + 30);
   }
 
+  const credY = 256;
+  hairline(pdf, 22, credY, PW - 22, credY, [80, 120, 85], 0.3);
+  setDisplayFont(pdf, 6.5);
+  setColor(pdf, [200, 215, 200]);
+  const creds = lang === "es"
+    ? ["GARANTÍA DE POR VIDA", "GAF MASTER ELITE", "EQUIPOS CERTIFICADOS", "EMPRESA FAMILIAR"]
+    : ["LIFETIME WARRANTY", "GAF MASTER ELITE", "FACTORY-TRAINED CREWS", "FAMILY OWNED"];
+  const credSpacing = (PW - 44) / creds.length;
+  creds.forEach((c, i) => {
+    trackedText(pdf, c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 0.35 });
+    if (i < creds.length - 1) {
+      setFill(pdf, [120, 155, 122]);
+      pdf.circle(22 + credSpacing * (i + 1), credY + 5.6, 0.35, "F");
+    }
+  });
+
   setBodyFont(pdf, 7);
   setColor(pdf, [180, 200, 180]);
   trackedText(pdf, "DABELLA.US", 22, PH - 14, { charSpace: 0.6 });
