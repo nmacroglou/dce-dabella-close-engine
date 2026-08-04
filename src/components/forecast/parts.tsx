@@ -2,6 +2,7 @@ import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { StatTile } from "@/components/pipeline/StatTile";
 import { formatCurrency } from "@/lib/format";
 import type { Scenario, delta } from "@/lib/forecast";
 
