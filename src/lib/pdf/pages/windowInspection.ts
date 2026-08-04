@@ -2,12 +2,46 @@ import type { jsPDF } from "jspdf";
 import type { EngineState } from "@/types/engine";
 import {
   type RGB,
-  CREAM, FOREST_INK, INK, LIME, LIME_DEEP, NEGATIVE, POSITIVE, PW, SLATE,
+  CARD, CREAM, FOREST_INK, GRAPHITE, INK, LIME, LIME_DEEP, MIST,
+  NEG_SOFT, NEGATIVE, PH, POS_SOFT, POSITIVE, PW, SAND, SLATE,
 } from "../theme";
 import {
-  eyebrow, pageBg, rect, rounded, sectionHeader, setBodyFont, setColor,
-  setDisplayFont, trackedText,
+  eyebrow, hairline, pageBg, pill, rect, rounded, sectionHeader, setBodyFont,
+  setColor, setDisplayFont, setFill, trackedText,
 } from "../primitives";
+
+const M = 22;
+const CW = PW - M * 2;
+const BOTTOM = PH - 24;
+
+const STATUS_COLORS: Record<string, RGB> = { yes: POSITIVE, no: NEGATIVE, na: SLATE };
+const STATUS_SOFT: Record<string, RGB> = { yes: POS_SOFT, no: NEG_SOFT, na: SAND };
+const STATUS_LABELS: Record<string, string> = { yes: "YES", no: "NO", na: "N/A" };
+
+/** Four-up counts of the inspection outcome. */
+function drawGlance(pdf: jsPDF, state: EngineState, y: number) {
+  const items = [
+    ["Items reviewed", String(state.windowInspection.length), LIME_DEEP] as const,
+    ["Confirmed", String(state.windowInspection.filter((e) => e.status === "yes").length), POSITIVE] as const,
+    ["Needs attention", String(state.windowInspection.filter((e) => e.status === "no").length), NEGATIVE] as const,
+    ["Not applicable", String(state.windowInspection.filter((e) => e.status === "na").length), SLATE] as const,
+  ];
+  const gap = 5;
+  const w = (CW - gap * 3) / 4;
+  items.forEach(([label, value, color], i) => {
+    const x = M + i * (w + gap);
+    rounded(pdf, x, y, w, 20, 2.5, CARD, MIST);
+    setFill(pdf, color as RGB);
+    pdf.rect(x, y, w, 1.1, "F");
+    setDisplayFont(pdf, 15);
+    setColor(pdf, color as RGB);
+    pdf.text(value, x + 5, y + 11.5);
+    setBodyFont(pdf, 6.6);
+    setColor(pdf, SLATE);
+    trackedText(pdf, label.toUpperCase(), x + 5, y + 16.6, { charSpace: 0.35 });
+  });
+  return y + 20 + 10;
+}
 
 export function drawWindowInspection(pdf: jsPDF, state: EngineState) {
   pageBg(pdf);
@@ -18,75 +52,116 @@ export function drawWindowInspection(pdf: jsPDF, state: EngineState) {
     "An honest, item-by-item review of your existing windows.",
   );
 
-  const STATUS_COLORS: Record<string, RGB> = {
-    yes: POSITIVE,
-    no: NEGATIVE,
-    na: SLATE,
+  let y = drawGlance(pdf, state, 74);
+
+  // ── Checklist: two balanced columns, wrapping labels, status pills
+  const colGap = 8;
+  const colW = (CW - colGap) / 2;
+  const half = Math.ceil(state.windowInspection.length / 2);
+  const rowH = 10.4;
+
+  const drawColumn = (entries: typeof state.windowInspection, offset: number, x: number) => {
+    entries.forEach((entry, i) => {
+      const ry = y + i * rowH;
+      if (i % 2 === 0) rounded(pdf, x, ry, colW, rowH - 1, 1.6, CREAM);
+
+      const status = entry.status ?? "na";
+      const pillLabel = STATUS_LABELS[status] ?? "N/A";
+      setDisplayFont(pdf, 6.4);
+      const pillW = pdf.getTextWidth(pillLabel) + 7.6;
+
+      setBodyFont(pdf, 8);
+      setColor(pdf, INK);
+      const label = `${offset + i + 1}. ${entry.label}`;
+      const txt = (pdf.splitTextToSize(label, colW - pillW - 12) as string[])[0] ?? label;
+      pdf.text(txt, x + 5, ry + 6);
+
+      pill(
+        pdf, pillLabel, x + colW - 5 - pillW, ry + 7.4,
+        STATUS_SOFT[status] ?? SAND, STATUS_COLORS[status] ?? SLATE, 6.4, 3.2,
+      );
+    });
   };
-  const STATUS_LABELS: Record<string, string> = { yes: "YES", no: "NO", na: "N/A" };
 
-  let y = 78;
-  const colW = (PW - 44 - 8) / 2;
-  state.windowInspection.forEach((entry, i) => {
-    const col = i < 7 ? 0 : 1;
-    const row = i < 7 ? i : i - 7;
-    const x = 22 + col * (colW + 8);
-    const ry = y + row * 11;
+  drawColumn(state.windowInspection.slice(0, half), 0, M);
+  drawColumn(state.windowInspection.slice(half), half, M + colW + colGap);
+  y += half * rowH + 10;
 
-    if (row % 2 === 0) rounded(pdf, x, ry - 3, colW, 10, 1.5, CREAM);
+  if (state.windowItems.length === 0) return;
 
-    setBodyFont(pdf, 8);
-    setColor(pdf, INK);
-    pdf.text(`${i + 1}. ${entry.label}`, x + 5, ry + 3.5);
-
-    setDisplayFont(pdf, 7);
-    setColor(pdf, STATUS_COLORS[entry.status] || SLATE);
-    trackedText(pdf, STATUS_LABELS[entry.status] || "N/A", x + colW - 5, ry + 3.5, { align: "right", charSpace: 0.3 });
-  });
-
-  if (state.windowItems.length > 0) {
-    y += 88;
-    eyebrow(pdf, "Window Schedule", 22, y, LIME_DEEP, 7.5);
+  // ── Window schedule table
+  const header = () => {
+    eyebrow(pdf, "Window Schedule", M, y, LIME_DEEP, 7.2);
     setDisplayFont(pdf, 12);
     setColor(pdf, FOREST_INK);
-    pdf.text(`${state.windowItems.length} Window${state.windowItems.length !== 1 ? "s" : ""}`, 22, y + 8);
-
+    pdf.text(
+      `${state.windowItems.length} Window${state.windowItems.length !== 1 ? "s" : ""}`,
+      M, y + 8,
+    );
     y += 14;
-    const tableW = PW - 44;
-    const cols = [10, 18, 30, 42, 24, 22, 24];
-    const headers = ["#", "LEVEL", "ROOM", "STYLE", "SIZE", "GRIDS", "NOTES"];
+  };
 
-    rect(pdf, 22, y, tableW, 7, FOREST_INK);
-    setDisplayFont(pdf, 6.5);
+  // Column widths sum exactly to the content width.
+  const weights = [7, 14, 24, 32, 20, 18, 41];
+  const total = weights.reduce((a, b) => a + b, 0);
+  const cols = weights.map((w) => (w / total) * CW);
+  const headers = ["#", "LEVEL", "ROOM", "STYLE", "SIZE", "GRIDS", "NOTES"];
+
+  const tableHead = () => {
+    rect(pdf, M, y, CW, 7.6, FOREST_INK);
+    setDisplayFont(pdf, 6.4);
     setColor(pdf, LIME);
-    let hx = 22 + 2;
+    let hx = M;
     headers.forEach((h, ci) => {
-      trackedText(pdf, h, hx + 1, y + 4.8, { charSpace: 0.25 });
+      trackedText(pdf, h, hx + 3, y + 5, { charSpace: 0.25 });
       hx += cols[ci];
     });
+    y += 8.4;
+  };
 
-    y += 8;
-    state.windowItems.forEach((item, i) => {
-      if (i % 2 === 0) rect(pdf, 22, y - 2, tableW, 7, CREAM);
+  header();
+  tableHead();
 
-      setBodyFont(pdf, 7);
-      setColor(pdf, INK);
-      let cx = 22 + 2;
-      const vals = [
-        String(item.number),
-        item.level || "—",
-        item.room || "—",
-        item.style.split(" - ").pop() || item.style,
-        item.width && item.height ? `${item.width}×${item.height}` : "—",
-        item.gridPattern,
-        item.observations || "—",
-      ];
-      vals.forEach((v, ci) => {
-        const txt = pdf.splitTextToSize(v, cols[ci] - 3)[0];
-        pdf.text(txt, cx + 1, y + 3);
-        cx += cols[ci];
-      });
-      y += 7;
+  state.windowItems.forEach((item, i) => {
+    if (y + 8 > BOTTOM) {
+      pdf.addPage();
+      pageBg(pdf);
+      sectionHeader(pdf, "Window Inspection", "Window Schedule (cont.)");
+      y = 74;
+      tableHead();
+    }
+
+    const vals = [
+      String(item.number),
+      item.level || "—",
+      item.room || "—",
+      item.style.split(" - ").pop() || item.style,
+      item.width && item.height ? `${item.width}×${item.height}` : "—",
+      item.gridPattern || "—",
+      item.observations || "—",
+    ];
+
+    // Notes may wrap to two lines; the row grows to fit.
+    setBodyFont(pdf, 7);
+    const noteLines = (pdf.splitTextToSize(vals[6], cols[6] - 6) as string[]).slice(0, 2);
+    const rh = Math.max(7.6, noteLines.length * 3.9 + 4.2);
+
+    if (i % 2 === 0) rect(pdf, M, y - 2, CW, rh, CREAM);
+
+    let cx = M;
+    vals.forEach((v, ci) => {
+      setBodyFont(pdf, 7, ci === 0 ? "bold" : "normal");
+      setColor(pdf, ci === 0 ? FOREST_INK : ci === 6 ? GRAPHITE : INK);
+      if (ci === 6) {
+        noteLines.forEach((ln, li) => pdf.text(ln, cx + 3, y + 2.6 + li * 3.9));
+      } else {
+        const txt = (pdf.splitTextToSize(v, cols[ci] - 5) as string[])[0] ?? v;
+        pdf.text(txt, cx + 3, y + 2.6);
+      }
+      cx += cols[ci];
     });
-  }
+
+    y += rh;
+    hairline(pdf, M, y - 2, PW - M, y - 2, MIST, 0.2);
+  });
 }
