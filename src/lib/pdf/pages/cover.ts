@@ -24,7 +24,7 @@ export function drawCover(pdf: jsPDF, state: EngineState) {
 
   setDraw(pdf, [255, 255, 255]);
   pdf.setLineWidth(0.2);
-  pdf.setGState(pdf.GState({ opacity: 0.35 }));
+  pdf.setGState(pdf.GState({ opacity: 0.22 }));
   pdf.line(15, 15, 22, 15); pdf.line(15, 15, 15, 22);
   pdf.line(PW - 15, 15, PW - 22, 15); pdf.line(PW - 15, 15, PW - 15, 22);
   pdf.line(15, PH - 15, 22, PH - 15); pdf.line(15, PH - 15, 15, PH - 22);
@@ -46,7 +46,7 @@ export function drawCover(pdf: jsPDF, state: EngineState) {
   setDisplayFont(pdf, 38);
   setColor(pdf, WHITE);
   pdf.text("A Home", 22, 132);
-  pdf.text("Built To Last.", 22, 154);
+  pdf.text("Built To Last.", 22, 153);
 
   setFill(pdf, ACCENT);
   pdf.rect(22, 162, 30, 1.2, "F");
@@ -80,6 +80,11 @@ export function drawCover(pdf: jsPDF, state: EngineState) {
   const credSpacing = (PW - 44) / creds.length;
   creds.forEach((c, i) => {
     trackedText(pdf, c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 0.4 });
+    // Hairline dot between credentials keeps the row reading as one lockup.
+    if (i < creds.length - 1) {
+      setFill(pdf, [120, 155, 122]);
+      pdf.circle(22 + credSpacing * (i + 1), credY + 5.6, 0.35, "F");
+    }
   });
 
   setBodyFont(pdf, 7);
