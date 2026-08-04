@@ -18,6 +18,14 @@ const STATUS_COLORS: Record<string, RGB> = { yes: POSITIVE, no: NEGATIVE, na: SL
 const STATUS_SOFT: Record<string, RGB> = { yes: POS_SOFT, no: NEG_SOFT, na: SAND };
 const STATUS_LABELS: Record<string, string> = { yes: "YES", no: "NO", na: "N/A" };
 
+/** Trim a string to fit `maxW` at the current font, appending an ellipsis. */
+function ellipsize(pdf: jsPDF, text: string, maxW: number) {
+  if (pdf.getTextWidth(text) <= maxW) return text;
+  let t = text;
+  while (t.length > 1 && pdf.getTextWidth(`${t}…`) > maxW) t = t.slice(0, -1);
+  return `${t.trimEnd()}…`;
+}
+
 /** Four-up counts of the inspection outcome. */
 function drawGlance(pdf: jsPDF, state: EngineState, y: number) {
   const items = [
@@ -73,8 +81,7 @@ export function drawWindowInspection(pdf: jsPDF, state: EngineState) {
       setBodyFont(pdf, 8);
       setColor(pdf, INK);
       const label = `${offset + i + 1}. ${entry.label}`;
-      const txt = (pdf.splitTextToSize(label, colW - pillW - 12) as string[])[0] ?? label;
-      pdf.text(txt, x + 5, ry + 6);
+      pdf.text(ellipsize(pdf, label, colW - pillW - 12), x + 5, ry + 6);
 
       pill(
         pdf, pillLabel, x + colW - 5 - pillW, ry + 7.4,
@@ -102,7 +109,7 @@ export function drawWindowInspection(pdf: jsPDF, state: EngineState) {
   };
 
   // Column widths sum exactly to the content width.
-  const weights = [7, 14, 24, 32, 20, 18, 41];
+  const weights = [9, 19, 26, 30, 18, 18, 36];
   const total = weights.reduce((a, b) => a + b, 0);
   const cols = weights.map((w) => (w / total) * CW);
   const headers = ["#", "LEVEL", "ROOM", "STYLE", "SIZE", "GRIDS", "NOTES"];
@@ -153,10 +160,13 @@ export function drawWindowInspection(pdf: jsPDF, state: EngineState) {
       setBodyFont(pdf, 7, ci === 0 ? "bold" : "normal");
       setColor(pdf, ci === 0 ? FOREST_INK : ci === 6 ? GRAPHITE : INK);
       if (ci === 6) {
-        noteLines.forEach((ln, li) => pdf.text(ln, cx + 3, y + 2.6 + li * 3.9));
+        noteLines.forEach((ln, li) => {
+          const last = li === noteLines.length - 1;
+          const clipped = last && noteLines.join(" ").length < vals[6].length ? `${ln}…` : ln;
+          pdf.text(clipped, cx + 3, y + 2.6 + li * 3.9);
+        });
       } else {
-        const txt = (pdf.splitTextToSize(v, cols[ci] - 5) as string[])[0] ?? v;
-        pdf.text(txt, cx + 3, y + 2.6);
+        pdf.text(ellipsize(pdf, v, cols[ci] - 5), cx + 3, y + 2.6);
       }
       cx += cols[ci];
     });
