@@ -575,26 +575,26 @@ function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
 
   const cardX = 22;
   const cardW = PW - 44;
-  const gap = 6;
-  const startY = 82;
-  const tileSize = 22;
-  const pad = 9;
-  const textX = cardX + pad + tileSize + 10;
+  const gap = 3.6;
+  const startY = 74;
+  const tileSize = 16;
+  const pad = 5.5;
+  const textX = cardX + pad + tileSize + 8;
   const textW = cardW - (textX - cardX) - pad;
   let y = startY;
 
   for (let i = 0; i < reasons.length; i++) {
     const r = reasons[i];
 
-    setDisplayFont(pdf, 12);
+    setDisplayFont(pdf, 11);
     const titleLines = pdf.splitTextToSize(r.title, textW);
-    setBodyFont(pdf, 9.5);
+    setBodyFont(pdf, 8.8);
     const bodyLines = pdf.splitTextToSize(r.body, textW);
 
-    const eyebrowH = 4.2;
-    const titleH = titleLines.length * 5.6;
-    const bodyH = bodyLines.length * 4.9;
-    const contentH = eyebrowH + 2.4 + titleH + 2.6 + bodyH;
+    const eyebrowH = 3.9;
+    const titleH = titleLines.length * 5.2;
+    const bodyH = bodyLines.length * 4.4;
+    const contentH = eyebrowH + 2 + titleH + 2.2 + bodyH;
     const cardH = Math.max(contentH + pad * 2, tileSize + pad * 2);
 
     if (y + cardH > PH - 44) {
@@ -630,30 +630,30 @@ function drawWhyDaBella(pdf: jsPDF, input: InspectionPdfInput) {
     setDisplayFont(pdf, 7);
     setColor(pdf, LIME_DEEP);
     trackedText(pdf, r.eyebrow, textX, cy + 2.6, { charSpace: 0.6 });
-    cy += eyebrowH + 2.4;
+    cy += eyebrowH + 2;
 
     // Title
-    setDisplayFont(pdf, 12);
+    setDisplayFont(pdf, 11);
     setColor(pdf, FOREST_INK);
     titleLines.forEach((ln: string) => {
-      pdf.text(ln, textX, cy + 4);
-      cy += 5.6;
+      pdf.text(ln, textX, cy + 3.8);
+      cy += 5.2;
     });
-    cy += 2.6;
+    cy += 2.2;
 
     // Body
-    setBodyFont(pdf, 9.5);
+    setBodyFont(pdf, 8.8);
     setColor(pdf, GRAPHITE);
     bodyLines.forEach((ln: string) => {
-      pdf.text(ln, textX, cy + 3.4);
-      cy += 4.9;
+      pdf.text(ln, textX, cy + 3.2);
+      cy += 4.4;
     });
 
     y += cardH + gap;
   }
 
-  // Website footer
-  const footerY = PH - 32;
+  // Website call-out — flows after the cards, clear of the page footer.
+  const footerY = Math.min(Math.max(y + 6, PH - 60), PH - 30);
   hairline(pdf, 22, footerY, PW - 22, footerY, ACCENT, 0.4);
   setDisplayFont(pdf, 7.5);
   setColor(pdf, LIME_DEEP);
