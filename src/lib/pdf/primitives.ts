@@ -1,7 +1,7 @@
 import type { jsPDF } from "jspdf";
 import {
   type RGB,
-  ACCENT, FOREST_INK, GRAPHITE, LIME_DEEP, MIST, PAPER, PW,
+  ACCENT, FOREST_INK, GRAPHITE, LIME_DEEP, MIST, PAPER, PH, PW,
   SLATE,
 } from "./theme";
 
@@ -151,7 +151,7 @@ export function pill(
 
 
 export function pageBg(pdf: jsPDF) {
-  rect(pdf, 0, 0, PW, 297, PAPER);
+  rect(pdf, 0, 0, PW, PH, PAPER);
 }
 
 /**
@@ -212,7 +212,7 @@ export function reportFooter(
 
   if (center) {
     setBodyFont(pdf, 6.4);
-    setColor(pdf, MIST_TEXT);
+    setColor(pdf, SLATE);
     const short = (pdf.splitTextToSize(center, 88) as string[])[0] ?? "";
     pdf.text(short, PW / 2, PH - 11.6, { align: "center" });
   }
