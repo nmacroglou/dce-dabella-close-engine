@@ -1,5 +1,6 @@
 /// <reference types="google.maps" />
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useDeals } from "@/hooks/useDeals";
 import { useAllProfiles, buildProfileMap } from "@/hooks/useProfiles";
 import { useIsAdmin } from "@/hooks/useUserRole";
@@ -141,7 +142,8 @@ interface Props {
 }
 
 export default function LeadsMap({ onAction }: Props) {
-  const { data: deals = [], refetch } = useDeals();
+  const queryClient = useQueryClient();
+  const { data: deals = [] } = useDeals();
   const { isAdmin } = useIsAdmin();
   const { data: profiles = [] } = useAllProfiles(isAdmin);
   const profileMap = useMemo(() => buildProfileMap(profiles), [profiles]);
