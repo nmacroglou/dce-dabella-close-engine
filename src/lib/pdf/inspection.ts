@@ -7,7 +7,7 @@ import {
   MIST, NEGATIVE, PH, PW, SLATE, WHITE,
 } from "./theme";
 import {
-  eyebrow, hairline, pageBg, rect, rounded, sectionHeader,
+  eyebrow, hairline, pageBg, rect, reportFooter, rounded, sectionHeader,
   setBodyFont, setColor, setDisplayFont, setFill, trackedText, vGradient,
 } from "./primitives";
 import {
@@ -69,7 +69,7 @@ export async function buildInspectionPdf(input: InspectionPdfInput): Promise<{ b
   pdf.addPage();
   drawWhyDaBella(pdf, input);
 
-  drawFooters(pdf, (input.language ?? "en") as Lang);
+  drawFooters(pdf, (input.language ?? "en") as Lang, input.address);
 
 
   return { blob: pdf.output("blob"), doc: pdf };
@@ -684,21 +684,14 @@ function drawBlock(pdf: jsPDF, heading: string, text: string, y: number): number
   return cy + 7;
 }
 
-function drawFooters(pdf: jsPDF, lang: Lang = "en") {
+function drawFooters(pdf: jsPDF, lang: Lang = "en", address = "") {
   const total = pdf.getNumberOfPages();
   for (let p = 2; p <= total; p++) {
     pdf.setPage(p);
-    hairline(pdf, 22, PH - 16, PW - 22, PH - 16, MIST, 0.2);
-    setDisplayFont(pdf, 6.5);
-    setColor(pdf, SLATE);
-    trackedText(pdf, L(lang, "DABELLA · INSPECTION REPORT", "DABELLA · INFORME DE INSPECCIÓN"), 22, PH - 11, { charSpace: 0.45 });
-    setBodyFont(pdf, 6.5);
-    trackedText(
-      pdf,
-      `${String(p).padStart(2, "0")} / ${String(total).padStart(2, "0")}`,
-      PW - 22, PH - 11,
-      { align: "right", charSpace: 0.3 },
+    reportFooter(
+      pdf, p, total,
+      L(lang, "DaBella · Inspection Report", "DaBella · Informe de Inspección"),
+      address,
     );
   }
 }
-
