@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeal } from "@/contexts/ActiveDealContext";
 import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
+import { saveSearchedProperty } from "@/lib/propertyIntel/saveProperty";
 import {
   Check, X, HomeIcon, UserX, MapPinned, MessageCircle, Camera, StickyNote, Ban, Wrench,
 } from "lucide-react";
