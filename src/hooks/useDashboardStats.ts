@@ -70,27 +70,32 @@ export function useDashboardStats() {
       // Only the columns the aggregations below actually read. Selecting `*`
       // shipped the whole `engine_state` JSON blob for every deal just to
       // compute a handful of counters.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dealsQ = scopeToRep(
+      //
+      // The builders are widened to a minimal structural type: Supabase's
+      // generated generics blow past TypeScript's instantiation depth once a
+      // narrow `select()` is piped through a generic scoping helper.
+      type ScopedQuery = { eq: (col: string, value: string) => ScopedQuery } & PromiseLike<{
+        data: unknown[] | null;
+        error: { message: string } | null;
+      }>;
+      const scoped = (q: unknown) => scopeToRep(q as ScopedQuery, effectiveRepId);
+
+      const dealsQ = scoped(
         supabase
           .from("deals")
           .select(
             "id, stage, created_at, closed_at, closed_amount, selected_option, price_a, price_b, price_c, stage_changed_at",
-          ) as any,
-        effectiveRepId,
+          ),
       );
-      const objQ = scopeToRep(
-        supabase.from("deal_objections").select("deal_id, objection_type") as any,
-        effectiveRepId,
-      );
-      const photosQ = scopeToRep(
+      const objQ = scoped(supabase.from("deal_objections").select("deal_id, objection_type"));
+      const photosQ = scoped(
         supabase
           .from("deal_photos")
           .select("deal_id, inspection_tags, created_at")
-          .not("inspection_tags", "is", null) as any,
-        effectiveRepId,
+          .not("inspection_tags", "is", null),
       );
-      const [dealsRes, objectionsRes, photosRes] = (await Promise.all([dealsQ, objQ, photosQ])) as any[];
+      const [dealsRes, objectionsRes, photosRes] = await Promise.all([dealsQ, objQ, photosQ]);
+
 
 
       if (dealsRes.error) throw dealsRes.error;
