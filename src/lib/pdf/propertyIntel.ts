@@ -6,7 +6,7 @@ import {
   MIST, NEGATIVE, PH, POSITIVE, PW, SAND, SLATE, WHITE,
 } from "./theme";
 import {
-  eyebrow, hairline, pageBg, rect, rounded, sectionHeader,
+  eyebrow, hairline, pageBg, rect, reportFooter, rounded, sectionHeader,
   setBodyFont, setColor, setDisplayFont, setFill, trackedText, vGradient,
 } from "./primitives";
 import type { Confidence, PropertyIntelReport } from "@/lib/propertyIntel/types";
@@ -236,13 +236,7 @@ function drawFooters(pdf: jsPDF, address: string) {
   const total = pdf.getNumberOfPages();
   for (let i = 2; i <= total; i++) {
     pdf.setPage(i);
-    hairline(pdf, M, PH - 18, PW - M, PH - 18, MIST, 0.3);
-    setBodyFont(pdf, 6.8);
-    setColor(pdf, SLATE);
-    trackedText(pdf, "DABELLA · PROPERTY INTELLIGENCE", M, PH - 13, { charSpace: 0.4 });
-    const short = (pdf.splitTextToSize(address, 90) as string[])[0] ?? "";
-    pdf.text(short, PW / 2, PH - 13, { align: "center" });
-    pdf.text(`${i} / ${total}`, PW - M, PH - 13, { align: "right" });
+    reportFooter(pdf, i, total, "DaBella · Property Intelligence", address);
   }
 }
 

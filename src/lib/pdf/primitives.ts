@@ -1,7 +1,7 @@
 import type { jsPDF } from "jspdf";
 import {
   type RGB,
-  ACCENT, FOREST_INK, GRAPHITE, LIME_DEEP, MIST, PAPER, PW,
+  ACCENT, FOREST_INK, GRAPHITE, LIME_DEEP, MIST, PAPER, PH, PW,
   SLATE,
 } from "./theme";
 
@@ -151,7 +151,7 @@ export function pill(
 
 
 export function pageBg(pdf: jsPDF) {
-  rect(pdf, 0, 0, PW, 297, PAPER);
+  rect(pdf, 0, 0, PW, PH, PAPER);
 }
 
 /**
@@ -172,29 +172,84 @@ export function heroBand(
 export function sectionHeader(
   pdf: jsPDF, eyebrowText: string, title: string, subtitle?: string,
 ) {
+  // Accent tick + eyebrow, set on a common baseline for a steady rhythm.
   setFill(pdf, ACCENT);
-  pdf.roundedRect(22, 21.6, 14, 1.1, 0.55, 0.55, "F");
+  pdf.roundedRect(22, 26.2, 1.5, 4, 0.75, 0.75, "F");
 
   setDisplayFont(pdf, 7);
   setColor(pdf, LIME_DEEP);
-  trackedText(pdf, eyebrowText.toUpperCase(), 22, 30, { charSpace: 0.6 });
+  trackedText(pdf, eyebrowText.toUpperCase(), 26.5, 29.4, { charSpace: 0.6 });
 
   // Headline auto-shrinks so long section titles never run off the page.
   setDisplayFont(pdf, 24);
-  const size = fitFontSize(pdf, title, PW - 44, 24, 15);
+  fitFontSize(pdf, title, PW - 44, 24, 15);
   setColor(pdf, FOREST_INK);
   pdf.text(title, 22, 45);
-  pdf.setFontSize(size);
 
-  let dividerY = 65;
+  let dividerY = 55;
   if (subtitle) {
     setBodyFont(pdf, 9.2);
     setColor(pdf, GRAPHITE);
-    const lines = pdf.splitTextToSize(subtitle, PW - 44);
-    lines.forEach((ln: string, i: number) => pdf.text(ln, 22, 53 + i * 5.1));
-    dividerY = 57 + lines.length * 5.1 + 4;
+    // Keep the deck narrow — long measures read poorly at this size.
+    const lines = pdf.splitTextToSize(subtitle, Math.min(PW - 44, 148)) as string[];
+    lines.forEach((ln, i) => pdf.text(ln, 22, 53 + i * 5.1));
+    dividerY = 53 + (lines.length - 1) * 5.1 + 7.5;
   }
 
   hairline(pdf, 22, dividerY, PW - 22, dividerY, MIST, 0.35);
+  // Short accent overlay on the rule anchors the eye at the left margin.
+  hairline(pdf, 22, dividerY, 40, dividerY, ACCENT, 0.6);
 }
 
+/** Consistent editorial footer shared by every report family. */
+export function reportFooter(
+  pdf: jsPDF, page: number, total: number, left: string, center = "",
+) {
+  hairline(pdf, 22, PH - 16.5, PW - 22, PH - 16.5, MIST, 0.25);
+  setDisplayFont(pdf, 6.4);
+  setColor(pdf, SLATE);
+  trackedText(pdf, left.toUpperCase(), 22, PH - 11.6, { charSpace: 0.5 });
+
+  if (center) {
+    setBodyFont(pdf, 6.4);
+    setColor(pdf, SLATE);
+    const short = (pdf.splitTextToSize(center, 88) as string[])[0] ?? "";
+    pdf.text(short, PW / 2, PH - 11.6, { align: "center" });
+  }
+
+  setBodyFont(pdf, 6.4);
+  setColor(pdf, SLATE);
+  trackedText(
+    pdf,
+    `${String(page).padStart(2, "0")} / ${String(total).padStart(2, "0")}`,
+    PW - 22, PH - 11.6,
+    { align: "right", charSpace: 0.3 },
+  );
+}
+
+
+
+/**
+ * Evenly spaced credential lockup for dark covers. Separator dots are only
+ * drawn when there is real clearance, so long labels never collide.
+ */
+export function credentialRow(
+  pdf: jsPDF, items: string[], y: number,
+  textColor: RGB = [200, 215, 200], dotColor: RGB = [120, 155, 122],
+) {
+  const slot = (PW - 44) / items.length;
+  setDisplayFont(pdf, 6.5);
+  const widths = items.map((c) => pdf.getTextWidth(c.toUpperCase()) + 0.35 * (c.length - 1));
+  items.forEach((c, i) => {
+    setDisplayFont(pdf, 6.5);
+    setColor(pdf, textColor);
+    trackedText(pdf, c.toUpperCase(), 22 + slot * (i + 0.5), y, { align: "center", charSpace: 0.35 });
+    if (i < items.length - 1) {
+      const gap = slot - widths[i] / 2 - widths[i + 1] / 2;
+      if (gap >= 6) {
+        setFill(pdf, dotColor);
+        pdf.circle(22 + slot * (i + 1), y - 1.4, 0.35, "F");
+      }
+    }
+  });
+}

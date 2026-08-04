@@ -5,8 +5,8 @@ import {
   ACCENT, FOREST, FOREST_INK, LIME, PH, PW, WHITE,
 } from "../theme";
 import {
-  hairline, rect, setBodyFont, setColor, setDisplayFont, setDraw, setFill,
-  trackedText, vGradient,
+  credentialRow, hairline, rect, setBodyFont, setColor, setDisplayFont, setDraw,
+  setFill, trackedText, vGradient,
 } from "../primitives";
 
 export function drawCover(pdf: jsPDF, state: EngineState) {
@@ -24,7 +24,7 @@ export function drawCover(pdf: jsPDF, state: EngineState) {
 
   setDraw(pdf, [255, 255, 255]);
   pdf.setLineWidth(0.2);
-  pdf.setGState(pdf.GState({ opacity: 0.35 }));
+  pdf.setGState(pdf.GState({ opacity: 0.22 }));
   pdf.line(15, 15, 22, 15); pdf.line(15, 15, 15, 22);
   pdf.line(PW - 15, 15, PW - 22, 15); pdf.line(PW - 15, 15, PW - 15, 22);
   pdf.line(15, PH - 15, 22, PH - 15); pdf.line(15, PH - 15, 15, PH - 22);
@@ -46,7 +46,7 @@ export function drawCover(pdf: jsPDF, state: EngineState) {
   setDisplayFont(pdf, 38);
   setColor(pdf, WHITE);
   pdf.text("A Home", 22, 132);
-  pdf.text("Built To Last.", 22, 154);
+  pdf.text("Built To Last.", 22, 153);
 
   setFill(pdf, ACCENT);
   pdf.rect(22, 162, 30, 1.2, "F");
@@ -74,13 +74,11 @@ export function drawCover(pdf: jsPDF, state: EngineState) {
 
   const credY = 256;
   hairline(pdf, 22, credY, PW - 22, credY, [80, 120, 85], 0.3);
-  setDisplayFont(pdf, 6.5);
-  setColor(pdf, [200, 215, 200]);
-  const creds = ["LIFETIME WARRANTY", "GAF MASTER ELITE", "TOP-RATED CREWS", "LOCALLY OWNED"];
-  const credSpacing = (PW - 44) / creds.length;
-  creds.forEach((c, i) => {
-    trackedText(pdf, c, 22 + credSpacing * (i + 0.5), credY + 7, { align: "center", charSpace: 0.4 });
-  });
+  credentialRow(
+    pdf,
+    ["Lifetime warranty", "GAF Master Elite", "Top-rated crews", "Locally owned"],
+    credY + 7,
+  );
 
   setBodyFont(pdf, 7);
   setColor(pdf, [180, 200, 180]);
