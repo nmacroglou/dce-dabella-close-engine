@@ -51,7 +51,18 @@ export interface PredictedObjection {
   likelihood: "high" | "medium" | "low";
 }
 
+export interface InvestmentLadder {
+  product: string;
+  low: number;
+  high: number;
+  basis: string;
+  rate_label: string;
+  rows: { term_months: number; low: number; high: number }[];
+  equity_headroom: number | null;
+}
+
 export interface QualificationDeck {
+
   score: number;
   tier: "A" | "B" | "C" | "D";
   tier_note: string;
