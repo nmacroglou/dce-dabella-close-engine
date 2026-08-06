@@ -5,6 +5,7 @@ import WhyConfidencePanel from "./WhyConfidencePanel";
 import RepActionsBar from "./RepActionsBar";
 import QualificationDeck from "./QualificationDeck";
 import { NeighborhoodProof } from "./NeighborhoodProof";
+import IntelMetricsPanel from "./IntelMetrics";
 
 import {
   MapPin, User, ScrollText, Home, Sparkles, DoorOpen, AlertCircle, FileWarning, Building2,
