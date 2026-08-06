@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { PropertyIntelReport as Report } from "@/lib/propertyIntel/types";
+import DoorValue from "./DoorValue";
 import { formatCurrency } from "@/lib/format";
 import ConfidenceBadge from "./ConfidenceBadge";
 import WhyConfidencePanel from "./WhyConfidencePanel";
@@ -46,9 +48,18 @@ const OWNER_TYPE_LABEL: Record<string, string> = {
   unknown: "Unknown",
 };
 
+type TabId = "close" | "numbers" | "record";
+
+const TABS: { id: TabId; label: string; hint: string }[] = [
+  { id: "close", label: "Close plan", hint: "Who, why, what it's worth" },
+  { id: "numbers", label: "Numbers", hint: "Value, comfort, timing" },
+  { id: "record", label: "Record", hint: "Raw property data" },
+];
+
 export default function PropertyIntelReportView({ report }: { report: Report }) {
   const { property_match: m, ownership: o, most_recent_sale: s, identity, info, opportunity: opp, brief } = report;
   const requiresConfirmation = o.owner_type === "trust" || o.owner_type === "llc" || o.owner_type === "corporation";
+  const [tab, setTab] = useState<TabId>("close");
 
   return (
     <div className="space-y-4 pb-24">
@@ -66,6 +77,24 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
         </div>
       )}
 
+      {/* Funnel tabs */}
+      <div className="flex items-center gap-1 rounded-lg border border-hairline bg-muted/20 p-1">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold transition ${
+              tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted/40"
+            }`}
+          >
+            {t.label}
+            <span className="block text-[10px] font-normal opacity-70">{t.hint}</span>
+          </button>
+        ))}
+      </div>
+
+      {tab === "close" && (
+        <div className="space-y-4">
       {/* Pre-Door Brief — hero */}
       <Section icon={DoorOpen} title="Pre-door brief" badge={<ConfidenceBadge c={report.overall_confidence} />}>
         <div className="grid gap-2">
@@ -97,14 +126,18 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
         )}
       </Section>
 
-      <NeighborhoodProof lat={m.latitude} lng={m.longitude} street={m.standardized_address.split(",")[0]} />
+          <DoorValue report={report} />
 
-      <QualificationDeck report={report} />
+          <QualificationDeck report={report} />
 
-      <IntelMetricsPanel report={report} />
+          <NeighborhoodProof lat={m.latitude} lng={m.longitude} street={m.standardized_address.split(",")[0]} />
+        </div>
+      )}
 
+      {tab === "numbers" && <IntelMetricsPanel report={report} />}
 
-
+      {tab === "record" && (
+        <div className="space-y-4">
       {/* Property match */}
       <Section icon={MapPin} title="Property match" badge={<ConfidenceBadge c={m.confidence} />}>
         <div className="grid gap-1">
@@ -223,6 +256,8 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
           Opportunity score is separate from confidence score. Do not state that the roof is damaged unless confirmed by inspection.
         </p>
       </Section>
+        </div>
+      )}
 
       <RepActionsBar report={report} />
     </div>

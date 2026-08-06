@@ -3,7 +3,7 @@ import { buildIntelMetrics, type FieldStatus } from "@/lib/propertyIntel/metrics
 import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { formatCurrency, formatCount } from "@/lib/format";
 import {
-  Scale, Gauge, TrendingUp, Database, CalendarClock, Route, CheckCircle2,
+  Scale, Gauge, Database, CalendarClock, Route, CheckCircle2,
   AlertTriangle, HelpCircle, CircleDot,
 } from "lucide-react";
 
@@ -59,7 +59,7 @@ const AGREEMENT_TONE: Record<string, string> = {
 
 export default function IntelMetricsPanel({ report }: { report: PropertyIntelReport }) {
   const m = useMemo(() => buildIntelMetrics(report), [report]);
-  const { valuation: v, affordability: a, economics: e, data: d, timing: t } = m;
+  const { valuation: v, affordability: a, data: d, timing: t } = m;
 
   const routeTone = m.route_priority >= 78 ? "bg-emerald-500"
     : m.route_priority >= 60 ? "bg-primary"
@@ -143,24 +143,8 @@ export default function IntelMetricsPanel({ report }: { report: PropertyIntelRep
         </ul>
       </Card>
 
-      {/* Deal economics */}
-      <Card icon={TrendingUp} title="Expected value of this door">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <Stat label="Expected commission" value={formatCurrency(e.expected_commission)} sub="Probability-weighted" />
-          <Stat label="If it closes" value={`${formatCurrency(e.commission_low)} – ${formatCurrency(e.commission_high)}`} sub={`On ~${formatCurrency(e.contract_mid)} contract`} />
-          <Stat label="Sit → close" value={`${Math.round(e.sit_probability * 100)}% → ${Math.round(e.close_probability * 100)}%`} sub="Tier-based funnel" />
-          <Stat label="Value / hour" value={e.value_per_hour !== null ? formatCurrency(e.value_per_hour) : "—"} sub={`~${e.minutes_invested} min invested`} />
-        </div>
-        <p className="mt-3 text-[12px] text-foreground/85">{e.verdict}</p>
-        {e.knocks_to_one_deal !== null && (
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            At this tier it takes roughly {formatCount(e.knocks_to_one_deal)} contacts like this one to produce a signed deal.
-          </p>
-        )}
-        <p className="mt-2 text-[10px] italic text-muted-foreground">
-          Modeled from tier conversion history and front-end commission ranges — not a payout quote.
-        </p>
-      </Card>
+
+
 
       {/* Timing */}
       <Card icon={CalendarClock} title="Timing & urgency" right={

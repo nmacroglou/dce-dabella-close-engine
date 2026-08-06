@@ -204,46 +204,97 @@ export function buildAffordability(
 
 /* ─────────────────────────────────────────────────────── deal economics */
 
+export interface FunnelStage {
+  key: string;
+  label: string;
+  pct: number; // cumulative probability from one knock, 0-1
+  step_pct: number; // conversion from the previous stage, 0-1
+  note: string;
+}
+
+export interface EvLever {
+  label: string;
+  detail: string;
+  delta: number; // additional expected dollars per knock
+}
+
 export interface DealEconomics {
+  contract_low: number;
   contract_mid: number;
-  close_probability: number; // 0-1
-  sit_probability: number; // 0-1
+  contract_high: number;
+  answer_probability: number;
+  pitch_probability: number;
+  close_probability: number; // 0-1 (close given sit)
+  sit_probability: number; // 0-1 (sit given contact)
+  joint_probability: number; // knock → signed
   commission_low: number;
   commission_high: number;
   expected_commission: number;
   expected_value_per_knock: number;
+  ev_low: number;
+  ev_high: number;
   knocks_to_one_deal: number | null;
   minutes_invested: number;
   value_per_hour: number | null;
+  per_ten_doors: number;
+  block_of_25: number;
+  funnel: FunnelStage[];
+  levers: EvLever[];
   verdict: string;
 }
 
-/** Historical funnel by tier — contact → sit → close. */
-const TIER_FUNNEL: Record<QualificationDeck["tier"], { sit: number; close: number }> = {
-  A: { sit: 0.34, close: 0.32 },
-  B: { sit: 0.26, close: 0.24 },
-  C: { sit: 0.18, close: 0.16 },
-  D: { sit: 0.11, close: 0.09 },
+/** Historical funnel by tier — answer → pitch → sit → close. */
+const TIER_FUNNEL: Record<QualificationDeck["tier"], { answer: number; pitch: number; sit: number; close: number }> = {
+  A: { answer: 0.38, pitch: 0.62, sit: 0.34, close: 0.32 },
+  B: { answer: 0.35, pitch: 0.55, sit: 0.26, close: 0.24 },
+  C: { answer: 0.32, pitch: 0.46, sit: 0.18, close: 0.16 },
+  D: { answer: 0.3, pitch: 0.38, sit: 0.11, close: 0.09 },
 };
 
 const FRONT_END_LOW = 0.08;
 const FRONT_END_HIGH = 0.14;
 
 export function buildDealEconomics(q: QualificationDeck): DealEconomics {
-  const contractMid = Math.round((q.investment.low + q.investment.high) / 2);
-  const funnel = TIER_FUNNEL[q.tier];
-  const sit = funnel.sit;
-  const close = funnel.close;
-  const joint = sit * close;
+  const contractLow = Math.round(q.investment.low);
+  const contractHigh = Math.round(q.investment.high);
+  const contractMid = Math.round((contractLow + contractHigh) / 2);
+  const f = TIER_FUNNEL[q.tier];
+  const joint = f.answer * f.pitch * f.sit * f.close;
 
-  const commissionLow = Math.round(contractMid * FRONT_END_LOW);
-  const commissionHigh = Math.round(contractMid * FRONT_END_HIGH);
+  const commissionLow = Math.round(contractLow * FRONT_END_LOW);
+  const commissionHigh = Math.round(contractHigh * FRONT_END_HIGH);
   const commissionMid = Math.round((commissionLow + commissionHigh) / 2);
   const expected = Math.round(commissionMid * joint);
 
   // A knock plus a short conversation; sits add real time downstream.
-  const minutes = Math.round(4 + sit * 90);
+  const minutes = Math.round(4 + f.answer * f.pitch * 10 + f.answer * f.pitch * f.sit * 90);
   const valuePerHour = minutes > 0 ? Math.round((expected / minutes) * 60) : null;
+
+  const funnel: FunnelStage[] = [
+    { key: "knock", label: "Knock", pct: 1, step_pct: 1, note: "One door, one attempt" },
+    { key: "answer", label: "Answer", pct: f.answer, step_pct: f.answer, note: "Someone comes to the door" },
+    { key: "pitch", label: "Real conversation", pct: f.answer * f.pitch, step_pct: f.pitch, note: "You get past the opener" },
+    { key: "sit", label: "Sit / appointment", pct: f.answer * f.pitch * f.sit, step_pct: f.sit, note: "Both decision-makers at the table" },
+    { key: "close", label: "Signed", pct: joint, step_pct: f.close, note: "Contract signed at or after the sit" },
+  ];
+
+  const levers: EvLever[] = [
+    {
+      label: "Both decision-makers present",
+      detail: "Confirm the second owner before you sit — one-legger sits close roughly a third less.",
+      delta: Math.round(commissionMid * f.answer * f.pitch * f.sit * f.close * 0.45),
+    },
+    {
+      label: "Knock in the best window",
+      detail: q.best_knock_window,
+      delta: Math.round(expected * 0.3),
+    },
+    {
+      label: "Two callback attempts",
+      detail: "Text plus voicemail recovers a chunk of no-answers at the same contract value.",
+      delta: Math.round(commissionMid * (1 - f.answer) * 0.35 * f.pitch * f.sit * f.close),
+    },
+  ].filter((l) => l.delta > 0);
 
   const verdict =
     expected >= 900 ? "High-value door — protect this one on the route."
@@ -252,19 +303,31 @@ export function buildDealEconomics(q: QualificationDeck): DealEconomics {
           : "Low expected value — knock only while you're on the street.";
 
   return {
+    contract_low: contractLow,
     contract_mid: contractMid,
-    close_probability: close,
-    sit_probability: sit,
+    contract_high: contractHigh,
+    answer_probability: f.answer,
+    pitch_probability: f.pitch,
+    close_probability: f.close,
+    sit_probability: f.sit,
+    joint_probability: joint,
     commission_low: commissionLow,
     commission_high: commissionHigh,
     expected_commission: expected,
     expected_value_per_knock: expected,
+    ev_low: Math.round(commissionLow * joint * 0.7),
+    ev_high: Math.round(commissionHigh * joint * 1.3),
     knocks_to_one_deal: joint > 0 ? Math.round(1 / joint) : null,
     minutes_invested: minutes,
     value_per_hour: valuePerHour,
+    per_ten_doors: Math.round(expected * 10),
+    block_of_25: Math.round(expected * 25),
+    funnel,
+    levers,
     verdict,
   };
 }
+
 
 /* ────────────────────────────────────────────────── data triangulation */
 
