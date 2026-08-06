@@ -5,6 +5,7 @@ import WhyConfidencePanel from "./WhyConfidencePanel";
 import RepActionsBar from "./RepActionsBar";
 import QualificationDeck from "./QualificationDeck";
 import { NeighborhoodProof } from "./NeighborhoodProof";
+import IntelMetricsPanel from "./IntelMetrics";
 
 import {
   MapPin, User, ScrollText, Home, Sparkles, DoorOpen, AlertCircle, FileWarning, Building2,
@@ -99,6 +100,8 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
       <NeighborhoodProof lat={m.latitude} lng={m.longitude} street={m.standardized_address.split(",")[0]} />
 
       <QualificationDeck report={report} />
+
+      <IntelMetricsPanel report={report} />
 
 
 

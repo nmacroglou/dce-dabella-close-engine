@@ -11,6 +11,7 @@ import {
 } from "./primitives";
 import type { Confidence, PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { buildQualification } from "@/lib/propertyIntel/qualification";
+import { buildIntelMetrics } from "@/lib/propertyIntel/metrics";
 
 
 const M = 22;                 // page margin
@@ -469,8 +470,73 @@ export async function buildPropertyIntelPdf(
     bullets(pdf, ctx, q.red_flags, NEGATIVE);
   }
 
+  // ── Page 6: Derived metrics & triangulation
+  const im = buildIntelMetrics(r, q);
+  newPage(pdf, ctx, "Section 5", "Derived Metrics & Triangulation",
+    "Independent estimates reconciled, payment comfort, expected value and source corroboration.");
+
+  blockTitle(pdf, ctx, "Route priority");
+  kvCard(pdf, ctx, [
+    ["Blended route score", `${im.route_priority} / 100`],
+    ["Read", im.route_note],
+    ["Urgency index", `${im.timing.urgency_index} / 100`],
+    ["Payment comfort index", `${im.affordability.index} / 100`],
+    ["Data corroboration", `${im.data.corroboration_pct}% (${im.data.completeness_pct}% complete)`],
+  ]);
+
+  ensure(pdf, ctx, kvNeed(6), "Section 5", "Derived Metrics & Triangulation");
+  blockTitle(pdf, ctx, "Value triangulation");
+  kvCard(pdf, ctx, [
+    ["Consensus value", money(im.valuation.consensus)],
+    ["Estimate range", im.valuation.low !== null && im.valuation.high !== null
+      ? `${money(im.valuation.low)} – ${money(im.valuation.high)}` : "—"],
+    ["Source agreement", `${im.valuation.agreement}${im.valuation.spread_pct !== null ? ` · ${im.valuation.spread_pct}% spread` : ""}`],
+    ["Price per sq ft", money(im.valuation.price_per_sqft)],
+    ["Appreciation since purchase", im.valuation.cagr_pct !== null ? `${im.valuation.cagr_pct}% / yr` : "—"],
+    ["Tax burden", im.valuation.tax_burden_pct !== null ? `${im.valuation.tax_burden_pct}% of value` : "—"],
+  ]);
+  if (im.valuation.estimates.length) {
+    bullets(pdf, ctx, im.valuation.estimates.map((e) => `${e.label}: ${money(e.value)} — ${e.note}`), ACCENT);
+  }
+  paragraph(pdf, ctx, im.valuation.agreement_note);
+
+  ensure(pdf, ctx, kvNeed(5), "Section 5", "Derived Metrics & Triangulation");
+  blockTitle(pdf, ctx, "Payment comfort");
+  kvCard(pdf, ctx, [
+    ["Read", im.affordability.headline],
+    ["Est. monthly (mid, 120 mo)", money(im.affordability.project_payment_mid)],
+    ["Implied household income", money(im.affordability.implied_household_income)],
+    ["Payment / income", im.affordability.payment_to_income_pct !== null ? `${im.affordability.payment_to_income_pct}%` : "—"],
+    ["Project / home value", im.affordability.payment_to_value_pct !== null ? `${im.affordability.payment_to_value_pct}%` : "—"],
+  ]);
+  bullets(pdf, ctx, im.affordability.notes, SLATE);
+
+  ensure(pdf, ctx, kvNeed(5), "Section 5", "Derived Metrics & Triangulation");
+  blockTitle(pdf, ctx, "Expected value of this door");
+  kvCard(pdf, ctx, [
+    ["Expected commission", money(im.economics.expected_commission)],
+    ["If it closes", `${money(im.economics.commission_low)} – ${money(im.economics.commission_high)}`],
+    ["Modeled contract", money(im.economics.contract_mid)],
+    ["Sit → close", `${Math.round(im.economics.sit_probability * 100)}% → ${Math.round(im.economics.close_probability * 100)}%`],
+    ["Contacts per deal", im.economics.knocks_to_one_deal !== null ? String(im.economics.knocks_to_one_deal) : "—"],
+  ]);
+  paragraph(pdf, ctx, `${im.economics.verdict} Modeled from tier conversion history and front-end commission ranges — not a payout quote.`, 7.8);
+
+  ensure(pdf, ctx, 45, "Section 5", "Derived Metrics & Triangulation");
+  blockTitle(pdf, ctx, "Timing signals");
+  paragraph(pdf, ctx, im.timing.season_note);
+  if (im.timing.signals.length) {
+    bullets(pdf, ctx, im.timing.signals.map((s) => `${s.label} (${s.weight}): ${s.detail}`), LIME_DEEP);
+  }
+
+  if (im.data.verify_at_door.length) {
+    ensure(pdf, ctx, 45, "Section 5", "Derived Metrics & Triangulation");
+    blockTitle(pdf, ctx, "Verify at the door");
+    bullets(pdf, ctx, im.data.verify_at_door, NEGATIVE);
+  }
+
   // ── Page 6: Confidence & sourcing
-  newPage(pdf, ctx, "Section 5", "Confidence & Sourcing",
+  newPage(pdf, ctx, "Section 6", "Confidence & Sourcing",
     "How much to trust each part of this report, and where the data came from.");
 
 
@@ -482,17 +548,17 @@ export async function buildPropertyIntelPdf(
   confidenceRow(pdf, ctx, "Product recommendation", o.recommendation_confidence);
   ctx.y += 4;
 
-  ensure(pdf, ctx, 45, "Section 5", "Confidence & Sourcing");
+  ensure(pdf, ctx, 45, "Section 6", "Confidence & Sourcing");
   blockTitle(pdf, ctx, "Why this confidence");
   bullets(pdf, ctx, r.overall_confidence.reasons);
 
   if (r.overall_confidence.conflicts.length) {
-    ensure(pdf, ctx, 40, "Section 5", "Confidence & Sourcing");
+    ensure(pdf, ctx, 40, "Section 6", "Confidence & Sourcing");
     blockTitle(pdf, ctx, "Conflicts detected");
     bullets(pdf, ctx, r.overall_confidence.conflicts, NEGATIVE);
   }
 
-  ensure(pdf, ctx, 45, "Section 5", "Confidence & Sourcing");
+  ensure(pdf, ctx, 45, "Section 6", "Confidence & Sourcing");
   blockTitle(pdf, ctx, "Sourcing");
   kvCard(pdf, ctx, [
     ["Ownership source", dash(r.ownership.source)],
@@ -503,7 +569,7 @@ export async function buildPropertyIntelPdf(
     ["Mode", r.is_demo ? "Demo fixture data" : "Live records"],
   ]);
 
-  ensure(pdf, ctx, 20, "Section 5", "Confidence & Sourcing");
+  ensure(pdf, ctx, 20, "Section 6", "Confidence & Sourcing");
   setBodyFont(pdf, 7.6);
   setColor(pdf, SLATE);
   const disc = pdf.splitTextToSize(
