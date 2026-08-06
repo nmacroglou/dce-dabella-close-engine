@@ -99,14 +99,18 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
         )}
       </Section>
 
-      <NeighborhoodProof lat={m.latitude} lng={m.longitude} street={m.standardized_address.split(",")[0]} />
+          <DoorValue report={report} />
 
-      <QualificationDeck report={report} />
+          <QualificationDeck report={report} />
 
-      <IntelMetricsPanel report={report} />
+          <NeighborhoodProof lat={m.latitude} lng={m.longitude} street={m.standardized_address.split(",")[0]} />
+        </div>
+      )}
 
+      {tab === "numbers" && <IntelMetricsPanel report={report} />}
 
-
+      {tab === "record" && (
+        <div className="space-y-4">
       {/* Property match */}
       <Section icon={MapPin} title="Property match" badge={<ConfidenceBadge c={m.confidence} />}>
         <div className="grid gap-1">
