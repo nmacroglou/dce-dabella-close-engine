@@ -9,6 +9,7 @@ import QualificationDeck from "./QualificationDeck";
 import ProductFitBoard from "./ProductFitBoard";
 import { NeighborhoodProof } from "./NeighborhoodProof";
 import IntelMetricsPanel from "./IntelMetrics";
+import PropertyImagery from "./PropertyImagery";
 
 import {
   MapPin, User, ScrollText, Home, Sparkles, DoorOpen, AlertCircle, FileWarning, Building2,
@@ -126,6 +127,8 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
           </div>
         )}
       </Section>
+
+          <PropertyImagery lat={m.latitude} lng={m.longitude} address={m.standardized_address} />
 
           <DoorValue report={report} />
 
