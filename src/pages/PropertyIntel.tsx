@@ -46,6 +46,8 @@ export default function PropertyIntel() {
     }
     setCreating(true);
     try {
+      const { buildQualification } = await import("@/lib/propertyIntel/qualification");
+      const q = buildQualification(report);
       const { data, error } = await supabase.from("deals").insert({
         rep_id: user.id,
         homeowner1: report.identity.likely_owner_name ?? report.ownership.owner_name ?? "Prospect",
@@ -54,8 +56,9 @@ export default function PropertyIntel() {
         lng: report.property_match.longitude,
         stage: "inspecting",
         lead_source: "canvass",
-        notes: `Property Intelligence — ${report.opportunity.primary_product} opportunity (score ${report.opportunity.opportunity_score}).`,
+        notes: `Property Intelligence — ${report.opportunity.primary_product} opportunity (score ${report.opportunity.opportunity_score}).\n\n${q.door_ammo}`,
       } as never).select("id").maybeSingle();
+
       if (error) throw error;
       const dealId = (data as { id: string } | null)?.id;
       if (dealId) {
