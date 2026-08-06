@@ -11,6 +11,7 @@ import {
 } from "./primitives";
 import type { Confidence, PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { buildQualification } from "@/lib/propertyIntel/qualification";
+import { buildProductFit } from "@/lib/propertyIntel/productFit";
 import { buildIntelMetrics } from "@/lib/propertyIntel/metrics";
 
 
