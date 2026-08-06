@@ -5,7 +5,7 @@ import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { formatCurrency } from "@/lib/format";
 import {
   Target, Wallet, Timer, Users, ShieldAlert, MessageSquareWarning, CreditCard,
-  HelpCircle, Flame, Clock, Copy, ChevronDown,
+  HelpCircle, Flame, Clock, Copy, ChevronDown, Mic, Phone, Voicemail,
 } from "lucide-react";
 
 const TIER_CLASS: Record<string, string> = {
@@ -195,6 +195,51 @@ export default function QualificationDeck({ report }: { report: PropertyIntelRep
           Planning ballpark only, using the standard payment-factor reference. Final scope, pricing and approved
           terms come from the bid sheet and the lender.
         </p>
+      </Card>
+
+      {/* Door approach script */}
+      <Card icon={Mic} title="Door approach — 90 second track"
+        right={
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(q.approach.steps.map((st) => `${st.label} (${st.seconds})\n${st.script}`).join("\n\n"));
+              toast.success("Approach script copied");
+            }}
+            className="inline-flex items-center gap-1.5 rounded-md border border-hairline px-2 py-1 text-[11px] font-semibold hover:bg-muted/40"
+          >
+            <Copy className="h-3 w-3" /> Copy script
+          </button>
+        }>
+        <ol className="space-y-2">
+          {q.approach.steps.map((st, i) => (
+            <li key={st.key} className="rounded-lg border border-hairline bg-muted/20 p-2.5">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">{i + 1}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider">{st.label}</span>
+                <span className="ml-auto text-[10px] tabular-nums text-muted-foreground">{st.seconds}</span>
+              </div>
+              <p className="text-[12px] text-foreground/90">{st.script}</p>
+            </li>
+          ))}
+        </ol>
+
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {[
+            { icon: Phone, label: "Callback text", body: q.approach.callback_text },
+            { icon: Voicemail, label: "Voicemail", body: q.approach.voicemail },
+          ].map((b) => (
+            <div key={b.label} className="rounded-lg border border-hairline bg-muted/20 p-2.5">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <b.icon className="h-3 w-3" /> {b.label}
+                </span>
+                <button onClick={() => { navigator.clipboard.writeText(b.body); toast.success(`${b.label} copied`); }}
+                  className="text-[10px] font-semibold text-primary hover:underline">Copy</button>
+              </div>
+              <p className="text-[11px] text-foreground/85">{b.body}</p>
+            </div>
+          ))}
+        </div>
       </Card>
 
       {/* Urgency hooks */}

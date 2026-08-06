@@ -61,6 +61,20 @@ export interface InvestmentLadder {
   equity_headroom: number | null;
 }
 
+export interface ApproachStep {
+  key: string;
+  label: string;
+  seconds: string;
+  script: string;
+}
+
+export interface ApproachScript {
+  steps: ApproachStep[];
+  callback_text: string;
+  voicemail: string;
+  neighbor_line: string;
+}
+
 export interface QualificationDeck {
 
   score: number;
@@ -77,6 +91,7 @@ export interface QualificationDeck {
   urgency_hooks: string[];
   red_flags: string[];
   best_knock_window: string;
+  approach: ApproachScript;
   door_ammo: string;
 }
 
@@ -337,6 +352,78 @@ function buildUrgency(r: PropertyIntelReport, life: LifecycleItem[]): string[] {
   return hooks;
 }
 
+
+function buildApproach(
+  r: PropertyIntelReport,
+  eq: EquityPicture,
+  roof: LifecycleItem,
+  inv: InvestmentLadder,
+  hooks: string[],
+): ApproachScript {
+  const name = r.brief.use_name_at_door && r.brief.headline_name ? r.brief.headline_name : null;
+  const greet = name ? `Hi — ${name}?` : "Hi there —";
+  const street = r.property_match.standardized_address.split(",")[0];
+  const product = inv.product.toLowerCase();
+  const ageLine = roof.age !== null
+    ? `records show the ${roof.system.toLowerCase()} here is running about ${roof.age} years on a ${roof.expected_life}-year material`
+    : `records don't show a permit on the ${roof.system.toLowerCase()} here, which usually means it's original to the build`;
+  const tenure = eq.tenure_years !== null ? Math.round(eq.tenure_years) : null;
+  const ladder = inv.rows.find((x) => x.term_months === 120) ?? inv.rows[0];
+
+  const steps: ApproachStep[] = [
+    {
+      key: "open",
+      label: "Opener",
+      seconds: "0:00–0:15",
+      script: `${greet} I'm with DaBella — we're the crews working ${street} this week. I'm not selling anything at the door; I'm the one who documents ${product} condition so owners aren't guessing.`,
+    },
+    {
+      key: "reason",
+      label: "Reason for the stop",
+      seconds: "0:15–0:35",
+      script: `The reason I stopped here specifically: ${ageLine}. ${hooks[0] ?? "That puts this home in the window where small issues turn into deck damage."} I'd rather you know now than after the next storm.`,
+    },
+    {
+      key: "credibility",
+      label: "Credibility",
+      seconds: "0:35–0:50",
+      script: "Quick context — DaBella is family-owned, factory-trained and factory-certified, and our install carries the strongest warranty in the category. Thousands of 5-star reviews, and everything we find gets photographed and handed to you either way.",
+    },
+    {
+      key: "qualify",
+      label: "Qualify",
+      seconds: "0:50–1:20",
+      script: `${tenure !== null ? `Records show you've been here about ${tenure} years — ` : ""}have you had anyone up on it since you moved in? And when you eventually handle it, is this a "do it right once" home or a "get me a few more years" home?`,
+    },
+    {
+      key: "ask",
+      label: "The ask",
+      seconds: "1:20–1:45",
+      script: "Here's all I want: 20 minutes to get up there, photograph what's actually happening, and walk you through it on the tablet. No obligation, no pressure — you keep the report. Is later today better, or tomorrow evening?",
+    },
+    {
+      key: "frame",
+      label: "Price frame (only if asked)",
+      seconds: "if asked",
+      script: `Fair question. Homes this size usually land somewhere between ${fmtUsd(inv.low)} and ${fmtUsd(inv.high)} depending on what we find${ladder ? `, and most owners run it monthly — roughly ${fmtUsd(ladder.low)}–${fmtUsd(ladder.high)} a month on a ${ladder.term_months / 12}-year plan` : ""}. But I'd be guessing until I'm on the roof — that's exactly why the inspection is free.`,
+    },
+  ];
+
+  const callback_text = name
+    ? `Hi ${name}, this is [your name] with DaBella — I stopped by ${street} today about the ${product} inspection. I can hold a 20-minute slot tomorrow evening or Saturday morning. Which works better?`
+    : `Hi, this is [your name] with DaBella — I stopped by ${street} today about a free ${product} inspection. I can hold a 20-minute slot tomorrow evening or Saturday morning. Which works better?`;
+
+  const voicemail = `${name ? `${name}, ` : ""}[your name] with DaBella. We're documenting ${product} condition on ${street} this week and yours came up on our list${roof.age !== null ? ` — the records put it around ${roof.age} years old` : ""}. No cost, no obligation, you keep the photos. Give me a call back at [your number] and I'll get you on the schedule.`;
+
+  const neighbor_line = `We're already working homes on ${street} — while the crew and equipment are in the neighborhood, the inspection and the scheduling are both easier. That's the only reason I'm knocking today instead of mailing you something.`;
+
+  return { steps, callback_text, voicemail, neighbor_line };
+}
+
+function fmtUsd(n: number): string {
+  return `$${Math.round(n).toLocaleString()}`;
+}
+
 export function buildQualification(r: PropertyIntelReport): QualificationDeck {
   const equity = buildEquity(r);
   const lifecycle = buildLifecycle(r);
@@ -399,6 +486,7 @@ export function buildQualification(r: PropertyIntelReport): QualificationDeck {
   const discovery = buildDiscovery(r, equity);
   const investment = buildInvestment(r, equity);
   const ladder120 = investment.rows.find((x) => x.term_months === 120);
+  const approach = buildApproach(r, equity, roof, investment, urgency_hooks);
 
   const door_ammo = [
     `${r.property_match.standardized_address}`,
@@ -409,7 +497,8 @@ export function buildQualification(r: PropertyIntelReport): QualificationDeck {
     `Roof: ${roof.age ?? "?"} yrs of ${roof.expected_life}-yr life`,
     ladder120 ? `Ballpark: $${investment.low.toLocaleString()}–$${investment.high.toLocaleString()} · ~$${ladder120.low}–$${ladder120.high}/mo @ 120 mo` : "",
     "",
-    `OPENER: ${r.brief.suggested_opener}`,
+    `OPENER: ${approach.steps[0].script}`,
+    `WHY THIS DOOR: ${approach.steps[1].script}`,
     "",
     "URGENCY:",
     ...urgency_hooks.map((h) => `• ${h}`),
@@ -424,7 +513,7 @@ export function buildQualification(r: PropertyIntelReport): QualificationDeck {
   return {
     score, tier, tier_note, pillars, equity, lifecycle, investment,
     decision_makers, objections, discovery, urgency_hooks, red_flags,
-    best_knock_window, door_ammo,
+    best_knock_window, approach, door_ammo,
   };
 
 }

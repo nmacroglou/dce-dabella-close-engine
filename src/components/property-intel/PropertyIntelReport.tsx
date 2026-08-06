@@ -4,6 +4,7 @@ import ConfidenceBadge from "./ConfidenceBadge";
 import WhyConfidencePanel from "./WhyConfidencePanel";
 import RepActionsBar from "./RepActionsBar";
 import QualificationDeck from "./QualificationDeck";
+import { NeighborhoodProof } from "./NeighborhoodProof";
 
 import {
   MapPin, User, ScrollText, Home, Sparkles, DoorOpen, AlertCircle, FileWarning, Building2,
@@ -94,6 +95,8 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
           </div>
         )}
       </Section>
+
+      <NeighborhoodProof lat={m.latitude} lng={m.longitude} street={m.standardized_address.split(",")[0]} />
 
       <QualificationDeck report={report} />
 
