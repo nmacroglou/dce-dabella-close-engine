@@ -100,6 +100,8 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
 
       <QualificationDeck report={report} />
 
+      <IntelMetricsPanel report={report} />
+
 
 
       {/* Property match */}
