@@ -68,6 +68,24 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
         </div>
       )}
 
+      {/* Funnel tabs */}
+      <div className="flex items-center gap-1 rounded-lg border border-hairline bg-muted/20 p-1">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 rounded-md px-3 py-1.5 text-[12px] font-semibold transition ${
+              tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted/40"
+            }`}
+          >
+            {t.label}
+            <span className="block text-[10px] font-normal opacity-70">{t.hint}</span>
+          </button>
+        ))}
+      </div>
+
+      {tab === "close" && (
+        <div className="space-y-4">
       {/* Pre-Door Brief — hero */}
       <Section icon={DoorOpen} title="Pre-door brief" badge={<ConfidenceBadge c={report.overall_confidence} />}>
         <div className="grid gap-2">
