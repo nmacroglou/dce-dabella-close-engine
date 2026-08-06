@@ -3,6 +3,8 @@ import { formatCurrency } from "@/lib/format";
 import ConfidenceBadge from "./ConfidenceBadge";
 import WhyConfidencePanel from "./WhyConfidencePanel";
 import RepActionsBar from "./RepActionsBar";
+import QualificationDeck from "./QualificationDeck";
+
 import {
   MapPin, User, ScrollText, Home, Sparkles, DoorOpen, AlertCircle, FileWarning, Building2,
 } from "lucide-react";
