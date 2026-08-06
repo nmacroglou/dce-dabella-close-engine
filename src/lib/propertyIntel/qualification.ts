@@ -69,7 +69,9 @@ export interface QualificationDeck {
   pillars: Pillar[];
   equity: EquityPicture;
   lifecycle: LifecycleItem[];
+  investment: InvestmentLadder;
   decision_makers: { label: string; note: string; required: boolean }[];
+
   objections: PredictedObjection[];
   discovery: string[];
   urgency_hooks: string[];
