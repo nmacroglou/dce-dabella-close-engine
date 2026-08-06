@@ -48,9 +48,18 @@ const OWNER_TYPE_LABEL: Record<string, string> = {
   unknown: "Unknown",
 };
 
+type TabId = "close" | "numbers" | "record";
+
+const TABS: { id: TabId; label: string; hint: string }[] = [
+  { id: "close", label: "Close plan", hint: "Who, why, what it's worth" },
+  { id: "numbers", label: "Numbers", hint: "Value, comfort, timing" },
+  { id: "record", label: "Record", hint: "Raw property data" },
+];
+
 export default function PropertyIntelReportView({ report }: { report: Report }) {
   const { property_match: m, ownership: o, most_recent_sale: s, identity, info, opportunity: opp, brief } = report;
   const requiresConfirmation = o.owner_type === "trust" || o.owner_type === "llc" || o.owner_type === "corporation";
+  const [tab, setTab] = useState<TabId>("close");
 
   return (
     <div className="space-y-4 pb-24">
