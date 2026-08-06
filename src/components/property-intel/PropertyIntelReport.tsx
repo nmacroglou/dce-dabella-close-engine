@@ -128,6 +128,8 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
 
           <DoorValue report={report} />
 
+          <ProductFitBoard report={report} />
+
           <QualificationDeck report={report} />
 
           <NeighborhoodProof lat={m.latitude} lng={m.longitude} street={m.standardized_address.split(",")[0]} />
