@@ -6,6 +6,7 @@ import ConfidenceBadge from "./ConfidenceBadge";
 import WhyConfidencePanel from "./WhyConfidencePanel";
 import RepActionsBar from "./RepActionsBar";
 import QualificationDeck from "./QualificationDeck";
+import ProductFitBoard from "./ProductFitBoard";
 import { NeighborhoodProof } from "./NeighborhoodProof";
 import IntelMetricsPanel from "./IntelMetrics";
 
