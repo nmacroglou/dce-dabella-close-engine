@@ -444,6 +444,12 @@ export async function buildPropertyIntelPdf(
     bullets(pdf, ctx, q.urgency_hooks);
   }
 
+  ensure(pdf, ctx, 60, "Section 4", "Qualification & Door Strategy");
+  blockTitle(pdf, ctx, "Door approach — 90 second track");
+  bullets(pdf, ctx, q.approach.steps.map((st) => `${st.label} (${st.seconds}): ${st.script}`), ACCENT);
+  paragraph(pdf, ctx, `Callback text: ${q.approach.callback_text}`);
+  paragraph(pdf, ctx, `Voicemail: ${q.approach.voicemail}`);
+
   ensure(pdf, ctx, 40, "Section 4", "Qualification & Door Strategy");
   blockTitle(pdf, ctx, "Decision-maker map");
   bullets(pdf, ctx, q.decision_makers.map((d) =>
