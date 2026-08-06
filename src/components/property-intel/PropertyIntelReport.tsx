@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { PropertyIntelReport as Report } from "@/lib/propertyIntel/types";
+import DoorValue from "./DoorValue";
 import { formatCurrency } from "@/lib/format";
 import ConfidenceBadge from "./ConfidenceBadge";
 import WhyConfidencePanel from "./WhyConfidencePanel";
