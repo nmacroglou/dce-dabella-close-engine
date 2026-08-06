@@ -278,7 +278,8 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
     ownership_start_date: g(sale, 'saleSearchDate') ?? saleDate ?? null,
     document_type: saleDocType,
     recording_number: saleDocNum,
-    source: 'ATTOM Data — County Recorder',
+    owner_count: ownerCount,
+    owner_history: transfers,
     source_record_date: saleRecDate,
     confidence: conf(ownershipScore, ownershipReasons, ownershipConflicts),
   };
