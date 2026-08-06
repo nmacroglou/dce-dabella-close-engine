@@ -10,6 +10,8 @@ import {
   setBodyFont, setColor, setDisplayFont, setFill, trackedText, vGradient,
 } from "./primitives";
 import type { Confidence, PropertyIntelReport } from "@/lib/propertyIntel/types";
+import { buildQualification } from "@/lib/propertyIntel/qualification";
+
 
 const M = 22;                 // page margin
 const CW = PW - M * 2;        // content width
@@ -392,9 +394,79 @@ export async function buildPropertyIntelPdf(
     bullets(pdf, ctx, r.brief.reasons, SLATE);
   }
 
-  // ── Page 5: Confidence & sourcing
-  newPage(pdf, ctx, "Section 4", "Confidence & Sourcing",
+  // ── Page 5: Qualification & door strategy
+  const q = buildQualification(r);
+  newPage(pdf, ctx, "Section 4", "Qualification & Door Strategy",
+    "Scored fit, ability signals, timing and the objections to expect at this door.");
+
+  blockTitle(pdf, ctx, "Qualification scorecard");
+  kvCard(pdf, ctx, [
+    ["Tier", `Tier ${q.tier} — ${Math.round(q.score)} / 100`],
+    ["Best knock window", q.best_knock_window],
+    ...q.pillars.map((p) => [p.label, `${p.score} — ${p.detail}`] as [string, string]),
+  ]);
+  paragraph(pdf, ctx, q.tier_note);
+
+  ensure(pdf, ctx, kvNeed(6), "Section 4", "Qualification & Door Strategy");
+  blockTitle(pdf, ctx, "Equity & ability picture");
+  kvCard(pdf, ctx, [
+    ["Estimated value", money(q.equity.current_value)],
+    ["Value basis", q.equity.value_basis],
+    ["Purchase price", money(q.equity.purchase_price)],
+    ["Purchase year", q.equity.purchase_year ? String(q.equity.purchase_year) : "—"],
+    ["Tenure", q.equity.tenure_years !== null ? `${Math.round(q.equity.tenure_years)} yrs` : "—"],
+    ["Estimated equity", q.equity.estimated_equity !== null
+      ? `${money(q.equity.estimated_equity)}${q.equity.equity_pct !== null ? ` (~${q.equity.equity_pct}%)` : ""}`
+      : "—"],
+  ]);
+
+  ensure(pdf, ctx, 45, "Section 4", "Qualification & Door Strategy");
+  blockTitle(pdf, ctx, "System lifecycle clock");
+  bullets(pdf, ctx, q.lifecycle.map((l) =>
+    `${l.system}: ${l.age ?? "?"} of ${l.expected_life} yrs — ${l.status === "overdue" ? "past rated life"
+      : l.status === "window" ? "in replacement window" : l.status === "watch" ? "watch" : l.status === "healthy" ? "healthy" : "unknown"}`), ACCENT);
+
+  ensure(pdf, ctx, kvNeed(6), "Section 4", "Qualification & Door Strategy");
+  blockTitle(pdf, ctx, `Investment runway — ${q.investment.product}`);
+  kvCard(pdf, ctx, [
+    ["Ballpark project range", `${money(q.investment.low)} – ${money(q.investment.high)}`],
+    ["Range basis", q.investment.basis],
+    ...q.investment.rows.map((row) =>
+      [`${row.term_months / 12} yr (${row.term_months} mo)`, `${money(row.low)} – ${money(row.high)} / mo`] as [string, string]),
+  ]);
+  paragraph(pdf, ctx,
+    `Planning ballpark only, using the ${q.investment.rate_label}. Final scope, pricing and approved terms come from the bid sheet and the lender. Not a credit decision or proof of financing eligibility.`,
+    7.8);
+
+  if (q.urgency_hooks.length) {
+    ensure(pdf, ctx, 40, "Section 4", "Qualification & Door Strategy");
+    blockTitle(pdf, ctx, "Urgency hooks");
+    bullets(pdf, ctx, q.urgency_hooks);
+  }
+
+  ensure(pdf, ctx, 40, "Section 4", "Qualification & Door Strategy");
+  blockTitle(pdf, ctx, "Decision-maker map");
+  bullets(pdf, ctx, q.decision_makers.map((d) =>
+    `${d.required ? "[Required] " : "[Context] "}${d.label} — ${d.note}`), SLATE);
+
+  ensure(pdf, ctx, 50, "Section 4", "Qualification & Door Strategy");
+  blockTitle(pdf, ctx, "Objections to expect");
+  bullets(pdf, ctx, q.objections.map((ob) => `“${ob.objection}” → ${ob.rebuttal}`), LIME_DEEP);
+
+  ensure(pdf, ctx, 45, "Section 4", "Qualification & Door Strategy");
+  blockTitle(pdf, ctx, "Discovery questions");
+  bullets(pdf, ctx, q.discovery, ACCENT);
+
+  if (q.red_flags.length) {
+    ensure(pdf, ctx, 40, "Section 4", "Qualification & Door Strategy");
+    blockTitle(pdf, ctx, "Before you knock");
+    bullets(pdf, ctx, q.red_flags, NEGATIVE);
+  }
+
+  // ── Page 6: Confidence & sourcing
+  newPage(pdf, ctx, "Section 5", "Confidence & Sourcing",
     "How much to trust each part of this report, and where the data came from.");
+
 
   confidenceRow(pdf, ctx, "Overall report", r.overall_confidence);
   confidenceRow(pdf, ctx, "Property match", r.property_match.confidence);
@@ -404,17 +476,17 @@ export async function buildPropertyIntelPdf(
   confidenceRow(pdf, ctx, "Product recommendation", o.recommendation_confidence);
   ctx.y += 4;
 
-  ensure(pdf, ctx, 45, "Section 4", "Confidence & Sourcing");
+  ensure(pdf, ctx, 45, "Section 5", "Confidence & Sourcing");
   blockTitle(pdf, ctx, "Why this confidence");
   bullets(pdf, ctx, r.overall_confidence.reasons);
 
   if (r.overall_confidence.conflicts.length) {
-    ensure(pdf, ctx, 40, "Section 4", "Confidence & Sourcing");
+    ensure(pdf, ctx, 40, "Section 5", "Confidence & Sourcing");
     blockTitle(pdf, ctx, "Conflicts detected");
     bullets(pdf, ctx, r.overall_confidence.conflicts, NEGATIVE);
   }
 
-  ensure(pdf, ctx, 45, "Section 4", "Confidence & Sourcing");
+  ensure(pdf, ctx, 45, "Section 5", "Confidence & Sourcing");
   blockTitle(pdf, ctx, "Sourcing");
   kvCard(pdf, ctx, [
     ["Ownership source", dash(r.ownership.source)],
@@ -425,7 +497,7 @@ export async function buildPropertyIntelPdf(
     ["Mode", r.is_demo ? "Demo fixture data" : "Live records"],
   ]);
 
-  ensure(pdf, ctx, 20, "Section 4", "Confidence & Sourcing");
+  ensure(pdf, ctx, 20, "Section 5", "Confidence & Sourcing");
   setBodyFont(pdf, 7.6);
   setColor(pdf, SLATE);
   const disc = pdf.splitTextToSize(
