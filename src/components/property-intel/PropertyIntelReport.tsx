@@ -93,6 +93,10 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
         )}
       </Section>
 
+      <QualificationDeck report={report} />
+
+
+
       {/* Property match */}
       <Section icon={MapPin} title="Property match" badge={<ConfidenceBadge c={m.confidence} />}>
         <div className="grid gap-1">
