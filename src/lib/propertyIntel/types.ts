@@ -21,6 +21,14 @@ export interface PropertyMatch {
   confidence: Confidence;
 }
 
+export interface OwnerTransfer {
+  sale_date: string | null;
+  buyer_name: string | null;
+  seller_name: string | null;
+  sale_price: number | null;
+  document_type: string | null;
+}
+
 export interface OwnershipRecord {
   owner_name: string | null;
   owner_type: "individual" | "joint" | "trust" | "llc" | "corporation" | "unknown";
@@ -30,6 +38,10 @@ export interface OwnershipRecord {
   ownership_start_date: string | null;
   document_type: string | null;
   recording_number: string | null;
+  /** Number of distinct homeowners on record (recorded transfers), null when unknown. */
+  owner_count?: number | null;
+  /** Recorded transfers, newest first. */
+  owner_history?: OwnerTransfer[];
   source: string;
   source_record_date: string | null;
   confidence: Confidence;

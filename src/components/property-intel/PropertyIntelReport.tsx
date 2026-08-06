@@ -162,6 +162,10 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
         <div className="grid gap-1">
           <Row label="Recorded owner" value={o.owner_name} />
           <Row label="Ownership type" value={OWNER_TYPE_LABEL[o.owner_type]} />
+          <Row
+            label="Homeowners on record"
+            value={o.owner_count ? `${o.owner_count} owner${o.owner_count === 1 ? "" : "s"}${(o.owner_history?.length ?? 0) > 0 ? ` · ${o.owner_history!.length} recorded transfer${o.owner_history!.length === 1 ? "" : "s"}` : ""}` : "—"}
+          />
           <Row label="Tax mailing name" value={o.tax_mailing_name} />
           <Row label="Tax mailing address" value={o.tax_mailing_address} />
           <Row label="Tax mailing matches property"
@@ -172,6 +176,21 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
           <Row label="Record date" value={o.source_record_date} />
           <Row label="Source" value={o.source} />
         </div>
+        {(o.owner_history?.length ?? 0) > 0 && (
+          <div className="mt-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Ownership timeline</p>
+            <ul className="space-y-1">
+              {o.owner_history!.map((h, i) => (
+                <li key={i} className="text-[12px] text-foreground/85 flex flex-wrap gap-x-2">
+                  <span className="font-semibold">{h.sale_date ?? "Undated"}</span>
+                  <span>{h.buyer_name ?? h.document_type ?? "Recorded transfer"}</span>
+                  {h.sale_price ? <span className="text-muted-foreground">{formatCurrency(h.sale_price)}</span> : null}
+                  {h.seller_name ? <span className="text-muted-foreground">from {h.seller_name}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <WhyConfidencePanel c={o.confidence} label="Why this ownership confidence?" />
       </Section>
 

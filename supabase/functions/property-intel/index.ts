@@ -185,6 +185,33 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
   const saleDocNum = clean(g(saleAmount, 'saleDocNum'));
   const saleRecDate = g(saleAmount, 'saleRecDate') ?? null;
 
+  // ----- Homeowner history: distinct recorded transfers = distinct homeowners.
+  const ownerHistory = (Array.isArray(salesHistory) ? salesHistory : [])
+    .map((h: any) => {
+      const amt = g(h, 'amount') ?? {};
+      return {
+        sale_date: g(h, 'saleTransDate', 'saleSearchDate') ?? g(amt, 'saleRecDate') ?? null,
+        buyer_name: clean(g(h, 'buyerName')) ?? null,
+        seller_name: clean(g(h, 'sellerName')) ?? null,
+        sale_price: Number(g(amt, 'saleAmt')) || null,
+        document_type: clean(g(amt, 'saleDocType')) ?? null,
+      };
+    })
+    .filter((h: any) => h.sale_date || h.sale_price || h.buyer_name)
+    .sort((a: any, b: any) => String(b.sale_date ?? '').localeCompare(String(a.sale_date ?? '')));
+
+  // De-dupe same-day re-recordings.
+  const seenDates = new Set<string>();
+  const transfers = ownerHistory.filter((h: any) => {
+    const k = String(h.sale_date ?? '').slice(0, 10) || Math.random().toString();
+    if (seenDates.has(k)) return false;
+    seenDates.add(k);
+    return true;
+  });
+  const ownerCount = transfers.length > 0 ? transfers.length : (ownerName ? 1 : null);
+
+
+
 
   const apn = clean(g(g(p, 'identifier') ?? {}, 'apn', 'apnOrig'));
   const line1 = clean(g(addr, 'line1'));
@@ -251,6 +278,8 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
     ownership_start_date: g(sale, 'saleSearchDate') ?? saleDate ?? null,
     document_type: saleDocType,
     recording_number: saleDocNum,
+    owner_count: ownerCount,
+    owner_history: transfers,
     source: 'ATTOM Data — County Recorder',
     source_record_date: saleRecDate,
     confidence: conf(ownershipScore, ownershipReasons, ownershipConflicts),
