@@ -280,6 +280,7 @@ function normalize(attom: any, secondaryAttom: any | null, input: ReqBody) {
     recording_number: saleDocNum,
     owner_count: ownerCount,
     owner_history: transfers,
+    source: 'ATTOM Data — County Recorder',
     source_record_date: saleRecDate,
     confidence: conf(ownershipScore, ownershipReasons, ownershipConflicts),
   };
