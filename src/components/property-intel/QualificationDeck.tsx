@@ -160,7 +160,45 @@ export default function QualificationDeck({ report }: { report: PropertyIntelRep
         </div>
       </Card>
 
+      {/* Investment ladder */}
+      <Card icon={CreditCard} title="Investment & payment runway"
+        right={<span className="text-[10px] uppercase tracking-wider text-muted-foreground">{q.investment.rate_label}</span>}>
+        <div className="grid grid-cols-2 gap-2">
+          <Stat label={`Ballpark ${q.investment.product}`}
+            value={`${formatCurrency(q.investment.low)} – ${formatCurrency(q.investment.high)}`}
+            sub={q.investment.basis} />
+          <Stat label="Equity headroom"
+            value={q.investment.equity_headroom !== null ? formatCurrency(q.investment.equity_headroom) : "—"}
+            sub="Estimated — supports secured options" />
+        </div>
+        <div className="mt-3 overflow-hidden rounded-lg border border-hairline">
+          <table className="w-full text-[12px]">
+            <thead className="bg-muted/30 text-muted-foreground">
+              <tr>
+                <th className="px-3 py-1.5 text-left text-[10px] uppercase tracking-wider font-bold">Term</th>
+                <th className="px-3 py-1.5 text-right text-[10px] uppercase tracking-wider font-bold">Est. monthly</th>
+              </tr>
+            </thead>
+            <tbody>
+              {q.investment.rows.map((row) => (
+                <tr key={row.term_months} className="border-t border-hairline/60">
+                  <td className="px-3 py-1.5 font-semibold">{row.term_months / 12} yr · {row.term_months} mo</td>
+                  <td className="px-3 py-1.5 text-right tabular-nums font-bold">
+                    {formatCurrency(row.low)} – {formatCurrency(row.high)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-[10px] italic text-muted-foreground">
+          Planning ballpark only, using the standard payment-factor reference. Final scope, pricing and approved
+          terms come from the bid sheet and the lender.
+        </p>
+      </Card>
+
       {/* Urgency hooks */}
+
       {q.urgency_hooks.length > 0 && (
         <Card icon={Flame} title="Urgency hooks">
           <ul className="space-y-1.5">
