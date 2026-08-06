@@ -4,7 +4,7 @@ import { buildQualification, type LifecycleItem, type Pillar } from "@/lib/prope
 import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { formatCurrency } from "@/lib/format";
 import {
-  Target, Gauge, Wallet, Timer, Users, ShieldAlert, MessageSquareWarning,
+  Target, Wallet, Timer, Users, ShieldAlert, MessageSquareWarning,
   HelpCircle, Flame, Clock, Copy, ChevronDown,
 } from "lucide-react";
 
