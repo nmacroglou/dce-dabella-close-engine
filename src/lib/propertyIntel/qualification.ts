@@ -397,6 +397,8 @@ export function buildQualification(r: PropertyIntelReport): QualificationDeck {
   const urgency_hooks = buildUrgency(r, lifecycle);
   const objections = buildObjections(r, equity);
   const discovery = buildDiscovery(r, equity);
+  const investment = buildInvestment(r, equity);
+  const ladder120 = investment.rows.find((x) => x.term_months === 120);
 
   const door_ammo = [
     `${r.property_match.standardized_address}`,
@@ -405,6 +407,7 @@ export function buildQualification(r: PropertyIntelReport): QualificationDeck {
     equity.tenure_years !== null ? `Tenure: ${Math.round(equity.tenure_years)} yrs${equity.purchase_year ? ` (bought ${equity.purchase_year})` : ""}` : "Tenure: unknown",
     equity.equity_pct !== null ? `Est. equity: ~${equity.equity_pct}%` : "Est. equity: unknown",
     `Roof: ${roof.age ?? "?"} yrs of ${roof.expected_life}-yr life`,
+    ladder120 ? `Ballpark: $${investment.low.toLocaleString()}–$${investment.high.toLocaleString()} · ~$${ladder120.low}–$${ladder120.high}/mo @ 120 mo` : "",
     "",
     `OPENER: ${r.brief.suggested_opener}`,
     "",
@@ -419,8 +422,9 @@ export function buildQualification(r: PropertyIntelReport): QualificationDeck {
   ].join("\n");
 
   return {
-    score, tier, tier_note, pillars, equity, lifecycle,
+    score, tier, tier_note, pillars, equity, lifecycle, investment,
     decision_makers, objections, discovery, urgency_hooks, red_flags,
     best_knock_window, door_ammo,
   };
+
 }
