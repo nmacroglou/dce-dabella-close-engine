@@ -272,6 +272,8 @@ export async function buildPropertyIntelPdf(
   kvCard(pdf, ctx, [
     ["Owner name", dash(r.ownership.owner_name)],
     ["Owner type", title(r.ownership.owner_type)],
+    ["Homeowners on record", r.ownership.owner_count ? String(r.ownership.owner_count) : "—"],
+    ["Recorded transfers", r.ownership.owner_history?.length ? String(r.ownership.owner_history.length) : "—"],
     ["Tax mailing name", dash(r.ownership.tax_mailing_name)],
     ["Mail matches property", r.ownership.tax_mailing_matches_property ? "Yes" : "No"],
     ["Tax mailing address", dash(r.ownership.tax_mailing_address)],
