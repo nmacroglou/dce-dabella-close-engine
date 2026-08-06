@@ -476,17 +476,17 @@ export async function buildPropertyIntelPdf(
   confidenceRow(pdf, ctx, "Product recommendation", o.recommendation_confidence);
   ctx.y += 4;
 
-  ensure(pdf, ctx, 45, "Section 4", "Confidence & Sourcing");
+  ensure(pdf, ctx, 45, "Section 5", "Confidence & Sourcing");
   blockTitle(pdf, ctx, "Why this confidence");
   bullets(pdf, ctx, r.overall_confidence.reasons);
 
   if (r.overall_confidence.conflicts.length) {
-    ensure(pdf, ctx, 40, "Section 4", "Confidence & Sourcing");
+    ensure(pdf, ctx, 40, "Section 5", "Confidence & Sourcing");
     blockTitle(pdf, ctx, "Conflicts detected");
     bullets(pdf, ctx, r.overall_confidence.conflicts, NEGATIVE);
   }
 
-  ensure(pdf, ctx, 45, "Section 4", "Confidence & Sourcing");
+  ensure(pdf, ctx, 45, "Section 5", "Confidence & Sourcing");
   blockTitle(pdf, ctx, "Sourcing");
   kvCard(pdf, ctx, [
     ["Ownership source", dash(r.ownership.source)],
@@ -497,7 +497,7 @@ export async function buildPropertyIntelPdf(
     ["Mode", r.is_demo ? "Demo fixture data" : "Live records"],
   ]);
 
-  ensure(pdf, ctx, 20, "Section 4", "Confidence & Sourcing");
+  ensure(pdf, ctx, 20, "Section 5", "Confidence & Sourcing");
   setBodyFont(pdf, 7.6);
   setColor(pdf, SLATE);
   const disc = pdf.splitTextToSize(
