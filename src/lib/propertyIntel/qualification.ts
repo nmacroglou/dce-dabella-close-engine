@@ -276,6 +276,55 @@ function buildDiscovery(r: PropertyIntelReport, eq: EquityPicture): string[] {
   return q;
 }
 
+/** Rough project cost envelope per product, driven by home size. */
+const COST_MODEL: Record<ProductKey, { perSqFt: [number, number]; floor: [number, number]; multiplier: number }> = {
+  roofing:     { perSqFt: [7.5, 13.5], floor: [12000, 22000], multiplier: 1.25 },
+  windows:     { perSqFt: [6.0, 11.0], floor: [9000, 18000], multiplier: 1 },
+  siding:      { perSqFt: [9.0, 16.0], floor: [16000, 30000], multiplier: 1 },
+  bath:        { perSqFt: [0, 0], floor: [12000, 24000], multiplier: 0 },
+  paint:       { perSqFt: [3.0, 5.5], floor: [7000, 13000], multiplier: 1 },
+  gutters:     { perSqFt: [1.2, 2.4], floor: [2500, 5500], multiplier: 1 },
+  ventilation: { perSqFt: [0.8, 1.6], floor: [1800, 4200], multiplier: 1 },
+  insulation:  { perSqFt: [1.8, 3.6], floor: [3500, 8500], multiplier: 1 },
+};
+
+const LADDER_TERMS = [60, 120, 180, 240];
+
+function buildInvestment(r: PropertyIntelReport, eq: EquityPicture): InvestmentLadder {
+  const key = r.opportunity.primary_product;
+  const model = COST_MODEL[key] ?? COST_MODEL.roofing;
+  const sqft = r.info.square_feet ?? null;
+
+  let low = model.floor[0];
+  let high = model.floor[1];
+  let basis = "Category baseline — square footage unavailable";
+
+  if (sqft && model.multiplier > 0) {
+    const area = sqft * model.multiplier;
+    low = Math.max(model.floor[0], Math.round((area * model.perSqFt[0]) / 500) * 500);
+    high = Math.max(model.floor[1], Math.round((area * model.perSqFt[1]) / 500) * 500);
+    basis = `${sqft.toLocaleString()} sq ft × category rate`;
+  } else if (model.multiplier === 0) {
+    basis = "Fixed-scope category range";
+  }
+
+  // Mid-book retail factor: 11.24% APR table (see Payment Factors reference).
+  const FACTORS: Record<number, number> = { 60: 0.02186, 120: 0.01391, 180: 0.01152, 240: 0.01049 };
+
+  return {
+    product: PRODUCT_LABEL[key] ?? key,
+    low, high, basis,
+    rate_label: "11.24% APR reference factor",
+    rows: LADDER_TERMS.map((t) => ({
+      term_months: t,
+      low: Math.round(low * FACTORS[t]),
+      high: Math.round(high * FACTORS[t]),
+    })),
+    equity_headroom: eq.estimated_equity,
+  };
+}
+
+
 function buildUrgency(r: PropertyIntelReport, life: LifecycleItem[]): string[] {
   const hooks: string[] = [];
   const roof = life[0];
