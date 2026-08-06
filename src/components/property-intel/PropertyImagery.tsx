@@ -4,6 +4,16 @@ import { Camera, Satellite, Loader2, ImageOff, ExternalLink } from "lucide-react
 
 type View = "street" | "aerial";
 
+/** Compass bearing (deg) from point A to point B. */
+function bearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const y = Math.sin(toRad(lon2 - lon1)) * Math.cos(toRad(lat2));
+  const x =
+    Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+    Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(toRad(lon2 - lon1));
+  return (((Math.atan2(y, x) * 180) / Math.PI) + 360) % 360;
+}
+
 interface Props {
   lat: number | null;
   lng: number | null;
@@ -60,11 +70,7 @@ export default function PropertyImagery({ lat, lng, address }: Props) {
           .then(({ data }) => {
             if (cancelled || !streetRef.current) return;
             const panoLoc = data.location?.latLng;
-            const heading = panoLoc
-              ? g.maps.geometry?.spherical
-                ? g.maps.geometry.spherical.computeHeading(panoLoc, new g.maps.LatLng(center))
-                : 0
-              : 0;
+            const heading = panoLoc ? bearing(panoLoc.lat(), panoLoc.lng(), center.lat, center.lng) : 0;
             new g.maps.StreetViewPanorama(streetRef.current, {
               pano: data.location?.pano,
               pov: { heading, pitch: 0 },
