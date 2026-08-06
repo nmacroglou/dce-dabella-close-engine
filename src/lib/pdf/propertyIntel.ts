@@ -11,6 +11,7 @@ import {
 } from "./primitives";
 import type { Confidence, PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { buildQualification } from "@/lib/propertyIntel/qualification";
+import { buildProductFit } from "@/lib/propertyIntel/productFit";
 import { buildIntelMetrics } from "@/lib/propertyIntel/metrics";
 
 
@@ -368,6 +369,26 @@ export async function buildPropertyIntelPdf(
 
   blockTitle(pdf, ctx, "Why this product");
   bullets(pdf, ctx, o.reasons);
+
+  // Product fit board — every DaBella line scored against this property.
+  const fit = buildProductFit(r);
+  ensure(pdf, ctx, kvNeed(3), "Section 3", "Opportunity & Approach");
+  blockTitle(pdf, ctx, "Product fit board — all offerings");
+  kvCard(pdf, ctx, [
+    ["Lead product", `${fit.lead.label} · need ${fit.lead.score}/100`],
+    ["Recommended bundle", `${fit.bundle.items.join(" + ")} — ${money(fit.bundle.low)}–${money(fit.bundle.high)}`],
+    ["Bundle payment (120 mo)", `${money(fit.bundle.monthly_low)}–${money(fit.bundle.monthly_high)} / mo`],
+    ["Whole-home opportunity", `${money(fit.total_home_opportunity.low)}–${money(fit.total_home_opportunity.high)}`],
+    ["Basis", fit.basis],
+  ]);
+
+  ensure(pdf, ctx, 30 + fit.items.length * 12, "Section 3", "Opportunity & Approach");
+  bullets(pdf, ctx, fit.items.map((i) =>
+    `${i.label} — ${i.score}/100 (${i.band === "lead" ? "lead with this" : i.band === "strong" ? "strong fit" : i.band === "possible" ? "possible" : "not now"}) · ` +
+    `${money(i.low)}–${money(i.high)} · ${money(i.monthly_low)}–${money(i.monthly_high)}/mo · ` +
+    `${i.age === null ? "age unknown" : i.remaining !== null && i.remaining <= 0 ? `${Math.abs(i.remaining)} yr past rated life` : `${i.remaining} yrs of life left`}`,
+  ), SLATE);
+
 
   ensure(pdf, ctx, 40, "Section 3", "Opportunity & Approach");
   blockTitle(pdf, ctx, "Inspection focus");
