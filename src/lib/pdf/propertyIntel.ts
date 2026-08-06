@@ -10,6 +10,8 @@ import {
   setBodyFont, setColor, setDisplayFont, setFill, trackedText, vGradient,
 } from "./primitives";
 import type { Confidence, PropertyIntelReport } from "@/lib/propertyIntel/types";
+import { buildQualification } from "@/lib/propertyIntel/qualification";
+
 
 const M = 22;                 // page margin
 const CW = PW - M * 2;        // content width
