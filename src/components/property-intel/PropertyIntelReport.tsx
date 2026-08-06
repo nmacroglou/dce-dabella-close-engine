@@ -225,6 +225,8 @@ export default function PropertyIntelReportView({ report }: { report: Report }) 
           Opportunity score is separate from confidence score. Do not state that the roof is damaged unless confirmed by inspection.
         </p>
       </Section>
+        </div>
+      )}
 
       <RepActionsBar report={report} />
     </div>
