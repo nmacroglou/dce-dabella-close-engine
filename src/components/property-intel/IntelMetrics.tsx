@@ -3,7 +3,7 @@ import { buildIntelMetrics, type FieldStatus } from "@/lib/propertyIntel/metrics
 import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { formatCurrency, formatCount } from "@/lib/format";
 import {
-  Scale, Gauge, TrendingUp, Database, CalendarClock, Route, CheckCircle2,
+  Scale, Gauge, Database, CalendarClock, Route, CheckCircle2,
   AlertTriangle, HelpCircle, CircleDot,
 } from "lucide-react";
 
@@ -59,7 +59,7 @@ const AGREEMENT_TONE: Record<string, string> = {
 
 export default function IntelMetricsPanel({ report }: { report: PropertyIntelReport }) {
   const m = useMemo(() => buildIntelMetrics(report), [report]);
-  const { valuation: v, affordability: a, economics: e, data: d, timing: t } = m;
+  const { valuation: v, affordability: a, data: d, timing: t } = m;
 
   const routeTone = m.route_priority >= 78 ? "bg-emerald-500"
     : m.route_priority >= 60 ? "bg-primary"
