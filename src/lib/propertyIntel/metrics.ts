@@ -512,6 +512,7 @@ export function buildTiming(r: PropertyIntelReport, q: QualificationDeck): Timin
 export interface IntelMetrics {
   valuation: ValuationTriangulation;
   affordability: Affordability;
+  credit: CreditProfile;
   economics: DealEconomics;
   data: DataTriangulation;
   timing: TimingIntel;
@@ -523,6 +524,7 @@ export function buildIntelMetrics(r: PropertyIntelReport, deck?: QualificationDe
   const q = deck ?? buildQualification(r);
   const valuation = buildValuation(r, q);
   const affordability = buildAffordability(r, q, valuation);
+  const credit = buildCreditProfile(r, q, valuation, affordability);
   const economics = buildDealEconomics(q);
   const data = buildDataTriangulation(r);
   const timing = buildTiming(r, q);
@@ -540,7 +542,7 @@ export function buildIntelMetrics(r: PropertyIntelReport, deck?: QualificationDe
         : route >= 42 ? "Mid route — knock in sequence."
           : "Bottom of the route — only if you're already passing it.";
 
-  return { valuation, affordability, economics, data, timing, route_priority: route, route_note };
+  return { valuation, affordability, credit, economics, data, timing, route_priority: route, route_note };
 }
 
 /* ─────────────────────────────────────────────── credit & cash-flow read */
