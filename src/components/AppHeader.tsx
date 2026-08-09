@@ -188,7 +188,7 @@ export default function AppHeader() {
   return (
     <TooltipProvider delayDuration={200}>
       <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-2.5 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
-        <div className="max-w-[92rem] mx-auto flex items-center gap-3 min-h-11 px-3 rounded-xl border border-hairline bg-card/90 backdrop-blur-xl shadow-[var(--shadow-md)] relative">
+        <div className="max-w-[92rem] mx-auto flex items-center gap-2 min-h-11 px-2.5 sm:px-3 rounded-xl border border-hairline bg-card/90 backdrop-blur-xl shadow-[var(--shadow-md)] relative overflow-hidden">
 
           {/* Left: Brand + active-deal status */}
           <Link to="/" className="flex items-center gap-2 pr-2 lg:pr-3 border-r border-hairline/60 shrink-0 min-w-0 group">
