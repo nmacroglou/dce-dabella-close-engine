@@ -1,4 +1,5 @@
-import { FileText, ExternalLink, Download, BookOpen } from "lucide-react";
+import { FileText, ExternalLink, Download, BookOpen, Thermometer } from "lucide-react";
+import thermalProof from "@/assets/coolwall-thermal-before-after.png.asset.json";
 
 const RESOURCES = [
   {
@@ -51,6 +52,24 @@ export default function CoolLifeResourcesPanel() {
       <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
         Official Lifetime Plus Coatings training and presentation library.
       </p>
+
+      <div className="mb-4 rounded-xl border border-hairline bg-muted/20 p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <Thermometer className="h-4 w-4 text-primary" />
+          <p className="text-xs font-semibold text-foreground">Thermal proof — before vs. after Cool Life</p>
+        </div>
+        <img
+          src={thermalProof.url}
+          alt="Cool Life Coating before and after CoolWall: exterior photo above and thermal camera image below showing surface temperature dropping from about 135.7°F to 98.8°F"
+          loading="lazy"
+          className="w-full rounded-lg border border-hairline"
+        />
+        <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+          Same wall, same sun. Coated surface reads roughly 30–35°F cooler — use this at the table when the homeowner
+          questions energy savings.
+        </p>
+      </div>
+
       <div className="space-y-2">
         {RESOURCES.map((r) => (
           <div
