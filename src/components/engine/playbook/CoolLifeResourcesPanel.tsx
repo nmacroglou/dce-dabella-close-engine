@@ -86,20 +86,66 @@ export default function CoolLifeResourcesPanel() {
             className="max-w-none max-h-none w-screen h-screen border-0 bg-black/90 p-0 shadow-none [&>button]:hidden"
             aria-describedby="thermal-proof-caption"
           >
-            <div className="relative flex h-full w-full items-center justify-center p-4">
+            <div className="relative h-full w-full overflow-hidden">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="absolute right-4 top-4 z-10 rounded-full bg-black/60 p-2 text-white hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-white"
+                className="absolute right-4 top-4 z-20 rounded-full bg-black/60 p-2 text-white hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-white"
                 aria-label="Close full-screen image"
               >
                 <X className="h-5 w-5" />
               </button>
-              <img
-                src={thermalProof.url}
-                alt="Cool Life Coating before and after CoolWall: full screen thermal comparison"
-                className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-              />
+              <TransformWrapper
+                initialScale={1}
+                minScale={0.5}
+                maxScale={5}
+                wheel={{ wheelEnabled: true, step: 0.15 }}
+                pinch={{ disabled: false }}
+                panning={{ disabled: false }}
+                doubleClick={{ disabled: true }}
+              >
+                {({ zoomIn, zoomOut, resetTransform }) => (
+                  <>
+                    <div className="absolute left-4 top-4 z-20 flex items-center gap-1 rounded-lg bg-black/60 p-1">
+                      <button
+                        type="button"
+                        onClick={() => zoomIn()}
+                        className="rounded-md p-2 text-white hover:bg-white/10"
+                        aria-label="Zoom in"
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => zoomOut()}
+                        className="rounded-md p-2 text-white hover:bg-white/10"
+                        aria-label="Zoom out"
+                      >
+                        <ZoomOut className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => resetTransform()}
+                        className="rounded-md p-2 text-white hover:bg-white/10"
+                        aria-label="Reset zoom"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <TransformComponent
+                      wrapperClass="h-full w-full cursor-grab active:cursor-grabbing"
+                      contentClass="h-full w-full"
+                    >
+                      <img
+                        src={thermalProof.url}
+                        alt="Cool Life Coating before and after CoolWall: full screen thermal comparison"
+                        className="h-full w-full object-contain"
+                        draggable={false}
+                      />
+                    </TransformComponent>
+                  </>
+                )}
+              </TransformWrapper>
             </div>
             <p id="thermal-proof-caption" className="sr-only">
               Same wall, same sun. Coated surface reads roughly 30–35°F cooler — use this at the table when the homeowner
