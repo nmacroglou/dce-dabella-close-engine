@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { FileText, ExternalLink, Download, BookOpen, Thermometer, X, ZoomIn, ZoomOut, RotateCcw, Maximize } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
