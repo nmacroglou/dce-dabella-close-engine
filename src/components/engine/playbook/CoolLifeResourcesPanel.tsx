@@ -99,7 +99,7 @@ export default function CoolLifeResourcesPanel() {
                 initialScale={1}
                 minScale={0.5}
                 maxScale={5}
-                wheel={{ wheelEnabled: true, step: 0.15 }}
+                wheel={{ step: 0.15, disabled: false }}
                 pinch={{ disabled: false }}
                 panning={{ disabled: false }}
                 doubleClick={{ disabled: true }}
