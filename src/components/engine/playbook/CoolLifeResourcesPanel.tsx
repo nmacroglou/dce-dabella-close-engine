@@ -34,6 +34,8 @@ const RESOURCES = [
 const RESOURCES_PAGE = "https://lifetimepluscoatings.com/resources/";
 
 export default function CoolLifeResourcesPanel() {
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="card-elevated-lg p-5">
       <div className="flex items-center gap-2 mb-3">
@@ -61,12 +63,50 @@ export default function CoolLifeResourcesPanel() {
           <Thermometer className="h-4 w-4 text-primary" />
           <p className="text-xs font-semibold text-foreground">Thermal proof — before vs. after Cool Life</p>
         </div>
-        <img
-          src={thermalProof.url}
-          alt="Cool Life Coating before and after CoolWall: exterior photo above and thermal camera image below showing surface temperature dropping from about 135.7°F to 98.8°F"
-          loading="lazy"
-          className="w-full rounded-lg border border-hairline"
-        />
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <button
+              type="button"
+              className="group relative block w-full text-left"
+              aria-label="Open full-screen thermal proof image"
+            >
+              <img
+                src={thermalProof.url}
+                alt="Cool Life Coating before and after CoolWall: exterior photo above and thermal camera image below showing surface temperature dropping from about 135.7°F to 98.8°F"
+                loading="lazy"
+                className="w-full rounded-lg border border-hairline transition-transform group-hover:scale-[1.01]"
+              />
+              <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+                <ExternalLink className="h-3 w-3" />
+                View full screen
+              </span>
+            </button>
+          </DialogTrigger>
+          <DialogContent
+            className="max-w-none max-h-none w-screen h-screen border-0 bg-black/90 p-0 shadow-none"
+            aria-describedby="thermal-proof-caption"
+          >
+            <div className="relative flex h-full w-full items-center justify-center p-4">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="absolute right-4 top-4 z-10 rounded-full bg-black/60 p-2 text-white hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-white"
+                aria-label="Close full-screen image"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <img
+                src={thermalProof.url}
+                alt="Cool Life Coating before and after CoolWall: full screen thermal comparison"
+                className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+              />
+            </div>
+            <p id="thermal-proof-caption" className="sr-only">
+              Same wall, same sun. Coated surface reads roughly 30–35°F cooler — use this at the table when the homeowner
+              questions energy savings.
+            </p>
+          </DialogContent>
+        </Dialog>
         <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
           Same wall, same sun. Coated surface reads roughly 30–35°F cooler — use this at the table when the homeowner
           questions energy savings.
