@@ -137,6 +137,7 @@ export default function CoolLifeResourcesPanel() {
           <DialogTrigger asChild>
             <button
               type="button"
+              onClick={openFullscreen}
               className="group relative block w-full text-left"
               aria-label="Open full-screen thermal proof image"
             >
@@ -147,13 +148,14 @@ export default function CoolLifeResourcesPanel() {
                 className="w-full rounded-lg border border-hairline transition-transform group-hover:scale-[1.01]"
               />
               <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-                <ExternalLink className="h-3 w-3" />
+                <Maximize className="h-3 w-3" />
                 View full screen
               </span>
             </button>
           </DialogTrigger>
           <DialogContent
-            className="max-w-none max-h-none w-screen h-screen border-0 bg-black/90 p-0 shadow-none [&>button]:hidden"
+            ref={fsRef}
+            className="fixed inset-0 z-50 max-w-none max-h-none w-screen h-screen translate-x-0 translate-y-0 border-0 bg-black p-0 shadow-none rounded-none data-[state=open]:animate-none data-[state=closed]:animate-none [&>button]:hidden"
             aria-describedby="thermal-proof-caption"
           >
             <div className="relative h-full w-full overflow-hidden">
