@@ -1,4 +1,5 @@
-import { FileText, ExternalLink, Download, BookOpen } from "lucide-react";
+import { FileText, ExternalLink, Download, BookOpen, Thermometer } from "lucide-react";
+import thermalProof from "@/assets/coolwall-thermal-before-after.png.asset.json";
 
 const RESOURCES = [
   {
