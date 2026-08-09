@@ -191,14 +191,14 @@ export default function AppHeader() {
         <div className="max-w-[92rem] mx-auto flex items-center gap-3 min-h-11 px-3 rounded-xl border border-hairline bg-card/90 backdrop-blur-xl shadow-[var(--shadow-md)] relative">
 
           {/* Left: Brand + active-deal status */}
-          <Link to="/" className="flex items-center gap-2 pr-3 border-r border-hairline/60 shrink-0 min-w-0 group">
+          <Link to="/" className="flex items-center gap-2 pr-2 lg:pr-3 border-r border-hairline/60 shrink-0 min-w-0 group">
             <img src={dabellaLogo} alt="DaBella" className="h-5 w-auto" />
             <div className="hidden sm:flex items-center gap-1.5 leading-none min-w-0">
-              <span className="text-[12px] font-display font-extrabold text-white tracking-tight whitespace-nowrap">
+              <span className="text-[12px] font-display font-extrabold text-foreground tracking-tight whitespace-nowrap">
                 Close<span className="text-primary">.</span>
               </span>
               {activeDeal ? (
-                <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/10 border border-primary/25 max-w-[160px]">
+                <span className="hidden xl:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/10 border border-primary/25 max-w-[140px] min-w-0">
                   <span className="relative flex h-1.5 w-1.5 shrink-0">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
@@ -206,7 +206,7 @@ export default function AppHeader() {
                   <span className="text-[10px] font-semibold text-primary truncate">{homeownerLabel}</span>
                 </span>
               ) : (
-                <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/40 border border-hairline/60">
+                <span className="hidden xl:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/40 border border-hairline/60">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("Idle", "Inactivo")}</span>
                 </span>
@@ -216,13 +216,14 @@ export default function AppHeader() {
           </Link>
 
           {/* Center: clustered nav */}
-          <nav className="hidden md:flex flex-1 items-center justify-center px-2 overflow-visible">
+          <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center px-1">
             <NavCluster items={SELL_CLUSTER} label={t("Sell", "Vender")} />
             <ClusterDivider />
             <NavCluster items={INSIGHTS_CLUSTER} label={t("Insights", "Análisis")} />
             <ClusterDivider />
             <NavCluster items={opsCluster} label={t("Operations", "Operaciones")} />
           </nav>
+
 
 
           {/* Right: Utility cluster */}
@@ -238,7 +239,7 @@ export default function AppHeader() {
                     className="md:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
                   aria-label="Open navigation"
                 >
-                  <Menu className="h-3.5 w-3.5 text-white" />
+                  <Menu className="h-3.5 w-3.5 text-foreground" />
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-3">
