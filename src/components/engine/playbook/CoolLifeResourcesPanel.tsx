@@ -179,6 +179,8 @@ export default function CoolLifeResourcesPanel() {
         ))}
 
       </div>
+      </div>
     </div>
   );
 }
+
