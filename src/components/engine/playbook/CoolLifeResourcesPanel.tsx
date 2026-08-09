@@ -161,7 +161,7 @@ export default function CoolLifeResourcesPanel() {
             <div className="relative h-full w-full overflow-hidden">
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={closeFullscreen}
                 className="absolute right-4 top-4 z-20 rounded-full bg-black/60 p-2 text-white hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-white"
                 aria-label="Close full-screen image"
               >
