@@ -542,3 +542,165 @@ export function buildIntelMetrics(r: PropertyIntelReport, deck?: QualificationDe
 
   return { valuation, affordability, economics, data, timing, route_priority: route, route_note };
 }
+
+/* ─────────────────────────────────────────────── credit & cash-flow read */
+
+export interface CreditSignal {
+  label: string;
+  detail: string;
+  points: number; // signed contribution to the score estimate
+}
+
+export interface CreditProfile {
+  /** Midpoint FICO-style estimate (inferred, never verified). */
+  score_mid: number | null;
+  score_low: number | null;
+  score_high: number | null;
+  tier: "excellent" | "good" | "fair" | "challenged" | "unknown";
+  tier_note: string;
+  /** Rough approval read for typical DaBella lender tiers. */
+  approval_note: string;
+  signals: CreditSignal[];
+  confidence: "low" | "moderate" | "high";
+  /** Monthly dollars left after housing, taxes and typical living costs. */
+  disposable_low: number | null;
+  disposable_mid: number | null;
+  disposable_high: number | null;
+  disposable_note: string;
+  /** Project payment as a share of estimated disposable income. */
+  payment_to_disposable_pct: number | null;
+  headroom_note: string;
+  caveats: string[];
+}
+
+const TIER_OF = (s: number): CreditProfile["tier"] =>
+  s >= 740 ? "excellent" : s >= 680 ? "good" : s >= 620 ? "fair" : "challenged";
+
+export function buildCreditProfile(
+  r: PropertyIntelReport,
+  q: QualificationDeck,
+  v: ValuationTriangulation,
+  a: Affordability,
+): CreditProfile {
+  const signals: CreditSignal[] = [];
+  let score = 690;
+  const add = (label: string, detail: string, points: number) => {
+    signals.push({ label, detail, points });
+    score += points;
+  };
+
+  const tenure = q.equity.tenure_years;
+  const pct = q.equity.equity_pct;
+  const value = v.consensus;
+
+  if (tenure !== null) {
+    if (tenure < 3) add("Recent mortgage underwriting", `Bought ~${Math.round(tenure)} yr ago — passed a lender within the last cycle`, 18);
+    else if (tenure < 8) add("Established tenure", `${Math.round(tenure)} yrs in the home — seasoned payment history`, 10);
+    else add("Long tenure", `${Math.round(tenure)} yrs in the home — long, stable trade lines`, 20);
+  } else {
+    add("Tenure unknown", "No recorded purchase — no payment-history proxy", -6);
+  }
+
+  if (pct !== null) {
+    if (pct >= 60) add("Deep equity", `~${pct}% estimated equity — strong secured-loan profile`, 28);
+    else if (pct >= 40) add("Solid equity", `~${pct}% estimated equity`, 16);
+    else if (pct >= 20) add("Building equity", `~${pct}% estimated equity`, 6);
+    else add("Thin equity", `~${pct}% estimated equity — leveraged`, -10);
+  } else {
+    add("Equity unknown", "No sale/value basis to estimate equity", -5);
+  }
+
+  if (value) {
+    if (value >= 750_000) add("High-value home", `${Math.round(value / 1000)}k consensus value`, 20);
+    else if (value >= 500_000) add("Above-median home", `${Math.round(value / 1000)}k consensus value`, 12);
+    else if (value >= 325_000) add("Median-range home", `${Math.round(value / 1000)}k consensus value`, 5);
+    else add("Entry-value home", `${Math.round(value / 1000)}k consensus value`, -6);
+  }
+
+  if (r.ownership.owner_type === "trust" || r.ownership.owner_type === "llc") {
+    add("Entity / trust ownership", "Estate planning or investor profile — usually strong credit", 14);
+  }
+  if (r.info.solar_present) add("Solar on record", "Financed solar implies a recent approval", 8);
+
+  const recentPermit = (r.info.permits ?? []).some((p) => {
+    const y = Number(String(p.date).slice(0, 4));
+    return Number.isFinite(y) && new Date().getFullYear() - y <= 5;
+  });
+  if (recentPermit) add("Recent permitted work", "Paid for improvements in the last 5 yrs", 8);
+
+  if (r.ownership.tax_mailing_matches_property) add("Owner-occupied", "Tax mail goes to the property", 6);
+  else if (r.ownership.tax_mailing_matches_property === false) add("Absentee mailing address", "Tax mail off-site — occupancy unclear", -4);
+
+  const known = [tenure, pct, value].filter((x) => x !== null).length;
+  const hasBasis = known > 0;
+  const mid = hasBasis ? Math.max(560, Math.min(820, Math.round(score))) : null;
+  const spread = known >= 3 ? 25 : known === 2 ? 35 : 45;
+  const low = mid !== null ? Math.max(540, mid - spread) : null;
+  const high = mid !== null ? Math.min(850, mid + spread) : null;
+  const tier = mid === null ? "unknown" : TIER_OF(mid);
+
+  const tier_note = {
+    excellent: "Reads as prime — expect the best rate sheet and lowest factors.",
+    good: "Reads as near-prime — standard programs should clear.",
+    fair: "Reads as mid-tier — expect a higher factor or a co-applicant ask.",
+    challenged: "Reads as sub-prime — lead with a secured or shorter-scope path.",
+    unknown: "Not enough public-record signal to infer a credit band.",
+  }[tier];
+
+  const approval_note = {
+    excellent: "Likely approves on tier 1 with room for 120–180 mo terms.",
+    good: "Likely approves on tier 1–2; have the 120 mo option ready.",
+    fair: "Plan for tier 2–3 factors; phased scope keeps the payment in range.",
+    challenged: "Expect a decline on unsecured — position secured/HELOC or phase the work.",
+    unknown: "Run the soft pull before you shape the payment story.",
+  }[tier];
+
+  /* ── disposable monthly income ── */
+  const grossMonthly = a.implied_household_income ? a.implied_household_income / 12 : null;
+  const housing = a.implied_monthly_housing ?? (v.consensus ? Math.round((v.consensus * 0.011) / 12) : null);
+  let disposable_mid: number | null = null;
+  if (grossMonthly) {
+    const net = grossMonthly * 0.76; // fed/state/FICA drag
+    const living = grossMonthly * 0.34; // food, transport, insurance, utilities, debt service
+    disposable_mid = Math.max(0, Math.round(net - (housing ?? 0) - living));
+  }
+  const disposable_low = disposable_mid !== null ? Math.max(0, Math.round(disposable_mid * 0.7)) : null;
+  const disposable_high = disposable_mid !== null ? Math.round(disposable_mid * 1.3) : null;
+
+  const ptd = disposable_mid && disposable_mid > 0
+    ? Math.round((a.project_payment_mid / disposable_mid) * 1000) / 10
+    : null;
+
+  const headroom_note = ptd === null
+    ? "No income basis on record — ask a budget question instead of assuming one."
+    : ptd <= 20 ? "Payment fits well inside estimated free cash flow — anchor the 120 mo option."
+      : ptd <= 40 ? "Payment takes a real bite of free cash flow — show 180 mo as the comfort lane."
+        : ptd <= 65 ? "Payment crowds free cash flow — phase the scope or stretch the term."
+          : "Payment likely exceeds free cash flow — sell one system now, plan the rest.";
+
+  const disposable_note = disposable_mid === null
+    ? "Value-implied income unavailable."
+    : `Gross ~${Math.round((grossMonthly ?? 0)).toLocaleString()}/mo, less taxes, housing ~${(housing ?? 0).toLocaleString()} and typical living costs.`;
+
+  return {
+    score_mid: mid,
+    score_low: low,
+    score_high: high,
+    tier,
+    tier_note,
+    approval_note,
+    signals,
+    confidence: known >= 3 ? "moderate" : known === 2 ? "low" : "low",
+    disposable_low,
+    disposable_mid,
+    disposable_high,
+    disposable_note,
+    payment_to_disposable_pct: ptd,
+    headroom_note,
+    caveats: [
+      "Inferred from public property records — this is NOT a credit report or a credit decision.",
+      "Never state a credit score or income figure to the homeowner; use it only to pick which option to lead with.",
+      "Always confirm with the lender's soft pull before promising terms.",
+    ],
+  };
+}
