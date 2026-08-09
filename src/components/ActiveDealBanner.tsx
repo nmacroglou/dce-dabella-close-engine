@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, X, History, Sparkles } from "lucide-react";
+import { Briefcase, X, History, Sparkles, Pencil } from "lucide-react";
 import { STAGE_LABELS, STAGE_LABELS_ES, STAGE_COLORS, DISQUALIFIED_REASON_LABELS, DISQUALIFIED_REASON_LABELS_ES, type DealStage, type DisqualifiedReason } from "@/types/deal";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import StageHistoryTimeline from "@/components/StageHistoryTimeline";
 import FollowUpComposer from "@/components/followups/FollowUpComposer";
+import DealEditDialog from "@/components/deals/DealEditDialog";
 
 export default function ActiveDealBanner() {
   const navigate = useNavigate();
@@ -52,6 +53,7 @@ export default function ActiveDealBanner() {
   const [dqNote, setDqNote] = useState("");
   const [stageNote, setStageNote] = useState("");
   const [composerOpen, setComposerOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (!activeDealId) {
     return (
