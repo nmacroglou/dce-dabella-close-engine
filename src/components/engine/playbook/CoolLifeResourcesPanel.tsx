@@ -68,12 +68,10 @@ function isFullscreen() {
 
 export default function CoolLifeResourcesPanel() {
   const [open, setOpen] = useState(false);
-  const [fsOpen, setFsOpen] = useState(false);
   const fsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onChange = () => {
-      setFsOpen(isFullscreen());
       if (!isFullscreen()) setOpen(false);
     };
     document.addEventListener("fullscreenchange", onChange);
