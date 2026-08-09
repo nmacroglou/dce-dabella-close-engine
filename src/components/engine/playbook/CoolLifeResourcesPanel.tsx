@@ -82,7 +82,7 @@ export default function CoolLifeResourcesPanel() {
             </button>
           </DialogTrigger>
           <DialogContent
-            className="max-w-none max-h-none w-screen h-screen border-0 bg-black/90 p-0 shadow-none"
+            className="max-w-none max-h-none w-screen h-screen border-0 bg-black/90 p-0 shadow-none [&>button]:hidden"
             aria-describedby="thermal-proof-caption"
           >
             <div className="relative flex h-full w-full items-center justify-center p-4">
