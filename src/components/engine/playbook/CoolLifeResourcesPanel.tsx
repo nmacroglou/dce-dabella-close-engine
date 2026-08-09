@@ -88,14 +88,10 @@ export default function CoolLifeResourcesPanel() {
     };
   }, []);
 
-  const openFullscreen = async () => {
-    setOpen(true);
+  const openFullscreen = () => {
+    flushSync(() => setOpen(true));
     if (fsRef.current) {
-      try {
-        await requestFullscreen(fsRef.current);
-      } catch {
-        // Browser fullscreen unavailable; fallback to dialog-based fullscreen
-      }
+      requestFullscreen(fsRef.current).catch(() => {});
     }
   };
 
