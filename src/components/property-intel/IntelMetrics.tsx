@@ -143,8 +143,61 @@ export default function IntelMetricsPanel({ report }: { report: PropertyIntelRep
         </ul>
       </Card>
 
+      {/* Credit & cash-flow read */}
+      <Card icon={CreditCard} title="Credit & cash-flow read" right={
+        <span className={`text-[10px] uppercase tracking-wider font-bold ${CREDIT_TONE[c.tier]}`}>
+          {c.tier} · {c.confidence} confidence
+        </span>
+      }>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <Stat label="Est. credit band"
+            value={c.score_low !== null && c.score_high !== null ? `${c.score_low}–${c.score_high}` : "—"}
+            sub={c.score_mid !== null ? `Midpoint ~${c.score_mid} FICO-style` : "No basis on record"}
+            tone={CREDIT_TONE[c.tier]} />
+          <Stat label="Disposable / mo"
+            value={c.disposable_low !== null && c.disposable_high !== null
+              ? `${formatCurrency(c.disposable_low)}–${formatCurrency(c.disposable_high)}` : "—"}
+            sub={c.disposable_mid !== null ? `Mid ~${formatCurrency(c.disposable_mid)}` : "No income basis"} />
+          <Stat label="Payment / disposable"
+            value={c.payment_to_disposable_pct !== null ? `${c.payment_to_disposable_pct}%` : "—"}
+            sub="Project payment vs free cash" />
+          <Stat label="Approval read" value={c.tier === "unknown" ? "Unknown" : c.tier} sub={c.tier_note} />
+        </div>
 
+        <p className="mt-3 text-[12px] font-semibold">{c.headroom_note}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">{c.approval_note}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">{c.disposable_note}</p>
 
+        {c.signals.length > 0 && (
+          <div className="mt-3 overflow-hidden rounded-lg border border-hairline">
+            <table className="w-full text-[12px]">
+              <thead className="bg-muted/30 text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-1.5 text-left text-[10px] uppercase tracking-wider font-bold">Credit signal</th>
+                  <th className="px-3 py-1.5 text-right text-[10px] uppercase tracking-wider font-bold">Effect</th>
+                </tr>
+              </thead>
+              <tbody>
+                {c.signals.map((s, i) => (
+                  <tr key={i} className="border-t border-hairline/60">
+                    <td className="px-3 py-1.5">
+                      <span className="font-semibold">{s.label}</span>
+                      <span className="block text-[10px] text-muted-foreground">{s.detail}</span>
+                    </td>
+                    <td className={`px-3 py-1.5 text-right tabular-nums font-bold ${s.points >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      {s.points >= 0 ? "+" : ""}{s.points}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <ul className="mt-3 space-y-1">
+          {c.caveats.map((x, i) => <li key={i} className="text-[10px] text-muted-foreground">• {x}</li>)}
+        </ul>
+      </Card>
 
       {/* Timing */}
       <Card icon={CalendarClock} title="Timing & urgency" right={
