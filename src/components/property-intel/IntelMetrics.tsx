@@ -4,7 +4,7 @@ import type { PropertyIntelReport } from "@/lib/propertyIntel/types";
 import { formatCurrency, formatCount } from "@/lib/format";
 import {
   Scale, Gauge, Database, CalendarClock, Route, CheckCircle2,
-  AlertTriangle, HelpCircle, CircleDot,
+  AlertTriangle, HelpCircle, CircleDot, CreditCard,
 } from "lucide-react";
 
 function Card({
@@ -49,6 +49,14 @@ const STATUS_META: Record<FieldStatus, { icon: React.ElementType; cls: string; l
   missing: { icon: HelpCircle, cls: "text-amber-400", label: "Missing" },
 };
 
+const CREDIT_TONE: Record<string, string> = {
+  excellent: "text-emerald-400",
+  good: "text-primary",
+  fair: "text-amber-400",
+  challenged: "text-red-400",
+  unknown: "text-muted-foreground",
+};
+
 const AGREEMENT_TONE: Record<string, string> = {
   tight: "text-emerald-400",
   moderate: "text-amber-400",
@@ -59,7 +67,7 @@ const AGREEMENT_TONE: Record<string, string> = {
 
 export default function IntelMetricsPanel({ report }: { report: PropertyIntelReport }) {
   const m = useMemo(() => buildIntelMetrics(report), [report]);
-  const { valuation: v, affordability: a, data: d, timing: t } = m;
+  const { valuation: v, affordability: a, credit: c, data: d, timing: t } = m;
 
   const routeTone = m.route_priority >= 78 ? "bg-emerald-500"
     : m.route_priority >= 60 ? "bg-primary"
