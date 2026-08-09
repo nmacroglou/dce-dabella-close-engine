@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import type { EngineTabProps } from "@/types/engine";
 import { SELLING_STEPS } from "@/data/sellingSteps";
-import { Check, ChevronRight, ExternalLink } from "lucide-react";
+import { Check, ChevronRight, ExternalLink, Swords, Thermometer, Star, Lightbulb } from "lucide-react";
 import { useSetToggle } from "@/hooks/useSetToggle";
 import { useT } from "@/contexts/LanguageContext";
 import StepProgressBar from "./playbook/StepProgressBar";
@@ -14,6 +14,9 @@ import PillarsBattleCardPanel from "./playbook/PillarsBattleCardPanel";
 import CvvBattleCardsPanel from "./playbook/CvvBattleCardsPanel";
 import CoolLifeBattleCardPanel from "./playbook/CoolLifeBattleCardPanel";
 import CoolLifeResourcesPanel from "./playbook/CoolLifeResourcesPanel";
+import ReviewsPanel from "./playbook/ReviewsPanel";
+
+type SidebarSection = "battle" | "coollife" | "reviews" | "coach";
 
 export default function PlaybookTab({ state, update }: EngineTabProps) {
   const t = useT();
@@ -22,12 +25,20 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
     presentation: t("Presentation", "Presentación"),
     closing: t("Closing Stack", "Cierre"),
   };
+  const SIDEBAR_SECTIONS: { id: SidebarSection; label: string; icon: typeof Swords }[] = [
+    { id: "battle", label: t("Battle", "Batalla"), icon: Swords },
+    { id: "coollife", label: "Cool Life", icon: Thermometer },
+    { id: "reviews", label: t("Reviews", "Reseñas"), icon: Star },
+    { id: "coach", label: t("Coach", "Coach"), icon: Lightbulb },
+  ];
   const [activeStepId, setActiveStepId] = useState(1);
+  const [sidebarSection, setSidebarSection] = useState<SidebarSection>("battle");
   const completed = useSetToggle<number>();
   const scripts = useSetToggle<number>();
   const refs = useSetToggle<string>();
   const [showPaymentFactors, setShowPaymentFactors] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Record<number, Set<number>>>({});
+
 
   const activeStep = SELLING_STEPS.find((s) => s.id === activeStepId)!;
 
