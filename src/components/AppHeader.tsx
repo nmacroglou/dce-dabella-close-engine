@@ -96,7 +96,7 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {({ isActive }) => (
             <>
               <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
-              <span className="hidden xl:inline">{shown}</span>
+              <span className="hidden 2xl:inline">{shown}</span>
             </>
           )}
         </NavLink>
@@ -109,12 +109,12 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
 }
 
 function ClusterDivider() {
-  return <span className="h-4 w-px bg-hairline/50 mx-2" aria-hidden />;
+  return <span className="h-4 w-px bg-hairline/50 mx-1 lg:mx-2 shrink-0" aria-hidden />;
 }
 
 function NavCluster({ items, label }: { items: NavEntry[]; label: string }) {
   return (
-    <div className="flex items-center gap-1" aria-label={label}>
+    <div className="flex items-center gap-0.5 lg:gap-1 min-w-0" aria-label={label}>
       {items.map((item) => (
         <NavItem key={item.to} {...item} />
       ))}
