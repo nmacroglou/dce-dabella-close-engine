@@ -136,12 +136,15 @@ export default function CoolLifeResourcesPanel() {
               className="group relative block w-full text-left"
               aria-label="Open full-screen thermal proof image"
             >
-              <img
-                src={thermalProof.url}
-                alt="Cool Life Coating before and after CoolWall: exterior photo above and thermal camera image below showing surface temperature dropping from about 135.7°F to 98.8°F"
-                loading="lazy"
-                className="w-full rounded-lg border border-hairline transition-transform group-hover:scale-[1.01]"
-              />
+              <div className="relative w-full h-64 sm:h-80 overflow-hidden rounded-lg border border-hairline bg-black">
+                <img
+                  src={thermalProof.url}
+                  alt="Cool Life Coating before and after CoolWall: exterior photo above and thermal camera image below showing surface temperature dropping from about 135.7°F to 98.8°F"
+                  loading="lazy"
+                  className="h-full w-full object-cover object-center transition-transform group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              </div>
               <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
                 <Maximize className="h-3 w-3" />
                 View full screen
