@@ -415,6 +415,13 @@ export default function ActiveDealBanner() {
         open={composerOpen}
         onOpenChange={setComposerOpen}
       />
+
+      <DealEditDialog
+        deal={editOpen ? deal : null}
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+      />
+
     </>
   );
 }
