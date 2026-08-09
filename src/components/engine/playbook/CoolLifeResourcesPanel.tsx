@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { FileText, ExternalLink, Download, BookOpen, Thermometer, X } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import thermalProof from "@/assets/coolwall-thermal-before-after.png.asset.json";
 
 const RESOURCES = [
