@@ -86,17 +86,17 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
           {...prefetch}
           aria-label={shown}
           className={({ isActive }) =>
-            `group relative flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all pressable ${
+            `group relative flex items-center justify-center h-8 w-8 rounded-lg transition-all pressable ${
               isActive
-                ? "bg-primary/15 text-primary border border-primary/20"
-                : "text-slate-300 hover:text-foreground hover:bg-muted/45"
+                ? "bg-primary/15 text-primary border border-primary/25"
+                : "text-muted-foreground border border-transparent hover:text-foreground hover:bg-muted/45"
             }`
           }
         >
           {({ isActive }) => (
             <>
-              <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
-              <span className="hidden xl:inline">{shown}</span>
+              <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+              <span className="sr-only">{shown}</span>
             </>
           )}
         </NavLink>
@@ -109,12 +109,12 @@ function NavItem({ to, label, icon: Icon, end }: NavEntry) {
 }
 
 function ClusterDivider() {
-  return <span className="h-4 w-px bg-hairline/50 mx-2" aria-hidden />;
+  return <span className="h-4 w-px bg-hairline/50 mx-1 lg:mx-2 shrink-0" aria-hidden />;
 }
 
 function NavCluster({ items, label }: { items: NavEntry[]; label: string }) {
   return (
-    <div className="flex items-center gap-1" aria-label={label}>
+    <div className="flex items-center gap-0.5 lg:gap-1 min-w-0" aria-label={label}>
       {items.map((item) => (
         <NavItem key={item.to} {...item} />
       ))}
@@ -188,17 +188,17 @@ export default function AppHeader() {
   return (
     <TooltipProvider delayDuration={200}>
       <header className="sticky top-0 z-40 px-3 sm:px-4 lg:px-6 pt-2.5 pb-2 bg-gradient-to-b from-background via-background/95 to-background/0">
-        <div className="max-w-[92rem] mx-auto flex items-center gap-3 min-h-11 px-3 rounded-xl border border-hairline bg-card/90 backdrop-blur-xl shadow-[var(--shadow-md)] relative">
+        <div className="max-w-[92rem] mx-auto flex items-center gap-2 min-h-11 px-2.5 sm:px-3 rounded-xl border border-hairline bg-card/90 backdrop-blur-xl shadow-[var(--shadow-md)] relative overflow-hidden">
 
           {/* Left: Brand + active-deal status */}
-          <Link to="/" className="flex items-center gap-2 pr-3 border-r border-hairline/60 shrink-0 min-w-0 group">
+          <Link to="/" className="flex items-center gap-2 pr-2 lg:pr-3 border-r border-hairline/60 shrink-0 min-w-0 group">
             <img src={dabellaLogo} alt="DaBella" className="h-5 w-auto" />
             <div className="hidden sm:flex items-center gap-1.5 leading-none min-w-0">
-              <span className="text-[12px] font-display font-extrabold text-white tracking-tight whitespace-nowrap">
+              <span className="text-[12px] font-display font-extrabold text-foreground tracking-tight whitespace-nowrap">
                 Close<span className="text-primary">.</span>
               </span>
               {activeDeal ? (
-                <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/10 border border-primary/25 max-w-[160px]">
+                <span className="hidden xl:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/10 border border-primary/25 max-w-[140px] min-w-0">
                   <span className="relative flex h-1.5 w-1.5 shrink-0">
                     <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 animate-ping" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
@@ -206,7 +206,7 @@ export default function AppHeader() {
                   <span className="text-[10px] font-semibold text-primary truncate">{homeownerLabel}</span>
                 </span>
               ) : (
-                <span className="hidden md:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/40 border border-hairline/60">
+                <span className="hidden xl:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-muted/40 border border-hairline/60">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{t("Idle", "Inactivo")}</span>
                 </span>
@@ -216,7 +216,7 @@ export default function AppHeader() {
           </Link>
 
           {/* Center: clustered nav */}
-          <nav className="hidden md:flex flex-1 items-center justify-center px-2 overflow-visible">
+          <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center px-1">
             <NavCluster items={SELL_CLUSTER} label={t("Sell", "Vender")} />
             <ClusterDivider />
             <NavCluster items={INSIGHTS_CLUSTER} label={t("Insights", "Análisis")} />
@@ -225,9 +225,10 @@ export default function AppHeader() {
           </nav>
 
 
+
           {/* Right: Utility cluster */}
           <div className="flex items-center gap-1.5 pl-2 border-l border-hairline/60 shrink-0">
-            <div className="hidden 2xl:flex items-center gap-1.5">
+            <div className="hidden min-[1560px]:flex items-center gap-1.5">
               <OwnerScopeFilter />
               <PublishStatusBadge />
             </div>
@@ -238,7 +239,7 @@ export default function AppHeader() {
                     className="md:hidden rounded-md bg-muted/50 border border-hairline p-1.5 hover:bg-muted transition-colors pressable"
                   aria-label="Open navigation"
                 >
-                  <Menu className="h-3.5 w-3.5 text-white" />
+                  <Menu className="h-3.5 w-3.5 text-foreground" />
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-3">

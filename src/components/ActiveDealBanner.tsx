@@ -193,8 +193,8 @@ export default function ActiveDealBanner() {
 
   return (
     <>
-      <div className="card-elevated p-4 mb-4 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="card-elevated p-3 sm:p-4 mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1 basis-64">
           <div className="rounded-lg bg-primary/10 p-2 flex-shrink-0">
             <Briefcase className="h-4 w-4 text-primary" />
           </div>
@@ -202,7 +202,7 @@ export default function ActiveDealBanner() {
             <button
               type="button"
               onClick={() => setEditOpen(true)}
-              className="text-sm font-bold text-foreground truncate hover:underline text-left"
+              className="block max-w-full truncate text-sm font-bold text-foreground hover:underline text-left"
             >
               {deal.homeowner1 || t("Untitled", "Sin título")}
               {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
@@ -216,7 +216,8 @@ export default function ActiveDealBanner() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center flex-wrap justify-end gap-1.5 sm:gap-2 min-w-0">
+
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${STAGE_COLORS[deal.stage]}`}>
             {stageLabels[deal.stage]}
           </span>
