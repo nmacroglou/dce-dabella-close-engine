@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import type { EngineTabProps } from "@/types/engine";
 import { SELLING_STEPS } from "@/data/sellingSteps";
-import { Check, ChevronRight, ExternalLink } from "lucide-react";
+import { Check, ChevronRight, ExternalLink, Swords, Thermometer, Star, Lightbulb } from "lucide-react";
 import { useSetToggle } from "@/hooks/useSetToggle";
 import { useT } from "@/contexts/LanguageContext";
 import StepProgressBar from "./playbook/StepProgressBar";
@@ -14,6 +14,9 @@ import PillarsBattleCardPanel from "./playbook/PillarsBattleCardPanel";
 import CvvBattleCardsPanel from "./playbook/CvvBattleCardsPanel";
 import CoolLifeBattleCardPanel from "./playbook/CoolLifeBattleCardPanel";
 import CoolLifeResourcesPanel from "./playbook/CoolLifeResourcesPanel";
+import ReviewsPanel from "./playbook/ReviewsPanel";
+
+type SidebarSection = "battle" | "coollife" | "reviews" | "coach";
 
 export default function PlaybookTab({ state, update }: EngineTabProps) {
   const t = useT();
@@ -22,12 +25,20 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
     presentation: t("Presentation", "Presentación"),
     closing: t("Closing Stack", "Cierre"),
   };
+  const SIDEBAR_SECTIONS: { id: SidebarSection; label: string; icon: typeof Swords }[] = [
+    { id: "battle", label: t("Battle", "Batalla"), icon: Swords },
+    { id: "coollife", label: "Cool Life", icon: Thermometer },
+    { id: "reviews", label: t("Reviews", "Reseñas"), icon: Star },
+    { id: "coach", label: t("Coach", "Coach"), icon: Lightbulb },
+  ];
   const [activeStepId, setActiveStepId] = useState(1);
+  const [sidebarSection, setSidebarSection] = useState<SidebarSection>("battle");
   const completed = useSetToggle<number>();
   const scripts = useSetToggle<number>();
   const refs = useSetToggle<string>();
   const [showPaymentFactors, setShowPaymentFactors] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Record<number, Set<number>>>({});
+
 
   const activeStep = SELLING_STEPS.find((s) => s.id === activeStepId)!;
 
@@ -118,33 +129,70 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
 
         {/* Sidebar */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Battle Cards */}
-          <PillarsBattleCardPanel />
-          <BattleCardPanel />
-          <CvvBattleCardsPanel />
-          <CoolLifeBattleCardPanel />
-          <CoolLifeResourcesPanel />
-
-          {/* Tips */}
-          <div className="card-elevated-lg p-6">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-              {t("Pro Tips", "Consejos pro")}
-            </h4>
-            <div className="space-y-3">
-              {activeStep.tips.map((tip, idx) => (
-                <div key={idx} className="flex items-start gap-2.5">
-                  <span className="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-primary" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">{tip}</p>
-                </div>
-              ))}
-            </div>
+          {/* Sidebar section switcher */}
+          <div className="grid grid-cols-4 gap-1 rounded-2xl border border-hairline bg-muted/30 p-1">
+            {SIDEBAR_SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSidebarSection(s.id)}
+                className={`flex flex-col items-center gap-1 rounded-xl px-2 py-2.5 text-[11px] font-semibold transition-all ${
+                  sidebarSection === s.id
+                    ? "bg-card text-primary shadow-sm border border-hairline"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <s.icon className="h-4 w-4" />
+                {s.label}
+              </button>
+            ))}
           </div>
 
-          {/* Payment Factors */}
-          <PaymentFactorsPanel
-            isOpen={showPaymentFactors}
-            onToggle={() => setShowPaymentFactors(!showPaymentFactors)}
-          />
+          {sidebarSection === "battle" && (
+            <div className="space-y-5 animate-fade-in">
+              <PillarsBattleCardPanel />
+              <BattleCardPanel />
+              <CvvBattleCardsPanel />
+            </div>
+          )}
+
+          {sidebarSection === "coollife" && (
+            <div className="space-y-5 animate-fade-in">
+              <CoolLifeBattleCardPanel />
+              <CoolLifeResourcesPanel />
+            </div>
+          )}
+
+          {sidebarSection === "reviews" && (
+            <div className="animate-fade-in">
+              <ReviewsPanel />
+            </div>
+          )}
+
+          {sidebarSection === "coach" && (
+            <div className="space-y-5 animate-fade-in">
+              {/* Tips */}
+              <div className="card-elevated-lg p-6">
+                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                  {t("Pro Tips", "Consejos pro")}
+                </h4>
+                <div className="space-y-3">
+                  {activeStep.tips.map((tip, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5">
+                      <span className="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-primary" />
+                      <p className="text-sm text-muted-foreground leading-relaxed">{tip}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Payment Factors */}
+              <PaymentFactorsPanel
+                isOpen={showPaymentFactors}
+                onToggle={() => setShowPaymentFactors(!showPaymentFactors)}
+              />
+            </div>
+          )}
+
 
           {/* Deep link */}
           {activeStep.linkTab && (
