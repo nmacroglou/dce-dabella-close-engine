@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, X, History, Sparkles } from "lucide-react";
+import { Briefcase, X, History, Sparkles, Pencil } from "lucide-react";
 import { STAGE_LABELS, STAGE_LABELS_ES, STAGE_COLORS, DISQUALIFIED_REASON_LABELS, DISQUALIFIED_REASON_LABELS_ES, type DealStage, type DisqualifiedReason } from "@/types/deal";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import StageHistoryTimeline from "@/components/StageHistoryTimeline";
 import FollowUpComposer from "@/components/followups/FollowUpComposer";
+import DealEditDialog from "@/components/deals/DealEditDialog";
 
 export default function ActiveDealBanner() {
   const navigate = useNavigate();
@@ -52,6 +53,7 @@ export default function ActiveDealBanner() {
   const [dqNote, setDqNote] = useState("");
   const [stageNote, setStageNote] = useState("");
   const [composerOpen, setComposerOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (!activeDealId) {
     return (
@@ -197,11 +199,19 @@ export default function ActiveDealBanner() {
             <Briefcase className="h-4 w-4 text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-foreground truncate">
+            <button
+              type="button"
+              onClick={() => setEditOpen(true)}
+              className="text-sm font-bold text-foreground truncate hover:underline text-left"
+            >
               {deal.homeowner1 || t("Untitled", "Sin título")}
               {deal.homeowner2 ? ` & ${deal.homeowner2}` : ""}
-            </p>
+            </button>
             <p className="text-xs text-muted-foreground truncate">
+              {[deal.address, deal.homeowner_phone, deal.homeowner_email].filter(Boolean).join(" · ") ||
+                t("No contact info yet — tap edit to add", "Sin datos de contacto — toca editar para añadir")}
+            </p>
+            <p className="text-[11px] text-muted-foreground truncate">
               {t("Auto-saving", "Guardando automáticamente")} · {t("Updated", "Actualizado")} {new Date(deal.updated_at).toLocaleTimeString()}
             </p>
           </div>
@@ -210,6 +220,16 @@ export default function ActiveDealBanner() {
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${STAGE_COLORS[deal.stage]}`}>
             {stageLabels[deal.stage]}
           </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-9 px-2 gap-1"
+            onClick={() => setEditOpen(true)}
+            aria-label={t("Edit customer info", "Editar información del cliente")}
+          >
+            <Pencil className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs font-semibold">{t("Edit", "Editar")}</span>
+          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -395,6 +415,13 @@ export default function ActiveDealBanner() {
         open={composerOpen}
         onOpenChange={setComposerOpen}
       />
+
+      <DealEditDialog
+        deal={editOpen ? deal : null}
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+      />
+
     </>
   );
 }
