@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from "react";
-import { flushSync } from "react-dom";
-import { FileText, ExternalLink, Download, BookOpen, Thermometer, X, ZoomIn, ZoomOut, RotateCcw, Maximize } from "lucide-react";
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { useState } from "react";
+import { FileText, ExternalLink, Download, BookOpen, Thermometer, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import thermalProof from "@/assets/coolwall-thermal-before-after.png.asset.json";
 
@@ -33,38 +32,6 @@ const RESOURCES = [
 ];
 
 const RESOURCES_PAGE = "https://lifetimepluscoatings.com/resources/";
-
-function requestFullscreen(el: HTMLElement) {
-  const method =
-    el.requestFullscreen ||
-    // @ts-ignore
-    (el as any).webkitRequestFullscreen ||
-    // @ts-ignore
-    (el as any).mozRequestFullScreen ||
-    // @ts-ignore
-    (el as any).msRequestFullscreen;
-  return method?.call(el);
-}
-
-function exitFullscreen() {
-  const doc = document as any;
-  const method =
-    document.exitFullscreen ||
-    doc.webkitExitFullscreen ||
-    doc.mozCancelFullScreen ||
-    doc.msExitFullscreen;
-  return method?.call(document);
-}
-
-function isFullscreen() {
-  const doc = document as any;
-  return !!(
-    document.fullscreenElement ||
-    doc.webkitFullscreenElement ||
-    doc.mozFullScreenElement ||
-    doc.msFullscreenElement
-  );
-}
 
 export default function CoolLifeResourcesPanel() {
   const [open, setOpen] = useState(false);
