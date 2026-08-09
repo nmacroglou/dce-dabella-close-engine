@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { FileText, ExternalLink, Download, BookOpen, Thermometer, X } from "lucide-react";
+import { FileText, ExternalLink, Download, BookOpen, Thermometer, X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import thermalProof from "@/assets/coolwall-thermal-before-after.png.asset.json";
 
 const RESOURCES = [
