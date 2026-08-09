@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { FileText, ExternalLink, Download, BookOpen, Thermometer, X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { flushSync } from "react-dom";
+import { FileText, ExternalLink, Download, BookOpen, Thermometer, X, ZoomIn, ZoomOut, RotateCcw, Maximize } from "lucide-react";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import thermalProof from "@/assets/coolwall-thermal-before-after.png.asset.json";
@@ -33,8 +34,72 @@ const RESOURCES = [
 
 const RESOURCES_PAGE = "https://lifetimepluscoatings.com/resources/";
 
+function requestFullscreen(el: HTMLElement) {
+  const method =
+    el.requestFullscreen ||
+    // @ts-ignore
+    (el as any).webkitRequestFullscreen ||
+    // @ts-ignore
+    (el as any).mozRequestFullScreen ||
+    // @ts-ignore
+    (el as any).msRequestFullscreen;
+  return method?.call(el);
+}
+
+function exitFullscreen() {
+  const doc = document as any;
+  const method =
+    document.exitFullscreen ||
+    doc.webkitExitFullscreen ||
+    doc.mozCancelFullScreen ||
+    doc.msExitFullscreen;
+  return method?.call(document);
+}
+
+function isFullscreen() {
+  const doc = document as any;
+  return !!(
+    document.fullscreenElement ||
+    doc.webkitFullscreenElement ||
+    doc.mozFullScreenElement ||
+    doc.msFullscreenElement
+  );
+}
+
 export default function CoolLifeResourcesPanel() {
   const [open, setOpen] = useState(false);
+  const fsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onChange = () => {
+      if (!isFullscreen()) setOpen(false);
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("webkitfullscreenchange", onChange);
+    document.addEventListener("mozfullscreenchange", onChange);
+    document.addEventListener("MSFullscreenChange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("webkitfullscreenchange", onChange);
+      document.removeEventListener("mozfullscreenchange", onChange);
+      document.removeEventListener("MSFullscreenChange", onChange);
+    };
+  }, []);
+
+  const openFullscreen = () => {
+    flushSync(() => setOpen(true));
+    if (fsRef.current) {
+      requestFullscreen(fsRef.current).catch(() => {});
+    }
+  };
+
+  const closeFullscreen = () => {
+    if (isFullscreen()) {
+      exitFullscreen();
+    } else {
+      setOpen(false);
+    }
+  };
 
   return (
     <div className="card-elevated-lg p-5">
@@ -67,6 +132,7 @@ export default function CoolLifeResourcesPanel() {
           <DialogTrigger asChild>
             <button
               type="button"
+              onClick={openFullscreen}
               className="group relative block w-full text-left"
               aria-label="Open full-screen thermal proof image"
             >
@@ -77,19 +143,20 @@ export default function CoolLifeResourcesPanel() {
                 className="w-full rounded-lg border border-hairline transition-transform group-hover:scale-[1.01]"
               />
               <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-                <ExternalLink className="h-3 w-3" />
+                <Maximize className="h-3 w-3" />
                 View full screen
               </span>
             </button>
           </DialogTrigger>
           <DialogContent
-            className="max-w-none max-h-none w-screen h-screen border-0 bg-black/90 p-0 shadow-none [&>button]:hidden"
+            ref={fsRef}
+            className="fixed inset-0 z-50 max-w-none max-h-none w-screen h-screen translate-x-0 translate-y-0 border-0 bg-black p-0 shadow-none rounded-none data-[state=open]:animate-none data-[state=closed]:animate-none [&>button]:hidden"
             aria-describedby="thermal-proof-caption"
           >
             <div className="relative h-full w-full overflow-hidden">
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={closeFullscreen}
                 className="absolute right-4 top-4 z-20 rounded-full bg-black/60 p-2 text-white hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-white"
                 aria-label="Close full-screen image"
               >
