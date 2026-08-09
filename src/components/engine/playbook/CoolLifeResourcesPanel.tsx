@@ -70,6 +70,42 @@ export default function CoolLifeResourcesPanel() {
   const [fsOpen, setFsOpen] = useState(false);
   const fsRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const onChange = () => {
+      setFsOpen(isFullscreen());
+      if (!isFullscreen()) setOpen(false);
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("webkitfullscreenchange", onChange);
+    document.addEventListener("mozfullscreenchange", onChange);
+    document.addEventListener("MSFullscreenChange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("webkitfullscreenchange", onChange);
+      document.removeEventListener("mozfullscreenchange", onChange);
+      document.removeEventListener("MSFullscreenChange", onChange);
+    };
+  }, []);
+
+  const openFullscreen = async () => {
+    setOpen(true);
+    if (fsRef.current) {
+      try {
+        await requestFullscreen(fsRef.current);
+      } catch {
+        // Browser fullscreen unavailable; fallback to dialog-based fullscreen
+      }
+    }
+  };
+
+  const closeFullscreen = () => {
+    if (isFullscreen()) {
+      exitFullscreen();
+    } else {
+      setOpen(false);
+    }
+  };
+
   return (
     <div className="card-elevated-lg p-5">
       <div className="flex items-center gap-2 mb-3">
