@@ -132,7 +132,7 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
         {/* Sidebar */}
         <div className="lg:col-span-2 space-y-5">
           {/* Sidebar section switcher */}
-          <div className="grid grid-cols-4 gap-1 rounded-2xl border border-hairline bg-muted/30 p-1">
+          <div className="grid grid-cols-5 gap-1 rounded-2xl border border-hairline bg-muted/30 p-1">
             {SIDEBAR_SECTIONS.map((s) => (
               <button
                 key={s.id}
@@ -163,6 +163,14 @@ export default function PlaybookTab({ state, update }: EngineTabProps) {
               <CoolLifeResourcesPanel />
             </div>
           )}
+
+          {sidebarSection === "roof" && (
+            <div className="animate-fade-in">
+              <RoofResourcesPanel />
+            </div>
+          )}
+
+
 
           {sidebarSection === "reviews" && (
             <div className="animate-fade-in">
