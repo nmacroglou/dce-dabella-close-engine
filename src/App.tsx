@@ -28,6 +28,7 @@ const Manual = lazy(() => import("./pages/Manual.tsx"));
 const Forecast = lazy(() => import("./pages/Forecast.tsx"));
 const Installs = lazy(() => import("./pages/Installs.tsx"));
 const PropertyIntel = lazy(() => import("./pages/PropertyIntel.tsx"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
