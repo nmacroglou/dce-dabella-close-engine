@@ -44,7 +44,7 @@ export default function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}${next}`,
             data: { full_name: displayName || email.split("@")[0] },
           },
         });
@@ -55,7 +55,7 @@ export default function AuthPage() {
         if (error) throw error;
         toast.success(t("Welcome back!", "¡Bienvenido de nuevo!"));
       }
-      navigate("/", { replace: true });
+      navigate(next, { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("Authentication failed", "Autenticación fallida");
       toast.error(msg);
@@ -68,7 +68,7 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/`,
+        redirect_uri: `${window.location.origin}${next}`,
       });
       if (result.error) throw result.error;
     } catch (err) {
