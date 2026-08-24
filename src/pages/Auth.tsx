@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,10 +11,19 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import dabellaLogo from "@/assets/dabella-logo.png";
 
+/** Only same-origin relative paths may be used as a post-login redirect. */
+function safeNext(raw: string | null): string {
+  if (!raw) return "/";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  return raw;
+}
+
 export default function AuthPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const t = useT();
+  const [params] = useSearchParams();
+  const next = safeNext(params.get("next"));
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,8 +31,8 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) navigate("/", { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(next, { replace: true });
+  }, [user, navigate, next]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
