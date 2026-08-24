@@ -28,6 +28,7 @@ const Manual = lazy(() => import("./pages/Manual.tsx"));
 const Forecast = lazy(() => import("./pages/Forecast.tsx"));
 const Installs = lazy(() => import("./pages/Installs.tsx"));
 const PropertyIntel = lazy(() => import("./pages/PropertyIntel.tsx"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +73,7 @@ const App = () => (
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                     <Route path="/deals" element={<ProtectedRoute><Deals /></ProtectedRoute>} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

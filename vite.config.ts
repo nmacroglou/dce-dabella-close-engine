@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 const BUILD_TIME = new Date().toISOString();
 
@@ -35,7 +36,7 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react(), buildInfoPlugin(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [react(), buildInfoPlugin(), mcpPlugin(), mode === "development" && componentTagger()].filter(Boolean),
   define: {
     __BUILD_TIME__: JSON.stringify(BUILD_TIME),
   },
