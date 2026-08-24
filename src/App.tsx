@@ -73,6 +73,7 @@ const App = () => (
                 <Suspense fallback={<RouteFallback />}>
                   <Routes>
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                     <Route path="/deals" element={<ProtectedRoute><Deals /></ProtectedRoute>} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
