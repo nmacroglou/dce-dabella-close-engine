@@ -1,0 +1,260 @@
+{
+  "version": 1,
+  "sdk_version": "0.28.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://nchwcadaoqhlrmbdzzrt.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "dabella-close-assist",
+      "version": "0.1.0",
+      "title": "DaBella Close Assist"
+    },
+    "tools": [
+      {
+        "name": "list_deals",
+        "title": "List deals",
+        "description": "List the signed-in rep's deals, newest first. Optionally filter by pipeline stage or search homeowner name / address.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "stage": {
+              "type": "string",
+              "enum": [
+                "inspecting",
+                "presented",
+                "follow_up",
+                "won",
+                "lost",
+                "disqualified"
+              ],
+              "description": "Only return deals in this pipeline stage."
+            },
+            "search": {
+              "type": "string",
+              "description": "Case-insensitive match on homeowner name or address."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max deals to return (default 25, max 100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_deal",
+        "title": "Get deal",
+        "description": "Fetch one deal by id with its pricing, stage history and open follow-ups. Only returns deals owned by the signed-in rep.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "deal_id": {
+              "type": "string",
+              "description": "The deal id (uuid)."
+            }
+          },
+          "required": [
+            "deal_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_deal",
+        "title": "Create deal",
+        "description": "Create a new deal (lead) owned by the signed-in rep.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "homeowner1": {
+              "type": "string",
+              "description": "Primary homeowner name."
+            },
+            "homeowner2": {
+              "type": "string",
+              "description": "Second homeowner name, if any."
+            },
+            "address": {
+              "type": "string",
+              "description": "Property address."
+            },
+            "homeowner_email": {
+              "type": "string"
+            },
+            "homeowner_phone": {
+              "type": "string"
+            },
+            "lead_source": {
+              "type": "string",
+              "description": "Where the lead came from, e.g. canvass, referral."
+            },
+            "products": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Product lines in play, e.g. roofing, windows, siding, bath, cool life."
+            },
+            "notes": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "homeowner1"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_deal",
+        "title": "Update deal",
+        "description": "Update a deal owned by the signed-in rep: move its pipeline stage, set option pricing, closed amount, install date or notes.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "deal_id": {
+              "type": "string",
+              "description": "The deal id (uuid)."
+            },
+            "stage": {
+              "type": "string",
+              "enum": [
+                "inspecting",
+                "presented",
+                "follow_up",
+                "won",
+                "lost",
+                "disqualified"
+              ]
+            },
+            "notes": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "lead_source": {
+              "type": "string"
+            },
+            "price_a": {
+              "type": "number",
+              "description": "Good option price."
+            },
+            "price_b": {
+              "type": "number",
+              "description": "Better option price."
+            },
+            "price_c": {
+              "type": "number",
+              "description": "Best option price."
+            },
+            "closed_amount": {
+              "type": "number",
+              "description": "Contract amount when the deal is won."
+            },
+            "install_date": {
+              "type": "string",
+              "description": "Install date as YYYY-MM-DD."
+            },
+            "lost_reason": {
+              "type": "string"
+            },
+            "disqualified_reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "deal_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "pipeline_summary",
+        "title": "Pipeline summary",
+        "description": "Summarize the signed-in rep's pipeline: deal counts by stage, won revenue and open pipeline value over a recent window.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "days": {
+              "type": "integer",
+              "description": "Look-back window in days (default 90, max 730)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_follow_ups",
+        "title": "List follow-ups",
+        "description": "List the signed-in rep's follow-up touchpoints, soonest first. Defaults to open (not completed) follow-ups.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "include_completed": {
+              "type": "boolean",
+              "description": "Include completed follow-ups too."
+            },
+            "due_within_days": {
+              "type": "integer",
+              "description": "Only follow-ups due within this many days from now."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max rows to return (default 25, max 100)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
