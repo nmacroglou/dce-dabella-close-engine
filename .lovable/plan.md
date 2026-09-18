@@ -1,119 +1,73 @@
-## Property Intelligence Module
+# Field Assistant by Quantum Edge
 
-Adds a new **Property Intelligence** module to DCE. Reps enter minimal address info and get a compliant pre-door briefing with confidence-scored ownership, property characteristics, and product opportunity. Fully integrated with existing nav, theme, Supabase auth, RLS, and the Close Engine handoff.
+## Goal
+Create a separate, independent project named **Field Assistant** under **Quantum Edge**, preserving DaBella Close Engine unchanged. Field Assistant will be a configurable field-sales and quoting platform for home remodeling, roofing, windows, siding, coatings, pest and insect control, HVAC, plumbing, electrical, solar, landscaping, and future service industries.
 
----
+## Product structure
+1. **Quantum Edge platform identity**
+   - Replace DaBella branding, assets, language, product names, warranties, scripts, and regional assumptions.
+   - Add company-controlled branding profiles so each customer can use its own name, logo, colors, terminology, documents, and customer-facing experience.
+   - Keep “Field Assistant” as the product name and “Quantum Edge” as the company/rights owner throughout the app and documentation.
 
-### 1. Navigation & entry point
+2. **Company and user separation**
+   - Introduce organizations as strict data boundaries.
+   - Scope users, roles, customers, leads, deals, inspections, quotes, reports, catalogs, workflows, and settings to their company.
+   - Preserve secure role checks and expand roles for administrators, managers, sales representatives, estimators, inspectors, technicians, and dispatchers.
 
-- New route: `/property-intelligence` (also aliased `/pi`).
-- Add a **Property Intel** item to `AppHeader` main nav (with Search icon), between Pipeline and Deals.
-- Mobile bottom-safe CTA on the deal detail page: **"Run Property Intel"** that pre-fills the deal address.
+3. **Industry-pack architecture**
+   - Replace fixed DaBella product lists with configurable industry packs.
+   - Each pack defines its services, inspection forms, measurements, photo tags, pricing units, scope templates, quote options, warranties, compliance requirements, sales content, and KPIs.
+   - Seed initial packs for remodeling/exteriors and pest control, then validate the same model against HVAC and a generic quoting pack.
 
-### 2. Screens (mobile-first, dark theme, reuse existing tokens)
+4. **Universal inspection and quoting engine**
+   - Replace fixed roof/window/bath fields with versioned, configurable inspection schemas.
+   - Support photos, annotations, severity, measurements, recommendations, materials, labor, recurring services, one-time services, packages, add-ons, discounts, taxes, financing, and good/better/best or custom quote structures.
+   - Preserve the existing fast in-home workflow while allowing each company to configure its own stages and terminology.
 
-**A. Property Search screen** (`src/pages/PropertyIntel.tsx`)
-- Address input (autocomplete via Google Maps Places — already connected)
-- Buttons: Use Current Location · Drop Map Pin · Scan/Paste Parcel · Upload Photo
-- Recent Searches list (from `properties` table, scoped to user)
-- Primary CTA: **Analyze Property**
+5. **Intelligence layer**
+   - Separate universal signals from industry-specific scoring.
+   - Build configurable opportunity scoring, next-best-action, expected value, close probability, affordability, service urgency, asset lifecycle, territory, route-density, and follow-up intelligence.
+   - Keep property intelligence optional; support provider adapters and non-property signals for service industries.
 
-**B. Result view** (`src/components/property-intel/PropertyIntelReport.tsx`)
-Stacked mobile cards, tabbed on desktop:
-1. **Property Match** — address, parcel, type, coords, sources, match %.
-2. **Owner & Buyer Intelligence** — recorded owner, tax mailing, ownership type, most-recent-recorded-sale, "Likely current homeowner" with expandable **Why this confidence?** panel.
-3. **Property Info** — year built, sqft, lot, stories, bed/bath, values, roof material/age (estimated flag), exterior, solar, permits, exposure.
-4. **Product Opportunity** — primary + secondary product, opportunity score, recommendation confidence, reasons, missing info, suggested inspection focus.
-5. **Pre-Door Brief** — 20-second card, name-suppressed opener when name confidence < 75%.
-6. **Rep Actions bar** — Confirm/Correct name · Mark Renter/Vacant/Owner-Occupied · Add to Route · Start Door Convo · Create Appointment · Start Inspection · Add Notes · Upload Photos · Mark Do Not Knock · Launch Close Engine.
+6. **Global language packs**
+   - Replace the current English/Spanish-only toggle and live per-string translation with versioned language packs.
+   - Add locale-aware currency, date, number, timezone, tax, measurement-unit, and address formatting.
+   - Support company defaults, user preference, customer document language, translated saved content, PDF parity, and right-to-left layouts.
+   - Use human-reviewable translation catalogs; AI may draft translations but will not be the only runtime source.
 
-### 3. Confidence framework
+7. **Configurable proposals, reports, and playbooks**
+   - Convert fixed PDF page order into reusable document blocks selected by company and industry.
+   - Make branding, disclosures, warranties, scopes, financing, inspection findings, signatures, and attachments configurable.
+   - Move battle cards, scripts, objections, coaching, training, and resources into company-managed content rather than compiled DaBella files.
 
-Shared util `src/lib/propertyIntel/confidence.ts`:
-- Percentage + label (Very High / High / Moderate / Low / Very Low).
-- Separate scorers for property match, owner, buyer, occupancy, roof age, opportunity, overall.
-- Each returns `{ score, label, reasons[], conflicts[] }` used by the "Why this confidence?" panel.
-- Opportunity score kept strictly separate from confidence score.
+8. **Commercial administration**
+   - Add company onboarding, branding, industry-pack installation, catalog import, pricing rules, workflow configuration, language-pack management, permissions, audit history, and feature controls.
+   - Generalize commission plans and KPI scorecards so they are configurable by company, role, region, and service line.
 
-### 4. Provider adapters (mock-first, swap-in real APIs later)
+## Migration approach
+1. Remix the current app into a separate project named **Field Assistant**; leave DaBella Close Engine untouched.
+2. Establish Quantum Edge branding and neutral terminology before introducing new customers or industries.
+3. Add organization boundaries and security rules before copying live customer data.
+4. Convert fixed products, inspections, pricing, workflows, playbooks, and documents into configuration, using current DaBella behavior only as a reference pack—not as the platform default.
+5. Replace the language layer and formatting system, then complete every core screen and report in English and Spanish.
+6. Add pest control, HVAC, and generic quote packs to prove the platform is genuinely industry-agnostic.
+7. Validate mobile/tablet workflows, security, reporting, PDF output, and language switching before launch.
 
-`src/lib/propertyIntel/providers/`
-- `assessor.ts`, `recorder.ts`, `parcelGis.ts`, `licensed.ts` (ATTOM/Regrid/CoreLogic/DataTree stubs), `permits.ts`, `weather.ts` (NOAA stub), `imagery.ts`.
-- Each exports a typed interface + a `mock` implementation returning **clearly labeled demo data** for Phoenix addresses (fictional owners like "Maria & David Sanchez").
-- Real calls will live behind an edge function so keys never hit the browser.
+## Intellectual-property deliverables
+- Update the architecture and originality records around **FIELD ASSISTANT** and **QUANTUM EDGE**.
+- Produce a clean-room inventory separating Quantum Edge platform IP from DaBella-specific content, third-party libraries, manufacturer materials, data providers, and customer-owned assets.
+- Prepare trademark-ready specimens and filing worksheets only after the neutral brand is visible in the separate project.
+- Keep legal-name, ownership, first-use, signer, and filing-class details as explicit placeholders until confirmed; include legal-review disclaimers and make no registration guarantee.
 
-### 5. Edge function
+## Technical notes
+- The existing project has no organization boundary and uses fixed product/type unions, compiled sales content, fixed proposal sequencing, and direct DaBella asset imports. These are the primary conversion areas.
+- Reusable foundations include the deal pipeline, follow-ups, stage history, role-check pattern, commission/KPI mechanics, UI system, PDF rendering utilities, photo evidence, and current sales workflow concepts.
+- The current app manifest was repaired from saved project history and a production build now succeeds. This repair preserves the source project before remixing.
 
-`supabase/functions/property-intel/index.ts`
-- Verifies JWT, validates input with Zod, calls provider adapters server-side, merges results, computes confidences, writes to `properties` + related tables, returns full report.
-- Uses only the demo adapters for now; leaves TODO markers with required secret names (`ATTOM_API_KEY`, `REGRID_API_KEY`, `CORELOGIC_API_KEY`, `DATATREE_API_KEY`).
-
-### 6. Data model (Supabase migration)
-
-New tables, all with RLS + GRANTs:
-
-- `properties`
-- `property_ownership_records`
-- `property_sale_records`
-- `property_identity_assessments`
-- `property_intelligence`
-- `opportunity_scores`
-- `property_confirmations` (rep-overridden values, never overwrites source records)
-- `suppressions` (Do-Not-Knock enforcement)
-- `pi_audit_logs` (renamed to avoid clashing with existing audit patterns)
-
-RLS: reps see rows they created or that belong to their org; admins see all (reuse `has_role`). `suppressions` are enforced at query time — properties with an active DNK suppression cannot be added to routes.
-
-Compliance guardrails encoded in schema:
-- No columns for credit, income, DTI, protected-class attributes.
-- All estimated fields carry an `is_estimated boolean`.
-
-### 7. Integration with existing DCE
-
-- **Deals**: "Add to Route" creates a `deals` row (stage=`inspecting`) linked to the property; opens the existing deal editor.
-- **Inspection**: "Start Inspection" navigates to the deal's Inspection tab with property context prefilled.
-- **Close Engine**: "Launch Close Engine" opens `/` with `activeDealId` set.
-- **Do Not Knock**: blocks the "Add to Route" and "Start Door Conversation" buttons and surfaces a red banner.
-
-### 8. Compliance copy library
-
-`src/lib/propertyIntel/copy.ts` — canonical strings for "Recorded owner", "Likely owner occupied", "Ownership not confirmed", low-confidence opener fallback, etc. Feeds `useT` translations so the module supports EN/ES like the rest of the app.
-
-### 9. Demo workflow
-
-Ships with seeded Phoenix fictional addresses (`85003`, `85018`, `85032`) rendered by the mock providers so the exact acceptance-criteria demo runs end-to-end without live credentials. Every demo card carries a **"Demo data"** badge.
-
-### 10. Out of scope for this initial build
-
-- Live ATTOM/Regrid/CoreLogic/DataTree calls (stubs + secret placeholders only)
-- Rate limiting (documented as follow-up per platform guidance)
-- Route optimization algorithms (button hands off to existing Pipeline map)
-
----
-
-### Files created / modified (technical)
-
-**New**
-- `src/pages/PropertyIntel.tsx`
-- `src/components/property-intel/PropertySearch.tsx`
-- `src/components/property-intel/PropertyIntelReport.tsx`
-- `src/components/property-intel/OwnerBuyerCard.tsx`
-- `src/components/property-intel/ConfidenceBadge.tsx`
-- `src/components/property-intel/WhyConfidencePanel.tsx`
-- `src/components/property-intel/PropertyInfoCard.tsx`
-- `src/components/property-intel/OpportunityCard.tsx`
-- `src/components/property-intel/PreDoorBrief.tsx`
-- `src/components/property-intel/RepActionsBar.tsx`
-- `src/lib/propertyIntel/confidence.ts`
-- `src/lib/propertyIntel/copy.ts`
-- `src/lib/propertyIntel/providers/*.ts`
-- `src/hooks/usePropertyIntel.ts`
-- `supabase/functions/property-intel/index.ts`
-- Supabase migration for the 9 tables + RLS + GRANTs + triggers
-
-**Modified**
-- `src/App.tsx` — add route
-- `src/components/AppHeader.tsx` — add nav entry
-- `src/pages/Index.tsx` / deal detail — add "Run Property Intel" CTA
-
-Please confirm and I'll build it.
+## Launch checkpoints
+- No DaBella marks or confidential sales content appear in Field Assistant defaults.
+- A new company and industry can be configured without changing source code.
+- Every data request is company-scoped and protected.
+- All customer-facing screens and reports use the selected locale consistently.
+- At least three materially different industries complete lead-to-inspection-to-quote-to-close workflows.
+- Quantum Edge’s IP packet distinguishes original platform elements from licensed, open-source, manufacturer, provider, and customer content.
